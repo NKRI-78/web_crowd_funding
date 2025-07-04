@@ -214,36 +214,34 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
 
   const onSubmitInvestor: SubmitHandler<FormValues> = async (data) => {
     console.log("Data : " + JSON.stringify(data));
-    try {
-      const res = await axios.post(`${API_BACKEND}/api/v1/auth/register`, {
-        fullname: data.name,
-        email: data.email,
-        phone: data.noTelp,
-        role: "2",
-        password: data.password,
-        investor: {
-          ktp: data.noKtp,
-          address_ktp: data.address,
-          gender: data.gender,
-          status_marital: data.maritalStatus,
-          last_edu: data.lastEducation,
-          bank: {
-            no: data.noRekening,
-            name: data.nameBank,
-            owner: data.accountOwner,
-            branch: data.bankBranch,
-          },
-          job: {
-            company_name: data.companyName,
-            company_address: data.companyAddress,
-            monthly_income: data.monthlyIncome,
-            position: data.position,
-          },
+    const res = await axios.post(`${API_BACKEND}/api/v1/auth/register`, {
+      fullname: data.name,
+      email: data.email,
+      phone: data.noTelp,
+      role: "2",
+      password: data.password,
+      investor: {
+        ktp: data.noKtp,
+        address_ktp: data.address,
+        gender: data.gender,
+        status_marital: data.maritalStatus,
+        last_edu: data.lastEducation,
+        bank: {
+          no: data.noRekening,
+          name: data.nameBank,
+          owner: data.accountOwner,
+          branch: data.bankBranch,
         },
-      });
-      const result = await res.data;
-      console.log("Hasil:", result);
-    } catch (error) {}
+        job: {
+          company_name: data.companyName,
+          company_address: data.companyAddress,
+          monthly_income: data.monthlyIncome,
+          position: data.position,
+        },
+      },
+    });
+    const result = await res.data;
+    console.log("Hasil:", result);
   };
 
   const [images, setImages] = useState<ImageListType>([]);

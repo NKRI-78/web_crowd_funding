@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { projects } from "@app/lib/data/projects";
 import { ProjectCard } from "@components/project/Project";
 import { IProjectData } from "@/app/interface/IProject";
 import { getAllProject } from "@/app/actions/GetAllProject";

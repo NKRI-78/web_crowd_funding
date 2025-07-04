@@ -2,7 +2,6 @@ import React from "react";
 import { Metadata } from "next";
 
 import Sukuk from "@components/sukuk/Sukuk";
-import { projects } from "@app/lib/data/projects";
 
 interface Params {
   projectId: string;
@@ -13,8 +12,6 @@ export async function generateMetadata({
 }: {
   params: Params;
 }): Promise<Metadata> {
-  const project = projects.find((p) => p.id === params.projectId);
-
   // if (!project) {
   //   return {
   //     title: "Project not found",
@@ -30,8 +27,6 @@ export async function generateMetadata({
 }
 
 const SukukPage = ({ params }: { params: Params }) => {
-  const project = projects.find((p) => p.id === params.projectId);
-
   // if (!project) return <div>Project not found</div>;
 
   return <Sukuk id={params.projectId} />;
