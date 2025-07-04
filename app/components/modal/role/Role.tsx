@@ -12,6 +12,7 @@ import ImageUploading, {
   ImageType,
 } from "react-images-uploading";
 import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface RoleModalProps {
   open: boolean;
@@ -211,6 +212,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
   const [linKnpwp, setLinkNpwp] = useState("");
   const [linkRek, setLinkRek] = useState("");
   const [linkOptional, setLinkOptional] = useState("");
+  const router = useRouter()
 
   const onSubmitInvestor: SubmitHandler<FormValues> = async (data) => {
     console.log("Data : " + JSON.stringify(data));
@@ -219,7 +221,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
         fullname: data.name,
         email: data.email,
         phone: data.noTelp,
-        role: "2",
+        role: "1",
         password: data.password,
         investor: {
           ktp: data.noKtp,
@@ -239,11 +241,27 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
             monthly_income: data.monthlyIncome,
             position: data.position,
           },
+          upload: {
+            ktp: linkKtp,
+            npwp:linKnpwp,
+            rekening: linkRek,
+            optional: linkOptional
+          }
         },
       });
       const result = await res.data;
       console.log("Hasil:", result);
-    } catch (error) {}
+      localStorage.setItem("user", JSON.stringify(result));
+      onClose();
+      router.push("/dashboard")
+
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('Backend says:', error.response?.data);
+      } else {
+        console.error('Unknown error:', error);
+      }
+    }
   };
 
   const [images, setImages] = useState<ImageListType>([]);
@@ -485,11 +503,11 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
   ]);
 
   const handleFileChange = async (index: number, file?: File) => {
-    // const newFileNames = [...fileNames];
-    // newFileNames[index] = file ? file.name : fileNames[index];
-    // console.log("File " + newFileNames)
-    // console.log("File " , file)
-    // setFileNames(newFileNames);
+    const newFileNames = [...fileNames];
+    newFileNames[index] = file ? file.name : fileNames[index];
+    console.log("File " + newFileNames)
+    console.log("File " , file)
+    setFileNames(newFileNames);
     const formData = new FormData();
     formData.append("folder", "image");
     formData.append("app", "capbridge");
@@ -680,9 +698,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
                           Password
                         </label>
                         <input
-                          type="text"
-                          // value={nameCompany}
-                          // onChange={(e) => setNameCompany(e.target.value)}
+                          type="password"
                           className="w-full px-4 py-2 text-black border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
                           placeholder="Password"
                           {...formPenerbit.register("password")}
@@ -1546,7 +1562,6 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
                       <input
                         type="text"
                         {...pemodal.register("email")}
-                        name="name"
                         className="w-full px-4 py-2 text-black border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         placeholder="Email"
                       />
@@ -1563,9 +1578,9 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
                         Password
                       </label>
                       <input
-                        type="text"
-                        {...pemodal.register("noKtp")}
-                        name="noKtp"
+                        type="password"
+                        {...pemodal.register("password")}
+                        name="password"
                         className="w-full px-4 py-2 text-black border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         placeholder="Password"
                       />
@@ -1585,7 +1600,6 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
                       <input
                         type="text"
                         {...pemodal.register("name")}
-                        name="name"
                         className="w-full px-4 py-2 text-black border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         placeholder="Nama"
                       />
