@@ -2,13 +2,14 @@ import { IProjectData } from "@/app/interface/IProject";
 import { formatPriceOrEmpty, priceLib } from "@/app/lib/price";
 import { useRouter } from "next/navigation";
 
-export const ProjectCard: React.FC<{ project: IProjectData }> = ({ project }) => {
+export const ProjectCard: React.FC<{ project: IProjectData }> = ({
+  project,
+}) => {
   const router = useRouter();
 
-  const bgColor =
-    project.is_approved
-      ? "bg-purple-900 text-purple-800"
-      : "bg-green-700 text-green-700";
+  const bgColor = project.is_approved
+    ? "bg-purple-900 text-purple-800"
+    : "bg-green-700 text-green-700";
   const isFinish = project.is_apbn ? "block" : "hidden";
 
   return (
@@ -33,11 +34,12 @@ export const ProjectCard: React.FC<{ project: IProjectData }> = ({ project }) =>
             target.src = "/images/img.jpg";
           }}
         />
-        <div
+        {/* <div
           className={`absolute inset-0 ${
             project.is_apbn ? "bg-purple-900" : "bg-green-700"
           } bg-opacity-60`}
-        />
+        /> */}
+        <div className={`absolute inset-0  bg-opacity-60`} />
         {/* <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           <span
             className={`bg-white ${bgColor} text-xs font-bold px-4 py-1 rounded-full shadow`}
@@ -66,7 +68,13 @@ export const ProjectCard: React.FC<{ project: IProjectData }> = ({ project }) =>
           </li>
           <li className="flex justify-between">
             <span>Kebutuhan Modal</span>
-            <span>{formatPriceOrEmpty((project?.nominal_value ?? 0).toString() ?? "", "id-ID", "IDR")}</span>
+            <span>
+              {formatPriceOrEmpty(
+                (project?.nominal_value ?? 0).toString() ?? "",
+                "id-ID",
+                "IDR"
+              )}
+            </span>
           </li>
           <li className="flex justify-between">
             <span>Minimal Investasi</span>
