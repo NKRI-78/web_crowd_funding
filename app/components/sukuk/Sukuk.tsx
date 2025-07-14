@@ -11,6 +11,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { useParams } from "next/navigation";
 import axios from "axios";
+import defaultImage from "../../../public/images/default-image.png";
 
 type Project = {
   id: string;
@@ -60,13 +61,8 @@ type Props = {
   id: string;
 };
 
-const Sukuk = () => {
-  // const params = useParams();
-  // const id = params.id;
-  // console.log(id, "id");
-  // useEffect(() => {
-  //   console.log("ID dari URL:", id);
-  // }, [id]);
+const Sukuk = ({ id }: Props) => {
+  console.log(id, "id");
 
   const [showModal, setShowModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
@@ -82,7 +78,9 @@ const Sukuk = () => {
   const roi = 0.095;
   const keuntungan = nominal * roi;
 
-  const id = "fe973f69-6ff4-4157-a3bc-0e04054cf101";
+  const params = useParams();
+  // const id = params.id;
+  // const id = "fe973f69-6ff4-4157-a3bc-0e04054cf101";
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<any>(null);
@@ -297,7 +295,11 @@ const Sukuk = () => {
                 <SwiperSlide key={idx}>
                   <div className="relative">
                     <img
-                      src={item.path}
+                      src={
+                        item.path && item.path.startsWith("https")
+                          ? item.path
+                          : defaultImage.src
+                      }
                       alt={`Slide ${idx + 1}`}
                       className="w-full h-64 object-cover"
                     />

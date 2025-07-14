@@ -1,1 +1,1 @@
-export let API_BACKEND = "https://api-capbridge.langitdigital78.com"
+export const API_BACKEND = "https://api-capbridge.langitdigital78.com"
