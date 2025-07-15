@@ -1,7 +1,7 @@
 import React from "react";
 
 import type { Metadata } from "next";
-import AboutUs from "../components/aboutus/AboutUs";
+import AboutUs from "@/app/components/aboutus/AboutUs";
 
 export const metadata: Metadata = {
   title: "Tentang | CapBridge",

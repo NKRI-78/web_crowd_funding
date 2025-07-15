@@ -1,7 +1,7 @@
 "use client";
+import { IProject } from "@/app/interface/IProject";
+import { API_BACKEND } from "@/app/utils/constant";
 import axios from "axios";
-import { API_BACKEND } from "../utils/constant";
-import { IProject } from "../interface/IProject";
 
 export async function getAllProject() {
   try {
