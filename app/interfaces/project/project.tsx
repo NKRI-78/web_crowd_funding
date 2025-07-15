@@ -19,6 +19,11 @@ interface Project {
   unit_total: string;
   number_of_unit: string;
   periode: string;
+  jangkaWaktu: string;
+  danaTerkumpul: string;
+  minimalInvestasi: string;
+  kebutuhanModal: string;
+  proyeksiROI: string;
   created_at: string;
   updated_at: string;
 }

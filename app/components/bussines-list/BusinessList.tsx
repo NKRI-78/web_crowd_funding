@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ProjectCard } from "../project/Project";
 import { IProjectData } from "@/app/interface/IProject";
-import { getAllProject } from "@/app/actions/GetAllProject";
+import { getAllProject } from "@/actions/GetAllProject";
 
 type Project = {
   image: string;
