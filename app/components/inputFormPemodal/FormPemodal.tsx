@@ -1,59 +1,65 @@
 "use client";
 
-import React, { useEffect, useState, Fragment } from "react";
+import React, { useEffect, useState } from "react";
+import DataBank from "./informasiBank/DataBank"; // Pastikan path benar
 
 const FormPemodal: React.FC = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const steps = [
-    <div key="1">
-      <h2 className="text-xl font-bold mb-4">Informasi Pribadi</h2>
-      <input type="text" placeholder="Nama" className="border p-2 w-full" />
-    </div>,
-    <div key="2">
-      <h2 className="text-xl font-bold mb-4">Step 2: Diproses</h2>
-      <input type="email" placeholder="Email" className="border p-2 w-full" />
-    </div>,
-    <div key="3">
-      <h2 className="text-xl font-bold mb-4">Step 3: Dikirim</h2>
-      <input type="text" placeholder="Alamat" className="border p-2 w-full" />
-    </div>,
-    <div key="4">
-      <h2 className="text-xl font-bold mb-4">Step 4: Tiba di Tujuan</h2>
-      <input type="text" placeholder="Kota" className="border p-2 w-full" />
-    </div>,
-    <div key="5">
-      <h2 className="text-xl font-bold mb-4">Step 5: Selesai</h2>
-      <p>Terima kasih!</p>
-    </div>,
-  ];
+  const isFormBankValid = () => {
+    return (
+      (formBank.namaBank || "").trim() !== "" &&
+      (formBank.nomorRekening || "").trim() !== "" &&
+      (formBank.namaPemilik || "").trim() !== "" &&
+      (formBank.cabangBank || "").trim() !== ""
+    );
+  };
 
-  const [formData, setFormData] = useState({
+  const [formBank, setFormBank] = useState({
+    namaBank: "",
+    nomorRekening: "",
+    namaPemilik: "",
+    cabangBank: "",
+  });
+
+  const [formDataPribadi, setFormDataPribadi] = useState({
     nama: "",
     email: "",
     alamat: "",
     kota: "",
   });
 
-  // Ambil data dari localStorage saat pertama render
+  // Ambil data dari localStorage saat pertama kali render
   useEffect(() => {
-    const savedData = localStorage.getItem("formPemodal");
-    if (savedData) {
-      setFormData(JSON.parse(savedData));
-    }
+    const savedPribadi = localStorage.getItem("formPribadi");
+    const savedBank = localStorage.getItem("formBank");
+
+    if (savedPribadi) setFormDataPribadi(JSON.parse(savedPribadi));
+    if (savedBank) setFormBank(JSON.parse(savedBank));
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handler untuk data pribadi
+  const handleChangePribadi = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormDataPribadi((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Handler untuk data bank
+  const handleChangeBank = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormBank((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
   const handleNext = () => {
-    // Simpan data ke localStorage
-    localStorage.setItem("formPemodal", JSON.stringify(formData));
+    // Simpan ke localStorage
+    localStorage.setItem("formPribadi", JSON.stringify(formDataPribadi));
+    localStorage.setItem("formBank", JSON.stringify(formBank));
     setSelectedIndex((prev) => prev + 1);
   };
 
@@ -67,7 +73,6 @@ const FormPemodal: React.FC = () => {
           jujur, benar, dan akurat.
         </span>
       </div>
-      {/* {steps[selectedIndex]} */}
 
       {/* Step content */}
       {selectedIndex === 0 && (
@@ -76,36 +81,34 @@ const FormPemodal: React.FC = () => {
           <input
             type="text"
             name="nama"
-            value={formData.nama}
-            onChange={handleChange}
+            value={formDataPribadi.nama}
+            onChange={handleChangePribadi}
             placeholder="Nama"
-            className="border p-2 w-full"
+            className="border p-2 w-full mb-4"
           />
-        </div>
-      )}
-
-      {selectedIndex === 1 && (
-        <div>
-          <h2 className="text-xl font-bold mb-4">Step 2: Email</h2>
           <input
             type="email"
             name="email"
-            value={formData.email}
-            onChange={handleChange}
+            value={formDataPribadi.email}
+            onChange={handleChangePribadi}
             placeholder="Email"
             className="border p-2 w-full"
           />
         </div>
       )}
 
+      {selectedIndex === 1 && (
+        <DataBank data={formBank} onChange={handleChangeBank} />
+      )}
+
       {selectedIndex === 2 && (
         <div>
-          <h2 className="text-xl font-bold mb-4">Step 3: Alamat</h2>
+          <h2 className="text-xl font-bold mb-4">Alamat Lengkap</h2>
           <input
             type="text"
             name="alamat"
-            value={formData.alamat}
-            onChange={handleChange}
+            value={formDataPribadi.alamat}
+            onChange={handleChangePribadi}
             placeholder="Alamat"
             className="border p-2 w-full"
           />
@@ -114,12 +117,12 @@ const FormPemodal: React.FC = () => {
 
       {selectedIndex === 3 && (
         <div>
-          <h2 className="text-xl font-bold mb-4">Step 4: Kota</h2>
+          <h2 className="text-xl font-bold mb-4">Kota Domisili</h2>
           <input
             type="text"
             name="kota"
-            value={formData.kota}
-            onChange={handleChange}
+            value={formDataPribadi.kota}
+            onChange={handleChangePribadi}
             placeholder="Kota"
             className="border p-2 w-full"
           />
@@ -133,6 +136,7 @@ const FormPemodal: React.FC = () => {
         </div>
       )}
 
+      {/* Navigation Buttons */}
       <div className="flex justify-between mt-10">
         <button
           onClick={() => setSelectedIndex((prev) => prev - 1)}
@@ -142,18 +146,25 @@ const FormPemodal: React.FC = () => {
           Kembali
         </button>
 
-        {selectedIndex < steps.length - 1 ? (
+        {selectedIndex < 4 ? (
           <button
             onClick={handleNext}
-            className="px-4 py-2 bg-blue-600 text-white rounded"
+            disabled={selectedIndex === 1 && !isFormBankValid()}
+            className={`px-4 py-2 rounded text-white ${
+              selectedIndex === 1 && !isFormBankValid()
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-600"
+            }`}
           >
             Selanjutnya
           </button>
         ) : (
           <button
             onClick={() => {
-              localStorage.removeItem("formPemodal");
+              localStorage.removeItem("formPribadi");
+              localStorage.removeItem("formBank");
               alert("Form telah selesai dan data dihapus dari localStorage.");
+              setSelectedIndex(0);
             }}
             className="px-4 py-2 bg-green-600 text-white rounded"
           >
