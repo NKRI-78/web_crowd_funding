@@ -8,6 +8,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { loadSession, logout } from "@redux/slices/authSlice";
 import Link from "next/link";
 import RoleModal from "@components/modal/role/Role";
+import Modal from "@/app/helper/Modal";
+import RegisterV2 from "../auth/register/RegisterV2";
+import RegisterOtp from "../auth/register/RegisterOtp";
+import RegisterSelectRole from "../auth/register/RegisterSelectRole";
 
 const Navbar: React.FC = () => {
   const [isSticky, setIsSticky] = useState(false);
@@ -26,7 +30,9 @@ const Navbar: React.FC = () => {
   const [userData, setUserData] = useState<any>(null);
   const [hydrated, setHydrated] = useState(false);
 
-  const [showModal, setShowModal] = useState(false);
+  const [step, setStep] = useState<'register' | 'otp' | 'role' | null>(null);
+
+  const closeModal = () => setStep(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -166,7 +172,7 @@ const Navbar: React.FC = () => {
                   </a>
                 </li>
               )}
-              <li onClick={() => setShowModal(true)}>
+              <li onClick={() => setStep('register')}>
                 <Link className="text-white" href="#">
                   Daftar
                 </Link>
@@ -240,15 +246,43 @@ const Navbar: React.FC = () => {
             {hydrated && userData !== null ? (
               <></>
             ) : (
-              <li onClick={() => setShowModal(true)}>
+              <li onClick={() => setStep('register')}>
                 <Link href="#">Daftar</Link>
               </li>
             )}
           </ul>
         </div>
       </nav>
+      <Modal
+        isOpen={step === 'register'}
+        onClose={closeModal}
+        title="Daftar"
+      >
+        <RegisterV2
+          onNext={() => setStep('otp')}
+          onClose={closeModal}
+        />
+      </Modal>
 
-      <RoleModal open={showModal} onClose={() => setShowModal(false)} />
+      <Modal
+        isOpen={step === 'otp'}
+        onClose={closeModal}
+        title="Verifikasi OTP"
+      >
+        <RegisterOtp
+          onNext={() => setStep('role')}
+          onClose={closeModal}
+        />
+      </Modal>
+      <Modal
+        isOpen={step === 'role'}
+        onClose={closeModal}
+        title="Verifikasi OTP"
+      >
+        <RegisterSelectRole
+        />
+      </Modal>
+      {/* <RoleModal open={showModal} onClose={() => setShowModal(false)} /> */}
     </>
   );
 };
