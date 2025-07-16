@@ -166,18 +166,6 @@ const Home: React.FC = () => {
         >
           Lihat Proyek Selengkapnya
         </button>
-        <div className="flex flex-col items-center justify-center gap-4">
-          <Modal
-            isOpen={isOpen}
-            onClose={() => setIsOpen(false)}
-            title="Welcome to the Modal"
-          >
-            <p className="text-gray-600">
-              This modal uses Headless UI v2+ with Tailwind and smooth
-              transitions.
-            </p>
-          </Modal>
-        </div>
       </section>
 
       <section className="bg-white text-black py-16 px-6 md:px-20 text-center">
