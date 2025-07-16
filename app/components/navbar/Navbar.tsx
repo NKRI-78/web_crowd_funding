@@ -130,10 +130,17 @@ const Navbar: React.FC = () => {
                   Pasar Sekunder
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link className="text-white" href="#">
                   Penerbit
                 </Link>
+              </li> */}
+              <li
+                className={
+                  pathname == "/form-pemodal" ? "text-[#4CD137]" : "text-white"
+                }
+              >
+                <Link href="/form-pemodal">Form Pemodal</Link>
               </li>
               {hydrated && userData !== null ? (
                 <>
@@ -191,6 +198,13 @@ const Navbar: React.FC = () => {
             </li>
             <li>
               <Link href="#">Penerbit</Link>
+            </li>
+            <li
+              className={
+                pathname == "/form-pemodal" ? "text-[#4CD137]" : "text-white"
+              }
+            >
+              <Link href="/form-pemodal">Form Pemodal</Link>
             </li>
             {hydrated && userData !== null ? (
               <>

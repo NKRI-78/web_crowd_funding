@@ -44,7 +44,7 @@ export default function ClientLayout({
             <div className="flex flex-1">
               <div className="flex-grow">{children}</div>
             </div>
-            <Footer />
+            {pathname === "/form-pemodal" ? "" : <Footer />}
           </main>
         )}
         <ModalLogout />
