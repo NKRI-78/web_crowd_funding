@@ -3,25 +3,10 @@
 import React, { useEffect, useState } from "react";
 import DataBank from "./informasiBank/DataBank"; // Pastikan path benar
 import ComponentDataPribadi from "./informasiPribadi/DataPribadi";
+import ComponentDataPekerjaan from "./informasiPekerjaan/DataPekerjaan";
 
 const FormPemodal: React.FC = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
-
-  //   const isFormBankValid = () => {
-  //     return (
-  //       (formBank.namaBank || "").trim() !== "" &&
-  //       (formBank.nomorRekening || "").trim() !== "" &&
-  //       (formBank.namaPemilik || "").trim() !== "" &&
-  //       (formBank.cabangBank || "").trim() !== ""
-  //     );
-  //   };
-
-  //   const [formBank, setFormBank] = useState({
-  //     namaBank: "",
-  //     nomorRekening: "",
-  //     namaPemilik: "",
-  //     cabangBank: "",
-  //   });
 
   const [dataPribadi, setDataPribadi] = useState({
     nama: "",
@@ -38,23 +23,19 @@ const FormPemodal: React.FC = () => {
     cabangBank: "",
   });
 
-  // Ambil data dari localStorage saat pertama kali render
-  //   useEffect(() => {
-  //     // const savedPribadi = localStorage.getItem("formPribadi");
-  //     const savedBank = localStorage.getItem("formBank");
-
-  //     // if (savedPribadi) setFormDataPribadi(JSON.parse(savedPribadi));
-  //     if (savedBank) setFormBank(JSON.parse(savedBank));
-  //   }, []);
-
-  // Handler untuk data bank
-  //   const handleChangeBank = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //     const { name, value } = e.target;
-  //     setFormBank((prev) => ({
-  //       ...prev,
-  //       [name]: value,
-  //     }));
-  //   };
+  const [dataPekerjaan, setDataPekerjaan] = useState({
+    namaPerusahaan: "",
+    jabatan: "",
+    alamatPerusahaan: "",
+    penghasilanBulanan: "",
+    tujuanInvestasi: "",
+    tujuanInvestasiLainnya: "",
+    toleransiResiko: "",
+    pengalamanInvestasi: "",
+    pengetahuanPasarModal: "",
+    setujuKebenaranData: false,
+    setujuRisikoInvestasi: false,
+  });
 
   const handleChangeDataPribadi = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -70,10 +51,66 @@ const FormPemodal: React.FC = () => {
     setDataPribadi((prev) => ({ ...prev, jenisKelamin: gender }));
   };
 
+  const handleChangeDataPekerjaan = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setDataPekerjaan((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handlePenghasilanBulananChange = (penghasilanBulanan: string) => {
+    setDataPekerjaan((prev) => ({
+      ...prev,
+      penghasilanBulanan: penghasilanBulanan,
+    }));
+  };
+
+  const handleToleransiResikoChange = (toleransiResiko: string) => {
+    setDataPekerjaan((prev) => ({
+      ...prev,
+      toleransiResiko: toleransiResiko,
+    }));
+  };
+
+  const handlePengalamanInvestasi = (pengalamanInvestasi: string) => {
+    setDataPekerjaan((prev) => ({
+      ...prev,
+      pengalamanInvestasi: pengalamanInvestasi,
+    }));
+  };
+
+  const handlePengetahuanPasarModal = (pengetahuanPasarModal: string) => {
+    setDataPekerjaan((prev) => ({
+      ...prev,
+      pengetahuanPasarModal: pengetahuanPasarModal,
+    }));
+  };
+
+  const handleonTujuanInvetasiChange = (tujuanInvestasi: string) => {
+    setDataPekerjaan((prev) => ({
+      ...prev,
+      tujuanInvestasi: tujuanInvestasi,
+      tujuanInvestasiLainnya: "",
+    }));
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setDataPekerjaan((prev) => ({
+      ...prev,
+      [name]: checked,
+    }));
+  };
+
   const handleNext = () => {
     const fullData = {
       ...dataPribadi,
-      //   ...formBank,
+      ...dataPekerjaan,
     };
 
     localStorage.setItem("formPemodal", JSON.stringify(fullData));
@@ -107,8 +144,16 @@ const FormPemodal: React.FC = () => {
 
       {selectedIndex === 1 && (
         <div>
-          <h2 className="text-xl font-bold mb-4">Selesai</h2>
-          <p>Data berhasil disimpan. Terima kasih!</p>
+          <ComponentDataPekerjaan
+            formData={dataPekerjaan}
+            onChange={handleChangeDataPekerjaan}
+            onPenghasilanBulanan={handlePenghasilanBulananChange}
+            onTujuanInvetasi={handleonTujuanInvetasiChange}
+            onToleransiResiko={handleToleransiResikoChange}
+            onPengalamanInvestasi={handlePengalamanInvestasi}
+            onPengetahuanPasarModal={handlePengetahuanPasarModal}
+            onCheckboxChange={handleCheckboxChange}
+          />
         </div>
       )}
 
@@ -122,18 +167,18 @@ const FormPemodal: React.FC = () => {
           Kembali
         </button>
 
-        {selectedIndex < 4 ? (
+        {selectedIndex < 1 ? (
           <button
             onClick={handleNext}
-            // disabled={selectedIndex === 1 && !isFormBankValid()}
-            disabled={selectedIndex === 1}
-            // className={`px-4 py-2 rounded text-white ${
-            //   selectedIndex === 1 && !isFormBankValid()
-            //     ? "bg-gray-400 cursor-not-allowed"
-            //     : "bg-[#4821C2]"
-            // }`}
+            disabled={
+              selectedIndex === 1 &&
+              (!dataPekerjaan.setujuKebenaranData ||
+                !dataPekerjaan.setujuRisikoInvestasi)
+            }
             className={`px-4 py-2 rounded text-white ${
-              selectedIndex === 1
+              selectedIndex === 1 &&
+              (!dataPekerjaan.setujuKebenaranData ||
+                !dataPekerjaan.setujuRisikoInvestasi)
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-[#4821C2]"
             }`}
