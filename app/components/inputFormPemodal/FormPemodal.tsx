@@ -2,69 +2,86 @@
 
 import React, { useEffect, useState } from "react";
 import DataBank from "./informasiBank/DataBank"; // Pastikan path benar
+import ComponentDataPribadi from "./informasiPribadi/DataPribadi";
 
 const FormPemodal: React.FC = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const isFormBankValid = () => {
-    return (
-      (formBank.namaBank || "").trim() !== "" &&
-      (formBank.nomorRekening || "").trim() !== "" &&
-      (formBank.namaPemilik || "").trim() !== "" &&
-      (formBank.cabangBank || "").trim() !== ""
-    );
-  };
+  //   const isFormBankValid = () => {
+  //     return (
+  //       (formBank.namaBank || "").trim() !== "" &&
+  //       (formBank.nomorRekening || "").trim() !== "" &&
+  //       (formBank.namaPemilik || "").trim() !== "" &&
+  //       (formBank.cabangBank || "").trim() !== ""
+  //     );
+  //   };
 
-  const [formBank, setFormBank] = useState({
+  //   const [formBank, setFormBank] = useState({
+  //     namaBank: "",
+  //     nomorRekening: "",
+  //     namaPemilik: "",
+  //     cabangBank: "",
+  //   });
+
+  const [dataPribadi, setDataPribadi] = useState({
+    nama: "",
+    nik: "",
+    tempatLahir: "",
+    tanggalLahir: "",
+    jenisKelamin: "",
+    statusPernikahan: "",
+    pendidikanTerakhir: "",
+    addres: "",
     namaBank: "",
     nomorRekening: "",
     namaPemilik: "",
     cabangBank: "",
   });
 
-  const [formDataPribadi, setFormDataPribadi] = useState({
-    nama: "",
-    email: "",
-    alamat: "",
-    kota: "",
-  });
-
   // Ambil data dari localStorage saat pertama kali render
-  useEffect(() => {
-    const savedPribadi = localStorage.getItem("formPribadi");
-    const savedBank = localStorage.getItem("formBank");
+  //   useEffect(() => {
+  //     // const savedPribadi = localStorage.getItem("formPribadi");
+  //     const savedBank = localStorage.getItem("formBank");
 
-    if (savedPribadi) setFormDataPribadi(JSON.parse(savedPribadi));
-    if (savedBank) setFormBank(JSON.parse(savedBank));
-  }, []);
+  //     // if (savedPribadi) setFormDataPribadi(JSON.parse(savedPribadi));
+  //     if (savedBank) setFormBank(JSON.parse(savedBank));
+  //   }, []);
 
-  // Handler untuk data pribadi
-  const handleChangePribadi = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handler untuk data bank
+  //   const handleChangeBank = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //     const { name, value } = e.target;
+  //     setFormBank((prev) => ({
+  //       ...prev,
+  //       [name]: value,
+  //     }));
+  //   };
+
+  const handleChangeDataPribadi = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormDataPribadi((prev) => ({
+    setDataPribadi((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  // Handler untuk data bank
-  const handleChangeBank = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormBank((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleGenderChange = (gender: string) => {
+    setDataPribadi((prev) => ({ ...prev, jenisKelamin: gender }));
   };
 
   const handleNext = () => {
-    // Simpan ke localStorage
-    localStorage.setItem("formPribadi", JSON.stringify(formDataPribadi));
-    localStorage.setItem("formBank", JSON.stringify(formBank));
+    const fullData = {
+      ...dataPribadi,
+      //   ...formBank,
+    };
+
+    localStorage.setItem("formPemodal", JSON.stringify(fullData));
     setSelectedIndex((prev) => prev + 1);
   };
 
   return (
-    <div className="px-6 md:px-20 py-24 max-w-3xl mx-auto text-black">
+    <div className="px-24 md:px-24 py-24 w-full mx-auto text-black">
       <div className="text-center mb-3">
         <h4 className="font-bold text-xl">Isi Data Sebagai Pemodal</h4>
         <span>
@@ -77,59 +94,18 @@ const FormPemodal: React.FC = () => {
       {/* Step content */}
       {selectedIndex === 0 && (
         <div>
-          <h2 className="text-xl font-bold mb-4">Informasi Pribadi</h2>
-          <input
-            type="text"
-            name="nama"
-            value={formDataPribadi.nama}
-            onChange={handleChangePribadi}
-            placeholder="Nama"
-            className="border p-2 w-full mb-4"
+          <ComponentDataPribadi
+            formData={dataPribadi}
+            onChange={handleChangeDataPribadi}
+            onGenderChange={handleGenderChange}
+            // data={formBank}
+            // onChangeBank={handleChangeBank}
           />
-          <input
-            type="email"
-            name="email"
-            value={formDataPribadi.email}
-            onChange={handleChangePribadi}
-            placeholder="Email"
-            className="border p-2 w-full"
-          />
+          {/* <DataBank data={formBank} onChange={handleChangeBank} /> */}
         </div>
       )}
 
       {selectedIndex === 1 && (
-        <DataBank data={formBank} onChange={handleChangeBank} />
-      )}
-
-      {selectedIndex === 2 && (
-        <div>
-          <h2 className="text-xl font-bold mb-4">Alamat Lengkap</h2>
-          <input
-            type="text"
-            name="alamat"
-            value={formDataPribadi.alamat}
-            onChange={handleChangePribadi}
-            placeholder="Alamat"
-            className="border p-2 w-full"
-          />
-        </div>
-      )}
-
-      {selectedIndex === 3 && (
-        <div>
-          <h2 className="text-xl font-bold mb-4">Kota Domisili</h2>
-          <input
-            type="text"
-            name="kota"
-            value={formDataPribadi.kota}
-            onChange={handleChangePribadi}
-            placeholder="Kota"
-            className="border p-2 w-full"
-          />
-        </div>
-      )}
-
-      {selectedIndex === 4 && (
         <div>
           <h2 className="text-xl font-bold mb-4">Selesai</h2>
           <p>Data berhasil disimpan. Terima kasih!</p>
@@ -137,7 +113,7 @@ const FormPemodal: React.FC = () => {
       )}
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between mt-10">
+      <div className="flex justify-end gap-5 mt-10">
         <button
           onClick={() => setSelectedIndex((prev) => prev - 1)}
           disabled={selectedIndex === 0}
@@ -149,11 +125,17 @@ const FormPemodal: React.FC = () => {
         {selectedIndex < 4 ? (
           <button
             onClick={handleNext}
-            disabled={selectedIndex === 1 && !isFormBankValid()}
+            // disabled={selectedIndex === 1 && !isFormBankValid()}
+            disabled={selectedIndex === 1}
+            // className={`px-4 py-2 rounded text-white ${
+            //   selectedIndex === 1 && !isFormBankValid()
+            //     ? "bg-gray-400 cursor-not-allowed"
+            //     : "bg-[#4821C2]"
+            // }`}
             className={`px-4 py-2 rounded text-white ${
-              selectedIndex === 1 && !isFormBankValid()
+              selectedIndex === 1
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600"
+                : "bg-[#4821C2]"
             }`}
           >
             Selanjutnya
