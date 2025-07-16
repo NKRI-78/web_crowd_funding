@@ -15,7 +15,7 @@ import { Eye, EyeOff, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import Countdown from "react-countdown";
-import { getCookie } from "@/app/helper/cookie";
+import { getCookie, setCookie } from "@/app/helper/cookie";
 
 interface RoleModalProps {
   open: boolean;
@@ -41,8 +41,8 @@ type FormValues = {
 
 const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
   const cookie = getCookie("user");
-  const userCookie = cookie ? JSON.parse(cookie) : null;
-  const user = getCookie("user") && JSON.parse(userCookie);
+  const decoded = decodeURIComponent(cookie ?? "");
+  const user = JSON.parse(decoded);
   const [loading, setLoading] = useState<boolean>(false);
   const [step, setStep] = useState<
     "select" | "penerbit" | "pemodal" | "otpRegister"
@@ -98,7 +98,8 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
         }
       );
 
-      console.log("✅ Success:", response);
+      console.log("✅ Success:", response.data['data']);
+      setCookie("user", JSON.stringify(response.data['data']));
       setStep("otpRegister");
     } catch (error: any) {
       console.error("❌ Gagal submit:", error);
@@ -116,7 +117,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
         type: "SENDING_OTP",
       };
       const { data } = await axios.post(
-        `${API_BACKEND}/api/v1/auth/verify-email`,
+        `${API_BACKEND}/api/v1/verify-otp`,
         payloads
       );
     } catch (err: any) {
@@ -495,7 +496,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
                       value={otp}
                       onChange={setOtp}
                       numInputs={4}
-                      inputType="number"
+                      inputType="text"
                       renderSeparator={<span style={{ width: "1rem" }}></span>}
                       shouldAutoFocus={true}
                       inputStyle={{
