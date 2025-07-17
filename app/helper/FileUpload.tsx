@@ -5,9 +5,10 @@ type FileUploadProps = {
   label: string;
   fileUrl?: string;
   onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  error?: string;
 };
 
-export default function FileUpload({ label, fileUrl, onUpload }: FileUploadProps) {
+export default function FileUpload({ label, fileUrl, onUpload, error }: FileUploadProps) {
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   return (
@@ -37,6 +38,7 @@ export default function FileUpload({ label, fileUrl, onUpload }: FileUploadProps
           Lihat Dokumen
         </a>
       )}
+      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
       <p className="text-xs text-gray-500">File maksimal berukuran 10mb</p>
     </div>
   );

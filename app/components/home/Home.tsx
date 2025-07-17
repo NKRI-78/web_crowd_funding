@@ -116,18 +116,18 @@ const Home: React.FC = () => {
             <div>
               <p className="text-md text-white">Dana Tersalurkan</p>
               <p className="text-2xl font-bold text-[#4CD137]">
-                Rp 2.250.000.000
+                Rp 0
               </p>
             </div>
             <div>
               <p className="text-md text-white">Pengembalian Dana</p>
               <p className="text-2xl font-bold text-[#4CD137]">
-                Rp 900.000.000
+                Rp 0
               </p>
             </div>
             <div>
               <p className="text-md text-white">Rata-rata Realisasi ROI</p>
-              <p className="text-2xl font-bold text-[#4CD137]">20%</p>
+              <p className="text-2xl font-bold text-[#4CD137]">0%</p>
             </div>
           </div>
         </div>
