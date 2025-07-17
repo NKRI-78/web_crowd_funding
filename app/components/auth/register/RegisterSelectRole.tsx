@@ -1,4 +1,5 @@
 import { setCookie } from "@/app/helper/cookie";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 export default function RegisterSelectRole({
@@ -8,13 +9,18 @@ export default function RegisterSelectRole({
   onNext?: () => void;
   onClose?: () => void;
 }) {
+  const router = useRouter();
   const handleSelectRole = async (role: number) => {
     try {
-      setCookie("role", JSON.stringify({"role" : role}));
+      setCookie("role", JSON.stringify({ role: role }));
       onClose?.();
-      window.location.reload();
+      if (role == 2) {
+        window.location.href = "/form-penerbit";
+      } else {
+        window.location.href = "/form-pemodal";
+      }
     } catch (err: any) {
-        console.error("Error ",err)
+      console.error("Error ", err);
     }
   };
   return (
@@ -27,7 +33,7 @@ export default function RegisterSelectRole({
 
           <div className="space-y-6">
             <div
-              onClick={()=> handleSelectRole(1)}
+              onClick={() => handleSelectRole(2)}
               className="border border-purple-600 rounded-xl p-4 hover:bg-purple-50 cursor-pointer"
             >
               <h3 className="text-purple-700 font-bold text-lg">Penerbit</h3>
@@ -39,7 +45,7 @@ export default function RegisterSelectRole({
             </div>
 
             <div
-              onClick={()=> handleSelectRole(2)}
+              onClick={() => handleSelectRole(1)}
               className="border border-green-600 rounded-xl p-4 hover:bg-green-50 cursor-pointer"
             >
               <h3 className="text-green-700 font-bold text-lg">Pemodal</h3>
