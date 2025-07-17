@@ -38,6 +38,7 @@ const FormPemodal: React.FC = () => {
     pengetahuanPasarModal: "",
     setujuKebenaranData: false,
     setujuRisikoInvestasi: false,
+    signature: "",
   });
 
   const capitalizeWords = (value: string) => {
@@ -168,6 +169,10 @@ const FormPemodal: React.FC = () => {
     }));
   };
 
+  const handleSignatureSave = (signature: string) => {
+    setDataPekerjaan((prev) => ({
+      ...prev,
+      signature,
   const handleWeddingChange = (wedding: string) => {
     setDataPribadi((prev) => ({ ...prev, statusPernikahan: wedding }));
   };
@@ -180,7 +185,7 @@ const FormPemodal: React.FC = () => {
     setDataPribadi((prev) => ({
       ...prev,
       pekerjaan: value,
-      pekerjaanLainnya: "", // reset jika bukan "Lainnya"
+      pekerjaanLainnya: "",
     }));
   };
 
@@ -223,6 +228,7 @@ const FormPemodal: React.FC = () => {
             onPengalamanInvestasi={handlePengalamanInvestasi}
             onPengetahuanPasarModal={handlePengetahuanPasarModal}
             onCheckboxChange={handleCheckboxChange}
+            onSignatureSave={handleSignatureSave}
           />
         </div>
       )}
