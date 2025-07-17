@@ -4,15 +4,15 @@ import axios from "axios";
 import Swal from "sweetalert2";
 
 interface FileInputProps {
-  label: string;
-  subLabel?: string;
+  fileName: string;
   fileUrl?: string;
+  placeholder?: string;
   onChange: (e: string) => void;
 }
 
 const FileInput: React.FC<FileInputProps> = ({
-  label,
-  subLabel,
+  placeholder,
+  fileName,
   fileUrl,
   onChange,
 }) => {
@@ -43,7 +43,7 @@ const FileInput: React.FC<FileInputProps> = ({
 
     const formData = new FormData();
     formData.append("folder", "web");
-    formData.append("subfolder", label);
+    formData.append("subfolder", fileName);
     formData.append("media", file);
 
     try {
@@ -59,9 +59,10 @@ const FileInput: React.FC<FileInputProps> = ({
 
         Swal.fire({
           title: "Berhasil",
-          text: `Upload ${label} berhasil!`,
+          text: `Upload ${fileName} berhasil!`,
           icon: "success",
-          timer: 3000,
+          showConfirmButton: false,
+          timer: 1000,
         });
       } else {
         alert("Upload gagal, tidak ada URL yang diterima.");
@@ -79,10 +80,9 @@ const FileInput: React.FC<FileInputProps> = ({
 
   return (
     <div className="space-y-2">
-      {subLabel && <p className="text-sm text-gray-500">{subLabel}</p>}
       <label className="inline-flex items-center gap-2 bg-gray-700 hover:bg-gray-800 text-white px-2 md:px-6 py-2 rounded-lg cursor-pointer font-semibold text-[12px]">
         <FileText size={13} />
-        {label}
+        {placeholder ?? "Upload Dokumen"}
         <input
           type="file"
           className="hidden"
@@ -92,12 +92,12 @@ const FileInput: React.FC<FileInputProps> = ({
       </label>
 
       {fileUrl && (
-        <div className="flex items-center gap-2 text-xs text-gray-800 bg-gray-100 px-3 py-1 rounded-md w-fit border border-gray-400">
+        <div className="flex items-center gap-2 text-xs text-blue-500 font-semibold">
           <a
             href={fileUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="truncate max-w-[120px] text-inherit no-underline"
+            className="truncate max-w-[130px] text-inherit no-underline"
           >
             {getFileNameFromUrl(fileUrl)}
           </a>
