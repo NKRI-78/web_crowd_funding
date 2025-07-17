@@ -53,34 +53,34 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   const pengetahuanPasarModal = ["Tidak Ada", "Kurang", "Cukup", "Banyak"];
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <div>
-        <h2 className="text-xl font-bold mb-4">
+      <div className="md:border-r-2 md:border-gray-200 pr-7">
+        <h2 className="text-lg md:text-xl font-bold mb-4">
           3. Informasi Pekerjaan (Jika Bekerja)
         </h2>
         <div>
-          <label>Nama Perusahaan</label>
+          <label className="text-md mb-2">Nama Perusahaan</label>
           <input
             type="text"
             name="namaPerusahaan"
             value={formData.namaPerusahaan}
             onChange={onChange}
             placeholder="Masukan Nama Perusahaan"
-            className="border p-2 w-full rounded mb-4"
+            className="border border-gray-500 p-2 w-full rounded mb-4"
           />
         </div>
         <div>
-          <label>Jabatan</label>
+          <label className="text-md mb-2">Jabatan</label>
           <input
             type="text"
             name="jabatan"
             value={formData.jabatan}
             onChange={onChange}
             placeholder="Masukan Jabatan"
-            className="border p-2 w-full rounded mb-4"
+            className="border border-gray-500 p-2 w-full rounded mb-4"
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="address" className="text-gray-700 text-sm block mb-1">
+          <label htmlFor="address" className="text-md mb-2">
             Alamat Perusahaan
           </label>
           <textarea
@@ -89,13 +89,13 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             value={formData.alamatPerusahaan}
             onChange={onChange}
             placeholder="Masukan Alamat Perusahaan"
-            className="border p-2 w-full rounded resize-none"
+            className="border border-gray-500 p-2 w-full rounded resize-none"
             rows={4}
           ></textarea>
         </div>
 
         <div className="mb-4">
-          <label>Penghasilan Bulanan</label>
+          <label className="text-md mb-2">Penghasilan Bulanan</label>
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {penghasilanBulanan.map((penghasilanBulanan) => (
               <label
@@ -115,8 +115,8 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             ))}
           </div>
         </div>
-        <h2 className="text-xl font-bold mb-4">4. Profil Resiko</h2>
-        <label>Tujuan Investasi</label>
+        <h2 className="text-lg md:text-xl font-bold mb-4">4. Profil Resiko</h2>
+        <label className="text-md mb-2">Tujuan Investasi</label>
         <div className="mb-4">
           <div className="flex flex-wrap gap-6">
             {tujuanInvestasi.map((option) => (
@@ -148,7 +148,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           )}
         </div>
         <div className="mb-4">
-          <label>Toleransi Resiko</label>
+          <label className="text-md mb-2">Toleransi Resiko</label>
 
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {toleransiResiko.map((toleransiResiko) => (
@@ -171,7 +171,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
         </div>
 
         <div className="mb-4">
-          <label>Pengalaman Investasi</label>
+          <label className="text-md mb-2">Pengalaman Investasi</label>
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pengalamanInvestasi.map((pengalamanInvestasi) => (
               <label
@@ -196,7 +196,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
       {/* KANAN */}
       <div>
         <div className="mb-4">
-          <label>Pegetahuan tentang Pasar Modal</label>
+          <label className="text-md mb-2">Pegetahuan tentang Pasar Modal</label>
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pengetahuanPasarModal.map((pengetahuanPasarModal) => (
               <label

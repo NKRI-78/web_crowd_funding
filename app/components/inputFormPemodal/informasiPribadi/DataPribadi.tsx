@@ -104,56 +104,60 @@ const ComponentDataPribadi: React.FC<Props> = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-center">
-      <div>
+      <div className="md:border-r-2 md:border-gray-200 pr-7">
         <div className="text-start mb-3">
-          <h4 className="font-bold text-xl">Isi Data Sebagai Pemodal</h4>
-          <span className="text-sm text-gray-400">
+          <h4 className="font-bold text-xl md:text-4xl">
+            Isi Data Sebagai Pemodal
+          </h4>
+          <span className="text-sm md:text-lg text-gray-400">
             Untuk memastikan kelancaran proses verifikasi dan layanan yang
             optimal, kami mengajak Anda untuk melengkapi seluruh data secara
             jujur, benar, dan akurat.
           </span>
         </div>
-        <h2 className="text-xl font-bold mb-4">1. Informasi Pribadi</h2>
+        <h2 className="text-lg md:text-xl font-bold mb-4">
+          1. Informasi Pribadi
+        </h2>
 
         <div>
-          <label>Nama Lengkap</label>
+          <label className="text-md mb-2">Nama Lengkap</label>
           <input
             type="text"
             name="nama"
             value={formData.nama}
             onChange={onChange}
             placeholder="Nama"
-            className="border p-2 w-full rounded mb-4"
+            className="border border-gray-500 p-2 w-full rounded mb-4"
           />
         </div>
 
         <div>
-          <label>NIK KTP</label>
+          <label className="text-md mb-2">NIK KTP</label>
           <input
             type="text"
             name="nik"
             value={formData.nik}
             onChange={onChange}
             placeholder="NIK KTP"
-            className="border p-2 w-full rounded mb-4"
+            className="border border-gray-500 p-2 w-full rounded mb-4"
           />
         </div>
 
         <div className="flex gap-2">
           <div>
-            <label>Tempat Lahir</label>
+            <label className="text-md mb-2">Tempat Lahir</label>
             <input
               type="text"
               name="tempatLahir"
               value={formData.tempatLahir}
               onChange={onChange}
               placeholder="Tempat Lahir"
-              className="border p-2 w-full rounded mb-4"
+              className="border border-gray-500 p-2 w-full rounded mb-4"
             />
           </div>
 
           <div>
-            <label>Tanggal Lahir</label>
+            <label className="text-md mb-2">Tanggal Lahir</label>
             {/* <input
               type="text"
               name="tanggalLahir"
@@ -182,15 +186,13 @@ const ComponentDataPribadi: React.FC<Props> = ({
                 }
               }}
               placeholder="Tanggal Lahir"
-              className="border p-2 w-full rounded mb-4"
+              className="border border-gray-500 p-2 w-full rounded mb-4"
             />
           </div>
         </div>
 
         <div className="mb-4">
-          <label className="text-gray-600 text-sm block mb-2">
-            Jenis Kelamin
-          </label>
+          <label className="text-md mb-2">Jenis Kelamin</label>
           <div className="flex gap-6">
             {optionsGender.map((gender) => (
               <label
@@ -212,9 +214,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
         </div>
 
         <div className="mb-4">
-          <label className="text-gray-600 text-sm block mb-2">
-            Status Pernikahan
-          </label>
+          <label className="text-md mb-2">Status Pernikahan</label>
           <div className="flex gap-6">
             {optionsPernikahan.map((wedding) => (
               <label
@@ -236,9 +236,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
         </div>
 
         <div className="mb-4">
-          <label className="text-gray-800 font-semibold block mb-1">
-            Upload KTP
-          </label>
+          <label className="text-md mb-2">Upload KTP</label>
           <p className="text-sm text-gray-400 mb-2">
             File maksimal berukuran 10mb
           </p>
@@ -272,9 +270,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
         )}
 
         <div className="mb-4">
-          <label className="text-gray-600 text-sm block mb-2">
-            Pendidikan Terakhir
-          </label>
+          <label className="text-md mb-2">Pendidikan Terakhir</label>
           <div className="grid grid-cols-3 gap-y-2 gap-x-4">
             {optionsLastEducation.map((education) => (
               <label
@@ -299,9 +295,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
       {/* form bagian kanan */}
       <div>
         <div className="mb-4">
-          <label className="text-gray-800 font-semibold block mb-2">
-            Pekerjaan
-          </label>
+          <label className="text-md mb-2">Pekerjaan</label>
           <div className="flex flex-wrap gap-6">
             {pekerjaanOptions.map((option) => (
               <label
@@ -328,12 +322,12 @@ const ComponentDataPribadi: React.FC<Props> = ({
               value={formData.pekerjaanLainnya}
               onChange={onChange}
               placeholder="Lainnya"
-              className="mt-3 border p-2 w-full rounded text-sm"
+              className="mt-3 border border-gray-500 p-2 w-full rounded text-sm"
             />
           )}
         </div>
         <div className="mb-4">
-          <label htmlFor="address" className="text-gray-700 text-sm block mb-1">
+          <label htmlFor="address" className="text-md mb-2">
             Alamat Lengkap
           </label>
           <textarea
@@ -342,28 +336,28 @@ const ComponentDataPribadi: React.FC<Props> = ({
             value={formData.addres}
             onChange={onChange}
             placeholder="Alamat sesuai KTP dan alamat domisili"
-            className="border p-2 w-full rounded resize-none"
+            className="border border-gray-500 p-2 w-full rounded resize-none"
             rows={4}
           ></textarea>
         </div>
-        <h2 className="text-xl font-bold mb-4">2. Informasi Rekening Bank</h2>
+        <h2 className="text-lg md:text-xl font-bold mb-4">
+          2. Informasi Rekening Bank
+        </h2>
 
         <div>
-          <label className="text-gray-600 text-sm block mb-2">Nama Bank</label>
+          <label className="text-md mb-2">Nama Bank</label>
           <input
             type="text"
             name="namaBank"
             placeholder="Nama Bank (misal: BCA)"
             value={formData.namaBank}
             onChange={onChange}
-            className="border p-2 w-full mb-4"
+            className="border border-gray-500 rounded p-2 w-full mb-4"
           />
         </div>
 
         <div>
-          <label className="text-gray-600 text-sm block mb-2">
-            Nomor Rekening
-          </label>
+          <label className="text-md mb-2">Nomor Rekening</label>
           <input
             type="text"
             name="nomorRekening"
@@ -372,35 +366,31 @@ const ComponentDataPribadi: React.FC<Props> = ({
             placeholder="Masukkan Nomor Rekening (maks 15 digit)"
             value={formData.nomorRekening}
             onChange={onChange}
-            className="border p-2 w-full mb-4"
+            className="border border-gray-500 rounded p-2 w-full mb-4"
           />
         </div>
 
         <div>
-          <label className="text-gray-600 text-sm block mb-2">
-            Nama Pemilik Rekening
-          </label>
+          <label className="text-md mb-2">Nama Pemilik Rekening</label>
           <input
             type="text"
             name="namaPemilik"
             placeholder="Masukkan Nama Pemilik Rekening"
             value={formData.namaPemilik}
             onChange={onChange}
-            className="border p-2 w-full mb-4"
+            className="border border-gray-500 rounded p-2 w-full mb-4"
           />
         </div>
 
         <div>
-          <label className="text-gray-600 text-sm block mb-2">
-            Cabang Bank
-          </label>
+          <label className="text-md mb-2">Cabang Bank</label>
           <input
             type="text"
             name="cabangBank"
             placeholder="Masukkan Cabang Bank"
             value={formData.cabangBank}
             onChange={onChange}
-            className="border p-2 w-full"
+            className="border border-gray-500 rounded p-2 w-full"
           />
         </div>
       </div>
