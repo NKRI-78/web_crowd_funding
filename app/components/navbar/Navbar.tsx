@@ -30,7 +30,7 @@ const Navbar: React.FC = () => {
   const [userData, setUserData] = useState<any>(null);
   const [hydrated, setHydrated] = useState(false);
 
-  const [step, setStep] = useState<'register' | 'otp' | 'role' | null>(null);
+  const [step, setStep] = useState<"register" | "otp" | "role" | null>(null);
 
   const closeModal = () => setStep(null);
 
@@ -172,11 +172,12 @@ const Navbar: React.FC = () => {
                   </a>
                 </li>
               )}
-              <li onClick={() => setStep('register')}>
-                <Link className="text-white" href="#">
-                  Daftar
-                </Link>
-              </li>
+              <button
+                className="text-white"
+                onClick={() => setStep("register")}
+              >
+                Daftar
+              </button>
             </ul>
           </div>
 
@@ -202,8 +203,10 @@ const Navbar: React.FC = () => {
             <li>
               <Link href="#">Pasar Sekunder</Link>
             </li>
-            <li>
-              <Link href="#">Penerbit</Link>
+            <li className={
+                pathname == "/form-penerbit" ? "text-[#4CD137]" : "text-white"
+              }>
+              <Link href="/form-penerbit">Penerbit</Link>
             </li>
             <li
               className={
@@ -246,41 +249,33 @@ const Navbar: React.FC = () => {
             {hydrated && userData !== null ? (
               <></>
             ) : (
-              <li onClick={() => setStep('register')}>
-                <Link href="#">Daftar</Link>
-              </li>
+              <button
+                className="text-white"
+                onClick={() => setStep("register")}
+              >
+                Daftar
+              </button>
             )}
           </ul>
         </div>
       </nav>
-      <Modal
-        isOpen={step === 'register'}
-        onClose={closeModal}
-        title="Daftar"
-      >
-        <RegisterV2
-          onNext={() => setStep('otp')}
-          onClose={closeModal}
-        />
+      <Modal isOpen={step === "register"} onClose={closeModal} title="Daftar">
+        <RegisterV2 onNext={() => setStep("otp")} onClose={closeModal} />
       </Modal>
 
       <Modal
-        isOpen={step === 'otp'}
+        isOpen={step === "otp"}
         onClose={closeModal}
         title="Verifikasi OTP"
       >
-        <RegisterOtp
-          onNext={() => setStep('role')}
-          onClose={closeModal}
-        />
+        <RegisterOtp onNext={() => setStep("role")} onClose={closeModal} />
       </Modal>
       <Modal
-        isOpen={step === 'role'}
+        isOpen={step === "role"}
         onClose={closeModal}
         title="Verifikasi OTP"
       >
-        <RegisterSelectRole
-        />
+        <RegisterSelectRole onClose={closeModal} />
       </Modal>
       {/* <RoleModal open={showModal} onClose={() => setShowModal(false)} /> */}
     </>

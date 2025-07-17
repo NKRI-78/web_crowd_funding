@@ -6,12 +6,14 @@ import Swal from "sweetalert2";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 
-import DataBank from "./informasiBank/DataBank"; // Pastikan path benar
 import ComponentDataPribadi from "./informasiPribadi/DataPribadi";
 import ComponentDataPekerjaan from "./informasiPekerjaan/DataPekerjaan";
 
 const FormPemodal: React.FC = () => {
   const router = useRouter();
+  const userData = localStorage.getItem("user");
+  const user = userData ? JSON.parse(userData) : null;
+  const token = user?.token;
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const schema = z.object({
@@ -100,6 +102,7 @@ const FormPemodal: React.FC = () => {
         namaPemilik: parsed.namaPemilik || "",
         cabangBank: parsed.cabangBank || "",
         ktpUrl: parsed.ktpUrl || "",
+        rekeningKoran: parsed.rekeningKoran || "",
       };
     }
     return {
@@ -118,6 +121,7 @@ const FormPemodal: React.FC = () => {
       namaPemilik: "",
       cabangBank: "",
       ktpUrl: "",
+      rekeningKoran: "",
     };
   });
 
@@ -138,6 +142,7 @@ const FormPemodal: React.FC = () => {
         setujuKebenaranData: parsed.setujuKebenaranData || false,
         setujuRisikoInvestasi: parsed.setujuRisikoInvestasi || false,
         signature: parsed.signature || "",
+        npwpUrl: parsed.npwpUrl || "",
       };
     }
     return {
@@ -153,6 +158,7 @@ const FormPemodal: React.FC = () => {
       setujuKebenaranData: false,
       setujuRisikoInvestasi: false,
       signature: "",
+      npwpUrl: "",
     };
   });
 
@@ -236,6 +242,7 @@ const FormPemodal: React.FC = () => {
         namaPemilik: parsed.namaPemilik || "",
         cabangBank: parsed.cabangBank || "",
         ktpUrl: parsed.ktpUrl || "",
+        rekeningKoran: parsed.rekeningKoran || "",
       });
 
       setDataPekerjaan({
@@ -251,6 +258,7 @@ const FormPemodal: React.FC = () => {
         setujuKebenaranData: parsed.setujuKebenaranData || false,
         setujuRisikoInvestasi: parsed.setujuRisikoInvestasi || false,
         signature: parsed.signature || "",
+        npwpUrl: parsed.npwpUrl || "",
       });
     }
   }, []);
@@ -402,21 +410,22 @@ const FormPemodal: React.FC = () => {
         status_marital: data.statusPernikahan,
         last_education: data.pendidikanTerakhir,
         address_detail: data.addres,
+        occupation:
+          data.pekerjaan === "Lainnya" ? data.pekerjaanLainnya : data.pekerjaan,
         signature_path: data.signature,
         bank: {
           name: data.namaBank,
           no: data.nomorRekening,
           owner: data.namaPemilik,
           branch: data.cabangBank,
+          rek_koran_path: data.rekeningKoran,
         },
         job: {
           company: data.namaPerusahaan,
-          occupation:
-            data.pekerjaan === "Lainnya"
-              ? data.pekerjaanLainnya
-              : data.pekerjaan,
+          address: data.alamatPerusahaan,
           position: data.jabatan,
-          monthly_revenue: data.penghasilanBulanan,
+          monthly_income: data.penghasilanBulanan,
+          npwp_path: data.npwpUrl,
         },
         risk: {
           goal:
@@ -429,19 +438,20 @@ const FormPemodal: React.FC = () => {
         },
       };
 
+      console.log(payload, "payload");
+
       const response = await axios.post(
         "https://api-capbridge.langitdigital78.com/api/v1/auth/assign/role",
         payload,
         {
           headers: {
-            Authorization: `Bearer ${"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRob3JpemVkIjp0cnVlLCJpZCI6ImY1ODU3YjY4LWRlNzktNDU2YS04OWYwLTQyNTU3ZTBhNTIzMSJ9.U20mEKSqjZD035fYvX4BAcc3fM0GPGdD6j5oaZirOG0"}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       // if (response.status === 200) {
       // alert("Form berhasil dikirim!");
-      // console.log(response, "payload");
       const alertSwal = await Swal.fire({
         title: "Berhasil",
         text: "Data berhasil dikirim",
@@ -453,6 +463,7 @@ const FormPemodal: React.FC = () => {
 
       // Hapus localStorage dan reset
       localStorage.removeItem("formPemodal");
+      localStorage.removeItem("signature");
       setSelectedIndex(0);
       router.push("/");
       // } else {
@@ -482,8 +493,8 @@ const FormPemodal: React.FC = () => {
             onWeddingChange={handleWeddingChange}
             onEducationChange={handleEducationChange}
             onPekerjaanChange={onPekerjaanChange}
-            onUploadKTP={(url: string) =>
-              setDataPribadi((prev) => ({ ...prev, ktpUrl: url }))
+            onUploadKTP={(url: string, keyName: string) =>
+              setDataPribadi((prev) => ({ ...prev, [keyName]: url }))
             }
           />
         </div>
@@ -501,6 +512,9 @@ const FormPemodal: React.FC = () => {
             onPengetahuanPasarModal={handlePengetahuanPasarModal}
             onCheckboxChange={handleCheckboxChange}
             onSignatureSave={handleSignatureSave}
+            onUploadKTP={(url: string, keyName: string) =>
+              setDataPekerjaan((prev) => ({ ...prev, [keyName]: url }))
+            }
           />
         </div>
       )}

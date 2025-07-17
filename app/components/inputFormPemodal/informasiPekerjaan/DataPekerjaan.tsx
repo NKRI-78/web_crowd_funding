@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import SignatureCanvas from "react-signature-canvas";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { FaFileAlt } from "react-icons/fa";
 
 function getSignatureDataUrlWithWhiteBackground(
   canvas: HTMLCanvasElement
@@ -34,6 +35,7 @@ interface Props {
     setujuKebenaranData: boolean;
     setujuRisikoInvestasi: boolean;
     signature: string;
+    npwpUrl: string;
   };
   onChange: (
     e: React.ChangeEvent<
@@ -47,6 +49,7 @@ interface Props {
   onPengetahuanPasarModal: (value: string) => void;
   onCheckboxChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSignatureSave: (signature: string) => void;
+  onUploadKTP: (url: string, keyName: string) => void;
 }
 
 const SIG_W = 300;
@@ -62,6 +65,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   onPengetahuanPasarModal,
   onCheckboxChange,
   onSignatureSave,
+  onUploadKTP,
 }) => {
   const signatureRef = useRef<SignatureCanvas | null>(null);
   const [isSignatureSaved, setIsSignatureSaved] = useState(false);
@@ -81,6 +85,9 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   const pengalamanInvestasi = ["Tidak Ada", "Kurang", "Cukup", "Banyak"];
   const pengetahuanPasarModal = ["Tidak Ada", "Kurang", "Cukup", "Banyak"];
   const [isEmpty, setIsEmpty] = useState(true);
+  const [uploadStatus, setUploadStatus] = useState<{ [key: string]: boolean }>(
+    {}
+  );
 
   const uploadSignature = async (dataUrl: string): Promise<string | null> => {
     const blob = await (await fetch(dataUrl)).blob();
@@ -167,6 +174,58 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
       };
     }
   }, []);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const keyName = e.target.getAttribute("data-keyname");
+    if (!file || !keyName) return;
+
+    // Validasi maksimal 10MB
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Ukuran file maksimal 10MB");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("folder", "web");
+    formData.append("subfolder", keyName);
+    formData.append("media", file);
+
+    // setIsUploading(true);
+    setUploadStatus((prev) => ({ ...prev, [keyName]: true }));
+    try {
+      const res = await axios.post(
+        "https://api-media.inovatiftujuh8.com/api/v1/media/upload",
+        formData
+      );
+
+      const fileUrl = res.data?.data?.path;
+      if (fileUrl) {
+        Swal.fire({
+          title: "Berhasil",
+          text: `Upload ${keyName} berhasil!`,
+          icon: "success",
+          timer: 3000,
+        });
+
+        onUploadKTP(fileUrl, keyName ?? "");
+      } else {
+        alert("Upload gagal, tidak ada URL yang diterima.");
+      }
+    } catch (error) {
+      console.error("Gagal upload KTP:", error);
+      // alert("Upload gagal. Silakan coba lagi.");
+      Swal.fire({
+        title: "Gagal",
+        text: `Upload ${keyName} gagal. Silakan coba lagi.`,
+        icon: "warning",
+        timer: 3000,
+      });
+    } finally {
+      // setIsUploading(false);
+      setUploadStatus((prev) => ({ ...prev, [keyName]: false }));
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -315,10 +374,6 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             ))}
           </div>
         </div>
-      </div>
-
-      {/* KANAN */}
-      <div>
         <div className="mb-4">
           <label className="text-sm font-medium mb-2">
             Pegetahuan tentang Pasar Modal
@@ -342,6 +397,79 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             ))}
           </div>
         </div>
+      </div>
+
+      {/* KANAN */}
+      <div>
+        <div className="mb-4 mt-4">
+          <label className="text-md mb-2">NPWP Perusahaan</label>
+          <p className="text-sm text-gray-400 mb-2">
+            File maksimal berukuran 10mb
+          </p>
+
+          {/* Input File yang disembunyikan */}
+          <input
+            type="file"
+            id="npwpUrlUpload"
+            className="hidden"
+            onChange={handleFileChange}
+            disabled={uploadStatus["npwpUrl"] === true}
+            accept="application/pdf, image/*"
+            data-keyname="npwpUrl"
+          />
+
+          {/* Label sebagai tombol */}
+          <label
+            htmlFor="npwpUrlUpload"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#505050] text-white rounded-md cursor-pointer hover:bg-gray-800 transition"
+            // className={`inline-flex items-center gap-2 px-4 py-2 ${
+            //   uploadStatus["npwpUrl"]
+            //     ? "bg-gray-400 cursor-not-allowed"
+            //     : "bg-[#505050] hover:bg-gray-800"
+            // } text-white rounded-md transition`}
+          >
+            {/* {uploadStatus["npwpUrl"] ? (
+              <>
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  ></path>
+                </svg>
+                Uploading...
+              </>
+            ) : ( */}
+            <>
+              <FaFileAlt size={20} className="mx-2" />
+              Upload Dokumen
+            </>
+            {/* )} */}
+          </label>
+        </div>
+        {formData.npwpUrl && (
+          <a
+            href={formData.npwpUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 underline text-sm block mt-2 mb-2"
+          >
+            Lihat NPWP
+          </a>
+        )}
         <div className="mb-6">
           <h3 className="font-semibold text-gray-900 mb-2">
             Pernyataan Kebenaran Data

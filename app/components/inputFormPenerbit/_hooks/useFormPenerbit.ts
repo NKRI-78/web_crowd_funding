@@ -1,0 +1,120 @@
+import { useEffect, useState } from "react";
+
+interface JobStructureFormData {
+  id: string;
+  title: string;
+  nama: string;
+  jabatan: string;
+  noKTP: string;
+  fileKTP: string;
+  fileNPWP: string;
+}
+
+interface FormPenerbitState {
+  laporanKeuangan: string;
+  susunanManajemen: JobStructureFormData[];
+  nilaiNominal: string;
+  jenisObligasi: string;
+  jangkaWaktu: string;
+  tingkatBunga: string;
+  jadwalBunga: string;
+  jadwalPokok: string;
+  penggunaanDana: string;
+  jaminanKolateral: string;
+  deskripsiPekerjaan: string;
+  jenisBiaya: string;
+  companyProfile: string;
+}
+
+export function useFormPenerbit() {
+  const [state, setState] = useState<FormPenerbitState>({
+    laporanKeuangan: "",
+    susunanManajemen: [],
+    nilaiNominal: "",
+    jenisObligasi: "",
+    jangkaWaktu: "",
+    tingkatBunga: "",
+    jadwalBunga: "",
+    jadwalPokok: "",
+    penggunaanDana: "",
+    jaminanKolateral: "",
+    deskripsiPekerjaan: "",
+    jenisBiaya: "",
+    companyProfile: "",
+  });
+
+  useEffect(() => {
+    const draftStr = localStorage.getItem("formPenerbitDraft");
+    console.log(`draftStr ${draftStr}`);
+    if (draftStr) {
+      try {
+        const draft = JSON.parse(draftStr);
+        setState(draft);
+      } catch (error) {
+        console.error("Gagal memuat draft dari localStorage:", error);
+      }
+    }
+  }, []);
+
+  const updateField = <K extends keyof FormPenerbitState>(
+    key: K,
+    value: FormPenerbitState[K]
+  ) => {
+    setState((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  const updateSusunanManajemen = (
+    id: string,
+    updated: Partial<JobStructureFormData>
+  ) => {
+    setState((prev) => ({
+      ...prev,
+      susunanManajemen: prev.susunanManajemen.map((item) =>
+        item.id === id ? { ...item, ...updated } : item
+      ),
+    }));
+  };
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("formPenerbitDraft", JSON.stringify(state));
+    } catch (error) {
+      console.error("Gagal menyimpan draft ke localStorage:", error);
+    }
+  }, [state]);
+
+  const addSusunanManajemen = (title: string) => {
+    const newId = `${title.toLowerCase()}-${Date.now()}`;
+    const newStructure: JobStructureFormData = {
+      id: newId,
+      title,
+      nama: "",
+      jabatan: "",
+      noKTP: "",
+      fileKTP: "",
+      fileNPWP: "",
+    };
+    setState((prev) => ({
+      ...prev,
+      susunanManajemen: [...prev.susunanManajemen, newStructure],
+    }));
+  };
+
+  const removeSusunanManajemen = (id: string) => {
+    setState((prev) => ({
+      ...prev,
+      susunanManajemen: prev.susunanManajemen.filter((s) => s.id !== id),
+    }));
+  };
+
+  return {
+    formState: state,
+    updateField,
+    updateSusunanManajemen,
+    addSusunanManajemen,
+    removeSusunanManajemen,
+  };
+}

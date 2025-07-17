@@ -1,5 +1,5 @@
 // ComponentDataPribadi.tsx
-import React from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { FaFileAlt } from "react-icons/fa";
 import Swal from "sweetalert2";
@@ -23,6 +23,8 @@ interface Props {
     namaPemilik: string;
     cabangBank: string;
     ktpUrl: string;
+    rekeningKoran: string;
+    // npwpUrl: string;
   };
   onChange: (
     e: React.ChangeEvent<
@@ -33,7 +35,7 @@ interface Props {
   onWeddingChange: (value: string) => void;
   onEducationChange: (value: string) => void;
   onPekerjaanChange: (value: string) => void;
-  onUploadKTP: (url: string) => void;
+  onUploadKTP: (url: string, keyName: string) => void;
 }
 
 const ComponentDataPribadi: React.FC<Props> = ({
@@ -56,10 +58,15 @@ const ComponentDataPribadi: React.FC<Props> = ({
     "Pascasarjana",
   ];
   const pekerjaanOptions = ["PNS", "Swasta", "Wiraswasta", "Lainnya"];
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<{ [key: string]: boolean }>(
+    {}
+  );
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    const keyName = e.target.getAttribute("data-keyname");
+    if (!file || !keyName) return;
 
     // Validasi maksimal 10MB
     if (file.size > 10 * 1024 * 1024) {
@@ -69,9 +76,11 @@ const ComponentDataPribadi: React.FC<Props> = ({
 
     const formData = new FormData();
     formData.append("folder", "web");
-    formData.append("subfolder", "ktp");
+    formData.append("subfolder", keyName);
     formData.append("media", file);
 
+    // setIsUploading(true);
+    setUploadStatus((prev) => ({ ...prev, [keyName]: true }));
     try {
       const res = await axios.post(
         "https://api-media.inovatiftujuh8.com/api/v1/media/upload",
@@ -82,11 +91,12 @@ const ComponentDataPribadi: React.FC<Props> = ({
       if (fileUrl) {
         Swal.fire({
           title: "Berhasil",
-          text: "Upload KTP berhasil!",
+          text: `Upload ${keyName} berhasil!`,
           icon: "success",
           timer: 3000,
         });
-        onUploadKTP(fileUrl);
+
+        onUploadKTP(fileUrl, keyName ?? "");
       } else {
         alert("Upload gagal, tidak ada URL yang diterima.");
       }
@@ -95,10 +105,13 @@ const ComponentDataPribadi: React.FC<Props> = ({
       // alert("Upload gagal. Silakan coba lagi.");
       Swal.fire({
         title: "Gagal",
-        text: "Upload gagal. Silakan coba lagi.",
+        text: `Upload ${keyName} gagal. Silakan coba lagi.`,
         icon: "warning",
         timer: 3000,
       });
+    } finally {
+      // setIsUploading(false);
+      setUploadStatus((prev) => ({ ...prev, [keyName]: false }));
     }
   };
 
@@ -239,34 +252,70 @@ const ComponentDataPribadi: React.FC<Props> = ({
               File maksimal berukuran 10mb
             </p>
 
-            {/* Input File yang disembunyikan */}
-            <input
-              type="file"
-              id="ktpUpload"
-              className="hidden"
-              onChange={handleFileChange}
-            />
 
-            {/* Label sebagai tombol */}
-            <label
-              htmlFor="ktpUpload"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-md cursor-pointer hover:bg-gray-800 transition"
-            >
+          {/* Input File yang disembunyikan */}
+          <input
+            type="file"
+            id="ktpUpload"
+            className="hidden"
+            onChange={handleFileChange}
+            disabled={uploadStatus["ktpUrl"] === true}
+            accept="application/pdf, image/*"
+            data-keyname="ktpUrl"
+          />
+
+          {/* Label sebagai tombol */}
+          <label
+            htmlFor="ktpUpload"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#505050] text-white rounded-md cursor-pointer hover:bg-gray-800 transition"
+            // className={`inline-flex items-center gap-2 px-4 py-2 ${
+            //   uploadStatus["ktpUrl"]
+            //     ? "bg-gray-400 cursor-not-allowed"
+            //     : "bg-[#505050] hover:bg-gray-800"
+            // } text-white rounded-md transition`}
+          >
+            {/* {uploadStatus["ktpUrl"] ? (
+              <>
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  ></path>
+                </svg>
+                Uploading...
+              </>
+            ) : ( */}
+            <>
               <FaFileAlt size={20} className="mx-2" />
               Upload Dokumen
-            </label>
-          </div>
-          {formData.ktpUrl && (
-            <a
-              href={formData.ktpUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 underline text-sm block mt-2 mb-2"
-            >
-              Lihat Dokumen KTP
-            </a>
-          )}
-
+            </>
+            {/* )} */}
+          </label>
+        </div>
+        {formData.ktpUrl && (
+          <a
+            href={formData.ktpUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 underline text-sm block mt-2 mb-2"
+          >
+            Lihat Dokumen KTP
+          </a>
+        )}
           <div className="mb-4">
             <label className="text-sm font-medium mb-2">
               Pendidikan Terakhir
@@ -394,6 +443,76 @@ const ComponentDataPribadi: React.FC<Props> = ({
             className="border rounded p-2 w-full placeholder:text-sm"
           />
         </div>
+
+        <div className="mb-4 mt-4">
+          <label className="text-md mb-2">Rekening Koran</label>
+          <p className="text-sm text-gray-400 mb-2">
+            File maksimal berukuran 10mb
+          </p>
+
+          {/* Input File yang disembunyikan */}
+          <input
+            type="file"
+            id="rekeningKoranUpload"
+            className="hidden"
+            onChange={handleFileChange}
+            disabled={uploadStatus["rekeningKoran"] === true}
+            accept="application/pdf, image/*"
+            data-keyname="rekeningKoran"
+          />
+
+          {/* Label sebagai tombol */}
+          <label
+            htmlFor="rekeningKoranUpload"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#505050] text-white rounded-md cursor-pointer hover:bg-gray-800 transition"
+            // className={`inline-flex items-center gap-2 px-4 py-2 ${
+            //   uploadStatus["rekeningKoran"]
+            //     ? "bg-gray-400 cursor-not-allowed"
+            //     : "bg-[#505050] hover:bg-gray-800"
+            // } text-white rounded-md transition`}
+          >
+            {/* {uploadStatus["rekeningKoran"] ? (
+              <>
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  ></path>
+                </svg>
+                Uploading...
+              </>
+            ) : ( */}
+            <>
+              <FaFileAlt size={20} className="mx-2" />
+              Upload Dokumen
+            </>
+            {/* )} */}
+          </label>
+        </div>
+        {formData.rekeningKoran && (
+          <a
+            href={formData.rekeningKoran}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 underline text-sm block mt-2 mb-2"
+          >
+            Lihat Rekening Koran
+          </a>
+        )}
       </div>
     </div>
   );
