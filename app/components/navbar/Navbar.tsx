@@ -172,12 +172,14 @@ const Navbar: React.FC = () => {
                   </a>
                 </li>
               )}
-              <button
-                className="text-white"
-                onClick={() => setStep("register")}
-              >
-                Daftar
-              </button>
+              <div className="flex justify-between px-4">
+                <button
+                  onClick={() => setStep("register")}
+                  className="text-white"
+                >
+                  Daftar
+                </button>
+              </div>
             </ul>
           </div>
 
@@ -200,23 +202,26 @@ const Navbar: React.FC = () => {
             <li className={pathname == "/about-us" ? "text-[#4CD137]" : ""}>
               <Link href="/about-us">Tentang Kami</Link>
             </li>
-            <li>
-              <Link href="#">Pasar Sekunder</Link>
-            </li>
-            <li className={
-                pathname == "/form-penerbit" ? "text-[#4CD137]" : "text-white"
-              }>
-              <Link href="/form-penerbit">Penerbit</Link>
-            </li>
-            <li
-              className={
-                pathname == "/form-pemodal" ? "text-[#4CD137]" : "text-white"
-              }
-            >
-              <Link href="/form-pemodal">Form Pemodal</Link>
-            </li>
             {hydrated && userData !== null ? (
               <>
+                <li
+                  className={
+                    pathname == "/form-penerbit"
+                      ? "text-[#4CD137]"
+                      : "text-white"
+                  }
+                >
+                  <Link href="/form-penerbit">Penerbit</Link>
+                </li>
+                <li
+                  className={
+                    pathname == "/form-pemodal"
+                      ? "text-[#4CD137]"
+                      : "text-white"
+                  }
+                >
+                  <Link href="/form-pemodal">Form Pemodal</Link>
+                </li>
                 <li>Halo, {userData.email}</li>
                 <li>
                   <button

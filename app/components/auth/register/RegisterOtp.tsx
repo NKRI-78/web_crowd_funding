@@ -61,6 +61,12 @@ export default function RegisterOtp({
       localStorage.setItem("user", JSON.stringify(result.data));
 
       setLoading(false);
+      Swal.fire({
+        title: "Berhasil",
+        text: `Akun anda berhasil di verifikasi`,
+        icon: "success",
+        timer: 3000,
+      });
       setOtpErrorMessage("");
       onNext?.();
     } catch (err: any) {

@@ -8,6 +8,7 @@ import axios from "axios";
 import { API_BACKEND } from "@/app/utils/constant";
 import { setCookie } from "@/app/helper/cookie";
 import Swal from "sweetalert2";
+import { Eye, EyeOff } from "lucide-react";
 
 const schema = z
   .object({
@@ -29,6 +30,8 @@ export default function RegisterForm({ onNext, onClose }: {
   onClose?: () => void;
 }) {
   const [loading, setLoading] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const {
     register,
     handleSubmit,
@@ -55,11 +58,6 @@ export default function RegisterForm({ onNext, onClose }: {
       const response = await axios.post(`${API_BACKEND}/api/v1/auth/register`, payload);
 
       const result: AuthResponse = response.data;
-
-      await axios.post(
-        `${API_BACKEND}/api/v1/resend-otp`,
-        { val: data.email },
-      );
 
       console.log('Respon backend:', result.data);
       setCookie("user", JSON.stringify(result.data));
@@ -137,13 +135,21 @@ export default function RegisterForm({ onNext, onClose }: {
               )}
             </div>
 
-            <div>
+            <div className="relative">
               <input
                 {...register("password")}
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 className="w-full border border-gray-300 px-4 py-2 rounded"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-gray-500"
+                aria-label="Toggle password visibility"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
               {errors.password && (
                 <p className="text-red-500 text-sm">
                   {errors.password.message}
@@ -151,13 +157,21 @@ export default function RegisterForm({ onNext, onClose }: {
               )}
             </div>
 
-            <div>
+            <div className="relative">
               <input
                 {...register("confirmPassword")}
-                type="password"
+                type={showPasswordConfirm ? "text" : "password"}
                 placeholder="Konfirmasi Password"
                 className="w-full border border-gray-300 px-4 py-2 rounded"
               />
+              <button
+                type="button"
+                onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                className="absolute right-3 top-3 text-gray-500"
+                aria-label="Toggle password visibility"
+              >
+                {showPasswordConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
               {errors.confirmPassword && (
                 <p className="text-red-500 text-sm">
                   {errors.confirmPassword.message}

@@ -11,40 +11,47 @@ import Select, { SingleValue } from "react-select";
 import { API_BACKEND } from "@/app/utils/constant";
 import { fetchCities, fetchProvinces } from "@/app/lib/fetchWilayah";
 import FormAlamat from "./FormAlamat";
+import FormButton from "@/app/components/inputFormPenerbit/_component/FormButton";
+import Swal from "sweetalert2";
 
 export const alamatSchema = z.object({
-  label: z.string().optional(),
-  provinsi: z.string().min(1, "Provinsi wajib diisi"),
-  kabupaten: z.string().min(1, "Kota wajib diisi"),
-  kecamatan: z.string().min(1, "Kecamatan wajib diisi"),
-  kelurahan: z.string().min(1, "Kelurahan wajib diisi"),
-  kodePos: z.string().min(1, "Kode pos wajib diisi"),
-  detailAlamat: z.string().min(1, "Detail alamat wajib diisi"),
+  name: z.string().optional(),
+  province_id: z.string().min(1, "Provinsi wajib diisi"),
+  city_id: z.string().min(1, "Kota wajib diisi"),
+  district_id: z.string().min(1, "Kecamatan wajib diisi"),
+  subdistrict_id: z.string().min(1, "Kelurahan wajib diisi"),
+  postal_code: z.string().min(1, "Kode pos wajib diisi"),
+  detail: z.string().min(1, "Detail alamat wajib diisi"),
 });
 
-const schema = z.object({
-  namaPerusahaan: z.string().min(1, "Nama perusahaan wajib diisi"),
-  alamat: z
+export const schema = z.object({
+  company_name: z.string().min(1, "Nama perusahaan wajib diisi"),
+  address: z
     .array(alamatSchema)
     .min(1, "Minimal 1 alamat harus diisi")
     .max(2, "Maksimal hanya 2 alamat"),
   detailKorespondensi: z.string().optional(),
-  jumlahKaryawan: z.number().min(0, "Jumlah karyawan harus valid").optional(),
-  fileNIB: z.string().optional(),
-  fileAkte: z.string().optional(),
-  fileSIUP: z.string().optional(),
-  fileTDP: z.string().optional(),
+  total_employees: z.number().min(1, "Jumlah karyawan minimal 1").optional(),
+  company_nib_path: z.string().min(1, { message: "Dokumen NIB wajib diunggah" }),
+  akta_pendirian: z.string().min(1, { message: "Akte pendirian wajib diunggah" }),
+  sk_kumham_path: z.string().min(1, { message: "SK Kumham wajib diunggah" }),
+  akta_perubahan_terahkir_path: z.string().min(1, { message: "Akte perubahan terakhir wajib diunggah" }),
+  sk_kumham_terahkir: z.string().min(1, { message: "SK Kumham terakhir wajib diunggah" }),
+  npwp_path: z.string().min(1, { message: "NPWP perusahaan wajib diunggah" }),
   fileNpwp: z.string().optional(),
 });
 
-type FormData = z.infer<typeof schema>;
+export type FormData = z.infer<typeof schema>;
 
 const fetchOptions = async (url: string, parentId?: string) => {
   try {
     const response = await axios.get(
       `${API_BACKEND}/${url}${parentId ? `/${parentId}` : ""}`
     );
-    console.log("URL", `${API_BACKEND}/${url}${parentId ? `/${parentId}` : ""}`);
+    console.log(
+      "URL",
+      `${API_BACKEND}/${url}${parentId ? `/${parentId}` : ""}`
+    );
 
     return response.data?.data.map((item: any) => ({
       value: String(item.id),
@@ -58,7 +65,11 @@ const fetchOptions = async (url: string, parentId?: string) => {
 
 type OptionType = { value: string; label: string };
 
-export default function PublisherForm() {
+type Props = {
+  onNext: () => void;
+};
+
+export default function PublisherForm({ onNext }: Props) {
   const [isReady, setIsReady] = useState(false);
 
   const [provinsiList, setProvinsiList] = useState<OptionType[]>([]);
@@ -72,9 +83,9 @@ export default function PublisherForm() {
 
   const {
     register,
-    handleSubmit,
     reset,
     watch,
+    handleSubmit,
     control,
     setValue,
     formState: { errors, isSubmitting },
@@ -82,35 +93,37 @@ export default function PublisherForm() {
     resolver: zodResolver(schema),
     mode: "onBlur",
     defaultValues: {
-      jumlahKaryawan: 0,
-      fileNIB: "",
-      fileAkte: "",
-      fileSIUP: "",
-      fileTDP: "",
-      alamat: [
+      total_employees: 0,
+      company_nib_path: "",
+      akta_pendirian: "",
+      sk_kumham_path: "",
+      akta_perubahan_terahkir_path: "",
+      sk_kumham_terahkir: "",
+      npwp_path: "",
+      address: [
         {
-          label: "Alamat Perusahaan",
-          provinsi: "",
-          kabupaten: "",
-          kecamatan: "",
-          kelurahan: "",
-          kodePos: "",
-          detailAlamat: "",
+          name: "Company",
+          province_id: "",
+          city_id: "",
+          district_id: "",
+          subdistrict_id: "",
+          postal_code: "",
+          detail: "",
         },
         {
-          label: "Alamat Korespondensi",
-          provinsi: "",
-          kabupaten: "",
-          kecamatan: "",
-          kelurahan: "",
-          kodePos: "",
-          detailAlamat: "",
+          name: "Koresponden",
+          province_id: "",
+          city_id: "",
+          district_id: "",
+          subdistrict_id: "",
+          postal_code: "",
+          detail: "",
         },
       ],
     },
   });
 
-  const { fields } = useFieldArray({ control, name: "alamat" });
+  const { fields } = useFieldArray({ control, name: "address" });
 
   useEffect(() => {
     const loadProvinces = async () => {
@@ -121,14 +134,14 @@ export default function PublisherForm() {
   }, []);
   useEffect(() => {
     fields.forEach((_, index) => {
-      const provId = watch(`alamat.${index}.provinsi`);
+      const provId = watch(`address.${index}.province_id`);
       if (provId) {
         fetchCities(provId).then((data) =>
           setCityList((prev) => ({ ...prev, [index]: data }))
         );
       }
     });
-  }, [watch("alamat")]);
+  }, [watch("address")]);
 
   const [cityList, setCityList] = useState<Record<number, OptionType[]>>({});
   const [districtList, setDistrictList] = useState<
@@ -140,14 +153,14 @@ export default function PublisherForm() {
 
   useEffect(() => {
     fields.forEach((_, index) => {
-      const provId = watch(`alamat.${index}.provinsi`);
+      const provId = watch(`address.${index}.province_id`);
       if (provId) {
         fetchCities(provId).then((data) =>
           setCityList((prev) => ({ ...prev, [index]: data }))
         );
       }
     });
-  }, [watch("alamat")]);
+  }, [watch("address")]);
 
   const handleUploadFile = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -168,9 +181,29 @@ export default function PublisherForm() {
       );
 
       const fileUrl = res.data?.data?.path;
+
+      const uploadMessages = {
+        company_nib_path: "Upload NIB Perusahaan berhasil!",
+        akta_pendirian: "Upload Akta Pendirian berhasil!",
+        sk_kumham_path: "Upload SK KUMHAM berhasil!",
+        akta_perubahan_terahkir_path:
+          "Upload Akta Perubahan Terakhir berhasil!",
+        sk_kumham_terahkir: "Upload SK KUMHAM Terakhir berhasil!",
+        npwp_path: "Upload NPWP berhasil!",
+      } as const;
+
       if (fileUrl) {
-        setValue(field, fileUrl);
-        alert(`Upload ${field} berhasil!`);
+        setValue(field, fileUrl, { shouldValidate: true }); 
+        if (field in uploadMessages) {
+          const message = uploadMessages[field as keyof typeof uploadMessages];
+          Swal.fire({
+            title: "Berhasil",
+            text: message,
+            icon: "success",
+            timer: 3000,
+            showConfirmButton: false,
+          });
+        }
       } else {
         alert(`Upload ${field} gagal!`);
       }
@@ -202,13 +235,11 @@ export default function PublisherForm() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      // console.log("Data ", data.kabupaten)
-      const res = await axios.post("/api/publisher", data);
-      console.log("Res:", res.data);
-
-      localStorage.removeItem("publisherDraft");
-      alert("Berhasil disimpan!");
-      reset();
+      console.log("Data, ", data);
+      // localStorage.removeItem("publisherDraft");
+      // alert("Berhasil disimpan!");
+      // reset();
+      onNext();
     } catch (err) {
       console.error(err);
       alert("Gagal submit");
@@ -238,49 +269,58 @@ export default function PublisherForm() {
           <div>
             <label className="block mb-1 text-black">Nama Perusahaan</label>
             <input
-              {...register("namaPerusahaan")}
+              {...register("company_name")}
               className="w-full border px-3 py-2 rounded"
             />
-            {errors.namaPerusahaan && (
+            {errors.company_name && (
               <p className="text-red-500 text-sm">
-                {errors.namaPerusahaan.message}
+                {errors.company_name.message}
               </p>
             )}
           </div>
 
-          {/* Upload NIB */}
           <FileUpload
-            label="Nomor Induk Berusaha (NIB)"
-            fileUrl={watch("fileNIB")}
-            onUpload={(e) => handleUploadFile(e, "fileNIB")}
-          />
+        label="Nomor Induk Berusaha (NIB)"
+        fileUrl={watch('company_nib_path')}
+        onUpload={(e) => handleUploadFile(e, 'company_nib_path')}
+        error={errors?.company_nib_path?.message}
+      />
 
-          {/* Upload Akte */}
-          <FileUpload
-            label="Akte Pendirian"
-            fileUrl={watch("fileAkte")}
-            onUpload={(e) => handleUploadFile(e, "fileAkte")}
-          />
+      <FileUpload
+        label="Akte Pendirian Perusahaan"
+        fileUrl={watch('akta_pendirian')}
+        onUpload={(e) => handleUploadFile(e, 'akta_pendirian')}
+        error={errors?.akta_pendirian?.message}
+      />
 
-          {/* Upload SIUP */}
-          <FileUpload
-            label="SIUP"
-            fileUrl={watch("fileSIUP")}
-            onUpload={(e) => handleUploadFile(e, "fileSIUP")}
-          />
+      <FileUpload
+        label="SK Kumham Pendirian"
+        fileUrl={watch('sk_kumham_path')}
+        onUpload={(e) => handleUploadFile(e, 'sk_kumham_path')}
+        error={errors?.sk_kumham_path?.message}
+      />
 
-          {/* Upload TDP */}
-          <FileUpload
-            label="TDP"
-            fileUrl={watch("fileTDP")}
-            onUpload={(e) => handleUploadFile(e, "fileTDP")}
-          />
+      <FileUpload
+        label="Akte Perubahan Terakhir"
+        fileUrl={watch('akta_perubahan_terahkir_path')}
+        onUpload={(e) => handleUploadFile(e, 'akta_perubahan_terahkir_path')}
+        error={errors?.akta_perubahan_terahkir_path?.message}
+      />
 
-          <FileUpload
-            label="NPWP Perusahaan"
-            fileUrl={watch("fileNpwp")}
-            onUpload={(e) => handleUploadFile(e, "fileNpwp")}
-          />
+      <FileUpload
+        label="SK Kumham Terakhir"
+        fileUrl={watch('sk_kumham_terahkir')}
+        onUpload={(e) => handleUploadFile(e, 'sk_kumham_terahkir')}
+        error={errors?.sk_kumham_terahkir?.message}
+      />
+
+      <FileUpload
+        label="NPWP Perusahaan"
+        fileUrl={watch('npwp_path')}
+        onUpload={(e) => handleUploadFile(e, 'npwp_path')}
+        error={errors?.npwp_path?.message}
+      />
+
         </div>
 
         {/* Kanan */}
@@ -300,15 +340,14 @@ export default function PublisherForm() {
               setKecamatanList={setKecamatanList}
               kelurahanList={kelurahanList}
               setKelurahanList={setKelurahanList}
-              fetchOptions={fetchOptions}
-            />
+              fetchOptions={fetchOptions} errors={errors}            />
           ))}
 
           <div>
             <label className="block mb-1">Jumlah Karyawan</label>
             <div className="flex items-center border rounded overflow-hidden w-80">
               <input
-                {...register("jumlahKaryawan", { valueAsNumber: true })}
+                {...register("total_employees", { valueAsNumber: true })}
                 type="number"
                 className="px-3 py-2 outline-none flex-1"
                 placeholder="0"
@@ -317,27 +356,18 @@ export default function PublisherForm() {
                 Orang
               </span>
             </div>
-            {errors.jumlahKaryawan && (
+            {errors.total_employees && (
               <p className="text-red-500 text-sm">
-                {errors.jumlahKaryawan.message}
+                {errors.total_employees.message}
               </p>
             )}
           </div>
 
           <div className="flex flex-col md:flex-row gap-4">
-            {/* <button
-              type="button"
-              onClick={() => {
-                alert("Draft disimpan!");
-              }}
-              className="flex-1 border border-gray-400 py-2 rounded"
-            >
-              Save as Draft
-            </button> */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 bg-purple-600 text-white py-2 rounded hover:bg-purple-700 disabled:opacity-50"
+              className="ml-auto bg-purple-600 w-48 text-white py-2 rounded hover:bg-purple-700 disabled:opacity-50"
             >
               {isSubmitting ? "Loading..." : "Lanjutkan"}
             </button>
@@ -346,7 +376,4 @@ export default function PublisherForm() {
       </form>
     </section>
   );
-}
-function setCityList(arg0: (prev: any) => any): any {
-  throw new Error("Function not implemented.");
 }

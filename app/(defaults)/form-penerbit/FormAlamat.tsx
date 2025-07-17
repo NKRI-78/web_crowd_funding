@@ -15,6 +15,7 @@ type Props = {
   setValue: any;
   watch: any;
   register: any;
+  errors: any; // 
   provinsiList: OptionType[];
   kotaList: Record<number, OptionType[]>;
   setKotaList: React.Dispatch<React.SetStateAction<Record<number, OptionType[]>>>;
@@ -31,6 +32,7 @@ const FormAlamat = ({
   setValue,
   watch,
   register,
+  errors,
   provinsiList,
   kotaList,
   setKotaList,
@@ -40,9 +42,9 @@ const FormAlamat = ({
   setKelurahanList,
   fetchOptions,
 }: Props) => {
-  const watchProvinsi = watch(`alamat.${index}.provinsi`);
-  const watchKota = watch(`alamat.${index}.kabupaten`);
-  const watchKecamatan = watch(`alamat.${index}.kecamatan`);
+  const watchProvinsi = watch(`address.${index}.province_id`);
+  const watchKota = watch(`address.${index}.city_id`);
+  const watchKecamatan = watch(`address.${index}.district_id`);
 
   useEffect(() => {
     if (watchProvinsi)
@@ -69,90 +71,124 @@ const FormAlamat = ({
     <div key={index} className="space-y-3">
       <h3 className="font-semibold">Alamat {index === 0 ? "Perusahaan" : "Korespondensi"}</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Provinsi */}
         <Controller
-          name={`alamat.${index}.provinsi`}
+          name={`address.${index}.province_id`}
           control={control}
-          render={({ field }) => (
-            <Select<OptionType>
-              placeholder="Pilih Provinsi"
-              options={provinsiList}
-              isSearchable={true}
-              value={provinsiList.find((opt) => opt.value === field.value) || null}
-              onChange={(val) => {
-                field.onChange(val?.value);
-                setValue(`alamat.${index}.kabupaten`, "");
-                setValue(`alamat.${index}.kecamatan`, "");
-                setValue(`alamat.${index}.kelurahan`, "");
-              }}
-            />
+          rules={{ required: "Provinsi wajib diisi" }}
+          render={({ field, fieldState: { error } }) => (
+            <div>
+              <Select<OptionType>
+                placeholder="Pilih Provinsi"
+                options={provinsiList}
+                isSearchable={true}
+                value={provinsiList.find((opt) => opt.value === field.value) || null}
+                onChange={(val) => {
+                  field.onChange(val?.value);
+                  setValue(`address.${index}.city_id`, "");
+                  setValue(`address.${index}.district_id`, "");
+                  setValue(`address.${index}.subdistrict_id`, "");
+                }}
+              />
+              {error && <p className="text-red-500 text-sm">{error.message}</p>}
+            </div>
           )}
         />
 
+        {/* Kota */}
         <Controller
-          name={`alamat.${index}.kabupaten`}
+          name={`address.${index}.city_id`}
           control={control}
-          render={({ field }) => (
-            <Select<OptionType>
-              placeholder="Pilih Kota"
-              options={kotaList[index] || []}
-              isSearchable={true}
-              value={(kotaList[index] || []).find((opt) => opt.value === field.value) || null}
-              onChange={(val) => {
-                field.onChange(val?.value);
-                setValue(`alamat.${index}.kecamatan`, "");
-                setValue(`alamat.${index}.kelurahan`, "");
-              }}
-              isDisabled={!watchProvinsi}
-            />
+          rules={{ required: "Kota wajib diisi" }}
+          render={({ field, fieldState: { error } }) => (
+            <div>
+              <Select<OptionType>
+                placeholder="Pilih Kota"
+                options={kotaList[index] || []}
+                isSearchable={true}
+                value={(kotaList[index] || []).find((opt) => opt.value === field.value) || null}
+                onChange={(val) => {
+                  field.onChange(val?.value);
+                  setValue(`address.${index}.district_id`, "");
+                  setValue(`address.${index}.subdistrict_id`, "");
+                }}
+                isDisabled={!watchProvinsi}
+              />
+              {error && <p className="text-red-500 text-sm">{error.message}</p>}
+            </div>
           )}
         />
 
+        {/* Kecamatan */}
         <Controller
-          name={`alamat.${index}.kecamatan`}
+          name={`address.${index}.district_id`}
           control={control}
-          render={({ field }) => (
-            <Select<OptionType>
-              placeholder="Pilih Kecamatan"
-              isSearchable={true}
-              options={kecamatanList[index] || []}
-              value={(kecamatanList[index] || []).find((opt) => opt.value === field.value) || null}
-              onChange={(val) => {
-                field.onChange(val?.value);
-                setValue(`alamat.${index}.kelurahan`, "");
-              }}
-              isDisabled={!watchKota}
-            />
+          rules={{ required: "Kecamatan wajib diisi" }}
+          render={({ field, fieldState: { error } }) => (
+            <div>
+              <Select<OptionType>
+                placeholder="Pilih Kecamatan"
+                isSearchable={true}
+                options={kecamatanList[index] || []}
+                value={(kecamatanList[index] || []).find((opt) => opt.value === field.value) || null}
+                onChange={(val) => {
+                  field.onChange(val?.value);
+                  setValue(`address.${index}.subdistrict_id`, "");
+                }}
+                isDisabled={!watchKota}
+              />
+              {error && <p className="text-red-500 text-sm">{error.message}</p>}
+            </div>
           )}
         />
 
+        {/* Kelurahan */}
         <Controller
-          name={`alamat.${index}.kelurahan`}
+          name={`address.${index}.subdistrict_id`}
           control={control}
-          render={({ field }) => (
-            <Select<OptionType>
-              placeholder="Pilih Kelurahan"
-              isSearchable={true}
-              options={kelurahanList[index] || []}
-              value={(kelurahanList[index] || []).find((opt) => opt.value === field.value) || null}
-              onChange={(val) => field.onChange(val?.value)}
-              isDisabled={!watchKecamatan}
-            />
+          rules={{ required: "Kelurahan wajib diisi" }}
+          render={({ field, fieldState: { error } }) => (
+            <div>
+              <Select<OptionType>
+                placeholder="Pilih Kelurahan"
+                isSearchable={true}
+                options={kelurahanList[index] || []}
+                value={(kelurahanList[index] || []).find((opt) => opt.value === field.value) || null}
+                onChange={(val) => field.onChange(val?.value)}
+                isDisabled={!watchKecamatan}
+              />
+              {error && <p className="text-red-500 text-sm">{error.message}</p>}
+            </div>
           )}
         />
       </div>
 
-      <input
-        {...register(`alamat.${index}.kodePos`)}
-        placeholder="Kode Pos"
-        className="border px-3 py-2 rounded w-full"
-      />
+      {/* Kode Pos */}
+      <div>
+        <input
+          {...register(`address.${index}.postal_code`, { required: "Kode Pos wajib diisi" })}
+          placeholder="Kode Pos"
+          type="number"
+          className="border px-3 py-2 rounded w-full"
+        />
+        {errors?.address?.[index]?.postal_code && (
+          <p className="text-red-500 text-sm">{errors.address[index].postal_code.message}</p>
+        )}
+      </div>
 
-      <textarea
-        {...register(`alamat.${index}.detailAlamat`)}
-        placeholder="Detail Alamat"
-        className="border px-3 py-2 rounded w-full"
-      />
+      {/* Detail Alamat */}
+      <div>
+        <textarea
+          {...register(`address.${index}.detail`, { required: "Detail alamat wajib diisi" })}
+          placeholder="Detail Alamat"
+          className="border px-3 py-2 rounded w-full"
+        />
+        {errors?.address?.[index]?.detail && (
+          <p className="text-red-500 text-sm">{errors.address[index].detail.message}</p>
+        )}
+      </div>
     </div>
+
   );
 };
 
