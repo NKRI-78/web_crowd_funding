@@ -35,6 +35,7 @@ const FormPemodal: React.FC = () => {
     pengetahuanPasarModal: "",
     setujuKebenaranData: false,
     setujuRisikoInvestasi: false,
+    signature: "",
   });
 
   const handleChangeDataPribadi = (
@@ -107,6 +108,13 @@ const FormPemodal: React.FC = () => {
     }));
   };
 
+  const handleSignatureSave = (signature: string) => {
+    setDataPekerjaan((prev) => ({
+      ...prev,
+      signature,
+    }));
+  };
+
   const handleNext = () => {
     const fullData = {
       ...dataPribadi,
@@ -153,6 +161,7 @@ const FormPemodal: React.FC = () => {
             onPengalamanInvestasi={handlePengalamanInvestasi}
             onPengetahuanPasarModal={handlePengetahuanPasarModal}
             onCheckboxChange={handleCheckboxChange}
+            onSignatureSave={handleSignatureSave}
           />
         </div>
       )}
