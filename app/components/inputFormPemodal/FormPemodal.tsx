@@ -3,45 +3,157 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { z } from "zod";
+import { useRouter } from "next/navigation";
 
 import DataBank from "./informasiBank/DataBank"; // Pastikan path benar
 import ComponentDataPribadi from "./informasiPribadi/DataPribadi";
 import ComponentDataPekerjaan from "./informasiPekerjaan/DataPekerjaan";
 
 const FormPemodal: React.FC = () => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const router = useRouter();
 
-  const [dataPribadi, setDataPribadi] = useState({
-    nama: "",
-    nik: "",
-    tempatLahir: "",
-    tanggalLahir: "",
-    jenisKelamin: "",
-    statusPernikahan: "",
-    pendidikanTerakhir: "",
-    pekerjaan: "",
-    pekerjaanLainnya: "",
-    addres: "",
-    namaBank: "",
-    nomorRekening: "",
-    namaPemilik: "",
-    cabangBank: "",
-    ktpUrl: "",
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const schema = z.object({
+    nama: z.string().min(1, "Nama wajib diisi"),
+    nik: z.string().length(16, "NIK harus 16 digit"),
+    tempatLahir: z.string().min(1, "Tempat lahir wajib diisi"),
+    tanggalLahir: z.string().min(1, "Tanggal lahir wajib diisi"),
+    jenisKelamin: z.string().min(1, "Jenis kelamin wajib diisi"),
+    statusPernikahan: z.string().min(1, "Status pernikahan wajib diisi"),
+    pendidikanTerakhir: z.string().min(1, "Pendidikan terakhir wajib diisi"),
+    pekerjaan: z.string().min(1, "Pekerjaan wajib diisi"),
+    pekerjaanLainnya: z.string().optional(),
+    addres: z.string().min(1, "Alamat wajib diisi"),
+    namaBank: z.string().min(1, "Nama bank wajib diisi"),
+    nomorRekening: z.string().min(1, "Nomor rekening wajib diisi"),
+    namaPemilik: z.string().min(1, "Nama pemilik rekening wajib diisi"),
+    cabangBank: z.string().min(1, "Cabang bank wajib diisi"),
+    ktpUrl: z.string().min(1, "Upload KTP wajib"),
+
+    namaPerusahaan: z.string().min(1, "Nama perusahaan wajib diisi"),
+    jabatan: z.string().min(1, "Jabatan wajib diisi"),
+    alamatPerusahaan: z.string().min(1, "Alamat perusahaan wajib diisi"),
+    penghasilanBulanan: z.string().min(1, "Penghasilan bulanan wajib diisi"),
+    tujuanInvestasi: z.string().min(1, "Tujuan investasi wajib diisi"),
+    tujuanInvestasiLainnya: z.string().optional(),
+    toleransiResiko: z.string().min(1, "Toleransi resiko wajib diisi"),
+    pengalamanInvestasi: z.string().min(1, "Pengalaman investasi wajib diisi"),
+    pengetahuanPasarModal: z
+      .string()
+      .min(1, "Pengalaman pasar modal wajib diisi"),
+    setujuKebenaranData: z.literal(true),
+    setujuRisikoInvestasi: z.literal(true),
+    signature: z.string().min(1, "Tanda tangan wajib"),
   });
 
-  const [dataPekerjaan, setDataPekerjaan] = useState({
-    namaPerusahaan: "",
-    jabatan: "",
-    alamatPerusahaan: "",
-    penghasilanBulanan: "",
-    tujuanInvestasi: "",
-    tujuanInvestasiLainnya: "",
-    toleransiResiko: "",
-    pengalamanInvestasi: "",
-    pengetahuanPasarModal: "",
-    setujuKebenaranData: false,
-    setujuRisikoInvestasi: false,
-    signature: "",
+  // const [dataPribadi, setDataPribadi] = useState({
+  //   nama: "",
+  //   nik: "",
+  //   tempatLahir: "",
+  //   tanggalLahir: "",
+  //   jenisKelamin: "",
+  //   statusPernikahan: "",
+  //   pendidikanTerakhir: "",
+  //   pekerjaan: "",
+  //   pekerjaanLainnya: "",
+  //   addres: "",
+  //   namaBank: "",
+  //   nomorRekening: "",
+  //   namaPemilik: "",
+  //   cabangBank: "",
+  //   ktpUrl: "",
+  // });
+
+  // const [dataPekerjaan, setDataPekerjaan] = useState({
+  //   namaPerusahaan: "",
+  //   jabatan: "",
+  //   alamatPerusahaan: "",
+  //   penghasilanBulanan: "",
+  //   tujuanInvestasi: "",
+  //   tujuanInvestasiLainnya: "",
+  //   toleransiResiko: "",
+  //   pengalamanInvestasi: "",
+  //   pengetahuanPasarModal: "",
+  //   setujuKebenaranData: false,
+  //   setujuRisikoInvestasi: false,
+  //   signature: "",
+  // });
+
+  const [dataPribadi, setDataPribadi] = useState(() => {
+    const saved = localStorage.getItem("formPemodal");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return {
+        nama: parsed.nama || "",
+        nik: parsed.nik || "",
+        tempatLahir: parsed.tempatLahir || "",
+        tanggalLahir: parsed.tanggalLahir || "",
+        jenisKelamin: parsed.jenisKelamin || "",
+        statusPernikahan: parsed.statusPernikahan || "",
+        pendidikanTerakhir: parsed.pendidikanTerakhir || "",
+        pekerjaan: parsed.pekerjaan || "",
+        pekerjaanLainnya: parsed.pekerjaanLainnya || "",
+        addres: parsed.addres || "",
+        namaBank: parsed.namaBank || "",
+        nomorRekening: parsed.nomorRekening || "",
+        namaPemilik: parsed.namaPemilik || "",
+        cabangBank: parsed.cabangBank || "",
+        ktpUrl: parsed.ktpUrl || "",
+      };
+    }
+    return {
+      nama: "",
+      nik: "",
+      tempatLahir: "",
+      tanggalLahir: "",
+      jenisKelamin: "",
+      statusPernikahan: "",
+      pendidikanTerakhir: "",
+      pekerjaan: "",
+      pekerjaanLainnya: "",
+      addres: "",
+      namaBank: "",
+      nomorRekening: "",
+      namaPemilik: "",
+      cabangBank: "",
+      ktpUrl: "",
+    };
+  });
+
+  const [dataPekerjaan, setDataPekerjaan] = useState(() => {
+    const saved = localStorage.getItem("formPemodal");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return {
+        namaPerusahaan: parsed.namaPerusahaan || "",
+        jabatan: parsed.jabatan || "",
+        alamatPerusahaan: parsed.alamatPerusahaan || "",
+        penghasilanBulanan: parsed.penghasilanBulanan || "",
+        tujuanInvestasi: parsed.tujuanInvestasi || "",
+        tujuanInvestasiLainnya: parsed.tujuanInvestasiLainnya || "",
+        toleransiResiko: parsed.toleransiResiko || "",
+        pengalamanInvestasi: parsed.pengalamanInvestasi || "",
+        pengetahuanPasarModal: parsed.pengetahuanPasarModal || "",
+        setujuKebenaranData: parsed.setujuKebenaranData || false,
+        setujuRisikoInvestasi: parsed.setujuRisikoInvestasi || false,
+        signature: parsed.signature || "",
+      };
+    }
+    return {
+      namaPerusahaan: "",
+      jabatan: "",
+      alamatPerusahaan: "",
+      penghasilanBulanan: "",
+      tujuanInvestasi: "",
+      tujuanInvestasiLainnya: "",
+      toleransiResiko: "",
+      pengalamanInvestasi: "",
+      pengetahuanPasarModal: "",
+      setujuKebenaranData: false,
+      setujuRisikoInvestasi: false,
+      signature: "",
+    };
   });
 
   const capitalizeWords = (value: string) => {
@@ -95,10 +207,51 @@ const FormPemodal: React.FC = () => {
     }));
   };
 
+  // useEffect(() => {
+  //   const saved = localStorage.getItem("formPemodal");
+  //   if (saved) {
+  //     setDataPribadi(JSON.parse(saved));
+  //   }
+  // }, []);
+
   useEffect(() => {
     const saved = localStorage.getItem("formPemodal");
     if (saved) {
-      setDataPribadi(JSON.parse(saved));
+      const parsed = JSON.parse(saved);
+
+      // Pisahkan data berdasarkan field masing-masing
+      setDataPribadi({
+        nama: parsed.nama || "",
+        nik: parsed.nik || "",
+        tempatLahir: parsed.tempatLahir || "",
+        tanggalLahir: parsed.tanggalLahir || "",
+        jenisKelamin: parsed.jenisKelamin || "",
+        statusPernikahan: parsed.statusPernikahan || "",
+        pendidikanTerakhir: parsed.pendidikanTerakhir || "",
+        pekerjaan: parsed.pekerjaan || "",
+        pekerjaanLainnya: parsed.pekerjaanLainnya || "",
+        addres: parsed.addres || "",
+        namaBank: parsed.namaBank || "",
+        nomorRekening: parsed.nomorRekening || "",
+        namaPemilik: parsed.namaPemilik || "",
+        cabangBank: parsed.cabangBank || "",
+        ktpUrl: parsed.ktpUrl || "",
+      });
+
+      setDataPekerjaan({
+        namaPerusahaan: parsed.namaPerusahaan || "",
+        jabatan: parsed.jabatan || "",
+        alamatPerusahaan: parsed.alamatPerusahaan || "",
+        penghasilanBulanan: parsed.penghasilanBulanan || "",
+        tujuanInvestasi: parsed.tujuanInvestasi || "",
+        tujuanInvestasiLainnya: parsed.tujuanInvestasiLainnya || "",
+        toleransiResiko: parsed.toleransiResiko || "",
+        pengalamanInvestasi: parsed.pengalamanInvestasi || "",
+        pengetahuanPasarModal: parsed.pengetahuanPasarModal || "",
+        setujuKebenaranData: parsed.setujuKebenaranData || false,
+        setujuRisikoInvestasi: parsed.setujuRisikoInvestasi || false,
+        signature: parsed.signature || "",
+      });
     }
   }, []);
 
@@ -221,6 +374,22 @@ const FormPemodal: React.FC = () => {
     try {
       const data = JSON.parse(savedData);
 
+      const result = schema.safeParse(data);
+      if (!result.success) {
+        // const errors = result.error.errors
+        //   .map((e) => `• ${e.message}`)
+        //   .join("\n");
+
+        const firstError = result.error.errors[0];
+
+        Swal.fire({
+          title: "Data belum diisi!",
+          text: firstError.message,
+          icon: "warning",
+          timer: 3000,
+        });
+        return;
+      }
       const payload = {
         role: "1",
         ktp: {
@@ -233,6 +402,7 @@ const FormPemodal: React.FC = () => {
         status_marital: data.statusPernikahan,
         last_education: data.pendidikanTerakhir,
         address_detail: data.addres,
+        signature_path: data.signature,
         bank: {
           name: data.namaBank,
           no: data.nomorRekening,
@@ -259,22 +429,32 @@ const FormPemodal: React.FC = () => {
         },
       };
 
-      console.log(payload, "payload");
-
-      // const response = await axios.post("https://api-kamu.com/submit", payload);
+      const response = await axios.post(
+        "https://api-capbridge.langitdigital78.com/api/v1/auth/assign/role",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRob3JpemVkIjp0cnVlLCJpZCI6ImY1ODU3YjY4LWRlNzktNDU2YS04OWYwLTQyNTU3ZTBhNTIzMSJ9.U20mEKSqjZD035fYvX4BAcc3fM0GPGdD6j5oaZirOG0"}`,
+          },
+        }
+      );
 
       // if (response.status === 200) {
       // alert("Form berhasil dikirim!");
-      Swal.fire({
+      // console.log(response, "payload");
+      const alertSwal = await Swal.fire({
         title: "Berhasil",
         text: "Data berhasil dikirim",
         icon: "success",
         timer: 3000,
+        timerProgressBar: true,
+        // showConfirmButton: false,
       });
 
       // Hapus localStorage dan reset
       localStorage.removeItem("formPemodal");
       setSelectedIndex(0);
+      router.push("/");
       // } else {
       //   alert("Gagal mengirim data. Silakan coba lagi.");
       // }
@@ -362,9 +542,19 @@ const FormPemodal: React.FC = () => {
             //   setSelectedIndex(0);
             // }}
             onClick={handleSubmit}
-            className="px-4 py-2 bg-green-600 text-white rounded"
+            // className="px-4 py-2 bg-green-600 text-white rounded"
+            disabled={
+              !dataPekerjaan.setujuKebenaranData ||
+              !dataPekerjaan.setujuRisikoInvestasi
+            }
+            className={`px-8 py-2 rounded text-white ${
+              !dataPekerjaan.setujuKebenaranData ||
+              !dataPekerjaan.setujuRisikoInvestasi
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-[#4821C2]"
+            }`}
           >
-            Submit
+            Kirim Data
           </button>
         )}
       </div>
