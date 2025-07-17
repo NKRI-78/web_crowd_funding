@@ -16,11 +16,14 @@ const FormPemodal: React.FC = () => {
     jenisKelamin: "",
     statusPernikahan: "",
     pendidikanTerakhir: "",
+    pekerjaan: "",
+    pekerjaanLainnya: "",
     addres: "",
     namaBank: "",
     nomorRekening: "",
     namaPemilik: "",
     cabangBank: "",
+    ktpUrl: "",
   });
 
   const [dataPekerjaan, setDataPekerjaan] = useState({
@@ -38,15 +41,73 @@ const FormPemodal: React.FC = () => {
     signature: "",
   });
 
+  const capitalizeWords = (value: string) => {
+    return value.replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
   const handleChangeDataPribadi = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
   ) => {
     const { name, value } = e.target;
+
+    // Hanya izinkan angka dan maksimal 16 digit untuk NIK
+    if (name === "nik") {
+      const numericValue = value.replace(/\D/g, ""); // hapus non-angka
+      if (numericValue.length > 16) return; // batasi 16 digit
+
+      setDataPribadi((prev) => ({
+        ...prev,
+        [name]: numericValue,
+      }));
+      return;
+    }
+
+    if (name === "nomorRekening") {
+      const numericValue = value.replace(/\D/g, ""); // hapus non-angka
+      // if (numericValue.length > 16) return;
+
+      setDataPribadi((prev) => ({
+        ...prev,
+        [name]: numericValue,
+      }));
+      return;
+    }
+
+    const capitalizeFields = [
+      "nama",
+      "tempatLahir",
+      "namaBank",
+      "namaPemilik",
+      "cabangBank",
+    ];
+
+    const formattedValue = capitalizeFields.includes(name)
+      ? capitalizeWords(value)
+      : value;
     setDataPribadi((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: formattedValue,
     }));
   };
+
+  useEffect(() => {
+    const saved = localStorage.getItem("formPemodal");
+    if (saved) {
+      setDataPribadi(JSON.parse(saved));
+    }
+  }, []);
+
+  // Auto simpan ke localStorage setiap ada perubahan dataPribadi
+  useEffect(() => {
+    const fullData = {
+      ...dataPribadi,
+      ...dataPekerjaan,
+    };
+
+    localStorage.setItem("formPemodal", JSON.stringify(fullData));
+  }, [dataPribadi, dataPekerjaan]);
 
   const handleGenderChange = (gender: string) => {
     setDataPribadi((prev) => ({ ...prev, jenisKelamin: gender }));
@@ -112,30 +173,33 @@ const FormPemodal: React.FC = () => {
     setDataPekerjaan((prev) => ({
       ...prev,
       signature,
+  const handleWeddingChange = (wedding: string) => {
+    setDataPribadi((prev) => ({ ...prev, statusPernikahan: wedding }));
+  };
+
+  const handleEducationChange = (education: string) => {
+    setDataPribadi((prev) => ({ ...prev, pendidikanTerakhir: education }));
+  };
+
+  const onPekerjaanChange = (value: string) => {
+    setDataPribadi((prev) => ({
+      ...prev,
+      pekerjaan: value,
+      pekerjaanLainnya: "",
     }));
   };
 
   const handleNext = () => {
-    const fullData = {
-      ...dataPribadi,
-      ...dataPekerjaan,
-    };
+    // const fullData = {
+    //   ...dataPribadi,
+    // };
 
-    localStorage.setItem("formPemodal", JSON.stringify(fullData));
+    // localStorage.setItem("formPemodal", JSON.stringify(fullData));
     setSelectedIndex((prev) => prev + 1);
   };
 
   return (
-    <div className="px-24 md:px-24 py-24 w-full mx-auto text-black">
-      <div className="text-center mb-3">
-        <h4 className="font-bold text-xl">Isi Data Sebagai Pemodal</h4>
-        <span>
-          Untuk memastikan kelancaran proses verifikasi dan layanan yang
-          optimal, kami mengajak Anda untuk melengkapi seluruh data secara
-          jujur, benar, dan akurat.
-        </span>
-      </div>
-
+    <div className="px-10 md:px-24 py-24 w-full mx-auto text-black">
       {/* Step content */}
       {selectedIndex === 0 && (
         <div>
@@ -143,10 +207,13 @@ const FormPemodal: React.FC = () => {
             formData={dataPribadi}
             onChange={handleChangeDataPribadi}
             onGenderChange={handleGenderChange}
-            // data={formBank}
-            // onChangeBank={handleChangeBank}
+            onWeddingChange={handleWeddingChange}
+            onEducationChange={handleEducationChange}
+            onPekerjaanChange={onPekerjaanChange}
+            onUploadKTP={(url: string) =>
+              setDataPribadi((prev) => ({ ...prev, ktpUrl: url }))
+            }
           />
-          {/* <DataBank data={formBank} onChange={handleChangeBank} /> */}
         </div>
       )}
 
@@ -198,13 +265,13 @@ const FormPemodal: React.FC = () => {
           <button
             onClick={() => {
               localStorage.removeItem("formPribadi");
-              localStorage.removeItem("formBank");
+              // localStorage.removeItem("formBank");
               alert("Form telah selesai dan data dihapus dari localStorage.");
               setSelectedIndex(0);
             }}
             className="px-4 py-2 bg-green-600 text-white rounded"
           >
-            Selesai
+            Submit
           </button>
         )}
       </div>
