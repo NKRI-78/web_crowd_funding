@@ -1,8 +1,9 @@
 import React from "react";
 
 import type { Metadata } from "next";
+
+import FormPenerbit from "@/app/components/inputFormPenerbit/FormPenerbit";
 import FormPemodal from "@/app/components/inputFormPemodal/FormPemodal";
-import PublisherForm from "./FormPenerbit";
 import JabatanForm from "./FormPenerbitModal";
 
 export const metadata: Metadata = {
@@ -10,8 +11,9 @@ export const metadata: Metadata = {
   description: "Form Penerbit",
 };
 
-const FormPemodalPage: React.FC = () => {
-  return <PublisherForm />;
+const FormPenerbitPage: React.FC = () => {
+  return <FormPenerbit />;
 };
 
-export default FormPemodalPage;
+export default FormPenerbitPage;
+
