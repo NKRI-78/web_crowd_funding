@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import axios from "axios";
+import Swal from "sweetalert2";
+
 import DataBank from "./informasiBank/DataBank"; // Pastikan path benar
 import ComponentDataPribadi from "./informasiPribadi/DataPribadi";
 import ComponentDataPekerjaan from "./informasiPekerjaan/DataPekerjaan";
@@ -193,8 +196,94 @@ const FormPemodal: React.FC = () => {
     setSelectedIndex((prev) => prev + 1);
   };
 
+  const handleSubmit = async () => {
+    const savedData = localStorage.getItem("formPemodal");
+
+    if (!savedData) {
+      // alert("Data tidak ditemukan di localStorage.");
+      Swal.fire({
+        title: "Gagal",
+        text: "Data Tidak ditemukan.",
+        icon: "warning",
+        timer: 3000,
+      });
+      return;
+    }
+
+    try {
+      const data = JSON.parse(savedData);
+
+      const payload = {
+        role: "1",
+        ktp: {
+          name: data.nama,
+          place_datebirth: `${data.tempatLahir}, ${data.tanggalLahir}`,
+          nik: data.nik,
+          nik_path: data.ktpUrl,
+        },
+        gender: data.jenisKelamin === "Laki-Laki" ? "L" : "P",
+        status_marital: data.statusPernikahan,
+        last_education: data.pendidikanTerakhir,
+        address_detail: data.addres,
+        bank: {
+          name: data.namaBank,
+          no: data.nomorRekening,
+          owner: data.namaPemilik,
+          branch: data.cabangBank,
+        },
+        job: {
+          company: data.namaPerusahaan,
+          occupation:
+            data.pekerjaan === "Lainnya"
+              ? data.pekerjaanLainnya
+              : data.pekerjaan,
+          position: data.jabatan,
+          monthly_revenue: data.penghasilanBulanan,
+        },
+        risk: {
+          goal:
+            data.tujuanInvestasi === "Lainnya"
+              ? data.tujuanInvestasiLainnya
+              : data.tujuanInvestasi,
+          tolerance: data.toleransiResiko,
+          experience: data.pengalamanInvestasi,
+          pengetahuan_pasar_modal: data.pengetahuanPasarModal,
+        },
+      };
+
+      console.log(payload, "payload");
+
+      // const response = await axios.post("https://api-kamu.com/submit", payload);
+
+      // if (response.status === 200) {
+      // alert("Form berhasil dikirim!");
+      Swal.fire({
+        title: "Berhasil",
+        text: "Data berhasil dikirim",
+        icon: "success",
+        timer: 3000,
+      });
+
+      // Hapus localStorage dan reset
+      localStorage.removeItem("formPemodal");
+      setSelectedIndex(0);
+      // } else {
+      //   alert("Gagal mengirim data. Silakan coba lagi.");
+      // }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      // alert("Terjadi kesalahan saat mengirim data.");
+      Swal.fire({
+        title: "Gagal",
+        text: "Terjadi kesalahan saat mengirim data.",
+        icon: "warning",
+        timer: 3000,
+      });
+    }
+  };
+
   return (
-    <div className="px-10 md:px-24 py-24 w-full mx-auto text-black">
+    <div className="bg-white px-10 md:px-24 py-24 w-full mx-auto text-black">
       {/* Step content */}
       {selectedIndex === 0 && (
         <div>
@@ -257,12 +346,13 @@ const FormPemodal: React.FC = () => {
           </button>
         ) : (
           <button
-            onClick={() => {
-              localStorage.removeItem("formPribadi");
-              // localStorage.removeItem("formBank");
-              alert("Form telah selesai dan data dihapus dari localStorage.");
-              setSelectedIndex(0);
-            }}
+            // onClick={() => {
+            //   localStorage.removeItem("formPribadi");
+            //   localStorage.removeItem("formBank");
+            //   alert("Form telah selesai dan data dihapus dari localStorage.");
+            //   setSelectedIndex(0);
+            // }}
+            onClick={handleSubmit}
             className="px-4 py-2 bg-green-600 text-white rounded"
           >
             Submit
