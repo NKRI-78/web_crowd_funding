@@ -1,5 +1,24 @@
 import React, { useRef, useState } from "react";
 import SignatureCanvas from "react-signature-canvas";
+import axios from "axios";
+import Swal from "sweetalert2";
+
+function getSignatureDataUrlWithWhiteBackground(
+  canvas: HTMLCanvasElement
+): string {
+  const tempCanvas = document.createElement("canvas");
+  tempCanvas.width = canvas.width;
+  tempCanvas.height = canvas.height;
+
+  const ctx = tempCanvas.getContext("2d");
+  if (!ctx) return "";
+
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+  ctx.drawImage(canvas, 0, 0);
+
+  return tempCanvas.toDataURL("image/png");
+}
 
 interface Props {
   formData: {
@@ -59,6 +78,66 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   const toleransiResiko = ["Rendah", "Menengah", "Tinggi"];
   const pengalamanInvestasi = ["Tidak Ada", "Kurang", "Cukup", "Banyak"];
   const pengetahuanPasarModal = ["Tidak Ada", "Kurang", "Cukup", "Banyak"];
+  const [isEmpty, setIsEmpty] = useState(true);
+
+  const uploadSignature = async (dataUrl: string): Promise<string | null> => {
+    const blob = await (await fetch(dataUrl)).blob();
+    const formData = new FormData();
+    formData.append("folder", "web");
+    formData.append("subfolder", "signature");
+    formData.append("media", blob, "signature.png");
+
+    try {
+      const res = await axios.post(
+        "https://api-media.inovatiftujuh8.com/api/v1/media/upload",
+        formData
+      );
+      const fileUrl = res.data?.data?.path;
+
+      if (fileUrl) {
+        Swal.fire({
+          title: "Berhasil",
+          text: "Tanda tangan berhasil diupload!",
+          icon: "success",
+          timer: 3000,
+        });
+        return fileUrl;
+      } else {
+        alert("Upload gagal, tidak ada URL yang diterima.");
+        return null;
+      }
+    } catch (error) {
+      console.error("Gagal upload tanda tangan:", error);
+      Swal.fire({
+        title: "Gagal",
+        text: "Upload tanda tangan gagal. Silakan coba lagi.",
+        icon: "error",
+        timer: 3000,
+      });
+      return null;
+    }
+  };
+
+  const handleSaveSignature = async () => {
+    const canvas = signatureRef.current?.getCanvas();
+    if (!canvas) return;
+
+    const dataUrl = getSignatureDataUrlWithWhiteBackground(canvas);
+    if (!dataUrl) {
+      alert("Tanda tangan kosong.");
+      return;
+    }
+
+    const uploadedUrl = await uploadSignature(dataUrl);
+
+    if (uploadedUrl) {
+      onSignatureSave(uploadedUrl);
+      signatureRef.current?.off();
+      setIsSignatureSaved(true);
+    }
+
+    console.log(uploadedUrl);
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -280,12 +359,17 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             Tanda Tangan Pemohon
           </h3>
           <div
-            className="border border-gray-300 rounded bg-white overflow-visible"
+            className="border border-gray-500 rounded bg-white overflow-visible"
             style={{ width: SIG_W, height: SIG_H }}
           >
             <SignatureCanvas
               ref={signatureRef}
               penColor="black"
+              onEnd={() => {
+                if (signatureRef.current) {
+                  setIsEmpty(signatureRef.current.isEmpty());
+                }
+              }}
               canvasProps={{
                 width: SIG_W,
                 height: SIG_H,
@@ -297,36 +381,33 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           <div className="flex gap-4 mt-3">
             <button
               type="button"
+              disabled={isEmpty}
               onClick={() => {
                 signatureRef.current?.clear();
                 signatureRef.current?.on();
                 setIsSignatureSaved(false);
+                setIsEmpty(true);
               }}
-              className="px-3 py-1 bg-red-500 text-white text-sm rounded"
+              className={`px-3 py-1 text-white text-sm rounded ${
+                isEmpty ? "bg-gray-400 cursor-not-allowed" : "bg-red-500"
+              }`}
             >
               Hapus
             </button>
+
             <button
               type="button"
-              disabled={isSignatureSaved}
-              onClick={() => {
-                const dataUrl = signatureRef.current
-                  ?.getCanvas()
-                  .toDataURL("image/png");
-                if (dataUrl) {
-                  onSignatureSave(dataUrl);
-                  signatureRef.current?.off();
-                  setIsSignatureSaved(true);
-                }
-                console.log(dataUrl);
-              }}
+              disabled={isEmpty || isSignatureSaved}
+              onClick={handleSaveSignature}
               className={`px-3 py-1 text-white text-sm rounded ${
-                isSignatureSaved
+                isEmpty || isSignatureSaved
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-green-600"
               }`}
             >
-              Simpan Tanda Tangan
+              {isSignatureSaved
+                ? "Tanda Tangan Tersimpan"
+                : "Simpan Tanda Tangan"}
             </button>
           </div>
         </div>
