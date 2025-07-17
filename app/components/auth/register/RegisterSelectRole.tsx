@@ -14,12 +14,11 @@ export default function RegisterSelectRole({
     try {
       setCookie("role", JSON.stringify({ role: role }));
       onClose?.();
-      window.location.reload();
-    //   if (role == 2) {
-    //     router.push("/form-penerbit");
-    //   } else {
-    //     router.push("/form-pemodal");
-    //   }
+      if (role == 2) {
+        window.location.href = "/form-penerbit";
+      } else {
+        window.location.href = "/form-pemodal";
+      }
     } catch (err: any) {
       console.error("Error ", err);
     }
