@@ -252,29 +252,28 @@ const ComponentDataPribadi: React.FC<Props> = ({
               File maksimal berukuran 10mb
             </p>
 
+            {/* Input File yang disembunyikan */}
+            <input
+              type="file"
+              id="ktpUpload"
+              className="hidden"
+              onChange={handleFileChange}
+              disabled={uploadStatus["ktpUrl"] === true}
+              accept="application/pdf, image/*"
+              data-keyname="ktpUrl"
+            />
 
-          {/* Input File yang disembunyikan */}
-          <input
-            type="file"
-            id="ktpUpload"
-            className="hidden"
-            onChange={handleFileChange}
-            disabled={uploadStatus["ktpUrl"] === true}
-            accept="application/pdf, image/*"
-            data-keyname="ktpUrl"
-          />
-
-          {/* Label sebagai tombol */}
-          <label
-            htmlFor="ktpUpload"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#505050] text-white rounded-md cursor-pointer hover:bg-gray-800 transition"
-            // className={`inline-flex items-center gap-2 px-4 py-2 ${
-            //   uploadStatus["ktpUrl"]
-            //     ? "bg-gray-400 cursor-not-allowed"
-            //     : "bg-[#505050] hover:bg-gray-800"
-            // } text-white rounded-md transition`}
-          >
-            {/* {uploadStatus["ktpUrl"] ? (
+            {/* Label sebagai tombol */}
+            <label
+              htmlFor="ktpUpload"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-md cursor-pointer hover:bg-gray-800 transition"
+              // className={`inline-flex items-center gap-2 px-4 py-2 ${
+              //   uploadStatus["ktpUrl"]
+              //     ? "bg-gray-400 cursor-not-allowed"
+              //     : "bg-[#505050] hover:bg-gray-800"
+              // } text-white rounded-md transition`}
+            >
+              {/* {uploadStatus["ktpUrl"] ? (
               <>
                 <svg
                   className="animate-spin h-5 w-5 text-white"
@@ -299,23 +298,23 @@ const ComponentDataPribadi: React.FC<Props> = ({
                 Uploading...
               </>
             ) : ( */}
-            <>
-              <FaFileAlt size={20} className="mx-2" />
-              Upload Dokumen
-            </>
-            {/* )} */}
-          </label>
-        </div>
-        {formData.ktpUrl && (
-          <a
-            href={formData.ktpUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 underline text-sm block mt-2 mb-2"
-          >
-            Lihat Dokumen KTP
-          </a>
-        )}
+              <>
+                <FaFileAlt size={20} className="mx-2" />
+                Upload Dokumen
+              </>
+              {/* )} */}
+            </label>
+          </div>
+          {formData.ktpUrl && (
+            <a
+              href={formData.ktpUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline text-sm block mt-2 mb-2"
+            >
+              Lihat Dokumen KTP
+            </a>
+          )}
           <div className="mb-4">
             <label className="text-sm font-medium mb-2">
               Pendidikan Terakhir
@@ -446,7 +445,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
 
         <div className="mb-4 mt-4">
           <label className="text-md mb-2">Rekening Koran</label>
-          <p className="text-sm text-gray-400 mb-2">
+          <p className="text-xs text-gray-500 mb-2">
             File maksimal berukuran 10mb
           </p>
 
@@ -464,7 +463,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
           {/* Label sebagai tombol */}
           <label
             htmlFor="rekeningKoranUpload"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#505050] text-white rounded-md cursor-pointer hover:bg-gray-800 transition"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-md cursor-pointer hover:bg-gray-800 transition"
             // className={`inline-flex items-center gap-2 px-4 py-2 ${
             //   uploadStatus["rekeningKoran"]
             //     ? "bg-gray-400 cursor-not-allowed"

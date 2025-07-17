@@ -524,7 +524,7 @@ const FormPemodal: React.FC = () => {
         <button
           onClick={() => setSelectedIndex((prev) => prev - 1)}
           disabled={selectedIndex === 0}
-          className="px-4 py-2 bg-gray-500 text-white rounded disabled:opacity-50"
+          className="px-4 py-2 bg-gray-800 text-white rounded disabled:opacity-50"
         >
           Kembali
         </button>

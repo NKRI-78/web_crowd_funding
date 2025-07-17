@@ -403,7 +403,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
       <div>
         <div className="mb-4 mt-4">
           <label className="text-md mb-2">NPWP Perusahaan</label>
-          <p className="text-sm text-gray-400 mb-2">
+          <p className="text-xs text-gray-500 mb-2">
             File maksimal berukuran 10mb
           </p>
 
@@ -421,7 +421,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           {/* Label sebagai tombol */}
           <label
             htmlFor="npwpUrlUpload"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#505050] text-white rounded-md cursor-pointer hover:bg-gray-800 transition"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-md cursor-pointer hover:bg-gray-950 transition"
             // className={`inline-flex items-center gap-2 px-4 py-2 ${
             //   uploadStatus["npwpUrl"]
             //     ? "bg-gray-400 cursor-not-allowed"
