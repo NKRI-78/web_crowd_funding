@@ -1,46 +1,183 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { FaFileAlt } from "react-icons/fa";
+import FileUpload from "@/app/helper/FileUpload";
+import Select, { SingleValue } from "react-select";
+import { API_BACKEND } from "@/app/utils/constant";
+import { fetchCities, fetchProvinces } from "@/app/lib/fetchWilayah";
+import FormAlamat from "./FormAlamat";
+
+export const alamatSchema = z.object({
+  label: z.string().optional(),
+  provinsi: z.string().min(1, "Provinsi wajib diisi"),
+  kabupaten: z.string().min(1, "Kota wajib diisi"),
+  kecamatan: z.string().min(1, "Kecamatan wajib diisi"),
+  kelurahan: z.string().min(1, "Kelurahan wajib diisi"),
+  kodePos: z.string().min(1, "Kode pos wajib diisi"),
+  detailAlamat: z.string().min(1, "Detail alamat wajib diisi"),
+});
 
 const schema = z.object({
   namaPerusahaan: z.string().min(1, "Nama perusahaan wajib diisi"),
-  provinsi: z.string().optional(),
-  kabupaten: z.string().optional(),
-  kota: z.string().optional(),
-  kecamatan: z.string().optional(),
-  kelurahan: z.string().optional(),
-  kodePos: z.string().optional(),
-  detailAlamat: z.string().optional(),
+  alamat: z
+    .array(alamatSchema)
+    .min(1, "Minimal 1 alamat harus diisi")
+    .max(2, "Maksimal hanya 2 alamat"),
   detailKorespondensi: z.string().optional(),
   jumlahKaryawan: z.number().min(0, "Jumlah karyawan harus valid").optional(),
   fileNIB: z.string().optional(),
+  fileAkte: z.string().optional(),
+  fileSIUP: z.string().optional(),
+  fileTDP: z.string().optional(),
+  fileNpwp: z.string().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
 
+const fetchOptions = async (url: string, parentId?: string) => {
+  try {
+    const response = await axios.get(
+      `${API_BACKEND}/${url}${parentId ? `/${parentId}` : ""}`
+    );
+    console.log("URL", `${API_BACKEND}/${url}${parentId ? `/${parentId}` : ""}`);
+
+    return response.data?.data.map((item: any) => ({
+      value: String(item.id),
+      label: item.name,
+    }));
+  } catch (error) {
+    console.error("Failed to fetch options:", error);
+    return [];
+  }
+};
+
+type OptionType = { value: string; label: string };
+
 export default function PublisherForm() {
   const [isReady, setIsReady] = useState(false);
+
+  const [provinsiList, setProvinsiList] = useState<OptionType[]>([]);
+  const [kotaList, setKotaList] = useState<Record<number, OptionType[]>>({});
+  const [kecamatanList, setKecamatanList] = useState<
+    Record<number, OptionType[]>
+  >({});
+  const [kelurahanList, setKelurahanList] = useState<
+    Record<number, OptionType[]>
+  >({});
 
   const {
     register,
     handleSubmit,
     reset,
     watch,
+    control,
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
+    mode: "onBlur",
     defaultValues: {
       jumlahKaryawan: 0,
+      fileNIB: "",
+      fileAkte: "",
+      fileSIUP: "",
+      fileTDP: "",
+      alamat: [
+        {
+          label: "Alamat Perusahaan",
+          provinsi: "",
+          kabupaten: "",
+          kecamatan: "",
+          kelurahan: "",
+          kodePos: "",
+          detailAlamat: "",
+        },
+        {
+          label: "Alamat Korespondensi",
+          provinsi: "",
+          kabupaten: "",
+          kecamatan: "",
+          kelurahan: "",
+          kodePos: "",
+          detailAlamat: "",
+        },
+      ],
     },
   });
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { fields } = useFieldArray({ control, name: "alamat" });
+
+  useEffect(() => {
+    const loadProvinces = async () => {
+      const provinsiList = await fetchProvinces();
+      setProvinsiList(provinsiList);
+    };
+    loadProvinces();
+  }, []);
+  useEffect(() => {
+    fields.forEach((_, index) => {
+      const provId = watch(`alamat.${index}.provinsi`);
+      if (provId) {
+        fetchCities(provId).then((data) =>
+          setCityList((prev) => ({ ...prev, [index]: data }))
+        );
+      }
+    });
+  }, [watch("alamat")]);
+
+  const [cityList, setCityList] = useState<Record<number, OptionType[]>>({});
+  const [districtList, setDistrictList] = useState<
+    Record<number, OptionType[]>
+  >({});
+  const [subdistrictList, setSubdistrictList] = useState<
+    Record<number, OptionType[]>
+  >({});
+
+  useEffect(() => {
+    fields.forEach((_, index) => {
+      const provId = watch(`alamat.${index}.provinsi`);
+      if (provId) {
+        fetchCities(provId).then((data) =>
+          setCityList((prev) => ({ ...prev, [index]: data }))
+        );
+      }
+    });
+  }, [watch("alamat")]);
+
+  const handleUploadFile = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: keyof FormData
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("folder", "web");
+    formData.append("subfolder", "capbridge");
+    formData.append("media", file);
+
+    try {
+      const res = await axios.post(
+        "https://api-media.inovatiftujuh8.com/api/v1/media/upload",
+        formData
+      );
+
+      const fileUrl = res.data?.data?.path;
+      if (fileUrl) {
+        setValue(field, fileUrl);
+        alert(`Upload ${field} berhasil!`);
+      } else {
+        alert(`Upload ${field} gagal!`);
+      }
+    } catch (error) {
+      alert(`Upload ${field} error!`);
+    }
+  };
 
   // ✅ Load draft hanya di client
   useEffect(() => {
@@ -54,13 +191,18 @@ export default function PublisherForm() {
   // ✅ Simpan draft setiap perubahan
   const values = watch();
   useEffect(() => {
-    if (isReady) {
+    if (!isReady) return;
+
+    const timeout = setTimeout(() => {
       localStorage.setItem("publisherDraft", JSON.stringify(values));
-    }
+    }, 1000); // hanya simpan setelah 1 detik tidak ada perubahan
+
+    return () => clearTimeout(timeout);
   }, [values, isReady]);
 
   const onSubmit = async (data: FormData) => {
     try {
+      // console.log("Data ", data.kabupaten)
       const res = await axios.post("/api/publisher", data);
       console.log("Res:", res.data);
 
@@ -73,35 +215,9 @@ export default function PublisherForm() {
     }
   };
 
-  const handleButtonClick = () => {
-    fileInputRef.current?.click();
-  };
-
   if (!isReady) {
     return <p>Loading...</p>; // Tunggu reset jalan dulu
   }
-
-  const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("folder", "web");
-    formData.append("subfolder", "capbridge");
-    formData.append("media", file);
-
-    const res = await axios.post(
-      "https://api-media.inovatiftujuh8.com/api/v1/media/upload",
-      formData
-    );
-    const fileUrl = res.data;
-    if (fileUrl) {
-      setValue("fileNIB", fileUrl["data"]["path"]);
-      alert("Upload berhasil!");
-    } else {
-      alert("Upload gagal!");
-    }
-  };
 
   return (
     <section className="bg-white text-black items-center px-3 md:px-10 py-20 md:py-30">
@@ -132,134 +248,75 @@ export default function PublisherForm() {
             )}
           </div>
 
-          <>
-            <p className="text-sm mb-1">Nomor Induk Perusahaan (NIB)</p>
-            {/* Tombol custom */}
-            <button
-              onClick={handleButtonClick}
-              type="button"
-              className="flex flex-row items-center content-center w-56 bg-gray-800 text-white py-2 rounded-lg"
-            >
-              <FaFileAlt size={20} className="mx-2" /> Upload Dokumen
-            </button>
+          {/* Upload NIB */}
+          <FileUpload
+            label="Nomor Induk Berusaha (NIB)"
+            fileUrl={watch("fileNIB")}
+            onUpload={(e) => handleUploadFile(e, "fileNIB")}
+          />
 
-            {/* Input file hidden */}
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept="application/pdf"
-              onChange={handleUploadFile}
-              className="hidden"
-            />
+          {/* Upload Akte */}
+          <FileUpload
+            label="Akte Pendirian"
+            fileUrl={watch("fileAkte")}
+            onUpload={(e) => handleUploadFile(e, "fileAkte")}
+          />
 
-            {values.fileNIB && (
-              <a
-                href={values.fileNIB}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline text-sm block mt-2"
-              >
-                Lihat Dokumen NIB
-              </a>
-            )}
-            <p className="text-xs text-gray-500">
-              File maksimal berukuran 10mb
-            </p>
-          </>
-          {[
-            "Akte Pendirian Perusahaan",
-            "SK Kumham Pendirian",
-            "Akte Perubahan Terakhir",
-            "SK Kumham Terakhir",
-          ].map((label, idx) => (
-            <>
-              <div key={idx}>
-                <p className="text-sm mb-1">{label}</p>
-                <button
-                  type="button"
-                  className="flex flex-row items-center content-center w-56 bg-gray-800 text-white py-2 rounded-lg"
-                >
-                  <FaFileAlt size={20} className="mx-2" /> Upload Dokumen
-                </button>
-                <p className="text-xs text-gray-500">
-                  File maksimal berukuran 10mb
-                </p>
-              </div>
-            </>
-          ))}
+          {/* Upload SIUP */}
+          <FileUpload
+            label="SIUP"
+            fileUrl={watch("fileSIUP")}
+            onUpload={(e) => handleUploadFile(e, "fileSIUP")}
+          />
+
+          {/* Upload TDP */}
+          <FileUpload
+            label="TDP"
+            fileUrl={watch("fileTDP")}
+            onUpload={(e) => handleUploadFile(e, "fileTDP")}
+          />
+
+          <FileUpload
+            label="NPWP Perusahaan"
+            fileUrl={watch("fileNpwp")}
+            onUpload={(e) => handleUploadFile(e, "fileNpwp")}
+          />
         </div>
 
         {/* Kanan */}
         <div className="space-y-4">
-          <h3 className="font-semibold">Alamat Perusahaan</h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              {...register("provinsi")}
-              placeholder="Provinsi"
-              className="border px-3 py-2 rounded w-full"
+          {fields.map((item, index) => (
+            <FormAlamat
+              key={item.id}
+              index={index}
+              control={control}
+              setValue={setValue}
+              watch={watch}
+              register={register}
+              provinsiList={provinsiList}
+              kotaList={kotaList}
+              setKotaList={setKotaList}
+              kecamatanList={kecamatanList}
+              setKecamatanList={setKecamatanList}
+              kelurahanList={kelurahanList}
+              setKelurahanList={setKelurahanList}
+              fetchOptions={fetchOptions}
             />
-            <input
-              {...register("kabupaten")}
-              placeholder="Kabupaten"
-              className="border px-3 py-2 rounded w-full"
-            />
-            <input
-              {...register("kota")}
-              placeholder="Kota"
-              className="border px-3 py-2 rounded w-full"
-            />
-            <input
-              {...register("kecamatan")}
-              placeholder="Kecamatan"
-              className="border px-3 py-2 rounded w-full"
-            />
-            <input
-              {...register("kelurahan")}
-              placeholder="Kelurahan"
-              className="border px-3 py-2 rounded w-full"
-            />
-            <input
-              {...register("kodePos")}
-              placeholder="Kode Pos"
-              className="border px-3 py-2 rounded w-full"
-            />
-          </div>
-
-          <textarea
-            {...register("detailAlamat")}
-            placeholder="Detail Alamat"
-            className="w-full border px-3 py-2 rounded"
-          />
-
-          <h3 className="font-semibold">Alamat Korespondensi</h3>
-          <textarea
-            {...register("detailKorespondensi")}
-            placeholder="Detail Alamat"
-            className="w-full border px-3 py-2 rounded"
-          />
-
-          <div>
-            <p className="text-sm mb-1">NPWP Perusahaan</p>
-            <button
-              type="button"
-              className="flex flex-row items-center content-center w-56 bg-gray-800 text-white py-2 rounded-lg"
-            >
-              <FaFileAlt size={20} className="mx-2" /> Upload Dokumen
-            </button>
-            <p className="text-xs text-gray-500">
-              File maksimal berukuran 10mb
-            </p>
-          </div>
+          ))}
 
           <div>
             <label className="block mb-1">Jumlah Karyawan</label>
-            <input
-              {...register("jumlahKaryawan", { valueAsNumber: true })}
-              type="number"
-              className="border px-3 py-2 rounded w-full"
-              placeholder="Orang"
-            />
+            <div className="flex items-center border rounded overflow-hidden w-80">
+              <input
+                {...register("jumlahKaryawan", { valueAsNumber: true })}
+                type="number"
+                className="px-3 py-2 outline-none flex-1"
+                placeholder="0"
+              />
+              <span className="px-3 py-2 border-l bg-gray-100 text-gray-500 text-sm">
+                Orang
+              </span>
+            </div>
             {errors.jumlahKaryawan && (
               <p className="text-red-500 text-sm">
                 {errors.jumlahKaryawan.message}
@@ -268,7 +325,7 @@ export default function PublisherForm() {
           </div>
 
           <div className="flex flex-col md:flex-row gap-4">
-            <button
+            {/* <button
               type="button"
               onClick={() => {
                 alert("Draft disimpan!");
@@ -276,7 +333,7 @@ export default function PublisherForm() {
               className="flex-1 border border-gray-400 py-2 rounded"
             >
               Save as Draft
-            </button>
+            </button> */}
             <button
               type="submit"
               disabled={isSubmitting}
@@ -289,4 +346,7 @@ export default function PublisherForm() {
       </form>
     </section>
   );
+}
+function setCityList(arg0: (prev: any) => any): any {
+  throw new Error("Function not implemented.");
 }
