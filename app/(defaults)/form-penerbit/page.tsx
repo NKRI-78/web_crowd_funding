@@ -1,10 +1,7 @@
 import React from "react";
+import ParentPage from "./ParentPage";
 
 import type { Metadata } from "next";
-
-import FormPenerbit from "@/app/components/inputFormPenerbit/FormPenerbit";
-import FormPemodal from "@/app/components/inputFormPemodal/FormPemodal";
-import JabatanForm from "./FormPenerbitModal";
 
 export const metadata: Metadata = {
   title: "Form Penerbit | CapBridge",
@@ -12,8 +9,7 @@ export const metadata: Metadata = {
 };
 
 const FormPenerbitPage: React.FC = () => {
-  return <FormPenerbit />;
+  return <ParentPage />;
 };
 
 export default FormPenerbitPage;
-

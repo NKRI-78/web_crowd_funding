@@ -13,6 +13,8 @@ interface JobStructureFormData {
 interface FormPenerbitState {
   laporanKeuangan: string;
   susunanManajemen: JobStructureFormData[];
+  fotoProyek: string;
+  titleProyek: string;
   nilaiNominal: string;
   jenisObligasi: string;
   jangkaWaktu: string;
@@ -29,7 +31,28 @@ interface FormPenerbitState {
 export function useFormPenerbit() {
   const [state, setState] = useState<FormPenerbitState>({
     laporanKeuangan: "",
-    susunanManajemen: [],
+    susunanManajemen: [
+      {
+        title: "Komisaris",
+        fileKTP: "",
+        jabatan: "Komisaris",
+        id: "komisaris",
+        fileNPWP: "",
+        nama: "",
+        noKTP: "",
+      },
+      {
+        title: "Direksi",
+        fileKTP: "",
+        jabatan: "Direksi",
+        id: "direksi",
+        fileNPWP: "",
+        nama: "",
+        noKTP: "",
+      },
+    ],
+    fotoProyek: "",
+    titleProyek: "",
     nilaiNominal: "",
     jenisObligasi: "",
     jangkaWaktu: "",
@@ -46,6 +69,7 @@ export function useFormPenerbit() {
   useEffect(() => {
     const draftStr = localStorage.getItem("formPenerbitDraft");
     console.log(`draftStr ${draftStr}`);
+    console.log(`getItem dipanggil`);
     if (draftStr) {
       try {
         const draft = JSON.parse(draftStr);
@@ -55,6 +79,15 @@ export function useFormPenerbit() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("formPenerbitDraft", JSON.stringify(state));
+      console.log(`setItem dipanggil`);
+    } catch (error) {
+      console.error("Gagal menyimpan draft ke localStorage:", error);
+    }
+  }, [state]);
 
   const updateField = <K extends keyof FormPenerbitState>(
     key: K,
@@ -78,21 +111,13 @@ export function useFormPenerbit() {
     }));
   };
 
-  useEffect(() => {
-    try {
-      localStorage.setItem("formPenerbitDraft", JSON.stringify(state));
-    } catch (error) {
-      console.error("Gagal menyimpan draft ke localStorage:", error);
-    }
-  }, [state]);
-
   const addSusunanManajemen = (title: string) => {
     const newId = `${title.toLowerCase()}-${Date.now()}`;
     const newStructure: JobStructureFormData = {
       id: newId,
       title,
       nama: "",
-      jabatan: "",
+      jabatan: title,
       noKTP: "",
       fileKTP: "",
       fileNPWP: "",

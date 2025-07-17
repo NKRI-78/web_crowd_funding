@@ -14,8 +14,14 @@ import SectionSubtitle from "./_component/SectionSubtitle";
 import CustomSelection from "./_component/CustomSelection";
 import FormButton from "./_component/FormButton";
 import AddJobStructureModal from "./_component/AddJobStructureModal";
+import DropdownSelect from "./_component/DropdownSelect";
+import CurrencyField from "./_component/CurrencyField";
 
-const FormPenerbit: React.FC = () => {
+interface Props {
+  handlePageChanged: () => void;
+}
+
+const FormPenerbit: React.FC<Props> = ({ handlePageChanged }) => {
   //* main hooks
   const {
     formState,
@@ -34,7 +40,7 @@ const FormPenerbit: React.FC = () => {
       <div className="w-full py-28 text-black grid grid-cols-1 md:grid-cols-2 gap-10 mx-auto">
         {/* === left section === */}
         <section className="w-full">
-          {/* 1. Struktur Permodalan */}
+          {/* 2. Struktur Permodalan */}
           <div className="w-full flex flex-col">
             <SectionTitle text="2. Struktur Permodalan" />
 
@@ -45,7 +51,7 @@ const FormPenerbit: React.FC = () => {
             />
 
             <FileInput
-              label="Upload Dokumen"
+              fileName="Laporan Keuangan"
               fileUrl={formState.laporanKeuangan}
               onChange={(fileUrl) => {
                 updateField("laporanKeuangan", fileUrl);
@@ -53,48 +59,34 @@ const FormPenerbit: React.FC = () => {
             />
           </div>
 
-          {/* 2. Susunan Manajemen */}
+          {/* 3. Susunan Manajemen */}
           <div className="w-full flex flex-col mt-6">
             <SectionTitle text="3. Susunan Manajemen" />
 
-            {formState.susunanManajemen.length !== 0 ? (
-              formState.susunanManajemen.map((structure) => (
-                <JobStructureForm
-                  key={structure.id}
-                  label={structure.title}
-                  data={structure}
-                  onChange={(updated) =>
-                    updateSusunanManajemen(structure.id, updated)
-                  }
-                  showDeleteButton={
-                    structure.id !== "komisaris" && structure.id !== "direksi"
-                  }
-                  onDelete={() => removeSusunanManajemen(structure.id)}
-                />
-              ))
-            ) : (
-              <div
-                onClick={() => setShowAddJobStructureModal(true)}
-                className="w-full mt-2 bg-white border border-dashed border-gray-300 text-gray-500 rounded-md p-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-gray-50 transition"
-              >
-                <p className="text-sm font-medium">
-                  Belum ada susunan manajemen
-                </p>
-                <p className="text-xs">Klik untuk menambahkan jabatan baru</p>
-              </div>
-            )}
+            {formState.susunanManajemen.map((structure) => (
+              <JobStructureForm
+                key={structure.id}
+                label={structure.title}
+                data={structure}
+                onChange={(updated) =>
+                  updateSusunanManajemen(structure.id, updated)
+                }
+                showDeleteButton={
+                  structure.id !== "komisaris" && structure.id !== "direksi"
+                }
+                onDelete={() => removeSusunanManajemen(structure.id)}
+              />
+            ))}
 
-            {formState.susunanManajemen.length !== 0 && (
-              <button
-                type="button"
-                className="w-full bg-white/90 border border-dashed border-gray-300 text-gray-500 py-2 mt-2 rounded-md text-sm hover:bg-gray-50 active:scale-[0.98] transition"
-                onClick={() => {
-                  setShowAddJobStructureModal(true);
-                }}
-              >
-                + Tambah Jabatan
-              </button>
-            )}
+            <button
+              type="button"
+              className="w-full bg-white/90 border border-dashed border-gray-300 text-gray-500 py-2 mt-2 rounded-md text-sm hover:bg-gray-50 active:scale-[0.98] transition"
+              onClick={() => {
+                setShowAddJobStructureModal(true);
+              }}
+            >
+              + Tambah Jabatan
+            </button>
 
             {/* Modal Tambah Struktur */}
             <AddJobStructureModal
@@ -104,43 +96,79 @@ const FormPenerbit: React.FC = () => {
             />
 
             <div className="mt-4">
-              <TextField
-                label="Jenis Obligasi"
-                placeholder="(Pemerintah / Koprasi / Ritel / Syariah atau Syukuk)"
-                value={formState.jenisObligasi || ""}
-                className="mb-2"
-                onChange={(e) => updateField("jenisObligasi", e.target.value)}
+              <SectionPoint text="Foto Proyek" className="mt-2" />
+              <SectionSubtitle
+                text="File maksimal berukuran 10mb"
+                className="my-1"
               />
+
+              <FileInput
+                fileName="Laporan Keuangan"
+                fileUrl={formState.fotoProyek}
+                onChange={(fileUrl) => {
+                  updateField("fotoProyek", fileUrl);
+                }}
+              />
+
               <TextField
+                label="Title Proyek"
+                placeholder="Title Proyek"
+                value={formState.titleProyek || ""}
+                className="my-2"
+                onChange={(e) => updateField("titleProyek", e.target.value)}
+              />
+              <DropdownSelect
+                label="Jenis Obligasi"
+                options={[{ label: "Konvensional", value: "konvensional" }]}
+                defaultValue="konvensional"
+                value={formState.jenisObligasi || ""}
+                onChange={(val) => {
+                  updateField("jenisObligasi", val);
+                }}
+                placeholder="Jenis Obligasi"
+                maxHeightDropdown="180px"
+                className="mb-2"
+              />
+              <CurrencyField
                 label="Nilai Nominal"
                 placeholder="Rp."
-                type="number"
                 value={formState.nilaiNominal || ""}
                 className="mb-2"
                 onChange={(e) => updateField("nilaiNominal", e.target.value)}
               />
-              <div className="w-full flex gap-2">
-                <TextField
-                  label="Jangka Waktu"
-                  placeholder="6 Bulan"
-                  value={formState.jangkaWaktu || ""}
-                  className="flex-[1]"
-                  onChange={(e) => updateField("jangkaWaktu", e.target.value)}
-                />
-                <TextField
-                  label="Tingkat Bunga"
-                  placeholder="10%"
-                  value={formState.tingkatBunga || ""}
-                  className="flex-[1]"
-                  onChange={(e) => updateField("tingkatBunga", e.target.value)}
-                />
-              </div>
             </div>
           </div>
         </section>
 
         {/* === right section === */}
         <section className="w-full">
+          <div className="w-full flex gap-2 mb-3">
+            <DropdownSelect
+              label="Jangka Waktu"
+              options={[{ label: "6 Bulan", value: "6 Bulan" }]}
+              defaultValue="6 Bulan"
+              value={formState.jangkaWaktu || ""}
+              onChange={(val) => {
+                updateField("jangkaWaktu", val);
+              }}
+              placeholder="Jangka Waktu"
+              maxHeightDropdown="180px"
+              className="flex-[1]"
+            />
+            <DropdownSelect
+              label="Tingkat Bunga"
+              options={[{ label: "10%", value: "10" }]}
+              defaultValue="10"
+              value={formState.tingkatBunga || ""}
+              onChange={(val) => {
+                updateField("tingkatBunga", val);
+              }}
+              placeholder="Tingkat Bunga"
+              maxHeightDropdown="180px"
+              className="flex-[1]"
+            />
+          </div>
+
           <MonthSelection
             label="Jadwal Pembayaran Bunga"
             selected={formState.jadwalBunga || ""}
@@ -177,6 +205,7 @@ const FormPenerbit: React.FC = () => {
             label="Deskripsi Pekerjaan"
             placeholder="Maks 1500 kata"
             type="textarea"
+            maxWords={1500}
             value={formState.deskripsiPekerjaan || ""}
             onChange={(e) => updateField("deskripsiPekerjaan", e.target.value)}
           />
@@ -196,7 +225,7 @@ const FormPenerbit: React.FC = () => {
               className="my-1"
             />
             <FileInput
-              label="Upload Dokumen"
+              fileName="Company Profile"
               fileUrl={formState.companyProfile}
               onChange={(fileUrl) => {
                 updateField("companyProfile", fileUrl);
@@ -205,9 +234,11 @@ const FormPenerbit: React.FC = () => {
           </div>
 
           <div className="w-full flex justify-end gap-4 mt-6">
-            <FormButton type="outlined">Save a Draft</FormButton>
+            <FormButton type="outlined" onClick={handlePageChanged}>
+              Kembali
+            </FormButton>
             <FormButton onClick={() => console.log(formState)}>
-              Kirim Data
+              Kirim Data || Hit API
             </FormButton>
           </div>
         </section>

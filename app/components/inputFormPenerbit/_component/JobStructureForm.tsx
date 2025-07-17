@@ -1,5 +1,5 @@
 import React from "react";
-import PenerbitTextField from "./TextField";
+import TextField from "./TextField";
 import FileInput from "./FileInput";
 import SectionPoint from "./SectionPoint";
 import SectionSubtitle from "./SectionSubtitle";
@@ -45,26 +45,40 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
       </div>
 
       <div className="mt-2 mb-2 w-full flex gap-2">
-        <PenerbitTextField
-          placeholder="Nama"
-          value={data.nama}
-          className="flex-[1]"
-          onChange={(e) => onChange({ ...data, nama: e.target.value })}
-        />
-        <PenerbitTextField
-          placeholder="Jabatan"
-          value={data.jabatan}
-          className="flex-[1]"
-          onChange={(e) => onChange({ ...data, jabatan: e.target.value })}
-        />
+        <div className="w-full">
+          <p className="text-[11px] mb-1 font-semibold text-gray-500">Nama</p>
+          <TextField
+            placeholder="Nama"
+            value={data.nama}
+            className="flex-[1]"
+            onChange={(e) => onChange({ ...data, nama: e.target.value })}
+          />
+        </div>
+
+        <div className="w-full">
+          <p className="text-[11px] mb-1 font-semibold text-gray-500">
+            Jabatan
+          </p>
+          <TextField
+            placeholder="Jabatan"
+            value={data.jabatan}
+            disabled={true}
+            className="flex-[1]"
+            onChange={(e) => onChange({ ...data, jabatan: e.target.value })}
+          />
+        </div>
       </div>
 
-      <PenerbitTextField
-        placeholder="No KTP"
-        type="number"
-        value={data.noKTP}
-        onChange={(e) => onChange({ ...data, noKTP: e.target.value })}
-      />
+      <div className="w-full">
+        <p className="text-[11px] mb-1 font-semibold text-gray-500">No KTP</p>
+        <TextField
+          placeholder="No KTP"
+          value={data.noKTP}
+          type="number"
+          maxLength={16}
+          onChange={(e) => onChange({ ...data, noKTP: e.target.value })}
+        />
+      </div>
 
       <SectionSubtitle
         text="File maksimal berukuran 10mb"
@@ -73,12 +87,14 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
 
       <div className="mb-2 flex gap-2">
         <FileInput
-          label="Upload KTP"
+          fileName="Upload KTP"
+          placeholder="Upload KTP"
           fileUrl={data.fileKTP}
           onChange={(fileUrl) => onChange({ ...data, fileKTP: fileUrl })}
         />
         <FileInput
-          label="Upload NPWP"
+          fileName="Upload NPWP"
+          placeholder="Upload NPWP"
           fileUrl={data.fileNPWP}
           onChange={(fileUrl) => onChange({ ...data, fileNPWP: fileUrl })}
         />
