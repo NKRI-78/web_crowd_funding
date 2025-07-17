@@ -71,7 +71,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   const penghasilanBulanan = [
     "1jt - 5jt",
     "5jt - 10jt",
-    "10 - 15jt",
+    "10jt - 15jt",
     "15jt - 20jt",
     "20jt - 50jt",
     "50jt - 100jt",
@@ -171,36 +171,36 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div className="md:border-r-2 md:border-gray-200 pr-7">
-        <h2 className="text-lg md:text-xl font-bold mb-4">
+        <h2 className="font-semibold text-black mb-2">
           3. Informasi Pekerjaan (Jika Bekerja)
         </h2>
 
         <div>
-          <label className="text-md mb-2">Nama Perusahaan</label>
+          <label className="text-sm font-medium mb-2">Nama Perusahaan</label>
           <input
             type="text"
             name="namaPerusahaan"
             value={formData.namaPerusahaan}
             onChange={onChange}
             placeholder="Masukan Nama Perusahaan"
-            className="border border-gray-500 p-2 w-full rounded mb-4"
+            className="border border-gray-500 p-2 w-full rounded mb-4 placeholder:text-sm"
           />
         </div>
 
         <div>
-          <label className="text-md mb-2">Jabatan</label>
+          <label className="text-sm font-medium mb-2">Jabatan</label>
           <input
             type="text"
             name="jabatan"
             value={formData.jabatan}
             onChange={onChange}
             placeholder="Masukan Jabatan"
-            className="border border-gray-500 p-2 w-full rounded mb-4"
+            className="border border-gray-500 p-2 w-full rounded mb-4 placeholder:text-sm"
           />
         </div>
 
         <div className="mb-4">
-          <label htmlFor="address" className="text-md mb-2">
+          <label htmlFor="address" className="text-sm font-medium mb-2">
             Alamat Perusahaan
           </label>
           <textarea
@@ -209,18 +209,20 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             value={formData.alamatPerusahaan}
             onChange={onChange}
             placeholder="Masukan Alamat Perusahaan"
-            className="border border-gray-500 p-2 w-full rounded resize-none"
+            className="border border-gray-500 p-2 w-full rounded resize-none placeholder:text-sm"
             rows={4}
           />
         </div>
 
         <div className="mb-4">
-          <label className="text-md mb-2">Penghasilan Bulanan</label>
+          <label className="text-sm font-medium mb-2">
+            Penghasilan Bulanan
+          </label>
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {penghasilanBulanan.map((item) => (
               <label
                 key={item}
-                className="flex items-center gap-2 cursor-pointer"
+                className="flex text-sm items-center gap-2 cursor-pointer"
               >
                 <input
                   type="radio"
@@ -235,14 +237,14 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             ))}
           </div>
         </div>
-        <h2 className="text-lg md:text-xl font-bold mb-4">4. Profil Resiko</h2>
-        <label className="text-md mb-2">Tujuan Investasi</label>
+        <h2 className="font-semibold text-black mb-2">4. Profil Resiko</h2>
+        <label className="text-sm font-medium mb-2">Tujuan Investasi</label>
         <div className="mb-4">
           <div className="flex flex-wrap gap-6">
             {tujuanInvestasi.map((option) => (
               <label
                 key={option}
-                className="flex items-center gap-2 cursor-pointer"
+                className="flex text-sm items-center gap-2 cursor-pointer"
               >
                 <input
                   type="radio"
@@ -269,12 +271,12 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
         </div>
 
         <div className="mb-4">
-          <label className="text-md mb-2">Toleransi Resiko</label>
+          <label className="text-sm font-medium mb-2">Toleransi Resiko</label>
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {toleransiResiko.map((item) => (
               <label
                 key={item}
-                className="flex items-center gap-2 cursor-pointer"
+                className="flex text-sm items-center gap-2 cursor-pointer"
               >
                 <input
                   type="radio"
@@ -291,12 +293,14 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
         </div>
 
         <div className="mb-4">
-          <label className="text-md mb-2">Pengalaman Investasi</label>
+          <label className="text-sm font-medium mb-2">
+            Pengalaman Investasi
+          </label>
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pengalamanInvestasi.map((item) => (
               <label
                 key={item}
-                className="flex items-center gap-2 cursor-pointer"
+                className="flex text-sm items-center gap-2 cursor-pointer"
               >
                 <input
                   type="radio"
@@ -316,12 +320,14 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
       {/* KANAN */}
       <div>
         <div className="mb-4">
-          <label className="text-md mb-2">Pegetahuan tentang Pasar Modal</label>
+          <label className="text-sm font-medium mb-2">
+            Pegetahuan tentang Pasar Modal
+          </label>
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pengetahuanPasarModal.map((item) => (
               <label
                 key={item}
-                className="flex items-center gap-2 cursor-pointer"
+                className="flex text-sm items-center gap-2 cursor-pointer"
               >
                 <input
                   type="radio"
@@ -431,15 +437,17 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
 
             <button
               type="button"
-              disabled={isSignatureSaved}
+              disabled={isEmpty || isSignatureSaved}
               onClick={handleSaveSignature}
               className={`px-3 py-1 text-white text-sm rounded ${
-                isSignatureSaved
+                isEmpty || isSignatureSaved
                   ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-green-500"
+                  : "bg-green-600"
               }`}
             >
-              Simpan Tanda Tangan
+              {isSignatureSaved
+                ? "Tanda Tangan Tersimpan"
+                : "Simpan Tanda Tangan"}
             </button>
           </div>
         </div>

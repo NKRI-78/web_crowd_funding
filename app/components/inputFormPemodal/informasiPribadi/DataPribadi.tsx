@@ -105,60 +105,56 @@ const ComponentDataPribadi: React.FC<Props> = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-center">
       <div className="md:border-r-2 md:border-gray-200 pr-7">
-        <div className="text-start mb-3">
-          <h4 className="font-bold text-xl md:text-4xl">
-            Isi Data Sebagai Pemodal
-          </h4>
-          <span className="text-sm md:text-lg text-gray-400">
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold">Isi Data Sebagai Pemodal</h2>
+          <p className="text-sm text-gray-600">
             Untuk memastikan kelancaran proses verifikasi dan layanan yang
             optimal, kami mengajak Anda untuk melengkapi seluruh data secara
             jujur, benar, dan akurat.
-          </span>
-        </div>
-        <h2 className="text-lg md:text-xl font-bold mb-4">
-          1. Informasi Pribadi
-        </h2>
+          </p>
 
-        <div>
-          <label className="text-md mb-2">Nama Lengkap</label>
-          <input
-            type="text"
-            name="nama"
-            value={formData.nama}
-            onChange={onChange}
-            placeholder="Nama"
-            className="border border-gray-500 p-2 w-full rounded mb-4"
-          />
-        </div>
+          <h3 className="font-semibold text-black">1. Informasi Pribadi</h3>
 
-        <div>
-          <label className="text-md mb-2">NIK KTP</label>
-          <input
-            type="text"
-            name="nik"
-            value={formData.nik}
-            onChange={onChange}
-            placeholder="NIK KTP"
-            className="border border-gray-500 p-2 w-full rounded mb-4"
-          />
-        </div>
-
-        <div className="flex gap-2">
           <div>
-            <label className="text-md mb-2">Tempat Lahir</label>
+            <label className="text-sm font-medium mb-2">Nama Lengkap</label>
             <input
               type="text"
-              name="tempatLahir"
-              value={formData.tempatLahir}
+              name="nama"
+              value={formData.nama}
               onChange={onChange}
-              placeholder="Tempat Lahir"
-              className="border border-gray-500 p-2 w-full rounded mb-4"
+              placeholder="Nama"
+              className="border p-2 w-full rounded mb-4 placeholder:text-sm"
             />
           </div>
 
           <div>
-            <label className="text-md mb-2">Tanggal Lahir</label>
-            {/* <input
+            <label className="text-sm font-medium mb-2">NIK KTP</label>
+            <input
+              type="text"
+              name="nik"
+              value={formData.nik}
+              onChange={onChange}
+              placeholder="NIK KTP"
+              className="border p-2 w-full rounded mb-4 placeholder:text-sm"
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <div>
+              <label className="text-sm font-medium mb-2">Tempat Lahir</label>
+              <input
+                type="text"
+                name="tempatLahir"
+                value={formData.tempatLahir}
+                onChange={onChange}
+                placeholder="Tempat Lahir"
+                className="border p-2 w-full rounded mb-4 placeholder:text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2">Tanggal Lahir</label>
+              {/* <input
               type="text"
               name="tanggalLahir"
               value={formData.tanggalLahir}
@@ -167,127 +163,132 @@ const ComponentDataPribadi: React.FC<Props> = ({
               className="border p-2 w-full rounded mb-4"
             /> */}
 
-            <Flatpickr
-              options={{
-                dateFormat: "Y-m-d",
-                maxDate: "today",
-              }}
-              value={formData.tanggalLahir}
-              onChange={(selectedDates) => {
-                const selectedDate = selectedDates[0];
-                if (selectedDate) {
-                  const formatted = selectedDate.toISOString().split("T")[0];
-                  onChange({
-                    target: {
-                      name: "tanggalLahir",
-                      value: formatted,
-                    },
-                  } as React.ChangeEvent<HTMLInputElement>);
-                }
-              }}
-              placeholder="Tanggal Lahir"
-              className="border border-gray-500 p-2 w-full rounded mb-4"
+              <Flatpickr
+                options={{
+                  dateFormat: "Y-m-d",
+                  maxDate: "today",
+                }}
+                value={formData.tanggalLahir}
+                onChange={(selectedDates) => {
+                  const selectedDate = selectedDates[0];
+                  if (selectedDate) {
+                    const formatted = selectedDate.toISOString().split("T")[0];
+                    onChange({
+                      target: {
+                        name: "tanggalLahir",
+                        value: formatted,
+                      },
+                    } as React.ChangeEvent<HTMLInputElement>);
+                  }
+                }}
+                placeholder="Tanggal Lahir"
+                className="border p-2 w-full rounded mb-4 placeholder:text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <label className="text-sm font-medium mb-2">Jenis Kelamin</label>
+            <div className="flex gap-6">
+              {optionsGender.map((gender) => (
+                <label
+                  key={gender}
+                  className="flex items-center gap-2 cursor-pointer text-sm"
+                >
+                  <input
+                    type="radio"
+                    name="jenisKelamin"
+                    value={gender}
+                    checked={formData.jenisKelamin === gender}
+                    onChange={() => onGenderChange(gender)}
+                    className="form-radio text-[#4821C2]"
+                  />
+                  <span className="text-gray-700">{gender}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <label className="text-sm font-medium mb-2">
+              Status Pernikahan
+            </label>
+            <div className="flex gap-6">
+              {optionsPernikahan.map((wedding) => (
+                <label
+                  key={wedding}
+                  className="flex text-sm items-center gap-2 cursor-pointer"
+                >
+                  <input
+                    type="radio"
+                    name="statusPernikahan"
+                    value={wedding}
+                    checked={formData.statusPernikahan === wedding}
+                    onChange={() => onWeddingChange(wedding)}
+                    className="form-radio text-[#4821C2]"
+                  />
+                  <span className="text-gray-700">{wedding}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <label className="text-sm font-medium mb-2">Upload KTP</label>
+            <p className="text-xs text-gray-500 mb-2">
+              File maksimal berukuran 10mb
+            </p>
+
+            {/* Input File yang disembunyikan */}
+            <input
+              type="file"
+              id="ktpUpload"
+              className="hidden"
+              onChange={handleFileChange}
             />
+
+            {/* Label sebagai tombol */}
+            <label
+              htmlFor="ktpUpload"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-md cursor-pointer hover:bg-gray-800 transition"
+            >
+              <FaFileAlt size={20} className="mx-2" />
+              Upload Dokumen
+            </label>
           </div>
-        </div>
+          {formData.ktpUrl && (
+            <a
+              href={formData.ktpUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline text-sm block mt-2 mb-2"
+            >
+              Lihat Dokumen KTP
+            </a>
+          )}
 
-        <div className="mb-4">
-          <label className="text-md mb-2">Jenis Kelamin</label>
-          <div className="flex gap-6">
-            {optionsGender.map((gender) => (
-              <label
-                key={gender}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <input
-                  type="radio"
-                  name="jenisKelamin"
-                  value={gender}
-                  checked={formData.jenisKelamin === gender}
-                  onChange={() => onGenderChange(gender)}
-                  className="form-radio text-[#4821C2]"
-                />
-                <span className="text-gray-700">{gender}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div className="mb-4">
-          <label className="text-md mb-2">Status Pernikahan</label>
-          <div className="flex gap-6">
-            {optionsPernikahan.map((wedding) => (
-              <label
-                key={wedding}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <input
-                  type="radio"
-                  name="statusPernikahan"
-                  value={wedding}
-                  checked={formData.statusPernikahan === wedding}
-                  onChange={() => onWeddingChange(wedding)}
-                  className="form-radio text-[#4821C2]"
-                />
-                <span className="text-gray-700">{wedding}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div className="mb-4">
-          <label className="text-md mb-2">Upload KTP</label>
-          <p className="text-sm text-gray-400 mb-2">
-            File maksimal berukuran 10mb
-          </p>
-
-          {/* Input File yang disembunyikan */}
-          <input
-            type="file"
-            id="ktpUpload"
-            className="hidden"
-            onChange={handleFileChange}
-          />
-
-          {/* Label sebagai tombol */}
-          <label
-            htmlFor="ktpUpload"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#505050] text-white rounded-md cursor-pointer hover:bg-gray-800 transition"
-          >
-            <FaFileAlt size={20} className="mx-2" />
-            Upload Dokumen
-          </label>
-        </div>
-        {formData.ktpUrl && (
-          <a
-            href={formData.ktpUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 underline text-sm block mt-2 mb-2"
-          >
-            Lihat Dokumen KTP
-          </a>
-        )}
-
-        <div className="mb-4">
-          <label className="text-md mb-2">Pendidikan Terakhir</label>
-          <div className="grid grid-cols-3 gap-y-2 gap-x-4">
-            {optionsLastEducation.map((education) => (
-              <label
-                key={education}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <input
-                  type="radio"
-                  name="pendidikanTerakhir"
-                  value={education}
-                  checked={formData.pendidikanTerakhir === education}
-                  onChange={() => onEducationChange(education)}
-                  className="form-radio text-[#4821C2]"
-                />
-                <span className="text-gray-700">{education}</span>
-              </label>
-            ))}
+          <div className="mb-4">
+            <label className="text-sm font-medium mb-2">
+              Pendidikan Terakhir
+            </label>
+            <div className="grid grid-cols-3 gap-y-2 gap-x-4">
+              {optionsLastEducation.map((education) => (
+                <label
+                  key={education}
+                  className="flex text-sm items-center gap-2 cursor-pointer"
+                >
+                  <input
+                    type="radio"
+                    name="pendidikanTerakhir"
+                    value={education}
+                    checked={formData.pendidikanTerakhir === education}
+                    onChange={() => onEducationChange(education)}
+                    className="form-radio text-[#4821C2]"
+                  />
+                  <span className="text-gray-700">{education}</span>
+                </label>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -295,12 +296,12 @@ const ComponentDataPribadi: React.FC<Props> = ({
       {/* form bagian kanan */}
       <div>
         <div className="mb-4">
-          <label className="text-md mb-2">Pekerjaan</label>
+          <label className="text-sm font-medium mb-2">Pekerjaan</label>
           <div className="flex flex-wrap gap-6">
             {pekerjaanOptions.map((option) => (
               <label
                 key={option}
-                className="flex items-center gap-2 cursor-pointer"
+                className="flex text-sm items-center gap-2 cursor-pointer"
               >
                 <input
                   type="radio"
@@ -322,12 +323,12 @@ const ComponentDataPribadi: React.FC<Props> = ({
               value={formData.pekerjaanLainnya}
               onChange={onChange}
               placeholder="Lainnya"
-              className="mt-3 border border-gray-500 p-2 w-full rounded text-sm"
+              className="mt-3 border p-2 w-full rounded text-sm"
             />
           )}
         </div>
         <div className="mb-4">
-          <label htmlFor="address" className="text-md mb-2">
+          <label htmlFor="address" className="text-sm font-medium mb-2">
             Alamat Lengkap
           </label>
           <textarea
@@ -336,28 +337,26 @@ const ComponentDataPribadi: React.FC<Props> = ({
             value={formData.addres}
             onChange={onChange}
             placeholder="Alamat sesuai KTP dan alamat domisili"
-            className="border border-gray-500 p-2 w-full rounded resize-none"
+            className="border p-2 w-full rounded resize-none placeholder:text-sm"
             rows={4}
           ></textarea>
         </div>
-        <h2 className="text-lg md:text-xl font-bold mb-4">
-          2. Informasi Rekening Bank
-        </h2>
+        <h2 className="font-semibold text-black">2. Informasi Rekening Bank</h2>
 
         <div>
-          <label className="text-md mb-2">Nama Bank</label>
+          <label className="text-sm font-medium mb-2">Nama Bank</label>
           <input
             type="text"
             name="namaBank"
             placeholder="Nama Bank (misal: BCA)"
             value={formData.namaBank}
             onChange={onChange}
-            className="border border-gray-500 rounded p-2 w-full mb-4"
+            className="border rounded p-2 w-full mb-4 placeholder:text-sm"
           />
         </div>
 
         <div>
-          <label className="text-md mb-2">Nomor Rekening</label>
+          <label className="text-sm font-medium mb-2">Nomor Rekening</label>
           <input
             type="text"
             name="nomorRekening"
@@ -366,31 +365,33 @@ const ComponentDataPribadi: React.FC<Props> = ({
             placeholder="Masukkan Nomor Rekening (maks 15 digit)"
             value={formData.nomorRekening}
             onChange={onChange}
-            className="border border-gray-500 rounded p-2 w-full mb-4"
+            className="border rounded p-2 w-full mb-4 placeholder:text-sm"
           />
         </div>
 
         <div>
-          <label className="text-md mb-2">Nama Pemilik Rekening</label>
+          <label className="text-sm font-medium mb-2">
+            Nama Pemilik Rekening
+          </label>
           <input
             type="text"
             name="namaPemilik"
             placeholder="Masukkan Nama Pemilik Rekening"
             value={formData.namaPemilik}
             onChange={onChange}
-            className="border border-gray-500 rounded p-2 w-full mb-4"
+            className="border rounded p-2 w-full mb-4 placeholder:text-sm"
           />
         </div>
 
         <div>
-          <label className="text-md mb-2">Cabang Bank</label>
+          <label className="text-sm font-medium mb-2">Cabang Bank</label>
           <input
             type="text"
             name="cabangBank"
             placeholder="Masukkan Cabang Bank"
             value={formData.cabangBank}
             onChange={onChange}
-            className="border border-gray-500 rounded p-2 w-full"
+            className="border rounded p-2 w-full placeholder:text-sm"
           />
         </div>
       </div>
