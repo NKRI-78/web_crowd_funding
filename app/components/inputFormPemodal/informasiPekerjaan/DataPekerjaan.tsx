@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import SignatureCanvas from "react-signature-canvas";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -65,6 +65,8 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
 }) => {
   const signatureRef = useRef<SignatureCanvas | null>(null);
   const [isSignatureSaved, setIsSignatureSaved] = useState(false);
+  const formPemodalStr = localStorage.getItem("formPemodal");
+  const formPemodal = formPemodalStr ? JSON.parse(formPemodalStr) : null;
 
   const penghasilanBulanan = [
     "1jt - 5jt",
@@ -128,6 +130,8 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
       return;
     }
 
+    localStorage.setItem("signature", dataUrl);
+
     const uploadedUrl = await uploadSignature(dataUrl);
 
     if (uploadedUrl) {
@@ -135,9 +139,34 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
       signatureRef.current?.off();
       setIsSignatureSaved(true);
     }
-
-    console.log(uploadedUrl);
   };
+
+  const handleClearSignature = () => {
+    signatureRef.current?.clear();
+    signatureRef.current?.on();
+    setIsSignatureSaved(false);
+    localStorage.removeItem("signature");
+    localStorage.setItem(
+      "formPemodal",
+      JSON.stringify({ ...formPemodal, signature: "" })
+    );
+  };
+
+  useEffect(() => {
+    const storedSignature = localStorage.getItem("signature");
+
+    if (storedSignature && signatureRef.current) {
+      const img = new Image();
+      img.src = storedSignature;
+      img.onload = () => {
+        const canvas = signatureRef.current?.getCanvas();
+        const ctx = canvas?.getContext("2d");
+        ctx?.drawImage(img, 0, 0);
+        signatureRef.current?.off();
+        setIsSignatureSaved(true);
+      };
+    }
+  }, []);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -381,15 +410,20 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           <div className="flex gap-4 mt-3">
             <button
               type="button"
-              disabled={isEmpty}
               onClick={() => {
-                signatureRef.current?.clear();
-                signatureRef.current?.on();
-                setIsSignatureSaved(false);
-                setIsEmpty(true);
+                handleClearSignature();
+                Swal.fire({
+                  title: "Berhasil",
+                  text: "Tanda tangan berhasil dihapus!",
+                  icon: "success",
+                  timer: 3000,
+                });
               }}
+              disabled={!isSignatureSaved}
               className={`px-3 py-1 text-white text-sm rounded ${
-                isEmpty ? "bg-gray-400 cursor-not-allowed" : "bg-red-500"
+                !isSignatureSaved
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-red-500 hover:bg-red-600"
               }`}
             >
               Hapus
@@ -397,17 +431,15 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
 
             <button
               type="button"
-              disabled={isEmpty || isSignatureSaved}
+              disabled={isSignatureSaved}
               onClick={handleSaveSignature}
               className={`px-3 py-1 text-white text-sm rounded ${
-                isEmpty || isSignatureSaved
+                isSignatureSaved
                   ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-green-600"
+                  : "bg-green-500"
               }`}
             >
-              {isSignatureSaved
-                ? "Tanda Tangan Tersimpan"
-                : "Simpan Tanda Tangan"}
+              Simpan Tanda Tangan
             </button>
           </div>
         </div>
