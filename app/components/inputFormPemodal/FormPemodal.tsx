@@ -176,6 +176,9 @@ const FormPemodal: React.FC = () => {
     setDataPekerjaan((prev) => ({
       ...prev,
       signature,
+    }));
+  };
+
   const handleWeddingChange = (wedding: string) => {
     setDataPribadi((prev) => ({ ...prev, statusPernikahan: wedding }));
   };
