@@ -63,6 +63,10 @@ const ComponentDataPribadi: React.FC<Props> = ({
     {}
   );
 
+  const today = new Date();
+  const maxDate = new Date();
+  maxDate.setFullYear(today.getFullYear() - 17);
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     const keyName = e.target.getAttribute("data-keyname");
@@ -88,12 +92,23 @@ const ComponentDataPribadi: React.FC<Props> = ({
       );
 
       const fileUrl = res.data?.data?.path;
+
       if (fileUrl) {
+        const labelMap: { [key: string]: string } = {
+          ktpUrl: "KTP",
+          rekeningKoran: "Rekening Koran",
+          npwpUrl: "NPWP Perusahaan",
+        };
+
+        const formattedKey = labelMap[keyName] || keyName;
+
         Swal.fire({
           title: "Berhasil",
-          text: `Upload ${keyName} berhasil!`,
+          text: `Upload ${formattedKey} berhasil!`,
           icon: "success",
           timer: 3000,
+          timerProgressBar: true,
+          showConfirmButton: false,
         });
 
         onUploadKTP(fileUrl, keyName ?? "");
@@ -178,8 +193,9 @@ const ComponentDataPribadi: React.FC<Props> = ({
 
               <Flatpickr
                 options={{
-                  dateFormat: "Y-m-d",
-                  maxDate: "today",
+                  dateFormat: "d-m-Y",
+                  // maxDate: "today",
+                  maxDate: maxDate,
                 }}
                 value={formData.tanggalLahir}
                 onChange={(selectedDates) => {
@@ -266,7 +282,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
             {/* Label sebagai tombol */}
             <label
               htmlFor="ktpUpload"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-md cursor-pointer hover:bg-gray-800 transition"
+              className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
               // className={`inline-flex items-center gap-2 px-4 py-2 ${
               //   uploadStatus["ktpUrl"]
               //     ? "bg-gray-400 cursor-not-allowed"
@@ -299,7 +315,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
               </>
             ) : ( */}
               <>
-                <FaFileAlt size={20} className="mx-2" />
+                <FaFileAlt />
                 Upload Dokumen
               </>
               {/* )} */}
@@ -410,7 +426,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
             name="nomorRekening"
             inputMode="numeric"
             pattern="[0-9]*"
-            placeholder="Masukkan Nomor Rekening (maks 15 digit)"
+            placeholder="Masukkan Nomor Rekening"
             value={formData.nomorRekening}
             onChange={onChange}
             className="border rounded p-2 w-full mb-4 placeholder:text-sm"
@@ -463,7 +479,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
           {/* Label sebagai tombol */}
           <label
             htmlFor="rekeningKoranUpload"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-md cursor-pointer hover:bg-gray-800 transition"
+            className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
             // className={`inline-flex items-center gap-2 px-4 py-2 ${
             //   uploadStatus["rekeningKoran"]
             //     ? "bg-gray-400 cursor-not-allowed"
@@ -496,7 +512,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
               </>
             ) : ( */}
             <>
-              <FaFileAlt size={20} className="mx-2" />
+              <FaFileAlt />
               Upload Dokumen
             </>
             {/* )} */}
