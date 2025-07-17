@@ -14,8 +14,6 @@ import SectionSubtitle from "./_component/SectionSubtitle";
 import CustomSelection from "./_component/CustomSelection";
 import FormButton from "./_component/FormButton";
 import AddJobStructureModal from "./_component/AddJobStructureModal";
-import axios from "axios";
-import Swal from "sweetalert2";
 
 const FormPenerbit: React.FC = () => {
   //* main hooks
@@ -32,7 +30,7 @@ const FormPenerbit: React.FC = () => {
     useState(false);
 
   return (
-    <div className="px-6 md:px-24">
+    <div className="px-6 md:px-24 bg-white">
       <div className="w-full py-28 text-black grid grid-cols-1 md:grid-cols-2 gap-10 mx-auto">
         {/* === left section === */}
         <section className="w-full">
@@ -158,6 +156,7 @@ const FormPenerbit: React.FC = () => {
           <CustomSelection
             label="Penggunaan Dana"
             options={["Modal Usaha", "Pengembangan Usaga", "Proyek"]}
+            enableOtherSelection={false}
             selected={formState.penggunaanDana || ""}
             onChange={(val) => updateField("penggunaanDana", val)}
           />
@@ -183,8 +182,8 @@ const FormPenerbit: React.FC = () => {
           />
 
           <CustomSelection
-            label="Apakah di biaya oleh?"
-            options={["APBN", "APBD"]}
+            label="Apakah di biaya oleh APBN/APBD?"
+            options={["Iya", "Tidak"]}
             selected={formState.jenisBiaya || ""}
             enableOtherSelection={false}
             onChange={(val) => updateField("jenisBiaya", val)}
