@@ -116,7 +116,6 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
         return null;
       }
     } catch (error) {
-      console.error("Gagal upload tanda tangan:", error);
       Swal.fire({
         title: "Gagal",
         text: "Upload tanda tangan gagal. Silakan coba lagi.",
@@ -201,11 +200,21 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
 
       const fileUrl = res.data?.data?.path;
       if (fileUrl) {
+        const labelMap: { [key: string]: string } = {
+          ktpUrl: "KTP",
+          rekeningKoran: "Rekening Koran",
+          npwpUrl: "NPWP Perusahaan",
+        };
+
+        const formattedKey = labelMap[keyName] || keyName;
+
         Swal.fire({
           title: "Berhasil",
-          text: `Upload ${keyName} berhasil!`,
+          text: `Upload ${formattedKey} berhasil!`,
           icon: "success",
           timer: 3000,
+          timerProgressBar: true,
+          showConfirmButton: false,
         });
 
         onUploadKTP(fileUrl, keyName ?? "");
@@ -230,36 +239,36 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div className="md:border-r-2 md:border-gray-200 pr-7">
-        <h2 className="font-semibold text-black mb-2">
+        <h2 className="text-lg md:text-xl font-bold mb-4">
           3. Informasi Pekerjaan (Jika Bekerja)
         </h2>
 
         <div>
-          <label className="text-sm font-medium mb-2">Nama Perusahaan</label>
+          <label className="text-md mb-2">Nama Perusahaan</label>
           <input
             type="text"
             name="namaPerusahaan"
             value={formData.namaPerusahaan}
             onChange={onChange}
             placeholder="Masukan Nama Perusahaan"
-            className="border border-gray-500 p-2 w-full rounded mb-4 placeholder:text-sm"
+            className="border border-gray-500 p-2 w-full rounded mb-4"
           />
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-2">Jabatan</label>
+          <label className="text-md mb-2">Jabatan</label>
           <input
             type="text"
             name="jabatan"
             value={formData.jabatan}
             onChange={onChange}
             placeholder="Masukan Jabatan"
-            className="border border-gray-500 p-2 w-full rounded mb-4 placeholder:text-sm"
+            className="border border-gray-500 p-2 w-full rounded mb-4"
           />
         </div>
 
         <div className="mb-4">
-          <label htmlFor="address" className="text-sm font-medium mb-2">
+          <label htmlFor="address" className="text-md mb-2">
             Alamat Perusahaan
           </label>
           <textarea
@@ -268,20 +277,18 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             value={formData.alamatPerusahaan}
             onChange={onChange}
             placeholder="Masukan Alamat Perusahaan"
-            className="border border-gray-500 p-2 w-full rounded resize-none placeholder:text-sm"
+            className="border border-gray-500 p-2 w-full rounded resize-none"
             rows={4}
           />
         </div>
 
         <div className="mb-4">
-          <label className="text-sm font-medium mb-2">
-            Penghasilan Bulanan
-          </label>
+          <label className="text-md mb-2">Penghasilan Bulanan</label>
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {penghasilanBulanan.map((item) => (
               <label
                 key={item}
-                className="flex text-sm items-center gap-2 cursor-pointer"
+                className="flex items-center gap-2 cursor-pointer"
               >
                 <input
                   type="radio"
@@ -296,14 +303,14 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             ))}
           </div>
         </div>
-        <h2 className="font-semibold text-black mb-2">4. Profil Resiko</h2>
-        <label className="text-sm font-medium mb-2">Tujuan Investasi</label>
+        <h2 className="text-lg md:text-xl font-bold mb-4">4. Profil Resiko</h2>
+        <label className="text-md mb-2">Tujuan Investasi</label>
         <div className="mb-4">
           <div className="flex flex-wrap gap-6">
             {tujuanInvestasi.map((option) => (
               <label
                 key={option}
-                className="flex text-sm items-center gap-2 cursor-pointer"
+                className="flex items-center gap-2 cursor-pointer"
               >
                 <input
                   type="radio"
@@ -330,12 +337,12 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
         </div>
 
         <div className="mb-4">
-          <label className="text-sm font-medium mb-2">Toleransi Resiko</label>
+          <label className="text-md mb-2">Toleransi Resiko</label>
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {toleransiResiko.map((item) => (
               <label
                 key={item}
-                className="flex text-sm items-center gap-2 cursor-pointer"
+                className="flex items-center gap-2 cursor-pointer"
               >
                 <input
                   type="radio"
@@ -352,14 +359,12 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
         </div>
 
         <div className="mb-4">
-          <label className="text-sm font-medium mb-2">
-            Pengalaman Investasi
-          </label>
+          <label className="text-md mb-2">Pengalaman Investasi</label>
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pengalamanInvestasi.map((item) => (
               <label
                 key={item}
-                className="flex text-sm items-center gap-2 cursor-pointer"
+                className="flex items-center gap-2 cursor-pointer"
               >
                 <input
                   type="radio"
@@ -375,14 +380,12 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           </div>
         </div>
         <div className="mb-4">
-          <label className="text-sm font-medium mb-2">
-            Pegetahuan tentang Pasar Modal
-          </label>
+          <label className="text-md mb-2">Pegetahuan tentang Pasar Modal</label>
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pengetahuanPasarModal.map((item) => (
               <label
                 key={item}
-                className="flex text-sm items-center gap-2 cursor-pointer"
+                className="flex items-center gap-2 cursor-pointer"
               >
                 <input
                   type="radio"
@@ -403,7 +406,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
       <div>
         <div className="mb-4 mt-4">
           <label className="text-md mb-2">NPWP Perusahaan</label>
-          <p className="text-xs text-gray-500 mb-2">
+          <p className="text-sm text-gray-400 mb-2">
             File maksimal berukuran 10mb
           </p>
 
@@ -421,7 +424,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           {/* Label sebagai tombol */}
           <label
             htmlFor="npwpUrlUpload"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-md cursor-pointer hover:bg-gray-950 transition"
+            className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
             // className={`inline-flex items-center gap-2 px-4 py-2 ${
             //   uploadStatus["npwpUrl"]
             //     ? "bg-gray-400 cursor-not-allowed"
@@ -454,7 +457,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
               </>
             ) : ( */}
             <>
-              <FaFileAlt size={20} className="mx-2" />
+              <FaFileAlt />
               Upload Dokumen
             </>
             {/* )} */}
@@ -565,17 +568,15 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
 
             <button
               type="button"
-              disabled={isEmpty || isSignatureSaved}
+              disabled={isSignatureSaved}
               onClick={handleSaveSignature}
               className={`px-3 py-1 text-white text-sm rounded ${
-                isEmpty || isSignatureSaved
+                isSignatureSaved
                   ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-green-600"
+                  : "bg-green-500"
               }`}
             >
-              {isSignatureSaved
-                ? "Tanda Tangan Tersimpan"
-                : "Simpan Tanda Tangan"}
+              Simpan Tanda Tangan
             </button>
           </div>
         </div>
