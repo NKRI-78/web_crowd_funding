@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useRef, useState } from "react";
+import SignatureCanvas from "react-signature-canvas";
 
 interface Props {
   formData: {
@@ -11,11 +12,10 @@ interface Props {
     toleransiResiko: string;
     pengalamanInvestasi: string;
     pengetahuanPasarModal: string;
-
     setujuKebenaranData: boolean;
     setujuRisikoInvestasi: boolean;
+    signature: string;
   };
-
   onChange: (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -27,7 +27,11 @@ interface Props {
   onPengalamanInvestasi: (value: string) => void;
   onPengetahuanPasarModal: (value: string) => void;
   onCheckboxChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSignatureSave: (signature: string) => void;
 }
+
+const SIG_W = 300;
+const SIG_H = 200;
 
 const ComponentDataPekerjaan: React.FC<Props> = ({
   formData,
@@ -38,7 +42,11 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   onPengalamanInvestasi,
   onPengetahuanPasarModal,
   onCheckboxChange,
+  onSignatureSave,
 }) => {
+  const signatureRef = useRef<SignatureCanvas | null>(null);
+  const [isSignatureSaved, setIsSignatureSaved] = useState(false);
+
   const penghasilanBulanan = [
     "1jt - 5jt",
     "5jt - 10jt",
@@ -51,12 +59,14 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   const toleransiResiko = ["Rendah", "Menengah", "Tinggi"];
   const pengalamanInvestasi = ["Tidak Ada", "Kurang", "Cukup", "Banyak"];
   const pengetahuanPasarModal = ["Tidak Ada", "Kurang", "Cukup", "Banyak"];
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div className="md:border-r-2 md:border-gray-200 pr-7">
         <h2 className="text-lg md:text-xl font-bold mb-4">
           3. Informasi Pekerjaan (Jika Bekerja)
         </h2>
+
         <div>
           <label className="text-md mb-2">Nama Perusahaan</label>
           <input
@@ -68,6 +78,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             className="border border-gray-500 p-2 w-full rounded mb-4"
           />
         </div>
+
         <div>
           <label className="text-md mb-2">Jabatan</label>
           <input
@@ -79,6 +90,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             className="border border-gray-500 p-2 w-full rounded mb-4"
           />
         </div>
+
         <div className="mb-4">
           <label htmlFor="address" className="text-md mb-2">
             Alamat Perusahaan
@@ -91,26 +103,26 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             placeholder="Masukan Alamat Perusahaan"
             className="border border-gray-500 p-2 w-full rounded resize-none"
             rows={4}
-          ></textarea>
+          />
         </div>
 
         <div className="mb-4">
           <label className="text-md mb-2">Penghasilan Bulanan</label>
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {penghasilanBulanan.map((penghasilanBulanan) => (
+            {penghasilanBulanan.map((item) => (
               <label
-                key={penghasilanBulanan}
+                key={item}
                 className="flex items-center gap-2 cursor-pointer"
               >
                 <input
                   type="radio"
                   name="penghasilanBulanan"
-                  value={penghasilanBulanan}
-                  checked={formData.penghasilanBulanan === penghasilanBulanan}
-                  onChange={() => onPenghasilanBulanan(penghasilanBulanan)}
+                  value={item}
+                  checked={formData.penghasilanBulanan === item}
+                  onChange={() => onPenghasilanBulanan(item)}
                   className="form-radio text-[#4821C2]"
                 />
-                <span className="text-gray-700">{penghasilanBulanan}</span>
+                <span className="text-gray-700">{item}</span>
               </label>
             ))}
           </div>
@@ -126,7 +138,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
               >
                 <input
                   type="radio"
-                  name="pekerjaan"
+                  name="tujuanInvestasi"
                   value={option}
                   checked={formData.tujuanInvestasi === option}
                   onChange={() => onTujuanInvetasi(option)}
@@ -147,24 +159,24 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             />
           )}
         </div>
+
         <div className="mb-4">
           <label className="text-md mb-2">Toleransi Resiko</label>
-
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {toleransiResiko.map((toleransiResiko) => (
+            {toleransiResiko.map((item) => (
               <label
-                key={toleransiResiko}
+                key={item}
                 className="flex items-center gap-2 cursor-pointer"
               >
                 <input
                   type="radio"
                   name="toleransiResiko"
-                  value={toleransiResiko}
-                  checked={formData.toleransiResiko === toleransiResiko}
-                  onChange={() => onToleransiResiko(toleransiResiko)}
+                  value={item}
+                  checked={formData.toleransiResiko === item}
+                  onChange={() => onToleransiResiko(item)}
                   className="form-radio text-[#4821C2]"
                 />
-                <span className="text-gray-700">{toleransiResiko}</span>
+                <span className="text-gray-700">{item}</span>
               </label>
             ))}
           </div>
@@ -173,20 +185,20 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
         <div className="mb-4">
           <label className="text-md mb-2">Pengalaman Investasi</label>
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {pengalamanInvestasi.map((pengalamanInvestasi) => (
+            {pengalamanInvestasi.map((item) => (
               <label
-                key={pengalamanInvestasi}
+                key={item}
                 className="flex items-center gap-2 cursor-pointer"
               >
                 <input
                   type="radio"
                   name="pengalamanInvestasi"
-                  value={pengalamanInvestasi}
-                  checked={formData.pengalamanInvestasi === pengalamanInvestasi}
-                  onChange={() => onPengalamanInvestasi(pengalamanInvestasi)}
+                  value={item}
+                  checked={formData.pengalamanInvestasi === item}
+                  onChange={() => onPengalamanInvestasi(item)}
                   className="form-radio text-[#4821C2]"
                 />
-                <span className="text-gray-700">{pengalamanInvestasi}</span>
+                <span className="text-gray-700">{item}</span>
               </label>
             ))}
           </div>
@@ -198,29 +210,24 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
         <div className="mb-4">
           <label className="text-md mb-2">Pegetahuan tentang Pasar Modal</label>
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {pengetahuanPasarModal.map((pengetahuanPasarModal) => (
+            {pengetahuanPasarModal.map((item) => (
               <label
-                key={pengetahuanPasarModal}
+                key={item}
                 className="flex items-center gap-2 cursor-pointer"
               >
                 <input
                   type="radio"
                   name="pengetahuanPasarModal"
-                  value={pengetahuanPasarModal}
-                  checked={
-                    formData.pengetahuanPasarModal === pengetahuanPasarModal
-                  }
-                  onChange={() =>
-                    onPengetahuanPasarModal(pengetahuanPasarModal)
-                  }
+                  value={item}
+                  checked={formData.pengetahuanPasarModal === item}
+                  onChange={() => onPengetahuanPasarModal(item)}
                   className="form-radio text-[#4821C2]"
                 />
-                <span className="text-gray-700">{pengetahuanPasarModal}</span>
+                <span className="text-gray-700">{item}</span>
               </label>
             ))}
           </div>
         </div>
-        {/* Pernyataan Kebenaran Data */}
         <div className="mb-6">
           <h3 className="font-semibold text-gray-900 mb-2">
             Pernyataan Kebenaran Data
@@ -245,7 +252,6 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           </label>
         </div>
 
-        {/* Pernyataan Memahami Risiko Investasi */}
         <div className="mb-6">
           <h3 className="font-semibold text-gray-900 mb-2">
             Pernyataan Memahami Risiko Investasi
@@ -253,9 +259,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           <p className="text-sm text-gray-500 mb-3">
             Saya memahami bahwa setiap investasi mengandung risiko, termasuk
             kemungkinan kehilangan sebagian atau seluruh dana yang
-            diinvestasikan. Saya telah membaca dan memahami profil risiko serta
-            bersedia menanggung konsekuensinya sesuai keputusan investasi saya
-            sendiri.
+            diinvestasikan...
           </p>
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -269,6 +273,62 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
               Ya, saya setuju
             </span>
           </label>
+        </div>
+
+        <div className="mb-6">
+          <h3 className="font-semibold text-gray-900 mb-2">
+            Tanda Tangan Pemohon
+          </h3>
+          <div
+            className="border border-gray-300 rounded bg-white overflow-visible"
+            style={{ width: SIG_W, height: SIG_H }}
+          >
+            <SignatureCanvas
+              ref={signatureRef}
+              penColor="black"
+              canvasProps={{
+                width: SIG_W,
+                height: SIG_H,
+                className: "sigCanvas block",
+              }}
+            />
+          </div>
+
+          <div className="flex gap-4 mt-3">
+            <button
+              type="button"
+              onClick={() => {
+                signatureRef.current?.clear();
+                signatureRef.current?.on();
+                setIsSignatureSaved(false);
+              }}
+              className="px-3 py-1 bg-red-500 text-white text-sm rounded"
+            >
+              Hapus
+            </button>
+            <button
+              type="button"
+              disabled={isSignatureSaved}
+              onClick={() => {
+                const dataUrl = signatureRef.current
+                  ?.getCanvas()
+                  .toDataURL("image/png");
+                if (dataUrl) {
+                  onSignatureSave(dataUrl);
+                  signatureRef.current?.off();
+                  setIsSignatureSaved(true);
+                }
+                console.log(dataUrl);
+              }}
+              className={`px-3 py-1 text-white text-sm rounded ${
+                isSignatureSaved
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-green-600"
+              }`}
+            >
+              Simpan Tanda Tangan
+            </button>
+          </div>
         </div>
       </div>
     </div>
