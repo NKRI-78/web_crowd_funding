@@ -197,7 +197,11 @@ const ComponentDataPribadi: React.FC<Props> = ({
                   // maxDate: "today",
                   maxDate: maxDate,
                 }}
-                value={formData.tanggalLahir}
+                value={
+                  formData.tanggalLahir
+                    ? new Date(formData.tanggalLahir)
+                    : undefined
+                }
                 onChange={(selectedDates) => {
                   const selectedDate = selectedDates[0];
                   if (selectedDate) {
