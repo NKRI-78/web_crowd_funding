@@ -82,9 +82,9 @@ const Home: React.FC = () => {
   return (
     <div>
       {/* Hero Section */}
-      <section className="bg-[#4821C1] rounded-b-5xl grid grid-cols-1 md:grid-cols-2 items-center px-10 md:px-20 py-40">
+      <section className="bg-[#4821C1] rounded-b-5xl grid grid-cols-1 md:grid-cols-2 items-center px-6 md:px-20 py-20 md:py-40">
         {/* Left content */}
-        <div className="space-y-6 z-10 relative">
+        <div className="space-y-6 z-10 relative text-center md:text-left">
           <h1 className="text-3xl md:text-4xl font-bold leading-tight">
             Selamat Datang di CapBridge
           </h1>
@@ -96,7 +96,7 @@ const Home: React.FC = () => {
           </p>
 
           {/* Logos */}
-          <div className="flex gap-6 items-center">
+          <div className="flex justify-center md:justify-start gap-6 items-center">
             <img
               src="/images/covered/ojk.png"
               alt="OJK Logo"
@@ -112,22 +112,22 @@ const Home: React.FC = () => {
 
         {/* Right Stats */}
         <div className="mt-10 md:mt-0 z-10 relative text-white">
-          <div className="space-y-6 text-right">
+          <div className="space-y-6 text-center md:text-right items-center md:items-end flex flex-col">
             <div>
               <p className="text-md text-white">Dana Tersalurkan</p>
               <p className="text-2xl font-bold text-[#4CD137]">
-                Rp 2.250.000.000
+                Rp 0
               </p>
             </div>
             <div>
               <p className="text-md text-white">Pengembalian Dana</p>
               <p className="text-2xl font-bold text-[#4CD137]">
-                Rp 900.000.000
+                Rp 0
               </p>
             </div>
             <div>
               <p className="text-md text-white">Rata-rata Realisasi ROI</p>
-              <p className="text-2xl font-bold text-[#4CD137]">20%</p>
+              <p className="text-2xl font-bold text-[#4CD137]">0%</p>
             </div>
           </div>
         </div>
@@ -166,25 +166,6 @@ const Home: React.FC = () => {
         >
           Lihat Proyek Selengkapnya
         </button>
-        <div className="flex flex-col items-center justify-center gap-4">
-        <button
-        onClick={() => setIsOpen(true)}
-        className="px-4 py-2 bg-blue-600 text-black rounded"
-      >
-        Open Modal
-      </button>
-
-        <Modal
-          isOpen={isOpen}
-          onClose={() => setIsOpen(false)}
-          title="Welcome to the Modal"
-        >
-          <p className="text-gray-600">
-            This modal uses Headless UI v2+ with Tailwind and smooth
-            transitions.
-          </p>
-        </Modal>
-      </div>
       </section>
 
       <section className="bg-white text-black py-16 px-6 md:px-20 text-center">

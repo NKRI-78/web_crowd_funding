@@ -8,6 +8,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { loadSession, logout } from "@redux/slices/authSlice";
 import Link from "next/link";
 import RoleModal from "@components/modal/role/Role";
+import Modal from "@/app/helper/Modal";
+import RegisterV2 from "../auth/register/RegisterV2";
+import RegisterOtp from "../auth/register/RegisterOtp";
+import RegisterSelectRole from "../auth/register/RegisterSelectRole";
 
 const Navbar: React.FC = () => {
   const [isSticky, setIsSticky] = useState(false);
@@ -26,7 +30,9 @@ const Navbar: React.FC = () => {
   const [userData, setUserData] = useState<any>(null);
   const [hydrated, setHydrated] = useState(false);
 
-  const [showModal, setShowModal] = useState(false);
+  const [step, setStep] = useState<"register" | "otp" | "role" | null>(null);
+
+  const closeModal = () => setStep(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -130,10 +136,17 @@ const Navbar: React.FC = () => {
                   Pasar Sekunder
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link className="text-white" href="#">
                   Penerbit
                 </Link>
+              </li> */}
+              <li
+                className={
+                  pathname == "/form-pemodal" ? "text-[#4CD137]" : "text-white"
+                }
+              >
+                <Link href="/form-pemodal">Form Pemodal</Link>
               </li>
               {hydrated && userData !== null ? (
                 <>
@@ -159,11 +172,14 @@ const Navbar: React.FC = () => {
                   </a>
                 </li>
               )}
-              <li onClick={() => setShowModal(true)}>
-                <Link className="text-white" href="#">
+              <div className="flex justify-between px-4">
+                <button
+                  onClick={() => setStep("register")}
+                  className="text-white"
+                >
                   Daftar
-                </Link>
-              </li>
+                </button>
+              </div>
             </ul>
           </div>
 
@@ -186,14 +202,26 @@ const Navbar: React.FC = () => {
             <li className={pathname == "/about-us" ? "text-[#4CD137]" : ""}>
               <Link href="/about-us">Tentang Kami</Link>
             </li>
-            <li>
-              <Link href="#">Pasar Sekunder</Link>
-            </li>
-            <li>
-              <Link href="#">Penerbit</Link>
-            </li>
             {hydrated && userData !== null ? (
               <>
+                <li
+                  className={
+                    pathname == "/form-penerbit"
+                      ? "text-[#4CD137]"
+                      : "text-white"
+                  }
+                >
+                  <Link href="/form-penerbit">Penerbit</Link>
+                </li>
+                <li
+                  className={
+                    pathname == "/form-pemodal"
+                      ? "text-[#4CD137]"
+                      : "text-white"
+                  }
+                >
+                  <Link href="/form-pemodal">Form Pemodal</Link>
+                </li>
                 <li>Halo, {userData.email}</li>
                 <li>
                   <button
@@ -226,15 +254,35 @@ const Navbar: React.FC = () => {
             {hydrated && userData !== null ? (
               <></>
             ) : (
-              <li onClick={() => setShowModal(true)}>
-                <Link href="#">Daftar</Link>
-              </li>
+              <button
+                className="text-white"
+                onClick={() => setStep("register")}
+              >
+                Daftar
+              </button>
             )}
           </ul>
         </div>
       </nav>
+      <Modal isOpen={step === "register"} onClose={closeModal} title="Daftar">
+        <RegisterV2 onNext={() => setStep("otp")} onClose={closeModal} />
+      </Modal>
 
-      <RoleModal open={showModal} onClose={() => setShowModal(false)} />
+      <Modal
+        isOpen={step === "otp"}
+        onClose={closeModal}
+        title="Verifikasi OTP"
+      >
+        <RegisterOtp onNext={() => setStep("role")} onClose={closeModal} />
+      </Modal>
+      <Modal
+        isOpen={step === "role"}
+        onClose={closeModal}
+        title="Verifikasi OTP"
+      >
+        <RegisterSelectRole onClose={closeModal} />
+      </Modal>
+      {/* <RoleModal open={showModal} onClose={() => setShowModal(false)} /> */}
     </>
   );
 };
