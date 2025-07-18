@@ -5,6 +5,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 import Cookies from "js-cookie";
 
@@ -409,6 +410,7 @@ const FormPemodal: React.FC = () => {
 
       localStorage.removeItem("formPemodal");
       localStorage.removeItem("signature");
+      Cookies.remove("formPemodal");
       setSelectedIndex(0);
       router.push("/");
     } catch (error) {
