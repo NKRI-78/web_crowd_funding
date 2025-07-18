@@ -6,12 +6,14 @@ import Swal from "sweetalert2";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 
+import Cookies from "js-cookie";
+
 import ComponentDataPribadi from "./informasiPribadi/DataPribadi";
 import ComponentDataPekerjaan from "./informasiPekerjaan/DataPekerjaan";
 
 const FormPemodal: React.FC = () => {
   const router = useRouter();
-  const userData = localStorage.getItem("user");
+  const userData = Cookies.get("user");
   const user = userData ? JSON.parse(userData) : null;
   const token = user?.token;
 
@@ -49,41 +51,8 @@ const FormPemodal: React.FC = () => {
     signature: z.string().min(1, "Tanda tangan wajib"),
   });
 
-  // const [dataPribadi, setDataPribadi] = useState({
-  //   nama: "",
-  //   nik: "",
-  //   tempatLahir: "",
-  //   tanggalLahir: "",
-  //   jenisKelamin: "",
-  //   statusPernikahan: "",
-  //   pendidikanTerakhir: "",
-  //   pekerjaan: "",
-  //   pekerjaanLainnya: "",
-  //   addres: "",
-  //   namaBank: "",
-  //   nomorRekening: "",
-  //   namaPemilik: "",
-  //   cabangBank: "",
-  //   ktpUrl: "",
-  // });
-
-  // const [dataPekerjaan, setDataPekerjaan] = useState({
-  //   namaPerusahaan: "",
-  //   jabatan: "",
-  //   alamatPerusahaan: "",
-  //   penghasilanBulanan: "",
-  //   tujuanInvestasi: "",
-  //   tujuanInvestasiLainnya: "",
-  //   toleransiResiko: "",
-  //   pengalamanInvestasi: "",
-  //   pengetahuanPasarModal: "",
-  //   setujuKebenaranData: false,
-  //   setujuRisikoInvestasi: false,
-  //   signature: "",
-  // });
-
   const [dataPribadi, setDataPribadi] = useState(() => {
-    const saved = localStorage.getItem("formPemodal");
+    const saved = Cookies.get("formPemodal");
     if (saved) {
       const parsed = JSON.parse(saved);
       return {
@@ -126,7 +95,7 @@ const FormPemodal: React.FC = () => {
   });
 
   const [dataPekerjaan, setDataPekerjaan] = useState(() => {
-    const saved = localStorage.getItem("formPemodal");
+    const saved = Cookies.get("formPemodal");
     if (saved) {
       const parsed = JSON.parse(saved);
       return {
@@ -173,10 +142,9 @@ const FormPemodal: React.FC = () => {
   ) => {
     const { name, value } = e.target;
 
-    // Hanya izinkan angka dan maksimal 16 digit untuk NIK
     if (name === "nik") {
-      const numericValue = value.replace(/\D/g, ""); // hapus non-angka
-      if (numericValue.length > 16) return; // batasi 16 digit
+      const numericValue = value.replace(/\D/g, "");
+      if (numericValue.length > 16) return;
 
       setDataPribadi((prev) => ({
         ...prev,
@@ -186,8 +154,7 @@ const FormPemodal: React.FC = () => {
     }
 
     if (name === "nomorRekening") {
-      const numericValue = value.replace(/\D/g, ""); // hapus non-angka
-      // if (numericValue.length > 16) return;
+      const numericValue = value.replace(/\D/g, "");
 
       setDataPribadi((prev) => ({
         ...prev,
@@ -213,19 +180,12 @@ const FormPemodal: React.FC = () => {
     }));
   };
 
-  // useEffect(() => {
-  //   const saved = localStorage.getItem("formPemodal");
-  //   if (saved) {
-  //     setDataPribadi(JSON.parse(saved));
-  //   }
-  // }, []);
-
   useEffect(() => {
-    const saved = localStorage.getItem("formPemodal");
+    const saved = Cookies.get("formPemodal");
+
     if (saved) {
       const parsed = JSON.parse(saved);
 
-      // Pisahkan data berdasarkan field masing-masing
       setDataPribadi({
         nama: parsed.nama || "",
         nik: parsed.nik || "",
@@ -263,14 +223,13 @@ const FormPemodal: React.FC = () => {
     }
   }, []);
 
-  // Auto simpan ke localStorage setiap ada perubahan dataPribadi
   useEffect(() => {
     const fullData = {
       ...dataPribadi,
       ...dataPekerjaan,
     };
 
-    localStorage.setItem("formPemodal", JSON.stringify(fullData));
+    Cookies.set("formPemodal", JSON.stringify(fullData));
   }, [dataPribadi, dataPekerjaan]);
 
   const handleGenderChange = (gender: string) => {
@@ -357,19 +316,13 @@ const FormPemodal: React.FC = () => {
   };
 
   const handleNext = () => {
-    // const fullData = {
-    //   ...dataPribadi,
-    // };
-
-    // localStorage.setItem("formPemodal", JSON.stringify(fullData));
     setSelectedIndex((prev) => prev + 1);
   };
 
   const handleSubmit = async () => {
-    const savedData = localStorage.getItem("formPemodal");
+    const savedData = Cookies.get("formPemodal");
 
     if (!savedData) {
-      // alert("Data tidak ditemukan di localStorage.");
       Swal.fire({
         title: "Gagal",
         text: "Data Tidak ditemukan.",
@@ -384,10 +337,6 @@ const FormPemodal: React.FC = () => {
 
       const result = schema.safeParse(data);
       if (!result.success) {
-        // const errors = result.error.errors
-        //   .map((e) => `• ${e.message}`)
-        //   .join("\n");
-
         const firstError = result.error.errors[0];
 
         Swal.fire({
@@ -450,28 +399,20 @@ const FormPemodal: React.FC = () => {
         }
       );
 
-      // if (response.status === 200) {
-      // alert("Form berhasil dikirim!");
       const alertSwal = await Swal.fire({
         title: "Berhasil",
         text: "Data berhasil dikirim",
         icon: "success",
         timer: 3000,
         timerProgressBar: true,
-        // showConfirmButton: false,
       });
 
-      // Hapus localStorage dan reset
       localStorage.removeItem("formPemodal");
       localStorage.removeItem("signature");
       setSelectedIndex(0);
       router.push("/");
-      // } else {
-      //   alert("Gagal mengirim data. Silakan coba lagi.");
-      // }
     } catch (error) {
       console.error("Error submitting form:", error);
-      // alert("Terjadi kesalahan saat mengirim data.");
       Swal.fire({
         title: "Gagal",
         text: "Terjadi kesalahan saat mengirim data.",
@@ -549,14 +490,7 @@ const FormPemodal: React.FC = () => {
           </button>
         ) : (
           <button
-            // onClick={() => {
-            //   localStorage.removeItem("formPribadi");
-            //   localStorage.removeItem("formBank");
-            //   alert("Form telah selesai dan data dihapus dari localStorage.");
-            //   setSelectedIndex(0);
-            // }}
             onClick={handleSubmit}
-            // className="px-4 py-2 bg-green-600 text-white rounded"
             disabled={
               !dataPekerjaan.setujuKebenaranData ||
               !dataPekerjaan.setujuRisikoInvestasi
