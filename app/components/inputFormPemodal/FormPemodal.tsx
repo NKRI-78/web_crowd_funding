@@ -5,6 +5,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 import ComponentDataPribadi from "./informasiPribadi/DataPribadi";
 import ComponentDataPekerjaan from "./informasiPekerjaan/DataPekerjaan";
@@ -464,6 +465,7 @@ const FormPemodal: React.FC = () => {
       // Hapus localStorage dan reset
       localStorage.removeItem("formPemodal");
       localStorage.removeItem("signature");
+      Cookies.remove("formPemodal");
       setSelectedIndex(0);
       router.push("/");
       // } else {
