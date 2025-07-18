@@ -119,8 +119,16 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
         localStorage.removeItem("publisherDraft");
         router.push("/");
       }
-    } catch (err: any) {
-      console.log("Err", err);
+    } catch (error: any) {
+      Swal.fire({
+        icon: "error",
+        title: "Kirim data gagal",
+        text:
+          error.response?.data?.message ||
+          "Terjadi kesalahan saat mengisi data.",
+        timer: 3000,
+        timerProgressBar: true,
+      });
     }
   };
 
