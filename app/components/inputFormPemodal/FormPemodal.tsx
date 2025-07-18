@@ -7,8 +7,6 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 
-import Cookies from "js-cookie";
-
 import ComponentDataPribadi from "./informasiPribadi/DataPribadi";
 import ComponentDataPekerjaan from "./informasiPekerjaan/DataPekerjaan";
 
