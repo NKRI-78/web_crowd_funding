@@ -8,6 +8,7 @@ interface CustomSelectionProps {
   enableOtherSelection?: boolean;
   selected: string;
   onChange: (value: string) => void;
+  errorText?: string;
 }
 
 const CustomSelection: React.FC<CustomSelectionProps> = ({
@@ -16,6 +17,7 @@ const CustomSelection: React.FC<CustomSelectionProps> = ({
   selected,
   enableOtherSelection = true,
   onChange,
+  errorText,
 }) => {
   const isOtherSelected = enableOtherSelection && !options.includes(selected);
 
@@ -77,6 +79,7 @@ const CustomSelection: React.FC<CustomSelectionProps> = ({
           value={selected}
           onChange={handleOtherChange}
           className="mt-2"
+          errorText={errorText}
         />
       )}
     </div>

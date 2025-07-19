@@ -1,6 +1,5 @@
 import React from "react";
 import SectionPoint from "./SectionPoint";
-
 interface TextFieldProps {
   label?: string;
   placeholder: string;
@@ -12,8 +11,9 @@ interface TextFieldProps {
   className?: string;
   rows?: number;
   disabled?: boolean;
-  maxLength?: number; // karakter untuk input biasa
-  maxWords?: number; // khusus untuk textarea
+  maxLength?: number;
+  maxWords?: number;
+  errorText?: string;
 }
 
 const TextField: React.FC<TextFieldProps> = ({
@@ -27,9 +27,14 @@ const TextField: React.FC<TextFieldProps> = ({
   disabled = false,
   maxLength,
   maxWords,
+  errorText,
 }) => {
-  const inputStyle = `w-full px-4 py-2 border border-gray-300 focus:border-gray-400 rounded-md text-sm ${
-    disabled ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""
+  const inputStyle = `w-full px-4 py-2 border text-sm rounded-md focus:outline-none ${
+    disabled
+      ? "bg-gray-100 text-gray-500 cursor-not-allowed border-gray-300"
+      : errorText
+      ? "border-red-500 focus:border-red-500"
+      : "border-gray-300 focus:border-gray-400"
   }`;
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -76,6 +81,8 @@ const TextField: React.FC<TextFieldProps> = ({
           className={inputStyle}
         />
       )}
+
+      {errorText && <p className="text-red-500 text-xs mt-1">{errorText}</p>}
     </div>
   );
 };
