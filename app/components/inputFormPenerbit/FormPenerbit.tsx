@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-
 import { useFormPenerbit } from "./_hooks/useFormPenerbit";
 
 import TextField from "./_component/TextField";
@@ -25,6 +24,34 @@ type Props = {
   onBack: () => void;
 };
 
+export interface JobStructureError {
+  id?: string;
+  title?: string;
+  nama?: string;
+  jabatan?: string;
+  noKTP?: string;
+  fileKTP?: string;
+  fileNPWP?: string;
+}
+
+export interface FormPenerbitError {
+  laporanKeuangan?: string;
+  susunanManajemen?: JobStructureError[];
+  fotoProyek?: string;
+  titleProyek?: string;
+  nilaiNominal?: string;
+  jenisObligasi?: string;
+  jangkaWaktu?: string;
+  tingkatBunga?: string;
+  jadwalBunga?: string;
+  jadwalPokok?: string;
+  penggunaanDana?: string;
+  jaminanKolateral?: string;
+  deskripsiPekerjaan?: string;
+  jenisBiaya?: string;
+  companyProfile?: string;
+}
+
 const FormPenerbit: React.FC<Props> = ({ onBack }) => {
   //* main hooks
   const {
@@ -35,14 +62,96 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
     removeSusunanManajemen,
   } = useFormPenerbit();
 
+  const [errors, setErrors] = useState<FormPenerbitError>({});
+
   //* show modal add job structure
   const [showAddJobStructureModal, setShowAddJobStructureModal] =
     useState(false);
   const router = useRouter();
 
-  const handleSubmit = async () => {
+  //* validate form
+  const validateForm = (): boolean => {
+    const newErrors: FormPenerbitError = {};
+
+    if (!formState.laporanKeuangan?.trim())
+      newErrors.laporanKeuangan = "Laporan Keuangan wajib diisi";
+    if (!formState.fotoProyek?.trim())
+      newErrors.fotoProyek = "Foto Proyek wajib diisi";
+    if (!formState.titleProyek?.trim())
+      newErrors.titleProyek = "Judul Proyek wajib diisi";
+    if (!formState.nilaiNominal?.trim())
+      newErrors.nilaiNominal = "Nilai Nominal wajib diisi";
+    if (!formState.jenisObligasi?.trim())
+      newErrors.jenisObligasi = "Jenis Obligasi wajib diisi";
+    if (!formState.jangkaWaktu?.trim())
+      newErrors.jangkaWaktu = "Jangka Waktu wajib diisi";
+    if (!formState.tingkatBunga?.trim())
+      newErrors.tingkatBunga = "Tingkat Bunga wajib diisi";
+    if (!formState.jadwalBunga?.trim())
+      newErrors.jadwalBunga = "Jadwal Bunga wajib diisi";
+    if (!formState.jadwalPokok?.trim())
+      newErrors.jadwalPokok = "Jadwal Pokok wajib diisi";
+    if (!formState.penggunaanDana?.trim())
+      newErrors.penggunaanDana = "Penggunaan Dana wajib diisi";
+    if (!formState.jaminanKolateral?.trim())
+      newErrors.jaminanKolateral = "Jaminan Kolateral wajib diisi";
+    if (!formState.deskripsiPekerjaan?.trim())
+      newErrors.deskripsiPekerjaan = "Deskripsi Pekerjaan wajib diisi";
+    if (!formState.jenisBiaya?.trim())
+      newErrors.jenisBiaya = "Jenis Biaya wajib diisi";
+    if (!formState.companyProfile?.trim())
+      newErrors.companyProfile = "Company Profile wajib diisi";
+    if (!formState.jaminanKolateral) {
+      newErrors.jaminanKolateral = "Jaminan Kolateral wajib diisi";
+    }
+
+    const susunanErrors: JobStructureError[] = formState.susunanManajemen.map(
+      (item) => {
+        const jobError: JobStructureError = {};
+        if (!item.nama?.trim()) jobError.nama = "Nama wajib diisi";
+        if (!item.jabatan?.trim()) jobError.jabatan = "Jabatan wajib diisi";
+        if (!item.noKTP?.trim()) jobError.noKTP = "No KTP wajib diisi";
+        if (!item.fileKTP?.trim()) jobError.fileKTP = "File KTP wajib diunggah";
+        if (!item.fileNPWP?.trim())
+          jobError.fileNPWP = "File NPWP wajib diunggah";
+        if (item.noKTP.length < 16)
+          jobError.noKTP = "No KTP kurang dari 16 digit";
+        return jobError;
+      }
+    );
+
+    const hasSusunanError = susunanErrors.some(
+      (err) => Object.keys(err).length > 0
+    );
+    if (hasSusunanError) {
+      newErrors.susunanManajemen = susunanErrors;
+    }
+
+    setErrors(newErrors);
+
+    const isValid = Object.keys(newErrors).length === 0 && !hasSusunanError;
+
+    if (!isValid) {
+      Swal.fire({
+        title: "Form Belum Lengkap",
+        text: "Mohon lengkapi semua data yang diperlukan.",
+        icon: "warning",
+        timer: 1850,
+        showConfirmButton: false,
+      });
+    }
+
+    return isValid;
+  };
+
+  //* on submit
+  const onSubmit = async () => {
+    const validForm = validateForm();
+    if (!validForm) return;
+
+    // hit api
     try {
-      console.log("Hit");
+      console.log("Hit API");
       const draft = localStorage.getItem("publisherDraft");
       const userData = localStorage.getItem("user");
       if (draft && userData) {
@@ -150,9 +259,14 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
             <FileInput
               fileName="Laporan Keuangan"
               fileUrl={formState.laporanKeuangan}
+              accept=".pdf,.xlsx,.xlsm,.xls,.xltx,.xltm,.xlsb"
               onChange={(fileUrl) => {
                 updateField("laporanKeuangan", fileUrl);
+                if (fileUrl) {
+                  setErrors({ ...errors, laporanKeuangan: "" });
+                }
               }}
+              errorText={errors.laporanKeuangan}
             />
           </div>
 
@@ -160,14 +274,28 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
           <div className="w-full flex flex-col mt-6">
             <SectionTitle text="3. Susunan Manajemen" />
 
-            {formState.susunanManajemen.map((structure) => (
+            {formState.susunanManajemen.map((structure, index) => (
               <JobStructureForm
                 key={structure.id}
                 label={structure.title}
                 data={structure}
-                onChange={(updated) =>
-                  updateSusunanManajemen(structure.id, updated)
-                }
+                onChange={(fieldKey, value) => {
+                  updateSusunanManajemen(structure.id, fieldKey, value);
+
+                  // Hapus error spesifik
+                  const currentErrors = errors.susunanManajemen ?? [];
+                  const updatedErrors = [...currentErrors];
+
+                  const existingError = updatedErrors[index] ?? {};
+                  delete existingError[fieldKey]; // Hapus hanya field ini
+                  updatedErrors[index] = existingError;
+
+                  setErrors({
+                    ...errors,
+                    susunanManajemen: updatedErrors,
+                  });
+                }}
+                errors={errors.susunanManajemen?.[index]}
                 showDeleteButton={
                   structure.id !== "komisaris" && structure.id !== "direksi"
                 }
@@ -200,11 +328,16 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
               />
 
               <FileInput
-                fileName="Laporan Keuangan"
+                fileName="Foto Proyek"
                 fileUrl={formState.fotoProyek}
+                accept=".jpg,.jpeg,.png,.heic,.heif"
                 onChange={(fileUrl) => {
                   updateField("fotoProyek", fileUrl);
+                  if (fileUrl) {
+                    setErrors({ ...errors, fotoProyek: "" });
+                  }
                 }}
+                errorText={errors.fotoProyek}
               />
 
               <TextField
@@ -212,7 +345,13 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
                 placeholder="Title Proyek"
                 value={formState.titleProyek || ""}
                 className="my-2"
-                onChange={(e) => updateField("titleProyek", e.target.value)}
+                onChange={(e) => {
+                  updateField("titleProyek", e.target.value);
+                  if (e.target.value) {
+                    setErrors({ ...errors, titleProyek: "" });
+                  }
+                }}
+                errorText={errors.titleProyek}
               />
               <DropdownSelect
                 label="Jenis Obligasi"
@@ -221,17 +360,27 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
                 value={formState.jenisObligasi || ""}
                 onChange={(val) => {
                   updateField("jenisObligasi", val);
+                  if (val) {
+                    setErrors({ ...errors, titleProyek: "" });
+                  }
                 }}
                 placeholder="Jenis Obligasi"
                 maxHeightDropdown="180px"
                 className="mb-2"
+                errorText={errors.jenisObligasi}
               />
               <CurrencyField
                 label="Nilai Nominal"
                 placeholder="Rp."
                 value={formState.nilaiNominal || ""}
                 className="mb-2"
-                onChange={(e) => updateField("nilaiNominal", e.target.value)}
+                onChange={(e) => {
+                  updateField("nilaiNominal", e.target.value);
+                  if (e.target.value) {
+                    setErrors({ ...errors, nilaiNominal: "" });
+                  }
+                }}
+                errorText={errors.nilaiNominal}
               />
             </div>
           </div>
@@ -247,10 +396,14 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
               value={formState.jangkaWaktu || ""}
               onChange={(val) => {
                 updateField("jangkaWaktu", val);
+                if (val) {
+                  setErrors({ ...errors, jangkaWaktu: "" });
+                }
               }}
               placeholder="Jangka Waktu"
               maxHeightDropdown="180px"
               className="flex-[1]"
+              errorText={errors.jangkaWaktu}
             />
             <DropdownSelect
               label="Tingkat Bunga"
@@ -259,10 +412,14 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
               value={formState.tingkatBunga || ""}
               onChange={(val) => {
                 updateField("tingkatBunga", val);
+                if (val) {
+                  setErrors({ ...errors, tingkatBunga: "" });
+                }
               }}
               placeholder="Tingkat Bunga"
               maxHeightDropdown="180px"
               className="flex-[1]"
+              errorText={errors.tingkatBunga}
             />
           </div>
 
@@ -295,7 +452,13 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
               "Surat Berharga",
             ]}
             selected={formState.jaminanKolateral || ""}
-            onChange={(val) => updateField("jaminanKolateral", val)}
+            onChange={(val) => {
+              updateField("jaminanKolateral", val);
+              if (val) {
+                setErrors({ ...errors, jaminanKolateral: "" });
+              }
+            }}
+            errorText={errors.jaminanKolateral}
           />
 
           <TextField
@@ -304,7 +467,13 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
             type="textarea"
             maxWords={1500}
             value={formState.deskripsiPekerjaan || ""}
-            onChange={(e) => updateField("deskripsiPekerjaan", e.target.value)}
+            onChange={(e) => {
+              updateField("deskripsiPekerjaan", e.target.value);
+              if (e.target.value) {
+                setErrors({ ...errors, deskripsiPekerjaan: "" });
+              }
+            }}
+            errorText={errors.deskripsiPekerjaan}
           />
 
           <CustomSelection
@@ -324,9 +493,14 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
             <FileInput
               fileName="Company Profile"
               fileUrl={formState.companyProfile}
+              accept=".pdf"
               onChange={(fileUrl) => {
                 updateField("companyProfile", fileUrl);
+                if (fileUrl) {
+                  setErrors({ ...errors, companyProfile: "" });
+                }
               }}
+              errorText={errors.companyProfile}
             />
           </div>
 
@@ -334,7 +508,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
             <FormButton onClick={onBack} type="outlined">
               Kembali
             </FormButton>
-            <FormButton onClick={handleSubmit}>Kirim Data</FormButton>
+            <FormButton onClick={onSubmit}>Kirim Data</FormButton>
           </div>
         </section>
       </div>

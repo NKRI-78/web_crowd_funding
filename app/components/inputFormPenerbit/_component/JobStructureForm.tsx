@@ -3,6 +3,7 @@ import TextField from "./TextField";
 import FileInput from "./FileInput";
 import SectionPoint from "./SectionPoint";
 import SectionSubtitle from "./SectionSubtitle";
+import { JobStructureError } from "../FormPenerbit";
 
 export interface JobStructureData {
   nama: string;
@@ -15,9 +16,10 @@ export interface JobStructureData {
 interface JobStructureFormProps {
   label?: string;
   data: JobStructureData;
-  onChange: (updated: JobStructureData) => void;
+  onChange: (update: keyof JobStructureData, value: string) => void;
   showDeleteButton?: boolean;
   onDelete?: () => void;
+  errors?: JobStructureError;
 }
 
 const JobStructureForm: React.FC<JobStructureFormProps> = ({
@@ -25,6 +27,7 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
   data,
   onChange,
   onDelete,
+  errors,
   showDeleteButton = false,
 }) => {
   return (
@@ -51,7 +54,8 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
             placeholder="Nama"
             value={data.nama}
             className="flex-[1]"
-            onChange={(e) => onChange({ ...data, nama: e.target.value })}
+            onChange={(e) => onChange("nama", e.target.value)}
+            errorText={errors?.nama}
           />
         </div>
 
@@ -64,7 +68,8 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
             value={data.jabatan}
             disabled={true}
             className="flex-[1]"
-            onChange={(e) => onChange({ ...data, jabatan: e.target.value })}
+            onChange={(e) => onChange("jabatan", e.target.value)}
+            errorText={errors?.jabatan}
           />
         </div>
       </div>
@@ -76,7 +81,8 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
           value={data.noKTP}
           type="number"
           maxLength={16}
-          onChange={(e) => onChange({ ...data, noKTP: e.target.value })}
+          onChange={(e) => onChange("noKTP", e.target.value)}
+          errorText={errors?.noKTP}
         />
       </div>
 
@@ -90,13 +96,17 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
           fileName="Upload KTP"
           placeholder="Upload KTP"
           fileUrl={data.fileKTP}
-          onChange={(fileUrl) => onChange({ ...data, fileKTP: fileUrl })}
+          onChange={(fileUrl) => onChange("fileKTP", fileUrl)}
+          errorText={errors?.fileKTP}
+          accept=".pdf,.jpg,.jpeg,.png,.heic,.heif"
         />
         <FileInput
           fileName="Upload NPWP"
           placeholder="Upload NPWP"
           fileUrl={data.fileNPWP}
-          onChange={(fileUrl) => onChange({ ...data, fileNPWP: fileUrl })}
+          onChange={(fileUrl) => onChange("fileNPWP", fileUrl)}
+          errorText={errors?.fileNPWP}
+          accept=".pdf,.jpg,.jpeg,.png,.heic,.heif"
         />
       </div>
     </div>

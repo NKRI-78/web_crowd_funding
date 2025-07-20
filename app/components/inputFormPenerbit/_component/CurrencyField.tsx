@@ -7,6 +7,7 @@ interface CurrencyFieldProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   className?: string;
   disabled?: boolean;
+  errorText?: string; // ✅ Tambahkan ini
 }
 
 const formatToRupiah = (value: string) => {
@@ -23,9 +24,10 @@ const CurrencyField: React.FC<CurrencyFieldProps> = ({
   onChange,
   className = "",
   disabled = false,
+  errorText, // ✅ Tambahkan ini
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawValue = e.target.value.replace(/\D/g, ""); // Hanya angka
+    const rawValue = e.target.value.replace(/\D/g, "");
     const syntheticEvent = {
       ...e,
       target: {
@@ -36,8 +38,12 @@ const CurrencyField: React.FC<CurrencyFieldProps> = ({
     onChange(syntheticEvent);
   };
 
-  const inputStyle = `w-full px-4 py-2 border border-gray-300 focus:border-gray-400 rounded-md text-sm ${
-    disabled ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""
+  const inputStyle = `w-full px-4 py-2 border text-sm rounded-md focus:outline-none ${
+    disabled
+      ? "bg-gray-100 text-gray-500 cursor-not-allowed border-gray-300"
+      : errorText
+      ? "border-red-500 focus:border-red-500"
+      : "border-gray-300 focus:border-gray-400"
   }`;
 
   return (
@@ -52,6 +58,7 @@ const CurrencyField: React.FC<CurrencyFieldProps> = ({
         readOnly={disabled}
         className={inputStyle}
       />
+      {errorText && <p className="text-red-500 text-xs mt-1">{errorText}</p>}
     </div>
   );
 };
