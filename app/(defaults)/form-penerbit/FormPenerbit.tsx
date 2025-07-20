@@ -17,9 +17,13 @@ import Swal from "sweetalert2";
 export const alamatSchema = z.object({
   name: z.string().optional(),
   province_id: z.string().min(1, "Provinsi wajib diisi"),
+  province_name: z.string(),
   city_id: z.string().min(1, "Kota wajib diisi"),
+  city_name: z.string().min(1, "Kota wajib diisi"),
   district_id: z.string().min(1, "Kecamatan wajib diisi"),
+  district_name: z.string().min(1, "Kecamatan wajib diisi"),
   subdistrict_id: z.string().min(1, "Kelurahan wajib diisi"),
+  subdistrict_name: z.string().min(1, "Kelurahan wajib diisi"),
   postal_code: z.string().min(1, "Kode pos wajib diisi"),
   detail: z.string().min(1, "Detail alamat wajib diisi"),
 });
@@ -56,6 +60,7 @@ const fetchOptions = async (url: string, parentId?: string) => {
     return response.data?.data.map((item: any) => ({
       value: String(item.id),
       label: item.name,
+      zip_code: item.zip_code, // Tambahkan zip_code di dalam option
     }));
   } catch (error) {
     console.error("Failed to fetch options:", error);
@@ -63,7 +68,7 @@ const fetchOptions = async (url: string, parentId?: string) => {
   }
 };
 
-type OptionType = { value: string; label: string };
+type OptionType = { value: string; label: string, zip_code: string };
 
 type Props = {
   onNext: () => void;
@@ -132,35 +137,6 @@ export default function PublisherForm({ onNext }: Props) {
     };
     loadProvinces();
   }, []);
-  useEffect(() => {
-    fields.forEach((_, index) => {
-      const provId = watch(`address.${index}.province_id`);
-      if (provId) {
-        fetchCities(provId).then((data) =>
-          setCityList((prev) => ({ ...prev, [index]: data }))
-        );
-      }
-    });
-  }, [watch("address")]);
-
-  const [cityList, setCityList] = useState<Record<number, OptionType[]>>({});
-  const [districtList, setDistrictList] = useState<
-    Record<number, OptionType[]>
-  >({});
-  const [subdistrictList, setSubdistrictList] = useState<
-    Record<number, OptionType[]>
-  >({});
-
-  useEffect(() => {
-    fields.forEach((_, index) => {
-      const provId = watch(`address.${index}.province_id`);
-      if (provId) {
-        fetchCities(provId).then((data) =>
-          setCityList((prev) => ({ ...prev, [index]: data }))
-        );
-      }
-    });
-  }, [watch("address")]);
 
   const handleUploadFile = async (
     e: React.ChangeEvent<HTMLInputElement>,

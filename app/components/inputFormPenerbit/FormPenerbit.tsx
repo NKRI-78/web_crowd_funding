@@ -154,6 +154,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
       console.log("Hit API");
       const draft = localStorage.getItem("publisherDraft");
       const userData = localStorage.getItem("user");
+      console.log("Test", draft && userData);
       if (draft && userData) {
         console.log(draft);
         const draftParsed = JSON.parse(draft);
@@ -493,7 +494,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
             <FileInput
               fileName="Company Profile"
               fileUrl={formState.companyProfile}
-              accept=".pdf"
+              accept=".pdf, .jpg, .png, .jpeg"
               onChange={(fileUrl) => {
                 updateField("companyProfile", fileUrl);
                 if (fileUrl) {
