@@ -18,6 +18,7 @@ interface DropdownSelectProps {
   disabled?: boolean;
   className?: string;
   defaultValue?: string;
+  errorText?: string;
 }
 
 const DropdownSelect: React.FC<DropdownSelectProps> = ({
@@ -30,6 +31,7 @@ const DropdownSelect: React.FC<DropdownSelectProps> = ({
   disabled = false,
   className = "",
   defaultValue,
+  errorText,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
@@ -71,7 +73,6 @@ const DropdownSelect: React.FC<DropdownSelectProps> = ({
       {label && <SectionPoint text={label} className="mb-1" />}
 
       <div className="relative">
-        {" "}
         <button
           disabled={disabled}
           onClick={toggleDropdown}
@@ -79,6 +80,8 @@ const DropdownSelect: React.FC<DropdownSelectProps> = ({
             "w-full px-4 py-2 border text-sm rounded-md flex justify-between items-center",
             disabled
               ? "bg-gray-100 text-gray-500 cursor-not-allowed border-gray-300"
+              : errorText
+              ? "border-red-500 focus:border-red-500"
               : "bg-white text-black border-gray-300 focus:border-gray-400"
           )}
         >
@@ -116,6 +119,8 @@ const DropdownSelect: React.FC<DropdownSelectProps> = ({
           </div>
         )}
       </div>
+
+      {errorText && <p className="text-red-500 text-xs mt-1">{errorText}</p>}
     </div>
   );
 };

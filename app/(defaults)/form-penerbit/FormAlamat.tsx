@@ -5,6 +5,7 @@ import { useEffect } from "react";
 interface OptionType {
   label: string;
   value: string;
+  zip_code: string;
 }
 
 // ✅ Props lengkap
@@ -15,14 +16,20 @@ type Props = {
   setValue: any;
   watch: any;
   register: any;
-  errors: any; // 
+  errors: any; //
   provinsiList: OptionType[];
   kotaList: Record<number, OptionType[]>;
-  setKotaList: React.Dispatch<React.SetStateAction<Record<number, OptionType[]>>>;
+  setKotaList: React.Dispatch<
+    React.SetStateAction<Record<number, OptionType[]>>
+  >;
   kecamatanList: Record<number, OptionType[]>;
-  setKecamatanList: React.Dispatch<React.SetStateAction<Record<number, OptionType[]>>>;
+  setKecamatanList: React.Dispatch<
+    React.SetStateAction<Record<number, OptionType[]>>
+  >;
   kelurahanList: Record<number, OptionType[]>;
-  setKelurahanList: React.Dispatch<React.SetStateAction<Record<number, OptionType[]>>>;
+  setKelurahanList: React.Dispatch<
+    React.SetStateAction<Record<number, OptionType[]>>
+  >;
   fetchOptions: (type: string, id: string) => Promise<OptionType[]>;
 };
 
@@ -42,9 +49,9 @@ const FormAlamat = ({
   setKelurahanList,
   fetchOptions,
 }: Props) => {
-  const watchProvinsi = watch(`address.${index}.province_id`);
-  const watchKota = watch(`address.${index}.city_id`);
-  const watchKecamatan = watch(`address.${index}.district_id`);
+  const watchProvinsi = watch(`address.${index}.province_name`);
+  const watchKota = watch(`address.${index}.city_name`);
+  const watchKecamatan = watch(`address.${index}.district_name`);
 
   useEffect(() => {
     if (watchProvinsi)
@@ -62,14 +69,20 @@ const FormAlamat = ({
 
   useEffect(() => {
     if (watchKecamatan)
-      fetchOptions("api/v1/administration/subdistrict", watchKecamatan).then((res) =>
-        setKelurahanList((prev) => ({ ...prev, [index]: res }))
+      fetchOptions("api/v1/administration/subdistrict", watchKecamatan).then(
+        (res : any) => {
+          const data = res.data || [];
+          console.log("Data ", data)
+          setKelurahanList((prev) => ({ ...prev, [index]: res }))
+        }
       );
   }, [watchKecamatan]);
 
   return (
     <div key={index} className="space-y-3">
-      <h3 className="font-semibold">Alamat {index === 0 ? "Perusahaan" : "Korespondensi"}</h3>
+      <h3 className="font-semibold">
+        Alamat {index === 0 ? "Perusahaan" : "Korespondensi"}
+      </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Provinsi */}
         <Controller
@@ -82,18 +95,27 @@ const FormAlamat = ({
                 placeholder="Pilih Provinsi"
                 options={provinsiList}
                 isSearchable={true}
-                value={provinsiList.find((opt) => opt.value === field.value) || null}
+                value={
+                  provinsiList.find((opt) => opt.value === field.value) || null
+                }
                 onChange={(val) => {
-                  field.onChange(val?.value);
+                  field.onChange(val?.value); // simpan ID
+                  setValue(`address.${index}.province_name`, val?.label || "");
                   setValue(`address.${index}.city_id`, "");
+                  setValue(`address.${index}.city_name`, "");
                   setValue(`address.${index}.district_id`, "");
+                  setValue(`address.${index}.district_name`, "");
                   setValue(`address.${index}.subdistrict_id`, "");
+                  setValue(`address.${index}.subdistrict_name`, "");
                 }}
               />
               {error && <p className="text-red-500 text-sm">{error.message}</p>}
             </div>
           )}
         />
+
+        {/* Hidden input untuk simpan label */}
+        <input type="hidden" {...register(`address.${index}.province_name`)} />
 
         {/* Kota */}
         <Controller
@@ -106,11 +128,18 @@ const FormAlamat = ({
                 placeholder="Pilih Kota"
                 options={kotaList[index] || []}
                 isSearchable={true}
-                value={(kotaList[index] || []).find((opt) => opt.value === field.value) || null}
+                value={
+                  (kotaList[index] || []).find(
+                    (opt) => opt.value === field.value
+                  ) || null
+                }
                 onChange={(val) => {
                   field.onChange(val?.value);
+                  setValue(`address.${index}.city_name`, val?.label || "");
                   setValue(`address.${index}.district_id`, "");
+                  setValue(`address.${index}.district_name`, "");
                   setValue(`address.${index}.subdistrict_id`, "");
+                  setValue(`address.${index}.subdistrict_name`, "");
                 }}
                 isDisabled={!watchProvinsi}
               />
@@ -118,6 +147,7 @@ const FormAlamat = ({
             </div>
           )}
         />
+        <input type="hidden" {...register(`address.${index}.city_name`)} />
 
         {/* Kecamatan */}
         <Controller
@@ -130,10 +160,16 @@ const FormAlamat = ({
                 placeholder="Pilih Kecamatan"
                 isSearchable={true}
                 options={kecamatanList[index] || []}
-                value={(kecamatanList[index] || []).find((opt) => opt.value === field.value) || null}
+                value={
+                  (kecamatanList[index] || []).find(
+                    (opt) => opt.value === field.value
+                  ) || null
+                }
                 onChange={(val) => {
                   field.onChange(val?.value);
+                  setValue(`address.${index}.district_name`, val?.label || "");
                   setValue(`address.${index}.subdistrict_id`, "");
+                  setValue(`address.${index}.subdistrict_name`, "");
                 }}
                 isDisabled={!watchKota}
               />
@@ -141,6 +177,7 @@ const FormAlamat = ({
             </div>
           )}
         />
+        <input type="hidden" {...register(`address.${index}.district_name`)} />
 
         {/* Kelurahan */}
         <Controller
@@ -153,42 +190,61 @@ const FormAlamat = ({
                 placeholder="Pilih Kelurahan"
                 isSearchable={true}
                 options={kelurahanList[index] || []}
-                value={(kelurahanList[index] || []).find((opt) => opt.value === field.value) || null}
-                onChange={(val) => field.onChange(val?.value)}
+                value={
+                  (kelurahanList[index] || []).find(
+                    (opt) => opt.value === field.value
+                  ) || null
+                }
+                onChange={(val) => {
+                  field.onChange(val?.value);
+                  setValue(
+                    `address.${index}.subdistrict_name`,
+                    val?.label || ""
+                  );
+                  setValue(`address.${index}.postal_code`, val?.zip_code || "");
+                }}
                 isDisabled={!watchKecamatan}
               />
               {error && <p className="text-red-500 text-sm">{error.message}</p>}
             </div>
           )}
         />
+        <input type="hidden" {...register(`address.${index}.subdistrict_name`)} />
       </div>
 
       {/* Kode Pos */}
       <div>
         <input
-          {...register(`address.${index}.postal_code`, { required: "Kode Pos wajib diisi" })}
+          {...register(`address.${index}.postal_code`, {
+            required: "Kode Pos wajib diisi",
+          })}
           placeholder="Kode Pos"
           type="number"
           className="border px-3 py-2 rounded w-full"
         />
         {errors?.address?.[index]?.postal_code && (
-          <p className="text-red-500 text-sm">{errors.address[index].postal_code.message}</p>
+          <p className="text-red-500 text-sm">
+            {errors.address[index].postal_code.message}
+          </p>
         )}
       </div>
 
       {/* Detail Alamat */}
       <div>
         <textarea
-          {...register(`address.${index}.detail`, { required: "Detail alamat wajib diisi" })}
+          {...register(`address.${index}.detail`, {
+            required: "Detail alamat wajib diisi",
+          })}
           placeholder="Detail Alamat"
           className="border px-3 py-2 rounded w-full"
         />
         {errors?.address?.[index]?.detail && (
-          <p className="text-red-500 text-sm">{errors.address[index].detail.message}</p>
+          <p className="text-red-500 text-sm">
+            {errors.address[index].detail.message}
+          </p>
         )}
       </div>
     </div>
-
   );
 };
 

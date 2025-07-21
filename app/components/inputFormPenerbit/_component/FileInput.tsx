@@ -8,6 +8,8 @@ interface FileInputProps {
   fileUrl?: string;
   placeholder?: string;
   onChange: (e: string) => void;
+  errorText?: string;
+  accept?: string;
 }
 
 const FileInput: React.FC<FileInputProps> = ({
@@ -15,6 +17,8 @@ const FileInput: React.FC<FileInputProps> = ({
   fileName,
   fileUrl,
   onChange,
+  errorText,
+  accept,
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -35,7 +39,6 @@ const FileInput: React.FC<FileInputProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validasi maksimal 10MB
     if (file.size > 10 * 1024 * 1024) {
       alert("Ukuran file maksimal 10MB");
       return;
@@ -54,7 +57,6 @@ const FileInput: React.FC<FileInputProps> = ({
 
       const url = res.data?.data?.path;
       if (url) {
-        // set callback
         onChange(url);
 
         Swal.fire({
@@ -68,7 +70,7 @@ const FileInput: React.FC<FileInputProps> = ({
         alert("Upload gagal, tidak ada URL yang diterima.");
       }
     } catch (error) {
-      console.error("Gagal upload KTP:", error);
+      console.error("Gagal upload:", error);
       Swal.fire({
         title: "Gagal",
         text: "Upload gagal. Silakan coba lagi.",
@@ -80,7 +82,9 @@ const FileInput: React.FC<FileInputProps> = ({
 
   return (
     <div className="space-y-2">
-      <label className="inline-flex items-center gap-2 bg-gray-700 hover:bg-gray-800 text-white px-2 md:px-6 py-2 rounded-lg cursor-pointer font-semibold text-[12px]">
+      <label
+        className={`inline-flex items-center gap-2 px-2 md:px-6 py-2 rounded-lg cursor-pointer font-semibold text-[12px] text-white bg-gray-700 hover:bg-gray-800`}
+      >
         <FileText size={13} />
         {placeholder ?? "Upload Dokumen"}
         <input
@@ -88,6 +92,7 @@ const FileInput: React.FC<FileInputProps> = ({
           className="hidden"
           ref={fileInputRef}
           onChange={handleFileChange}
+          accept={accept}
         />
       </label>
 
@@ -103,6 +108,8 @@ const FileInput: React.FC<FileInputProps> = ({
           </a>
         </div>
       )}
+
+      {errorText && <p className="text-red-500 text-xs">{errorText}</p>}
     </div>
   );
 };

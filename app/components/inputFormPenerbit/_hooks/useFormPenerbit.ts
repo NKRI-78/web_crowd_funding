@@ -54,15 +54,15 @@ export function useFormPenerbit() {
     fotoProyek: "",
     titleProyek: "",
     nilaiNominal: "",
-    jenisObligasi: "",
-    jangkaWaktu: "",
-    tingkatBunga: "",
-    jadwalBunga: "",
-    jadwalPokok: "",
-    penggunaanDana: "",
-    jaminanKolateral: "",
+    jenisObligasi: "konvensional",
+    jangkaWaktu: "6 Bulan",
+    tingkatBunga: "10",
+    jadwalBunga: "1 Bulan",
+    jadwalPokok: "1 Bulan",
+    penggunaanDana: "Modal Usaha",
+    jaminanKolateral: "Tanah Bangunan",
     deskripsiPekerjaan: "",
-    jenisBiaya: "",
+    jenisBiaya: "Tidak",
     companyProfile: "",
   });
 
@@ -101,12 +101,13 @@ export function useFormPenerbit() {
 
   const updateSusunanManajemen = (
     id: string,
-    updated: Partial<JobStructureFormData>
+    field: keyof JobStructureFormData,
+    updated: string
   ) => {
     setState((prev) => ({
       ...prev,
       susunanManajemen: prev.susunanManajemen.map((item) =>
-        item.id === id ? { ...item, ...updated } : item
+        item.id === id ? { ...item, [field]: updated } : item
       ),
     }));
   };
