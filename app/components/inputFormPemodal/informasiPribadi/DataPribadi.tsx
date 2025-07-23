@@ -96,7 +96,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
       if (fileUrl) {
         const labelMap: { [key: string]: string } = {
           ktpUrl: "KTP",
-          rekeningKoran: "Rekening Koran",
+          // rekeningKoran: "Rekening Koran",
           npwpUrl: "NPWP Perusahaan",
         };
 
@@ -463,13 +463,12 @@ const ComponentDataPribadi: React.FC<Props> = ({
           />
         </div>
 
-        <div className="mb-4 mt-4">
+        {/* <div className="mb-4 mt-4">
           <label className="text-md mb-2">Rekening Koran</label>
           <p className="text-xs text-gray-500 mb-2">
             File maksimal berukuran 10mb
           </p>
 
-          {/* Input File yang disembunyikan */}
           <input
             type="file"
             id="rekeningKoranUpload"
@@ -480,46 +479,14 @@ const ComponentDataPribadi: React.FC<Props> = ({
             data-keyname="rekeningKoran"
           />
 
-          {/* Label sebagai tombol */}
           <label
             htmlFor="rekeningKoranUpload"
             className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
-            // className={`inline-flex items-center gap-2 px-4 py-2 ${
-            //   uploadStatus["rekeningKoran"]
-            //     ? "bg-gray-400 cursor-not-allowed"
-            //     : "bg-[#505050] hover:bg-gray-800"
-            // } text-white rounded-md transition`}
           >
-            {/* {uploadStatus["rekeningKoran"] ? (
-              <>
-                <svg
-                  className="animate-spin h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v8H4z"
-                  ></path>
-                </svg>
-                Uploading...
-              </>
-            ) : ( */}
             <>
               <FaFileAlt />
               Upload Dokumen
             </>
-            {/* )} */}
           </label>
         </div>
         {formData.rekeningKoran && (
@@ -531,7 +498,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
           >
             Lihat Rekening Koran
           </a>
-        )}
+        )} */}
       </div>
     </div>
   );
