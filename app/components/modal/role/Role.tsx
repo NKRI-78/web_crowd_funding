@@ -5,7 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from "react-hook-form";
 import axios from "axios";
-import { API_BACKEND } from "@/app/utils/constant";
+import { BASE_URL } from "@/app/utils/constant";
 import OTPInput from "react-otp-input";
 import ImageUploading, {
   ImageListType,
@@ -75,7 +75,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
       };
 
       const response = await axios.post(
-        `${API_BACKEND}/api/v1/auth/register`,
+        `${BASE_URL}/api/v1/auth/register`,
         payload,
         {
           headers: {
@@ -88,7 +88,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
 
       console.log("TOKEN ", result.token);
       await axios.post(
-        `${API_BACKEND}/api/v1/resend-otp`,
+        `${BASE_URL}/api/v1/resend-otp`,
         { val: data.email },
         {
           headers: {
@@ -98,8 +98,8 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
         }
       );
 
-      console.log("✅ Success:", response.data['data']);
-      setCookie("user", JSON.stringify(response.data['data']));
+      console.log("✅ Success:", response.data["data"]);
+      setCookie("user", JSON.stringify(response.data["data"]));
       setStep("otpRegister");
     } catch (error: any) {
       console.error("❌ Gagal submit:", error);
@@ -117,7 +117,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
         type: "SENDING_OTP",
       };
       const { data } = await axios.post(
-        `${API_BACKEND}/api/v1/verify-otp`,
+        `${BASE_URL}/api/v1/verify-otp`,
         payloads
       );
     } catch (err: any) {
@@ -140,7 +140,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
         otp,
       };
       const { data } = await axios.post(
-        `${API_BACKEND}/api/v1/auth/verify-email`,
+        `${BASE_URL}/api/v1/auth/verify-email`,
         payloads
       );
 
@@ -214,8 +214,9 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
               <div className="space-y-6">
                 <div
                   onClick={() => {
-                    reset()
-                    setStep("penerbit")}}
+                    reset();
+                    setStep("penerbit");
+                  }}
                   className="border border-purple-600 rounded-xl p-4 hover:bg-purple-50 cursor-pointer"
                 >
                   <h3 className="text-purple-700 font-bold text-lg">
@@ -230,8 +231,9 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
 
                 <div
                   onClick={() => {
-                    reset()
-                    setStep("pemodal")}}
+                    reset();
+                    setStep("pemodal");
+                  }}
                   className="border border-green-600 rounded-xl p-4 hover:bg-green-50 cursor-pointer"
                 >
                   <h3 className="text-green-700 font-bold text-lg">Pemodal</h3>
@@ -482,8 +484,8 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
                   Masukkan OTP
                 </h2>
                 <p className="text-sm text-center mt-3 text-black/50 font-medium">
-                  Masukkan OTP yang dikirimkan melalui email  untuk
-                  memverifikasi akun
+                  Masukkan OTP yang dikirimkan melalui email untuk memverifikasi
+                  akun
                 </p>
               </div>
               <div className="font-inter mt-6">
