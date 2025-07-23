@@ -5,7 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import axios from "axios";
-import { API_BACKEND } from "@/app/utils/constant";
+import { BASE_URL } from "@app/utils/constant";
 import { setCookie } from "@/app/helper/cookie";
 import Swal from "sweetalert2";
 import { Eye, EyeOff } from "lucide-react";
@@ -25,7 +25,10 @@ const schema = z
 
 type RegisterFormSchema = z.infer<typeof schema>;
 
-export default function RegisterForm({ onNext, onClose }: {
+export default function RegisterForm({
+  onNext,
+  onClose,
+}: {
   onNext?: () => void;
   onClose?: () => void;
 }) {
@@ -45,21 +48,24 @@ export default function RegisterForm({ onNext, onClose }: {
     console.log("Data:", data);
 
     const payload = {
-        fullname: data.name,
-        email: data.email,
-        phone: data.phone,
-        password: data.password,
+      fullname: data.name,
+      email: data.email,
+      phone: data.phone,
+      password: data.password,
     };
 
     setLoading(true);
     try {
-      console.log('Data yang dikirim:', data);
+      console.log("Data yang dikirim:", data);
 
-      const response = await axios.post(`${API_BACKEND}/api/v1/auth/register`, payload);
+      const response = await axios.post(
+        `${BASE_URL}/api/v1/auth/register`,
+        payload
+      );
 
       const result: AuthResponse = response.data;
 
-      console.log('Respon backend:', result.data);
+      console.log("Respon backend:", result.data);
       setCookie("user", JSON.stringify(result.data));
       onNext?.();
     } catch (err: any) {
@@ -184,11 +190,11 @@ export default function RegisterForm({ onNext, onClose }: {
               disabled={loading}
               className={`w-full py-2 rounded ${
                 loading
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-green-500 text-white'
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-green-500 text-white"
               }`}
             >
-              {loading ? 'Mendaftarkan...' : 'Buat Akun'}
+              {loading ? "Mendaftarkan..." : "Buat Akun"}
             </button>
           </form>
         </div>

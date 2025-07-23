@@ -8,7 +8,12 @@ type FileUploadProps = {
   error?: string;
 };
 
-export default function FileUpload({ label, fileUrl, onUpload, error }: FileUploadProps) {
+export default function FileUpload({
+  label,
+  fileUrl,
+  onUpload,
+  error,
+}: FileUploadProps) {
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   return (
@@ -30,7 +35,9 @@ export default function FileUpload({ label, fileUrl, onUpload, error }: FileUplo
       />
       {fileUrl && (
         <a
-          href={fileUrl}
+          href={`https://docs.google.com/viewer?url=${encodeURIComponent(
+            fileUrl
+          )}&embedded=true`}
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-600 underline text-sm mt-2 block"

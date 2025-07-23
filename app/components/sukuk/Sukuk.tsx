@@ -12,6 +12,7 @@ import "swiper/css/navigation";
 import { useParams } from "next/navigation";
 import axios from "axios";
 import defaultImage from "../../../public/images/default-image.png";
+import { BASE_URL } from "@/app/utils/constant";
 
 type Project = {
   id: string;
@@ -104,7 +105,7 @@ const Sukuk = ({ id }: Props) => {
     const fetchProject = async () => {
       try {
         const response = await axios.get(
-          `https://api-capbridge.langitdigital78.com/api/v1/project/detail/${id}`
+          `${BASE_URL}/api/v1/project/detail/${id}`
         );
         setProject(response.data.data);
       } catch (error) {

@@ -1,1 +1,2 @@
-export const API_BACKEND = "https://api-capbridge.langitdigital78.com"
+export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+export const BASE_URL_MEDIA = process.env.NEXT_PUBLIC_BASE_URL_MEDIA;

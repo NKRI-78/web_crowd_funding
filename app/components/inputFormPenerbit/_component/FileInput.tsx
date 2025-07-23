@@ -2,6 +2,7 @@ import React from "react";
 import { FileText } from "lucide-react";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { BASE_URL_MEDIA } from "@/app/utils/constant";
 
 interface FileInputProps {
   fileName: string;
@@ -51,7 +52,7 @@ const FileInput: React.FC<FileInputProps> = ({
 
     try {
       const res = await axios.post(
-        "https://api-media.inovatiftujuh8.com/api/v1/media/upload",
+        `${BASE_URL_MEDIA}/api/v1/media/upload`,
         formData
       );
 

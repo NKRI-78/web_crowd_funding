@@ -5,9 +5,8 @@ import React, { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { AppDispatch, RootState } from "@redux/store";
 import { useDispatch, useSelector } from "react-redux";
-import { loadSession, logout } from "@redux/slices/authSlice";
+import { loadSession } from "@redux/slices/authSlice";
 import Link from "next/link";
-import RoleModal from "@components/modal/role/Role";
 import Modal from "@/app/helper/Modal";
 import RegisterV2 from "../auth/register/RegisterV2";
 import RegisterOtp from "../auth/register/RegisterOtp";
@@ -131,16 +130,6 @@ const Navbar: React.FC = () => {
               >
                 <Link href="/about-us">Tentang Kami</Link>
               </li>
-              <li>
-                <Link className="text-white" href="#">
-                  Pasar Sekunder
-                </Link>
-              </li>
-              {/* <li>
-                <Link className="text-white" href="#">
-                  Penerbit
-                </Link>
-              </li> */}
               <li
                 className={
                   pathname == "/form-pemodal" ? "text-[#4CD137]" : "text-white"
@@ -208,7 +197,7 @@ const Navbar: React.FC = () => {
                   className={
                     pathname == "/form-penerbit"
                       ? "text-[#4CD137]"
-                      : "text-white"
+                      : ""
                   }
                 >
                   <Link href="/form-penerbit">Penerbit</Link>
@@ -217,10 +206,10 @@ const Navbar: React.FC = () => {
                   className={
                     pathname == "/form-pemodal"
                       ? "text-[#4CD137]"
-                      : "text-white"
+                      : ""
                   }
                 >
-                  <Link href="/form-pemodal">Form Pemodal</Link>
+                  <Link href="/form-pemodal">Pemodal</Link>
                 </li>
                 <li>Halo, {userData.email}</li>
                 <li>

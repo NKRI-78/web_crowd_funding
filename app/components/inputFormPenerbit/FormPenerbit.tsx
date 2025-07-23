@@ -16,7 +16,7 @@ import AddJobStructureModal from "./_component/AddJobStructureModal";
 import DropdownSelect from "./_component/DropdownSelect";
 import CurrencyField from "./_component/CurrencyField";
 import axios from "axios";
-import { API_BACKEND } from "@/app/utils/constant";
+import { BASE_URL } from "@/app/utils/constant";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 
@@ -201,11 +201,9 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
             is_apbn: formState.jenisBiaya === "Iya",
           },
         };
-        console.log("data ", payload);
-        console.log("data ", formState);
 
         const res = await axios.post(
-          `${API_BACKEND}/api/v1/auth/assign/role`,
+          `${BASE_URL}/api/v1/auth/assign/role`,
           payload,
           {
             headers: {

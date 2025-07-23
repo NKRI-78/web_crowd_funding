@@ -5,6 +5,7 @@ import { FaFileAlt } from "react-icons/fa";
 import Swal from "sweetalert2";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
+import { BASE_URL_MEDIA } from "@/app/utils/constant";
 
 interface Props {
   formData: {
@@ -87,7 +88,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
     setUploadStatus((prev) => ({ ...prev, [keyName]: true }));
     try {
       const res = await axios.post(
-        "https://api-media.inovatiftujuh8.com/api/v1/media/upload",
+        `${BASE_URL_MEDIA}/api/v1/media/upload`,
         formData
       );
 

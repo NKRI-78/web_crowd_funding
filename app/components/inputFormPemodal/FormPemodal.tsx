@@ -9,6 +9,7 @@ import Cookies from "js-cookie";
 
 import ComponentDataPribadi from "./informasiPribadi/DataPribadi";
 import ComponentDataPekerjaan from "./informasiPekerjaan/DataPekerjaan";
+import { BASE_URL } from "@/app/utils/constant";
 
 const FormPemodal: React.FC = () => {
   const router = useRouter();
@@ -386,17 +387,11 @@ const FormPemodal: React.FC = () => {
         },
       };
 
-      console.log(payload, "payload");
-
-      const response = await axios.post(
-        "https://api-capbridge.langitdigital78.com/api/v1/auth/assign/role",
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.post(`${BASE_URL}/api/v1/auth/assign/role`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const alertSwal = await Swal.fire({
         title: "Berhasil",

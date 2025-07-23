@@ -3,6 +3,7 @@ import SignatureCanvas from "react-signature-canvas";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { FaFileAlt } from "react-icons/fa";
+import { BASE_URL_MEDIA } from "@/app/utils/constant";
 
 function getSignatureDataUrlWithWhiteBackground(
   canvas: HTMLCanvasElement
@@ -98,7 +99,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
 
     try {
       const res = await axios.post(
-        "https://api-media.inovatiftujuh8.com/api/v1/media/upload",
+        `${process.env.BASE_URL_MEDIA}/api/v1/media/upload`,
         formData
       );
       const fileUrl = res.data?.data?.path;
@@ -194,7 +195,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
     setUploadStatus((prev) => ({ ...prev, [keyName]: true }));
     try {
       const res = await axios.post(
-        "https://api-media.inovatiftujuh8.com/api/v1/media/upload",
+        `${BASE_URL_MEDIA}/api/v1/media/upload`,
         formData
       );
 

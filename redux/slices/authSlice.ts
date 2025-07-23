@@ -3,34 +3,13 @@ import { RegisterModel } from "@interfaces/auth/register";
 
 import Cookies from "js-cookie";
 
-import {
-  LoginAdmin,
-  LoginUser,
-  RegisterUser,
-  UpdatePassword,
-} from "@lib/authService";
+import { LoginUser, RegisterUser } from "@lib/authService";
 import {
   AsyncThunk,
   createAsyncThunk,
   createSlice,
   PayloadAction,
 } from "@reduxjs/toolkit";
-
-export const loginAdminAsync = createAsyncThunk(
-  "auth/login/admin",
-  async ({ val, password }: { val: string; password: string }) => {
-    const response = await LoginAdmin(val, password);
-    return response;
-  }
-);
-
-export const updatePasswordAsync = createAsyncThunk(
-  "auth/update-password",
-  async ({ password }: { password: string }) => {
-    const response = await UpdatePassword(password);
-    return response;
-  }
-);
 
 export const loginAsync = createAsyncThunk<AuthResponse, { login: LoginModel }>(
   "auth/login",

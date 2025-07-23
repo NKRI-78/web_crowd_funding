@@ -1,5 +1,5 @@
-import { getCookie } from "@/app/helper/cookie";
-import { API_BACKEND } from "@/app/utils/constant";
+import { getCookie } from "@app/helper/cookie";
+import { BASE_URL } from "@app/utils/constant";
 import axios from "axios";
 import React, { useState } from "react";
 import Countdown from "react-countdown";
@@ -29,7 +29,7 @@ export default function RegisterOtp({
         val: user.email,
       };
       const { data } = await axios.post(
-        `${API_BACKEND}/api/v1/resend-otp`,
+        `${BASE_URL}/api/v1/resend-otp`,
         payloads
       );
     } catch (err: any) {
@@ -52,12 +52,12 @@ export default function RegisterOtp({
         otp,
       };
       const response = await axios.post(
-        `${API_BACKEND}/api/v1/verify-otp`,
+        `${BASE_URL}/api/v1/verify-otp`,
         payloads
       );
 
       const result: AuthResponse = response.data;
-      
+
       localStorage.setItem("user", JSON.stringify(result.data));
 
       setLoading(false);
