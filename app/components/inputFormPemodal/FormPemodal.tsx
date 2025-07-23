@@ -144,6 +144,7 @@ const FormPemodal: React.FC = () => {
         setujuRisikoInvestasi: parsed.setujuRisikoInvestasi || false,
         signature: parsed.signature || "",
         npwpUrl: parsed.npwpUrl || "",
+        fotoPemodalUrl: parsed.fotoPemodalUrl || "",
       };
     }
     return {
@@ -160,6 +161,7 @@ const FormPemodal: React.FC = () => {
       setujuRisikoInvestasi: false,
       signature: "",
       npwpUrl: "",
+      fotoPemodalUrl: "",
     };
   });
 
@@ -260,6 +262,7 @@ const FormPemodal: React.FC = () => {
         setujuRisikoInvestasi: parsed.setujuRisikoInvestasi || false,
         signature: parsed.signature || "",
         npwpUrl: parsed.npwpUrl || "",
+        fotoPemodalUrl: parsed.fotoPemodalUrl || "",
       });
     }
   }, []);
@@ -484,7 +487,7 @@ const FormPemodal: React.FC = () => {
   };
 
   return (
-    <div className="bg-white px-10 md:px-24 py-24 w-full mx-auto text-black">
+    <div className="min-h-screen bg-white px-10 md:px-24 py-24 w-full mx-auto text-black">
       {/* Step content */}
       {selectedIndex === 0 && (
         <div>
