@@ -17,7 +17,8 @@ const FormPemodal: React.FC = () => {
   const token = user?.token;
 
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const schema = z.object({
+  // Zod schema untuk Data Pribadi
+  const schemaDataPribadi = z.object({
     nama: z.string().min(1, "Nama wajib diisi"),
     nik: z.string().length(16, "NIK harus 16 digit"),
     tempatLahir: z.string().min(1, "Tempat lahir wajib diisi"),
@@ -33,7 +34,11 @@ const FormPemodal: React.FC = () => {
     namaPemilik: z.string().min(1, "Nama pemilik rekening wajib diisi"),
     cabangBank: z.string().min(1, "Cabang bank wajib diisi"),
     ktpUrl: z.string().min(1, "Upload KTP wajib"),
+    rekeningKoran: z.string().optional(), // jika perlu
+  });
 
+  // Zod schema untuk Data Pekerjaan
+  const schemaDataPekerjaan = z.object({
     namaPerusahaan: z.string().min(1, "Nama perusahaan wajib diisi"),
     jabatan: z.string().min(1, "Jabatan wajib diisi"),
     alamatPerusahaan: z.string().min(1, "Alamat perusahaan wajib diisi"),
@@ -44,10 +49,12 @@ const FormPemodal: React.FC = () => {
     pengalamanInvestasi: z.string().min(1, "Pengalaman investasi wajib diisi"),
     pengetahuanPasarModal: z
       .string()
-      .min(1, "Pengalaman pasar modal wajib diisi"),
+      .min(1, "Pengetahuan pasar modal wajib diisi"),
     setujuKebenaranData: z.literal(true),
     setujuRisikoInvestasi: z.literal(true),
     signature: z.string().min(1, "Tanda tangan wajib"),
+    npwpUrl: z.string().optional(),
+    fotoPemodalUrl: z.string().optional(),
   });
 
   // const [dataPribadi, setDataPribadi] = useState({
@@ -386,14 +393,11 @@ const FormPemodal: React.FC = () => {
     try {
       const data = JSON.parse(savedData);
 
-      const result = schema.safeParse(data);
+      const fullSchema = schemaDataPribadi.merge(schemaDataPekerjaan);
+      const result = fullSchema.safeParse(data);
+
       if (!result.success) {
-        // const errors = result.error.errors
-        //   .map((e) => `• ${e.message}`)
-        //   .join("\n");
-
         const firstError = result.error.errors[0];
-
         Swal.fire({
           title: "Data belum diisi!",
           text: firstError.message,
