@@ -16,7 +16,6 @@ import DropdownSelect from "./_component/DropdownSelect";
 import CurrencyField from "./_component/CurrencyField";
 import axios from "axios";
 import { API_BACKEND } from "@/app/utils/constant";
-import { maxStructure } from "./_hooks/useFormPenerbit";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import CustomCheckBox from "./_component/CustomCheckBox";
@@ -363,35 +362,42 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
 
             <SectionPoint text="Direktur" className="mt-2" />
 
-            {formState.direktur.map((structure, index) => (
-              <JobStructureForm
-                key={structure.id}
-                data={structure}
-                onChange={(fieldKey, value) => {
-                  updateDirektur(structure.id, fieldKey, value);
+            {formState.direktur.map((structure, index) => {
+              const hasDirekturUtama = formState.direktur.some(
+                (item) =>
+                  item.jabatan === "direktur-utama" && item.id !== structure.id
+              );
+              return (
+                <JobStructureForm
+                  key={structure.id}
+                  data={structure}
+                  hasDirekturUtama={hasDirekturUtama}
+                  onChange={(fieldKey, value) => {
+                    updateDirektur(structure.id, fieldKey, value);
 
-                  const currentErrors = errors.direktur ?? [];
-                  const updatedErrors = [...currentErrors];
+                    const currentErrors = errors.direktur ?? [];
+                    const updatedErrors = [...currentErrors];
 
-                  const existingError = updatedErrors[index] ?? {};
-                  delete existingError[fieldKey];
-                  updatedErrors[index] = existingError;
+                    const existingError = updatedErrors[index] ?? {};
+                    delete existingError[fieldKey];
+                    updatedErrors[index] = existingError;
 
-                  setErrors({
-                    ...errors,
-                    direktur: updatedErrors,
-                  });
-                }}
-                errors={errors.direktur?.[index]}
-                onDelete={() => {
-                  removeDirektur(structure.id);
-                  setErrors({
-                    ...errors,
-                    direktur: [],
-                  });
-                }}
-              />
-            ))}
+                    setErrors({
+                      ...errors,
+                      direktur: updatedErrors,
+                    });
+                  }}
+                  errors={errors.direktur?.[index]}
+                  onDelete={() => {
+                    removeDirektur(structure.id);
+                    setErrors({
+                      ...errors,
+                      direktur: [],
+                    });
+                  }}
+                />
+              );
+            })}
 
             <AddButton
               label="+ Tambah Direktur"
@@ -407,36 +413,43 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
 
             <SectionPoint text="Komisaris" className="mt-2" />
 
-            {formState.komisaris.map((structure, index) => (
-              <JobStructureForm
-                key={structure.id}
-                isKomisaris={true}
-                data={structure}
-                onChange={(fieldKey, value) => {
-                  updateKomisaris(structure.id, fieldKey, value);
+            {formState.komisaris.map((structure, index) => {
+              const hasKomisarisUtama = formState.komisaris.some(
+                (item) =>
+                  item.jabatan === "komisaris-utama" && item.id !== structure.id
+              );
+              return (
+                <JobStructureForm
+                  key={structure.id}
+                  isKomisaris={true}
+                  data={structure}
+                  hasKomisarisUtama={hasKomisarisUtama}
+                  onChange={(fieldKey, value) => {
+                    updateKomisaris(structure.id, fieldKey, value);
 
-                  const currentErrors = errors.direktur ?? [];
-                  const updatedErrors = [...currentErrors];
+                    const currentErrors = errors.direktur ?? [];
+                    const updatedErrors = [...currentErrors];
 
-                  const existingError = updatedErrors[index] ?? {};
-                  delete existingError[fieldKey];
-                  updatedErrors[index] = existingError;
+                    const existingError = updatedErrors[index] ?? {};
+                    delete existingError[fieldKey];
+                    updatedErrors[index] = existingError;
 
-                  setErrors({
-                    ...errors,
-                    komisaris: updatedErrors,
-                  });
-                }}
-                errors={errors.komisaris?.[index]}
-                onDelete={() => {
-                  removeKomisaris(structure.id);
-                  setErrors({
-                    ...errors,
-                    komisaris: [],
-                  });
-                }}
-              />
-            ))}
+                    setErrors({
+                      ...errors,
+                      komisaris: updatedErrors,
+                    });
+                  }}
+                  errors={errors.komisaris?.[index]}
+                  onDelete={() => {
+                    removeKomisaris(structure.id);
+                    setErrors({
+                      ...errors,
+                      komisaris: [],
+                    });
+                  }}
+                />
+              );
+            })}
 
             <AddButton
               label="+ Tambah Komisaris"
@@ -486,7 +499,6 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
               <DropdownSelect
                 label="Jenis Obligasi"
                 options={[{ label: "Konvensional", value: "konvensional" }]}
-                // defaultValue="konvensional"
                 value={formState.jenisObligasi || ""}
                 onChange={(val) => {
                   updateField("jenisObligasi", val);
