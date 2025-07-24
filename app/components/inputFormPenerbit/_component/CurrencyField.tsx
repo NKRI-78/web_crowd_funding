@@ -7,7 +7,7 @@ interface CurrencyFieldProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   className?: string;
   disabled?: boolean;
-  errorText?: string; // ✅ Tambahkan ini
+  errorText?: string;
 }
 
 const formatToRupiah = (value: string) => {
@@ -24,7 +24,7 @@ const CurrencyField: React.FC<CurrencyFieldProps> = ({
   onChange,
   className = "",
   disabled = false,
-  errorText, // ✅ Tambahkan ini
+  errorText,
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value.replace(/\D/g, "");
