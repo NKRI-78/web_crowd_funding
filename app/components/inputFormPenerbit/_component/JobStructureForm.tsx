@@ -4,6 +4,7 @@ import FileInput from "./FileInput";
 import SectionPoint from "./SectionPoint";
 import SectionSubtitle from "./SectionSubtitle";
 import { JobStructureError } from "../FormPenerbit";
+import DropdownSelect from "./DropdownSelect";
 
 export interface JobStructureData {
   nama: string;
@@ -20,6 +21,7 @@ interface JobStructureFormProps {
   showDeleteButton?: boolean;
   onDelete?: () => void;
   errors?: JobStructureError;
+  isKomisaris?: boolean;
 }
 
 const JobStructureForm: React.FC<JobStructureFormProps> = ({
@@ -28,10 +30,11 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
   onChange,
   onDelete,
   errors,
-  showDeleteButton = false,
+  showDeleteButton = true,
+  isKomisaris = false,
 }) => {
   return (
-    <div className="w-full flex flex-col mt-2">
+    <div className="w-full flex flex-col mt-2 p-3 rounded-md bg-gray-50 border">
       <div className="flex justify-between">
         <SectionPoint text={label ?? ""} />
 
@@ -63,14 +66,37 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
           <p className="text-[11px] mb-1 font-semibold text-gray-500">
             Jabatan
           </p>
-          <TextField
-            placeholder="Jabatan"
-            value={data.jabatan}
-            disabled={true}
-            className="flex-[1]"
-            onChange={(e) => onChange("jabatan", e.target.value)}
-            errorText={errors?.jabatan}
-          />
+          {isKomisaris ? (
+            <DropdownSelect
+              options={[
+                { label: "Komisaris Utama", value: "komisaris-utama" },
+                { label: "Komisaris", value: "komisaris" },
+              ]}
+              value={data.jabatan}
+              defaultValue="komisaris-utama"
+              onChange={(val) => {
+                onChange("jabatan", val);
+              }}
+              placeholder="Jabatan"
+              maxHeightDropdown="180px"
+              errorText={errors?.jabatan}
+            />
+          ) : (
+            <DropdownSelect
+              options={[
+                { label: "Direktur Utama", value: "direktur-utama" },
+                { label: "Direktur", value: "direktur" },
+              ]}
+              value={data.jabatan}
+              defaultValue="direktur-utama"
+              onChange={(val) => {
+                onChange("jabatan", val);
+              }}
+              placeholder="Jabatan"
+              maxHeightDropdown="180px"
+              errorText={errors?.jabatan}
+            />
+          )}
         </div>
       </div>
 
@@ -91,7 +117,7 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
         className="mt-2 mb-1"
       />
 
-      <div className="mb-2 flex gap-2">
+      <div className="flex gap-2">
         <FileInput
           fileName="Upload KTP"
           placeholder="Upload KTP"

@@ -12,13 +12,15 @@ import SectionPoint from "./_component/SectionPoint";
 import SectionSubtitle from "./_component/SectionSubtitle";
 import CustomSelection from "./_component/CustomSelection";
 import FormButton from "./_component/FormButton";
-import AddJobStructureModal from "./_component/AddJobStructureModal";
 import DropdownSelect from "./_component/DropdownSelect";
 import CurrencyField from "./_component/CurrencyField";
 import axios from "axios";
 import { API_BACKEND } from "@/app/utils/constant";
+import { maxStructure } from "./_hooks/useFormPenerbit";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
+import CustomCheckBox from "./_component/CustomCheckBox";
+import AddButton from "./_component/AddButton";
 
 type Props = {
   onBack: () => void;
@@ -26,7 +28,6 @@ type Props = {
 
 export interface JobStructureError {
   id?: string;
-  title?: string;
   nama?: string;
   jabatan?: string;
   noKTP?: string;
@@ -36,7 +37,10 @@ export interface JobStructureError {
 
 export interface FormPenerbitError {
   laporanKeuangan?: string;
-  susunanManajemen?: JobStructureError[];
+  direktur?: JobStructureError[];
+  komisaris?: JobStructureError[];
+  direkturErrorText?: string;
+  komisarisErrorText?: string;
   fotoProyek?: string;
   titleProyek?: string;
   nilaiNominal?: string;
@@ -49,25 +53,31 @@ export interface FormPenerbitError {
   jaminanKolateral?: string;
   deskripsiPekerjaan?: string;
   jenisBiaya?: string;
+  fileDokumenKontrakApbn?: string;
+  noKontrakApbn?: string;
   companyProfile?: string;
 }
 
 const FormPenerbit: React.FC<Props> = ({ onBack }) => {
+  const router = useRouter();
+
   //* main hooks
   const {
     formState,
     updateField,
-    updateSusunanManajemen,
-    addSusunanManajemen,
-    removeSusunanManajemen,
+    updateDirektur,
+    addDirektur,
+    removeDirektur,
+    updateKomisaris,
+    addKomisaris,
+    removeKomisaris,
   } = useFormPenerbit();
 
-  const [errors, setErrors] = useState<FormPenerbitError>({});
+  //* agree with statement state
+  const [agree, setAgree] = useState<boolean>(false);
 
-  //* show modal add job structure
-  const [showAddJobStructureModal, setShowAddJobStructureModal] =
-    useState(false);
-  const router = useRouter();
+  //* error state
+  const [errors, setErrors] = useState<FormPenerbitError>({});
 
   //* validate form
   const validateForm = (): boolean => {
@@ -91,10 +101,14 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
       newErrors.jadwalBunga = "Jadwal Bunga wajib diisi";
     if (!formState.jadwalPokok?.trim())
       newErrors.jadwalPokok = "Jadwal Pokok wajib diisi";
-    if (!formState.penggunaanDana?.trim())
+    if (formState.penggunaanDana?.length === 0)
       newErrors.penggunaanDana = "Penggunaan Dana wajib diisi";
-    if (!formState.jaminanKolateral?.trim())
+    if (formState.jaminanKolateral?.length === 0)
       newErrors.jaminanKolateral = "Jaminan Kolateral wajib diisi";
+    if (formState.direktur?.length === 0)
+      newErrors.direkturErrorText = "Direktur wajib ditambahkan";
+    if (formState.komisaris?.length === 0)
+      newErrors.komisarisErrorText = "Komisaris wajib ditambahkan";
     if (!formState.deskripsiPekerjaan?.trim())
       newErrors.deskripsiPekerjaan = "Deskripsi Pekerjaan wajib diisi";
     if (!formState.jenisBiaya?.trim())
@@ -104,8 +118,19 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
     if (!formState.jaminanKolateral) {
       newErrors.jaminanKolateral = "Jaminan Kolateral wajib diisi";
     }
+    if (Number(formState.nilaiNominal) > 10_000_000_000) {
+      newErrors.nilaiNominal = "Nilai Nominal Maks 10 Miliar";
+    }
+    if (formState.jenisBiaya === "Iya") {
+      if (!formState.fileDokumenKontrakApbn) {
+        newErrors.fileDokumenKontrakApbn = "Dokumen Kontrak wajib diisi";
+      }
+      if (!formState.noKontrakApbn) {
+        newErrors.noKontrakApbn = "Nomor Kontrak wajib diisi";
+      }
+    }
 
-    const susunanErrors: JobStructureError[] = formState.susunanManajemen.map(
+    const direkturError: JobStructureError[] = formState.direktur.map(
       (item) => {
         const jobError: JobStructureError = {};
         if (!item.nama?.trim()) jobError.nama = "Nama wajib diisi";
@@ -119,24 +144,47 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
         return jobError;
       }
     );
-
-    const hasSusunanError = susunanErrors.some(
+    const hasDirekturError = direkturError.some(
       (err) => Object.keys(err).length > 0
     );
-    if (hasSusunanError) {
-      newErrors.susunanManajemen = susunanErrors;
+    if (hasDirekturError) {
+      newErrors.direktur = direkturError;
+    }
+
+    const komisarisError: JobStructureError[] = formState.komisaris.map(
+      (item) => {
+        const jobError: JobStructureError = {};
+        if (!item.nama?.trim()) jobError.nama = "Nama wajib diisi";
+        if (!item.jabatan?.trim()) jobError.jabatan = "Jabatan wajib diisi";
+        if (!item.noKTP?.trim()) jobError.noKTP = "No KTP wajib diisi";
+        if (!item.fileKTP?.trim()) jobError.fileKTP = "File KTP wajib diunggah";
+        if (!item.fileNPWP?.trim())
+          jobError.fileNPWP = "File NPWP wajib diunggah";
+        if (item.noKTP.length < 16)
+          jobError.noKTP = "No KTP kurang dari 16 digit";
+        return jobError;
+      }
+    );
+    const hasKomisarisError = komisarisError.some(
+      (err) => Object.keys(err).length > 0
+    );
+    if (hasKomisarisError) {
+      newErrors.komisaris = komisarisError;
     }
 
     setErrors(newErrors);
 
-    const isValid = Object.keys(newErrors).length === 0 && !hasSusunanError;
+    const isValid =
+      Object.keys(newErrors).length === 0 &&
+      !hasDirekturError &&
+      !hasKomisarisError;
 
     if (!isValid) {
       Swal.fire({
-        title: "Form Belum Lengkap",
-        text: "Mohon lengkapi semua data yang diperlukan.",
+        title: "Data Tidak Lengkap / Tidak Valid",
+        text: "Beberapa kolom berisi data yang tidak valid atau belum diisi. Harap koreksi sebelum melanjutkan.",
         icon: "warning",
-        timer: 1850,
+        timer: 10000,
         showConfirmButton: false,
       });
     }
@@ -150,8 +198,8 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
     if (!validForm) return;
 
     // hit api
+    console.log("Hit API");
     try {
-      console.log("Hit API");
       const draft = localStorage.getItem("publisherDraft");
       const userData = localStorage.getItem("user");
       console.log("Test", draft && userData);
@@ -176,21 +224,39 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
           total_employees: draftParsed.total_employees.toString(),
           laporan_keuangan_path: formState.laporanKeuangan,
           address: draftParsed.address,
-          positions: formState.susunanManajemen.map((val) => ({
-            title: val.title,
-            name: val.nama,
-            position: val.jabatan,
-            ktp: val.noKTP,
-            ktp_path: val.fileKTP,
-            npwp: "-",
-            npwp_path: val.fileNPWP,
-          })),
+          directors:
+            formState.direktur.length === 1
+              ? formState.direktur.map((dir) => ({
+                  title: "Direktur",
+                  name: dir.nama,
+                  position: "Direktur",
+                  ktp: dir.noKTP,
+                  ktp_path: dir.fileKTP,
+                  npwp: dir.fileNPWP,
+                  npwp_path: "-",
+                }))
+              : formState.direktur.map((dir) => ({
+                  title:
+                    dir.jabatan === "direktur-utama"
+                      ? "Direktur Utama"
+                      : "Direktur",
+                  name: dir.nama,
+                  position:
+                    dir.jabatan === "direktur-utama"
+                      ? "Direktur Utama"
+                      : "Direktur",
+                  ktp: dir.noKTP,
+                  ktp_path: dir.fileKTP,
+                  npwp: dir.fileNPWP,
+                  npwp_path: "-",
+                })),
+          komisaris: formState.komisaris,
           project: {
             title: formState.titleProyek,
             jenis_obligasi: formState.jenisObligasi,
             jumlah_minimal: formState.nilaiNominal,
             jangka_waktu: formState.jangkaWaktu,
-            tingkat_bunga: formState.tingkatBunga,
+            tingkat_bunga: `${formState.tingkatBunga}%`,
             jaminan_kolateral: formState.jaminanKolateral,
             company_profile: formState.companyProfile,
             jadwal_pembayaran_bunga: formState.jadwalBunga,
@@ -198,6 +264,8 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
             penggunaan_dana: formState.penggunaanDana,
             deskripsi_pekerjaan: formState.deskripsiPekerjaan,
             project_media_path: formState.fotoProyek,
+            no_contract_path: formState.fileDokumenKontrakApbn ?? "-",
+            no_contract_value: formState.noKontrakApbn ?? "-",
             is_apbn: formState.jenisBiaya === "Iya",
           },
         };
@@ -275,53 +343,96 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
           <div className="w-full flex flex-col mt-6">
             <SectionTitle text="3. Susunan Manajemen" />
 
-            {formState.susunanManajemen.map((structure, index) => (
+            <SectionPoint text="Direktur" className="mt-2" />
+
+            {formState.direktur.map((structure, index) => (
               <JobStructureForm
                 key={structure.id}
-                label={structure.title}
                 data={structure}
                 onChange={(fieldKey, value) => {
-                  updateSusunanManajemen(structure.id, fieldKey, value);
+                  updateDirektur(structure.id, fieldKey, value);
 
-                  // Hapus error spesifik
-                  const currentErrors = errors.susunanManajemen ?? [];
+                  const currentErrors = errors.direktur ?? [];
                   const updatedErrors = [...currentErrors];
 
                   const existingError = updatedErrors[index] ?? {};
-                  delete existingError[fieldKey]; // Hapus hanya field ini
+                  delete existingError[fieldKey];
                   updatedErrors[index] = existingError;
 
                   setErrors({
                     ...errors,
-                    susunanManajemen: updatedErrors,
+                    direktur: updatedErrors,
                   });
                 }}
-                errors={errors.susunanManajemen?.[index]}
-                showDeleteButton={
-                  structure.id !== "komisaris" && structure.id !== "direksi"
-                }
-                onDelete={() => removeSusunanManajemen(structure.id)}
+                errors={errors.direktur?.[index]}
+                onDelete={() => {
+                  removeDirektur(structure.id);
+                  setErrors({
+                    ...errors,
+                    direktur: [],
+                  });
+                }}
               />
             ))}
 
-            <button
-              type="button"
-              className="w-full bg-white/90 border border-dashed border-gray-300 text-gray-500 py-2 mt-2 rounded-md text-sm hover:bg-gray-50 active:scale-[0.98] transition"
+            <AddButton
+              label="+ Tambah Direktur"
+              errorText={errors.direkturErrorText}
+              message="Anda hanya dapat menambahkan maksimal 3 Direktur."
               onClick={() => {
-                setShowAddJobStructureModal(true);
+                if (formState.direktur.length === 0) {
+                  setErrors({ ...errors, direkturErrorText: "" });
+                }
+                addDirektur();
               }}
-            >
-              + Tambah Jabatan
-            </button>
-
-            {/* Modal Tambah Struktur */}
-            <AddJobStructureModal
-              isOpen={showAddJobStructureModal}
-              onClose={() => setShowAddJobStructureModal(false)}
-              onSubmit={addSusunanManajemen}
             />
 
-            <div className="mt-4">
+            <SectionPoint text="Komisaris" className="mt-2" />
+
+            {formState.komisaris.map((structure, index) => (
+              <JobStructureForm
+                key={structure.id}
+                isKomisaris={true}
+                data={structure}
+                onChange={(fieldKey, value) => {
+                  updateKomisaris(structure.id, fieldKey, value);
+
+                  const currentErrors = errors.direktur ?? [];
+                  const updatedErrors = [...currentErrors];
+
+                  const existingError = updatedErrors[index] ?? {};
+                  delete existingError[fieldKey];
+                  updatedErrors[index] = existingError;
+
+                  setErrors({
+                    ...errors,
+                    komisaris: updatedErrors,
+                  });
+                }}
+                errors={errors.komisaris?.[index]}
+                onDelete={() => {
+                  removeKomisaris(structure.id);
+                  setErrors({
+                    ...errors,
+                    komisaris: [],
+                  });
+                }}
+              />
+            ))}
+
+            <AddButton
+              label="+ Tambah Komisaris"
+              errorText={errors.komisarisErrorText}
+              message="Anda hanya dapat menambahkan maksimal 3 Komisaris."
+              onClick={() => {
+                if (formState.komisaris.length === 0) {
+                  setErrors({ ...errors, komisarisErrorText: "" });
+                }
+                addKomisaris();
+              }}
+            />
+
+            <div className="mt-3">
               <SectionPoint text="Foto Proyek" className="mt-2" />
               <SectionSubtitle
                 text="File maksimal berukuran 10mb"
@@ -370,15 +481,33 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
                 className="mb-2"
                 errorText={errors.jenisObligasi}
               />
+
               <CurrencyField
                 label="Nilai Nominal"
                 placeholder="Rp."
                 value={formState.nilaiNominal || ""}
                 className="mb-2"
                 onChange={(e) => {
-                  updateField("nilaiNominal", e.target.value);
-                  if (e.target.value) {
-                    setErrors({ ...errors, nilaiNominal: "" });
+                  const rawValue = e.target.value;
+                  const numericValue = Number(rawValue);
+
+                  updateField("nilaiNominal", rawValue);
+
+                  if (!rawValue) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      nilaiNominal: "Nilai Nominal tidak boleh kosong",
+                    }));
+                  } else if (numericValue > 10_000_000_000) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      nilaiNominal: "Nilai Nominal Maks 10 Miliar",
+                    }));
+                  } else {
+                    setErrors((prev) => ({
+                      ...prev,
+                      nilaiNominal: "",
+                    }));
                   }
                 }}
                 errorText={errors.nilaiNominal}
@@ -436,15 +565,20 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
             onChange={(val) => updateField("jadwalPokok", val)}
           />
 
-          <CustomSelection
+          <CustomCheckBox
             label="Penggunaan Dana"
             options={["Modal Usaha", "Pengembangan Usaha", "Proyek"]}
-            enableOtherSelection={false}
-            selected={formState.penggunaanDana || ""}
-            onChange={(val) => updateField("penggunaanDana", val)}
+            selected={formState.penggunaanDana}
+            onChange={(val) => {
+              updateField("penggunaanDana", val);
+              if (val) {
+                setErrors({ ...errors, penggunaanDana: "" });
+              }
+            }}
+            errorText={errors.penggunaanDana}
           />
 
-          <CustomSelection
+          <CustomCheckBox
             label="Jaminan Kolateral"
             options={[
               "Tanah Bangunan",
@@ -452,7 +586,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
               "Rumah",
               "Surat Berharga",
             ]}
-            selected={formState.jaminanKolateral || ""}
+            selected={formState.jaminanKolateral}
             onChange={(val) => {
               updateField("jaminanKolateral", val);
               if (val) {
@@ -481,11 +615,60 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
             label="Apakah di biaya oleh APBN/APBD?"
             options={["Iya", "Tidak"]}
             selected={formState.jenisBiaya || ""}
-            enableOtherSelection={false}
-            onChange={(val) => updateField("jenisBiaya", val)}
+            onChange={(val) => {
+              updateField("jenisBiaya", val);
+
+              if (val === "Tidak") {
+                setErrors({
+                  ...errors,
+                  fileDokumenKontrakApbn: "",
+                  noKontrakApbn: "",
+                });
+              }
+            }}
+            showWhenValue="Iya"
+            customContent={
+              <div className="flex gap-x-3">
+                <div>
+                  <p className="text-[12px] mb-1 font-semibold text-gray-500">
+                    Dokumen Kontrak
+                  </p>
+                  <FileInput
+                    fileName="Dokumen Kontrak APBN"
+                    fileUrl={formState.fileDokumenKontrakApbn}
+                    accept=".pdf"
+                    onChange={(fileUrl) => {
+                      updateField("fileDokumenKontrakApbn", fileUrl);
+                      if (fileUrl) {
+                        setErrors({ ...errors, fileDokumenKontrakApbn: "" });
+                      }
+                    }}
+                    errorText={errors.fileDokumenKontrakApbn}
+                  />
+                </div>
+
+                <div>
+                  <p className="text-[12px] mb-1 font-semibold text-gray-500">
+                    No Kontrak
+                  </p>
+                  <TextField
+                    placeholder="No Kontrak"
+                    value={formState.noKontrakApbn || ""}
+                    type="number"
+                    errorText={errors.noKontrakApbn}
+                    onChange={(e) => {
+                      updateField("noKontrakApbn", e.target.value);
+                      if (e.target.value) {
+                        setErrors({ ...errors, noKontrakApbn: "" });
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            }
           />
 
-          <div className="w-full flex flex-col mt-4">
+          <div className="w-full flex flex-col mt-3">
             <SectionPoint text="Company Profile" />
             <SectionSubtitle
               text="File maksimal berukuran 10mb"
@@ -505,11 +688,47 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
             />
           </div>
 
+          <div className="w-ful flex flex-col mt-4">
+            <SectionPoint text="Pernyataan Kebenaran Data" />
+            <p className="text-sm text-gray-500 my-2">
+              Dengan ini saya menyatakan bahwa seluruh data yang saya berikan
+              adalah benar, akurat, dan sesuai dengan kondisi saat ini. Saya
+              bertanggung jawab penuh atas data yang diinput dan memahami bahwa
+              ketidaksesuaian informasi dapat berdampak pada proses investasi.
+            </p>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="setujuKebenaranData"
+                checked={agree}
+                onChange={(e) => {
+                  setAgree(e.target.checked);
+                }}
+                className="form-checkbox"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                Ya, saya setuju
+              </span>
+            </label>
+
+            {!agree && (
+              <p className="text-red-500 text-xs mt-2">
+                Silakan centang kotak persetujuan untuk melanjutkan.
+              </p>
+            )}
+          </div>
+
           <div className="w-full flex justify-end gap-4 mt-6">
             <FormButton onClick={onBack} type="outlined">
               Kembali
             </FormButton>
-            <FormButton onClick={onSubmit}>Kirim Data</FormButton>
+            <FormButton
+              onClick={onSubmit}
+              disabled={!agree}
+              className={!agree ? "cursor-not-allowed" : ""}
+            >
+              Kirim Data
+            </FormButton>
           </div>
         </section>
       </div>
