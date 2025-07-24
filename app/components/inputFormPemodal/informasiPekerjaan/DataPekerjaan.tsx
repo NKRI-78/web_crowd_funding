@@ -38,6 +38,11 @@ interface Props {
     signature: string;
     npwpUrl: string;
     fotoPemodalUrl: string;
+    provincePekerjaan: { value: string; label: string };
+    cityPekerjaan: { value: string; label: string };
+    districtPekerjaan: { value: string; label: string };
+    subDistrictPekerjaan: { value: string; label: string };
+    posCodePekerjaan: string;
   };
   onChange: (
     e: React.ChangeEvent<
@@ -53,6 +58,14 @@ interface Props {
   onCheckboxChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSignatureSave: (signature: string) => void;
   onUploadKTP: (url: string, keyName: string) => void;
+  onAlamatChange: (alamat: {
+    provincePekerjaan: { value: string; label: string } | null;
+    cityPekerjaan: { value: string; label: string } | null;
+    districtPekerjaan: { value: string; label: string } | null;
+    subDistrictPekerjaan: { value: string; label: string } | null;
+    posCodePekerjaan: string;
+  }) => void;
+  errors?: Record<string, string[]>;
 }
 
 // const SIG_W = 300;
@@ -69,7 +82,11 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   onCheckboxChange,
   // onSignatureSave,
   onUploadKTP,
+  onAlamatChange,
+  errors,
 }) => {
+  type OptionType = { value: string; label: string } | null;
+
   // const signatureRef = useRef<SignatureCanvas | null>(null);
   const [isSignatureSaved, setIsSignatureSaved] = useState(false);
   const formPemodalStr = localStorage.getItem("formPemodal");
@@ -90,6 +107,22 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   const [uploadStatus, setUploadStatus] = useState<{ [key: string]: boolean }>(
     {}
   );
+
+  const [province, setProvince] = useState<any>([]);
+  const [selectedProvincePekerjaan, setSelectedProvincePekerjaan] =
+    useState<OptionType>(null);
+  const [city, setCity] = useState<any>([]);
+  const [selectedCityPekerjaan, setSelectedCityPekerjaan] =
+    useState<OptionType>(null);
+  const [district, setDistrict] = useState<any>([]);
+  const [selectedDistrictPekerjaan, setSelectedDistrictPekerjaan] =
+    useState<OptionType>(null);
+  const [subDistrict, setSubDistrict] = useState<any>([]);
+  const [selectedSubDistrictPekerjaan, setSelectedSubDistrictPekerjaan] =
+    useState<OptionType>(null);
+  const [posCode, setPosCode] = useState("");
+
+  let urlWilayah = "https://api.wilayah.site";
 
   // const uploadSignature = async (dataUrl: string): Promise<string | null> => {
   //   const blob = await (await fetch(dataUrl)).blob();
@@ -233,9 +266,169 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
     }
   };
 
+  useEffect(() => {
+    const fetchProvince = async () => {
+      try {
+        const response = await axios.get(`${urlWilayah}/wilayah/province`);
+        setProvince(response.data.data);
+      } catch (error) {
+        console.error("Gagal ambil province:", error);
+      }
+    };
+
+    fetchProvince();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedProvincePekerjaan) return;
+    const fetchCity = async () => {
+      try {
+        const response = await axios.get(`${urlWilayah}/wilayah/city`, {
+          params: {
+            code: selectedProvincePekerjaan?.value,
+          },
+        });
+        setCity(response.data.data);
+      } catch (error) {
+        console.error("Gagal ambil city:", error);
+      }
+    };
+
+    fetchCity();
+  }, [selectedProvincePekerjaan]);
+
+  useEffect(() => {
+    if (!selectedCityPekerjaan) return;
+    const fetchDistrict = async () => {
+      try {
+        const response = await axios.get(`${urlWilayah}/wilayah/district`, {
+          params: {
+            code: selectedCityPekerjaan?.value,
+          },
+        });
+        setDistrict(response.data.data);
+      } catch (error) {
+        console.error("Gagal ambil district:", error);
+      }
+    };
+
+    fetchDistrict();
+  }, [selectedCityPekerjaan]);
+
+  useEffect(() => {
+    if (!selectedDistrictPekerjaan) return;
+    const fetchSubDistrict = async () => {
+      try {
+        const response = await axios.get(`${urlWilayah}/wilayah/subdistrict`, {
+          params: {
+            code: selectedDistrictPekerjaan?.value,
+          },
+        });
+        setSubDistrict(response.data.data);
+      } catch (error) {
+        console.error("Gagal ambil subdistrict:", error);
+      }
+    };
+
+    fetchSubDistrict();
+  }, [selectedDistrictPekerjaan]);
+
+  useEffect(() => {
+    if (!selectedSubDistrictPekerjaan) return;
+    const fetchPosCode = async () => {
+      try {
+        const response = await axios.get(`${urlWilayah}/wilayah/postalcode`, {
+          params: {
+            code: selectedSubDistrictPekerjaan?.value,
+          },
+        });
+
+        setPosCode(response?.data?.data?.postal_code || "");
+      } catch (error) {
+        console.error("Gagal ambil subdistrict:", error);
+      }
+    };
+
+    fetchPosCode();
+  }, [selectedSubDistrictPekerjaan]);
+
+  useEffect(() => {
+    onAlamatChange({
+      provincePekerjaan: selectedProvincePekerjaan,
+      cityPekerjaan: selectedCityPekerjaan,
+      districtPekerjaan: selectedDistrictPekerjaan,
+      subDistrictPekerjaan: selectedSubDistrictPekerjaan,
+      posCodePekerjaan: posCode,
+    });
+  }, [
+    selectedProvincePekerjaan,
+    selectedCityPekerjaan,
+    selectedDistrictPekerjaan,
+    selectedSubDistrictPekerjaan,
+    posCode,
+  ]);
+
+  useEffect(() => {
+    // if (!formData || !province.length) return;
+    if (Object.keys(formData).length && formData.provincePekerjaan) {
+      setSelectedProvincePekerjaan(formData.provincePekerjaan);
+    }
+
+    if (Object.keys(formData).length && formData.cityPekerjaan) {
+      setSelectedCityPekerjaan(formData.cityPekerjaan);
+    }
+
+    if (Object.keys(formData).length && formData.districtPekerjaan) {
+      setSelectedDistrictPekerjaan(formData.districtPekerjaan);
+    }
+
+    if (Object.keys(formData).length && formData.subDistrictPekerjaan) {
+      setSelectedSubDistrictPekerjaan(formData.subDistrictPekerjaan);
+    }
+
+    if (Object.keys(formData).length && formData.posCodePekerjaan) {
+      setPosCode(formData.posCodePekerjaan);
+    }
+  }, []);
+
+  const customOptions = province.map(
+    (province: { code: string; nama: string }) => ({
+      value: province.code,
+      label: province.nama,
+    })
+  );
+
+  const customOptionsCity = city.map(
+    (city: { code: string; nama: string }) => ({
+      value: city.code,
+      label: city.nama,
+    })
+  );
+
+  const customOptionsDistrict = district.map(
+    (district: { code: string; nama: string }) => ({
+      value: district.code,
+      label: district.nama,
+    })
+  );
+
+  const customOptionsSubDistrict = subDistrict.map(
+    (subDistrict: { code: string; nama: string }) => ({
+      value: subDistrict.code,
+      label: subDistrict.nama,
+    })
+  );
+
+  const formatOptionLabel = ({ label, icon }: any) => (
+    <div className="flex items-center gap-2">
+      {/* <img src={icon} alt={label} className="w-5 h-5" /> */}
+      <span>{label}</span>
+    </div>
+  );
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <div className="md:border-r-2 md:border-gray-200 pr-7">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 max-w-6xl mx-auto">
+      <div>
         <h2 className="text-lg md:text-xl font-bold mb-4">
           3. Informasi Pekerjaan (Jika Bekerja)
         </h2>
@@ -251,8 +444,14 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             value={formData.namaPerusahaan}
             onChange={onChange}
             placeholder="Masukan Nama Perusahaan"
-            className="border border-gray-500 p-2 w-full rounded mb-4"
+            className="border p-2 w-full rounded mb-0"
           />
+
+          {errors?.namaPerusahaan && (
+            <p className="text-red-500 text-sm mt-1 mb-1">
+              {errors.namaPerusahaan[0]}
+            </p>
+          )}
         </div>
 
         <div>
@@ -266,23 +465,134 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             value={formData.jabatan}
             onChange={onChange}
             placeholder="Masukan Jabatan"
-            className="border border-gray-500 p-2 w-full rounded mb-4"
+            className="border p-2 w-full rounded mb-0"
           />
+
+          {errors?.jabatan && (
+            <p className="text-red-500 text-sm mt-1 mb-1">
+              {errors.jabatan[0]}
+            </p>
+          )}
         </div>
 
         <div className="mb-4">
           <label htmlFor="address" className="text-md mb-2">
             Alamat Perusahaan
           </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 items-center">
+            <div>
+              <Select
+                className="mt-0"
+                value={selectedProvincePekerjaan}
+                options={customOptions}
+                // styles={customStyles}
+                formatOptionLabel={formatOptionLabel}
+                onChange={(e) => {
+                  setSelectedProvincePekerjaan(e);
+                  setSelectedCityPekerjaan(null);
+                  setSelectedDistrictPekerjaan(null);
+                  setSelectedSubDistrictPekerjaan(null);
+                }}
+                placeholder="Pilih Provinsi"
+              />
+              {errors?.provincePekerjaan && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.provincePekerjaan[0]}
+                </p>
+              )}
+            </div>
+            <div>
+              <Select
+                className="mt-0"
+                value={selectedCityPekerjaan}
+                options={customOptionsCity}
+                // styles={customStyles}
+                formatOptionLabel={formatOptionLabel}
+                onChange={(e) => {
+                  setSelectedCityPekerjaan(e);
+                  setSelectedDistrictPekerjaan(null);
+                  setSelectedSubDistrictPekerjaan(null);
+                }}
+                placeholder="Pilih Kota"
+                isDisabled={!selectedProvincePekerjaan}
+              />
+              {errors?.cityPekerjaan && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.cityPekerjaan[0]}
+                </p>
+              )}
+            </div>
+            <div>
+              <Select
+                className="mt-0"
+                value={selectedDistrictPekerjaan}
+                options={customOptionsDistrict}
+                // styles={customStyles}
+                formatOptionLabel={formatOptionLabel}
+                onChange={(e) => {
+                  setSelectedDistrictPekerjaan(e);
+                  setSelectedSubDistrictPekerjaan(null);
+                }}
+                placeholder="Pilih Kecamatan"
+                isDisabled={!selectedCityPekerjaan}
+              />
+              {errors?.districtPekerjaan && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.districtPekerjaan[0]}
+                </p>
+              )}
+            </div>
+            <div>
+              <Select
+                className="mt-0"
+                value={selectedSubDistrictPekerjaan}
+                options={customOptionsSubDistrict}
+                // styles={customStyles}
+                formatOptionLabel={formatOptionLabel}
+                onChange={(e) => {
+                  setSelectedSubDistrictPekerjaan(e);
+                  setPosCode("");
+                }}
+                placeholder="Pilih Kelurahan"
+                isDisabled={!selectedDistrictPekerjaan}
+              />
+              {errors?.subDistrictPekerjaan && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.subDistrictPekerjaan[0]}
+                </p>
+              )}
+            </div>
+          </div>
+          <div>
+            <input
+              type="number"
+              name="codePos"
+              placeholder="Kode Pos"
+              value={posCode}
+              onChange={onChange}
+              className="border rounded p-2 w-full mb-2 placeholder:text-sm"
+            />
+            {errors?.posCodePekerjaan && (
+              <p className="text-red-500 text-sm mt-1 mb-1">
+                {errors.posCodePekerjaan[0]}
+              </p>
+            )}
+          </div>
           <textarea
             id="alamatPerusahaan"
             name="alamatPerusahaan"
             value={formData.alamatPerusahaan}
             onChange={onChange}
             placeholder="Masukan Alamat Perusahaan"
-            className="border border-gray-500 p-2 w-full rounded resize-none"
+            className="border p-2 w-full rounded resize-none"
             rows={4}
           />
+
+          {errors?.alamatPerusahaan && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.alamatPerusahaan[0]}
+            </p>
+          )}
         </div>
 
         <div className="mb-4">
@@ -302,6 +612,11 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             className="react-select-container"
             classNamePrefix="react-select"
           />
+          {errors?.penghasilanBulanan && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.penghasilanBulanan[0]}
+            </p>
+          )}
         </div>
 
         <h2 className="text-lg md:text-xl font-bold mb-4">4. Profil Resiko</h2>
@@ -338,6 +653,12 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
               className="mt-3 border p-2 w-full rounded text-sm"
             />
           )}
+
+          {errors?.tujuanInvestasi && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.tujuanInvestasi[0]}
+            </p>
+          )}
         </div>
 
         <div className="mb-4">
@@ -363,6 +684,11 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
               </label>
             ))}
           </div>
+          {errors?.toleransiResiko && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.toleransiResiko[0]}
+            </p>
+          )}
         </div>
 
         <div className="mb-4">
@@ -388,6 +714,11 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
               </label>
             ))}
           </div>
+          {errors?.pengalamanInvestasi && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.pengalamanInvestasi[0]}
+            </p>
+          )}
         </div>
         <div className="mb-4">
           <label className="text-md mb-2">
@@ -413,6 +744,11 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
               </label>
             ))}
           </div>
+          {errors?.pengetahuanPasarModal && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.pengetahuanPasarModal[0]}
+            </p>
+          )}
         </div>
       </div>
 
@@ -461,6 +797,10 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           </a>
         )}
 
+        {errors?.npwpUrl && (
+          <p className="text-red-500 text-sm mt-1">{errors.npwpUrl[0]}</p>
+        )}
+
         <div className="mb-4 mt-4">
           <label className="text-md mb-2">
             Foto Pemodal <span className="text-red-500">*</span>
@@ -502,6 +842,12 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           >
             Lihat Foto Pemodal
           </a>
+        )}
+
+        {errors?.fotoPemodalUrl && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.fotoPemodalUrl[0]}
+          </p>
         )}
 
         <div className="mb-6">

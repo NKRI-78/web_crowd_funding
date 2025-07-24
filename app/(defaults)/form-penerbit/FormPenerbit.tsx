@@ -36,11 +36,19 @@ export const schema = z.object({
     .max(2, "Maksimal hanya 2 alamat"),
   detailKorespondensi: z.string().optional(),
   total_employees: z.number().min(1, "Jumlah karyawan minimal 1").optional(),
-  company_nib_path: z.string().min(1, { message: "Dokumen NIB wajib diunggah" }),
-  akta_pendirian: z.string().min(1, { message: "Akte pendirian wajib diunggah" }),
+  company_nib_path: z
+    .string()
+    .min(1, { message: "Dokumen NIB wajib diunggah" }),
+  akta_pendirian: z
+    .string()
+    .min(1, { message: "Akte pendirian wajib diunggah" }),
   sk_kumham_path: z.string().min(1, { message: "SK Kumham wajib diunggah" }),
-  akta_perubahan_terahkir_path: z.string().min(1, { message: "Akte perubahan terakhir wajib diunggah" }),
-  sk_kumham_terahkir: z.string().min(1, { message: "SK Kumham terakhir wajib diunggah" }),
+  akta_perubahan_terahkir_path: z
+    .string()
+    .min(1, { message: "Akte perubahan terakhir wajib diunggah" }),
+  sk_kumham_terahkir: z
+    .string()
+    .min(1, { message: "SK Kumham terakhir wajib diunggah" }),
   npwp_path: z.string().min(1, { message: "NPWP perusahaan wajib diunggah" }),
   fileNpwp: z.string().optional(),
 });
@@ -68,7 +76,7 @@ const fetchOptions = async (url: string, parentId?: string) => {
   }
 };
 
-type OptionType = { value: string; label: string, zip_code: string };
+type OptionType = { value: string; label: string; zip_code: string };
 
 type Props = {
   onNext: () => void;
@@ -169,7 +177,7 @@ export default function PublisherForm({ onNext }: Props) {
       } as const;
 
       if (fileUrl) {
-        setValue(field, fileUrl, { shouldValidate: true }); 
+        setValue(field, fileUrl, { shouldValidate: true });
         if (field in uploadMessages) {
           const message = uploadMessages[field as keyof typeof uploadMessages];
           Swal.fire({
@@ -256,47 +264,48 @@ export default function PublisherForm({ onNext }: Props) {
           </div>
 
           <FileUpload
-        label="Nomor Induk Berusaha (NIB)"
-        fileUrl={watch('company_nib_path')}
-        onUpload={(e) => handleUploadFile(e, 'company_nib_path')}
-        error={errors?.company_nib_path?.message}
-      />
+            label="Nomor Induk Berusaha (NIB)"
+            fileUrl={watch("company_nib_path")}
+            onUpload={(e) => handleUploadFile(e, "company_nib_path")}
+            error={errors?.company_nib_path?.message}
+          />
 
-      <FileUpload
-        label="Akte Pendirian Perusahaan"
-        fileUrl={watch('akta_pendirian')}
-        onUpload={(e) => handleUploadFile(e, 'akta_pendirian')}
-        error={errors?.akta_pendirian?.message}
-      />
+          <FileUpload
+            label="Akte Pendirian Perusahaan"
+            fileUrl={watch("akta_pendirian")}
+            onUpload={(e) => handleUploadFile(e, "akta_pendirian")}
+            error={errors?.akta_pendirian?.message}
+          />
 
-      <FileUpload
-        label="SK Kumham Pendirian"
-        fileUrl={watch('sk_kumham_path')}
-        onUpload={(e) => handleUploadFile(e, 'sk_kumham_path')}
-        error={errors?.sk_kumham_path?.message}
-      />
+          <FileUpload
+            label="SK Kumham Pendirian"
+            fileUrl={watch("sk_kumham_path")}
+            onUpload={(e) => handleUploadFile(e, "sk_kumham_path")}
+            error={errors?.sk_kumham_path?.message}
+          />
 
-      <FileUpload
-        label="Akte Perubahan Terakhir"
-        fileUrl={watch('akta_perubahan_terahkir_path')}
-        onUpload={(e) => handleUploadFile(e, 'akta_perubahan_terahkir_path')}
-        error={errors?.akta_perubahan_terahkir_path?.message}
-      />
+          <FileUpload
+            label="Akte Perubahan Terakhir"
+            fileUrl={watch("akta_perubahan_terahkir_path")}
+            onUpload={(e) =>
+              handleUploadFile(e, "akta_perubahan_terahkir_path")
+            }
+            error={errors?.akta_perubahan_terahkir_path?.message}
+          />
 
-      <FileUpload
-        label="SK Kumham Terakhir"
-        fileUrl={watch('sk_kumham_terahkir')}
-        onUpload={(e) => handleUploadFile(e, 'sk_kumham_terahkir')}
-        error={errors?.sk_kumham_terahkir?.message}
-      />
+          <FileUpload
+            label="SK Kumham Terakhir"
+            fileUrl={watch("sk_kumham_terahkir")}
+            onUpload={(e) => handleUploadFile(e, "sk_kumham_terahkir")}
+            error={errors?.sk_kumham_terahkir?.message}
+          />
 
-      <FileUpload
-        label="NPWP Perusahaan"
-        fileUrl={watch('npwp_path')}
-        onUpload={(e) => handleUploadFile(e, 'npwp_path')}
-        error={errors?.npwp_path?.message}
-      />
-
+          <FileUpload
+            label="NPWP Perusahaan"
+            fileUrl={watch("npwp_path")}
+            onUpload={(e) => handleUploadFile(e, "npwp_path")}
+            error={errors?.npwp_path?.message}
+          />
         </div>
 
         {/* Kanan */}
@@ -316,7 +325,9 @@ export default function PublisherForm({ onNext }: Props) {
               setKecamatanList={setKecamatanList}
               kelurahanList={kelurahanList}
               setKelurahanList={setKelurahanList}
-              fetchOptions={fetchOptions} errors={errors}            />
+              fetchOptions={fetchOptions}
+              errors={errors}
+            />
           ))}
 
           <div>
