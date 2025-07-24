@@ -41,8 +41,8 @@ export default function ClientLayout({
         ) : (
           <main className="min-h-screen text-white relative overflow-hidden flex flex-col">
             <Navbar />
-            <div className="flex flex-1">
-              <div className="flex-grow">{children}</div>
+            <div className="">
+              <div className="">{children}</div>
             </div>
             {pathname === "/form-pemodal" || pathname === "/form-penerbit" ? "" : <Footer />}
           </main>

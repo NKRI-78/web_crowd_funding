@@ -220,7 +220,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
           sk_kumham: draftParsed.sk_kumham_path,
           sk_kumham_path: draftParsed.sk_kumham_path,
           sk_kumham_terahkir: draftParsed.sk_kumham_terahkir,
-          npwp_path: draftParsed.npwp_path,
+          npwp_path: "-",
           total_employees: draftParsed.total_employees.toString(),
           laporan_keuangan_path: formState.laporanKeuangan,
           address: draftParsed.address,
@@ -250,18 +250,36 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
                   npwp: dir.fileNPWP,
                   npwp_path: "-",
                 })),
-          komisaris: formState.komisaris,
+          komisaris: formState.komisaris.map((kom) => ({
+                  title:
+                    kom.jabatan === "komisaris-utama"
+                      ? "Komisaris Utama"
+                      : "Komisaris",
+                  name: kom.nama,
+                  position:
+                    kom.jabatan === "komisaris-utama"
+                      ? "Komisaris Utama"
+                      : "Komisaris",
+                  ktp: kom.noKTP,
+                  ktp_path: kom.fileKTP,
+                  npwp: kom.fileNPWP,
+                  npwp_path: "-",
+                })),
           project: {
             title: formState.titleProyek,
             jenis_obligasi: formState.jenisObligasi,
             jumlah_minimal: formState.nilaiNominal,
             jangka_waktu: formState.jangkaWaktu,
             tingkat_bunga: `${formState.tingkatBunga}%`,
-            jaminan_kolateral: formState.jaminanKolateral,
+            jaminan_kolateral: formState.jaminanKolateral.map(kolateralValue => ({
+              name: kolateralValue,
+            })),
             company_profile: formState.companyProfile,
             jadwal_pembayaran_bunga: formState.jadwalBunga,
             jadwal_pembayaran_pokok: formState.jadwalPokok,
-            penggunaan_dana: formState.penggunaanDana,
+            penggunaan_dana: formState.penggunaanDana.map(danaValue => ({
+              name: danaValue,
+            })),
             deskripsi_pekerjaan: formState.deskripsiPekerjaan,
             project_media_path: formState.fotoProyek,
             no_contract_path: formState.fileDokumenKontrakApbn ?? "-",
