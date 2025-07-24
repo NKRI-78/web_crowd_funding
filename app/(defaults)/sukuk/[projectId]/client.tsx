@@ -11,9 +11,10 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { useParams } from "next/navigation";
 import axios from "axios";
-import defaultImage from "../../../public/images/default-image.png";
+import defaultImage from "/public/images/default-image.png";
 import { API_BACKEND } from "@/app/utils/constant";
 import Custom404 from "@/app/not-found";
+import ProgressBar from "../components/ProgressBar";
 
 type Project = {
   id: string;
@@ -63,7 +64,7 @@ type Props = {
   id: string;
 };
 
-const Sukuk = ({ id }: Props) => {
+const SukukClient = ({ id }: Props) => {
   console.log(id, "id");
 
   const [showModal, setShowModal] = useState(false);
@@ -152,8 +153,11 @@ const Sukuk = ({ id }: Props) => {
     }
   }, []);
 
-
-  return isNotFound ? <><Custom404/></> : (
+  return isNotFound ? (
+    <>
+      <Custom404 />
+    </>
+  ) : (
     <section className="py-28 px-4 md:px-12">
       {showModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
@@ -289,8 +293,8 @@ const Sukuk = ({ id }: Props) => {
         </div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-8">
-        <div>
+      <div className="w-full flex flex-col lg:flex-row">
+        <div className="w-full lg:w-1/2 lg:mx-2">
           <div className="relative rounded-xl overflow-hidden">
             <Swiper
               modules={[Navigation, Thumbs]}
@@ -338,7 +342,7 @@ const Sukuk = ({ id }: Props) => {
               watchSlidesProgress
               className="cursor-pointer"
             >
-              {/* {project.medias.map((item, idx) => (
+              {project?.medias.map((item, idx) => (
                 <SwiperSlide key={idx}>
                   <img
                     src={item.path}
@@ -346,7 +350,7 @@ const Sukuk = ({ id }: Props) => {
                     className="w-full h-20 object-cover rounded-md border-2 border-transparent hover:border-blue-500 transition"
                   />
                 </SwiperSlide>
-              ))} */}
+              ))}
             </Swiper>
           </div>
 
@@ -357,167 +361,163 @@ const Sukuk = ({ id }: Props) => {
             <p className="text-sm mb-4">{project?.desc_job}</p>
           </div>
         </div>
+        <div className="w-full lg:w-1/2 lg:mx-2">
+          <div className="bg-gray-100 rounded-xl p-3 shadow-md space-y-2">
+            <div className="bg-white rounded-lg p-2">
+              <h3 className="text-xl text-black font-bold">{project?.title}</h3>
+              <div className="my-2">
+                <div className="flex flex-wrap justify-between">
+                  <p className="text-xs text-[#677AB9]">Perusahaan</p>
+                  <p className="text-sm">{project?.company.name}</p>
+                </div>
+                <div className="flex flex-wrap justify-between">
+                  <p className="text-xs text-[#677AB9]">Kode Efek</p>
+                  <p className="text-sm">PPJA1</p>
+                </div>
+                <div className="flex flex-wrap justify-between">
+                  <p className="text-xs text-[#677AB9]">Jenis Akad</p>
+                  <p className="text-sm">Efek Bersifat Utang</p>
+                </div>
+              </div>
+            </div>
 
-        <div className="bg-gray-100 rounded-xl p-3 shadow-md space-y-2">
-          <div className="bg-white rounded-lg p-2">
-            <h3 className="text-xl text-black font-bold">{project?.title}</h3>
-            <div className="my-2">
+            <div className="bg-white p-2 rounded-lg space-y-1">
+              <ProgressBar percentage={10}/>
+
               <div className="flex flex-wrap justify-between">
-                <p className="text-xs text-[#677AB9]">Perusahaan</p>
-                <p className="text-sm">{project?.company.name}</p>
-              </div>
-              <div className="flex flex-wrap justify-between">
-                <p className="text-xs text-[#677AB9]">Kode Efek</p>
-                <p className="text-sm">PPJA1</p>
-              </div>
-              <div className="flex flex-wrap justify-between">
-                <p className="text-xs text-[#677AB9]">Jenis Akad</p>
-                <p className="text-sm">Efek Bersifat Utang</p>
+                <p className="text-xs font-bold text-[#677AB9]">
+                  Dana Terkumpul
+                </p>
+                <p className="text-xs font-bold">{formatRupiah("a")}</p>
               </div>
             </div>
+
+            <div className="bg-white rounded-lg p-2 flex justify-evenly">
+              <div className="flex gap-1 flex-col items-center">
+                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#3E268D] text-white"></div>
+                <div className="text-xs text-center font-medium text-gray-900">
+                  Prelisting
+                </div>
+              </div>
+              <div className="flex gap-1 flex-col items-center">
+                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#3E268D] text-white"></div>
+                <div className="text-xs text-center font-medium text-gray-900">
+                  Listing
+                </div>
+              </div>
+              <div className="flex gap-1 flex-col items-center">
+                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#3E268D] text-white"></div>
+                <div className="text-xs text-center font-medium text-gray-900">
+                  Pendanaan Terpenuhi
+                </div>
+              </div>
+              <div className="flex gap-1 flex-col items-center">
+                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#3E268D] text-white"></div>
+                <div className="text-xs text-center font-medium text-gray-900">
+                  Berjalan
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white p-2 rounded-lg">
+              <div className="flex flex-wrap my-2 justify-between">
+                <p className="text-xs text-[#677AB9]"> Kategori Bisnis</p>
+                <p className="text-xs">KONTRAKTOR</p>
+              </div>
+              <div className="flex flex-wrap my-2 justify-between">
+                <p className="text-xs text-[#677AB9]">Minimal Investasi:</p>
+                <p className="text-xs">{formatRupiah(project?.min_invest)}</p>
+              </div>
+              <div className="flex flex-wrap my-2 justify-between">
+                <p className="text-xs text-[#677AB9]">Harga Unit:</p>
+                <p className="text-xs">
+                  {formatRupiah(project?.nominal_value)}
+                </p>
+              </div>
+              <div className="flex flex-wrap my-2 justify-between">
+                <p className="text-xs text-[#677AB9]"> Jumlah Unit </p>
+                <p className="text-xs">
+                  {formatRupiah(project?.number_of_unit)}
+                </p>
+              </div>
+              <div className="flex flex-wrap my-2 justify-between">
+                <p className="text-xs text-[#677AB9]"> Total Unit (Rp) </p>
+                <p className="text-xs"> {formatRupiah(project?.unit_total)} </p>
+              </div>
+              <div className="flex flex-wrap my-2 justify-between">
+                <p className="text-xs text-[#677AB9]">Periode Pengembalian:</p>
+                <p className="text-xs">{project?.interest_payment_schedule}</p>
+              </div>
+              <div className="flex flex-wrap my-2 justify-between">
+                <p className="text-xs text-[#677AB9]">Tenor:</p>
+                <p className="text-xs">{project?.time_periode}</p>
+              </div>
+              <div className="flex flex-wrap my-2 justify-between">
+                <p className="text-xs text-[#677AB9]">ROI (Proyeksi):</p>
+                {/* <p className="text-xs">{project.proyeksiROI}</p> */}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap justify-evenly gap-4 mt-4 text-sm">
+              <button
+                onClick={() => setShowModal(true)}
+                className="bg-white text-xs text-black border px-4 py-2 rounded-md"
+              >
+                Simulasi
+              </button>
+              <button
+                className="bg-white text-xs text-black border px-4 py-2 rounded-md"
+                onClick={() => {
+                  navigator.clipboard
+                    .writeText(window.location.href)
+                    .then(() => {
+                      alert("Link berhasil disalin!");
+                      setTimeout(() => {
+                        console.log("Alert selesai");
+                      }, 2000);
+                    })
+                    .catch(() => {
+                      alert("Gagal menyalin link");
+                    });
+                }}
+              >
+                Bagikan
+              </button>
+              <button
+                className="bg-white text-xs text-black border px-4 py-2 rounded-md"
+                onClick={() => window.open(project?.doc.path, "_blank")}
+              >
+                Proposal
+              </button>
+              <button
+                onClick={() => setShowLocationModal(true)}
+                className="bg-white text-xs text-black border px-4 py-2 rounded-md"
+              >
+                Lokasi
+              </button>
+            </div>
+
+            {hydrated && userData !== null ? (
+              <button className="w-full bg-purple-700 hover:bg-purple-600 text-white font-semibold py-2 rounded-md mt-4 cursor-pointer">
+                Beli Efek
+              </button>
+            ) : (
+              <button className="w-full bg-gray-300 text-white font-semibold py-2 rounded-md mt-4 cursor-not-allowed">
+                Beli Efek
+              </button>
+            )}
+
+            <p className="text-xs text-center mt-2">
+              Butuh Pertanyaan?{" "}
+              <a href="#" className="text-blue-600 font-semibold">
+                Hubungi Kami
+              </a>
+            </p>
           </div>
-
-          <div className="bg-white p-2 rounded-lg space-y-1">
-            <div className="relative w-[90%] h-4 bg-purple-200 rounded-full my-2">
-              <div
-                className="absolute top-0 left-0 h-4 bg-[#3E268D] rounded-full"
-                style={{ width: "100%" }}
-              ></div>
-              <span className="absolute right-[-10px] top-1/2 -translate-y-1/2 translate-x-full bg-green-500 text-white text-xs font-bold px-2 rounded-full shadow">
-                100%
-              </span>
-            </div>
-            <div className="flex flex-wrap justify-between">
-              <p className="text-xs font-bold text-[#677AB9]">Dana Terkumpul</p>
-              {/* <p className="text-xs font-bold">{project?.danaTerkumpul}</p> */}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg p-2 flex justify-evenly">
-            <div className="flex gap-1 flex-col items-center">
-              <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#3E268D] text-white"></div>
-              <div className="text-xs text-center font-medium text-gray-900">
-                Prelisting
-              </div>
-            </div>
-            <div className="flex gap-1 flex-col items-center">
-              <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#3E268D] text-white"></div>
-              <div className="text-xs text-center font-medium text-gray-900">
-                Listing
-              </div>
-            </div>
-            <div className="flex gap-1 flex-col items-center">
-              <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#3E268D] text-white"></div>
-              <div className="text-xs text-center font-medium text-gray-900">
-                Pendanaan Terpenuhi
-              </div>
-            </div>
-            <div className="flex gap-1 flex-col items-center">
-              <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#3E268D] text-white"></div>
-              <div className="text-xs text-center font-medium text-gray-900">
-                Berjalan
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-2 rounded-lg">
-            <div className="flex flex-wrap my-2 justify-between">
-              <p className="text-xs text-[#677AB9]"> Kategori Bisnis</p>
-              <p className="text-xs">KONTRAKTOR</p>
-            </div>
-            <div className="flex flex-wrap my-2 justify-between">
-              <p className="text-xs text-[#677AB9]">Minimal Investasi:</p>
-              <p className="text-xs">{formatRupiah(project?.min_invest)}</p>
-            </div>
-            <div className="flex flex-wrap my-2 justify-between">
-              <p className="text-xs text-[#677AB9]">Harga Unit:</p>
-              <p className="text-xs">{formatRupiah(project?.nominal_value)}</p>
-            </div>
-            <div className="flex flex-wrap my-2 justify-between">
-              <p className="text-xs text-[#677AB9]"> Jumlah Unit </p>
-              <p className="text-xs">{formatRupiah(project?.number_of_unit)}</p>
-            </div>
-            <div className="flex flex-wrap my-2 justify-between">
-              <p className="text-xs text-[#677AB9]"> Total Unit (Rp) </p>
-              <p className="text-xs">
-                {" "}
-                {formatRupiah(project?.unit_total)}{" "}
-              </p>
-            </div>
-            <div className="flex flex-wrap my-2 justify-between">
-              <p className="text-xs text-[#677AB9]">Periode Pengembalian:</p>
-              <p className="text-xs">{project?.interest_payment_schedule}</p>
-            </div>
-            <div className="flex flex-wrap my-2 justify-between">
-              <p className="text-xs text-[#677AB9]">Tenor:</p>
-              <p className="text-xs">{project?.time_periode}</p>
-            </div>
-            <div className="flex flex-wrap my-2 justify-between">
-              <p className="text-xs text-[#677AB9]">ROI (Proyeksi):</p>
-              {/* <p className="text-xs">{project.proyeksiROI}</p> */}
-            </div>
-          </div>
-
-          <div className="flex flex-wrap justify-evenly gap-4 mt-4 text-sm">
-            <button
-              onClick={() => setShowModal(true)}
-              className="bg-white text-xs text-black border px-4 py-2 rounded-md"
-            >
-              Simulasi
-            </button>
-            <button
-              className="bg-white text-xs text-black border px-4 py-2 rounded-md"
-              onClick={() => {
-                navigator.clipboard
-                  .writeText(window.location.href)
-                  .then(() => {
-                    alert("Link berhasil disalin!");
-                    setTimeout(() => {
-                      console.log("Alert selesai");
-                    }, 2000);
-                  })
-                  .catch(() => {
-                    alert("Gagal menyalin link");
-                  });
-              }}
-            >
-              Bagikan
-            </button>
-            <button
-              className="bg-white text-xs text-black border px-4 py-2 rounded-md"
-              onClick={() => window.open(project?.doc.path, "_blank")}
-            >
-              Proposal
-            </button>
-            <button
-              onClick={() => setShowLocationModal(true)}
-              className="bg-white text-xs text-black border px-4 py-2 rounded-md"
-            >
-              Lokasi
-            </button>
-          </div>
-
-          {hydrated && userData !== null ? (
-            <button className="w-full bg-purple-700 hover:bg-purple-600 text-white font-semibold py-2 rounded-md mt-4 cursor-pointer">
-              Beli Efek
-            </button>
-          ) : (
-            <button className="w-full bg-gray-300 text-white font-semibold py-2 rounded-md mt-4 cursor-not-allowed">
-              Beli Efek
-            </button>
-          )}
-
-          <p className="text-xs text-center mt-2">
-            Butuh Pertanyaan?{" "}
-            <a href="#" className="text-blue-600 font-semibold">
-              Hubungi Kami
-            </a>
-          </p>
         </div>
       </div>
     </section>
   );
-
 };
 
-export default Sukuk;
+export default SukukClient;

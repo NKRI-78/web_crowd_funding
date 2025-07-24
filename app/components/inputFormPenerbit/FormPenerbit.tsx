@@ -505,6 +505,30 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
             />
           </div>
 
+          <div className="my-3">
+            <h3 className="font-semibold text-gray-900 mb-2">
+              Pernyataan Kebenaran Data
+            </h3>
+            <p className="text-sm text-gray-500 mb-3">
+              Dengan ini saya menyatakan bahwa seluruh data yang saya berikan
+              adalah benar, akurat, dan sesuai dengan kondisi saat ini. Saya
+              bertanggung jawab penuh atas data yang diinput dan memahami bahwa
+              ketidaksesuaian informasi dapat berdampak pada proses investasi.
+            </p>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="setujuKebenaranData"
+                checked={false}
+                // onChange={onCheckboxChange}
+                className="form-checkbox text-[#4821C2]"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                Ya, saya setuju
+              </span>
+            </label>
+          </div>
+
           <div className="w-full flex justify-end gap-4 mt-6">
             <FormButton onClick={onBack} type="outlined">
               Kembali
