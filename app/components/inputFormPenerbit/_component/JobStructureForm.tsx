@@ -22,6 +22,8 @@ interface JobStructureFormProps {
   onDelete?: () => void;
   errors?: JobStructureError;
   isKomisaris?: boolean;
+  hasDirekturUtama?: boolean;
+  hasKomisarisUtama?: boolean;
 }
 
 const JobStructureForm: React.FC<JobStructureFormProps> = ({
@@ -32,6 +34,8 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
   errors,
   showDeleteButton = true,
   isKomisaris = false,
+  hasDirekturUtama = false,
+  hasKomisarisUtama = false,
 }) => {
   return (
     <div className="w-full flex flex-col mt-2 p-3 rounded-md bg-gray-50 border">
@@ -69,7 +73,9 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
           {isKomisaris ? (
             <DropdownSelect
               options={[
-                { label: "Komisaris Utama", value: "komisaris-utama" },
+                ...(!hasKomisarisUtama
+                  ? [{ label: "Komisaris Utama", value: "komisaris-utama" }]
+                  : []),
                 { label: "Komisaris", value: "komisaris" },
               ]}
               value={data.jabatan}
@@ -84,7 +90,9 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
           ) : (
             <DropdownSelect
               options={[
-                { label: "Direktur Utama", value: "direktur-utama" },
+                ...(!hasDirekturUtama
+                  ? [{ label: "Direktur Utama", value: "direktur-utama" }]
+                  : []),
                 { label: "Direktur", value: "direktur" },
               ]}
               value={data.jabatan}
