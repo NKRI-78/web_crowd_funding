@@ -220,7 +220,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
           sk_kumham: draftParsed.sk_kumham_path,
           sk_kumham_path: draftParsed.sk_kumham_path,
           sk_kumham_terahkir: draftParsed.sk_kumham_terahkir,
-          npwp_path: draftParsed.npwp_path,
+          npwp_path: "-",
           total_employees: draftParsed.total_employees.toString(),
           laporan_keuangan_path: formState.laporanKeuangan,
           address: draftParsed.address,
@@ -250,18 +250,36 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
                   npwp: dir.fileNPWP,
                   npwp_path: "-",
                 })),
-          komisaris: formState.komisaris,
+          komisaris: formState.komisaris.map((kom) => ({
+                  title:
+                    kom.jabatan === "komisaris-utama"
+                      ? "Komisaris Utama"
+                      : "Komisaris",
+                  name: kom.nama,
+                  position:
+                    kom.jabatan === "komisaris-utama"
+                      ? "Komisaris Utama"
+                      : "Komisaris",
+                  ktp: kom.noKTP,
+                  ktp_path: kom.fileKTP,
+                  npwp: kom.fileNPWP,
+                  npwp_path: "-",
+                })),
           project: {
             title: formState.titleProyek,
             jenis_obligasi: formState.jenisObligasi,
             jumlah_minimal: formState.nilaiNominal,
             jangka_waktu: formState.jangkaWaktu,
             tingkat_bunga: `${formState.tingkatBunga}%`,
-            jaminan_kolateral: formState.jaminanKolateral,
+            jaminan_kolateral: formState.jaminanKolateral.map(kolateralValue => ({
+              name: kolateralValue,
+            })),
             company_profile: formState.companyProfile,
             jadwal_pembayaran_bunga: formState.jadwalBunga,
             jadwal_pembayaran_pokok: formState.jadwalPokok,
-            penggunaan_dana: formState.penggunaanDana,
+            penggunaan_dana: formState.penggunaanDana.map(danaValue => ({
+              name: danaValue,
+            })),
             deskripsi_pekerjaan: formState.deskripsiPekerjaan,
             project_media_path: formState.fotoProyek,
             no_contract_path: formState.fileDokumenKontrakApbn ?? "-",
@@ -688,11 +706,9 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
             />
           </div>
 
-          <div className="my-3">
-            <h3 className="font-semibold text-gray-900 mb-2">
-              Pernyataan Kebenaran Data
-            </h3>
-            <p className="text-sm text-gray-500 mb-3">
+          <div className="w-ful flex flex-col mt-4">
+            <SectionPoint text="Pernyataan Kebenaran Data" />
+            <p className="text-sm text-gray-500 my-2">
               Dengan ini saya menyatakan bahwa seluruh data yang saya berikan
               adalah benar, akurat, dan sesuai dengan kondisi saat ini. Saya
               bertanggung jawab penuh atas data yang diinput dan memahami bahwa
@@ -702,14 +718,22 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
               <input
                 type="checkbox"
                 name="setujuKebenaranData"
-                checked={false}
-                // onChange={onCheckboxChange}
-                className="form-checkbox text-[#4821C2]"
+                checked={agree}
+                onChange={(e) => {
+                  setAgree(e.target.checked);
+                }}
+                className="form-checkbox"
               />
               <span className="text-sm font-medium text-gray-700">
                 Ya, saya setuju
               </span>
             </label>
+
+            {!agree && (
+              <p className="text-red-500 text-xs mt-2">
+                Silakan centang kotak persetujuan untuk melanjutkan.
+              </p>
+            )}
           </div>
 
           <div className="w-full flex justify-end gap-4 mt-6">
