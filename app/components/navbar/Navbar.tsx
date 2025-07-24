@@ -204,7 +204,7 @@ const Navbar: React.FC = () => {
             </li>
             {hydrated && userData !== null ? (
               <>
-                <li
+                {/* <li
                   className={
                     pathname == "/form-penerbit"
                       ? "text-[#4CD137]"
@@ -221,7 +221,7 @@ const Navbar: React.FC = () => {
                   }
                 >
                   <Link href="/form-pemodal">Form Pemodal</Link>
-                </li>
+                </li> */}
                 <li>Halo, {userData.email}</li>
                 <li>
                   <button

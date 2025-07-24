@@ -31,6 +31,7 @@ type Props = {
     React.SetStateAction<Record<number, OptionType[]>>
   >;
   fetchOptions: (type: string, id: string) => Promise<OptionType[]>;
+  sameAsCompany: boolean;
 };
 
 const FormAlamat = ({
@@ -48,6 +49,7 @@ const FormAlamat = ({
   kelurahanList,
   setKelurahanList,
   fetchOptions,
+  sameAsCompany,
 }: Props) => {
   const watchProvinsi = watch(`address.${index}.province_name`);
   const watchKota = watch(`address.${index}.city_name`);
@@ -70,13 +72,15 @@ const FormAlamat = ({
   useEffect(() => {
     if (watchKecamatan)
       fetchOptions("api/v1/administration/subdistrict", watchKecamatan).then(
-        (res : any) => {
+        (res: any) => {
           const data = res.data || [];
-          console.log("Data ", data)
-          setKelurahanList((prev) => ({ ...prev, [index]: res }))
+          console.log("Data ", data);
+          setKelurahanList((prev) => ({ ...prev, [index]: res }));
         }
       );
   }, [watchKecamatan]);
+
+  const isDisabled = sameAsCompany && index === 1;
 
   return (
     <div key={index} className="space-y-3">
@@ -95,6 +99,7 @@ const FormAlamat = ({
                 placeholder="Pilih Provinsi"
                 options={provinsiList}
                 isSearchable={true}
+                isDisabled={isDisabled}
                 value={
                   provinsiList.find((opt) => opt.value === field.value) || null
                 }
@@ -141,7 +146,7 @@ const FormAlamat = ({
                   setValue(`address.${index}.subdistrict_id`, "");
                   setValue(`address.${index}.subdistrict_name`, "");
                 }}
-                isDisabled={!watchProvinsi}
+                isDisabled={!watchProvinsi || isDisabled}
               />
               {error && <p className="text-red-500 text-sm">{error.message}</p>}
             </div>
@@ -171,7 +176,7 @@ const FormAlamat = ({
                   setValue(`address.${index}.subdistrict_id`, "");
                   setValue(`address.${index}.subdistrict_name`, "");
                 }}
-                isDisabled={!watchKota}
+                isDisabled={!watchKota || isDisabled}
               />
               {error && <p className="text-red-500 text-sm">{error.message}</p>}
             </div>
@@ -203,13 +208,16 @@ const FormAlamat = ({
                   );
                   setValue(`address.${index}.postal_code`, val?.zip_code || "");
                 }}
-                isDisabled={!watchKecamatan}
+                isDisabled={!watchKecamatan || isDisabled}
               />
               {error && <p className="text-red-500 text-sm">{error.message}</p>}
             </div>
           )}
         />
-        <input type="hidden" {...register(`address.${index}.subdistrict_name`)} />
+        <input
+          type="hidden"
+          {...register(`address.${index}.subdistrict_name`)}
+        />
       </div>
 
       {/* Kode Pos */}
@@ -220,6 +228,7 @@ const FormAlamat = ({
           })}
           placeholder="Kode Pos"
           type="number"
+          disabled={isDisabled}
           className="border px-3 py-2 rounded w-full"
         />
         {errors?.address?.[index]?.postal_code && (
@@ -235,6 +244,7 @@ const FormAlamat = ({
           {...register(`address.${index}.detail`, {
             required: "Detail alamat wajib diisi",
           })}
+          disabled={isDisabled}
           placeholder="Detail Alamat"
           className="border px-3 py-2 rounded w-full"
         />
@@ -244,6 +254,49 @@ const FormAlamat = ({
           </p>
         )}
       </div>
+      {index === 0 && (
+        <Controller
+          name="sameAsCompany"
+          control={control}
+          render={({ field }) => (
+            <div className="flex items-center gap-2 mt-2">
+              <input
+                type="checkbox"
+                checked={field.value}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  field.onChange(checked); // ✅ penting untuk simpan ke RHF
+
+                  if (checked) {
+                    const company = watch("address")[0];
+                    setValue(`address.1`, {
+                      ...company,
+                      name: "Koresponden",
+                    });
+                  } else {
+                    setValue(`address.1`, {
+                      name: "Koresponden",
+                      province_id: "",
+                      province_name: "",
+                      city_id: "",
+                      city_name: "",
+                      district_id: "",
+                      district_name: "",
+                      subdistrict_id: "",
+                      subdistrict_name: "",
+                      postal_code: "",
+                      detail: "",
+                    });
+                  }
+                }}
+              />
+              <label>
+                Gunakan alamat perusahaan sebagai alamat korespondensi
+              </label>
+            </div>
+          )}
+        />
+      )}
     </div>
   );
 };

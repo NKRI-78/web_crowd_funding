@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 
 interface JobStructureFormData {
   id: string;
-  title: string;
   nama: string;
   jabatan: string;
   noKTP: string;
@@ -12,7 +11,8 @@ interface JobStructureFormData {
 
 interface FormPenerbitState {
   laporanKeuangan: string;
-  susunanManajemen: JobStructureFormData[];
+  direktur: JobStructureFormData[];
+  komisaris: JobStructureFormData[];
   fotoProyek: string;
   titleProyek: string;
   nilaiNominal: string;
@@ -21,36 +21,22 @@ interface FormPenerbitState {
   tingkatBunga: string;
   jadwalBunga: string;
   jadwalPokok: string;
-  penggunaanDana: string;
-  jaminanKolateral: string;
+  penggunaanDana: string[];
+  jaminanKolateral: string[];
   deskripsiPekerjaan: string;
   jenisBiaya: string;
+  fileDokumenKontrakApbn?: string;
+  noKontrakApbn?: string;
   companyProfile: string;
 }
+
+export const maxStructure = 3;
 
 export function useFormPenerbit() {
   const [state, setState] = useState<FormPenerbitState>({
     laporanKeuangan: "",
-    susunanManajemen: [
-      {
-        title: "Komisaris",
-        fileKTP: "",
-        jabatan: "Komisaris",
-        id: "komisaris",
-        fileNPWP: "",
-        nama: "",
-        noKTP: "",
-      },
-      {
-        title: "Direksi",
-        fileKTP: "",
-        jabatan: "Direksi",
-        id: "direksi",
-        fileNPWP: "",
-        nama: "",
-        noKTP: "",
-      },
-    ],
+    direktur: [],
+    komisaris: [],
     fotoProyek: "",
     titleProyek: "",
     nilaiNominal: "",
@@ -59,9 +45,11 @@ export function useFormPenerbit() {
     tingkatBunga: "10",
     jadwalBunga: "1 Bulan",
     jadwalPokok: "1 Bulan",
-    penggunaanDana: "Modal Usaha",
-    jaminanKolateral: "Tanah Bangunan",
+    penggunaanDana: [],
+    jaminanKolateral: [],
     deskripsiPekerjaan: "",
+    fileDokumenKontrakApbn: "",
+    noKontrakApbn: "",
     jenisBiaya: "Tidak",
     companyProfile: "",
   });
@@ -99,48 +87,88 @@ export function useFormPenerbit() {
     }));
   };
 
-  const updateSusunanManajemen = (
+  const updateDirektur = (
     id: string,
     field: keyof JobStructureFormData,
     updated: string
   ) => {
     setState((prev) => ({
       ...prev,
-      susunanManajemen: prev.susunanManajemen.map((item) =>
+      direktur: prev.direktur.map((item) =>
         item.id === id ? { ...item, [field]: updated } : item
       ),
     }));
   };
 
-  const addSusunanManajemen = (title: string) => {
-    const newId = `${title.toLowerCase()}-${Date.now()}`;
-    const newStructure: JobStructureFormData = {
+  const addDirektur = () => {
+    if (state.direktur.length >= maxStructure) return;
+    const newId = `${Date.now()}`;
+    const newDirektur: JobStructureFormData = {
       id: newId,
-      title,
       nama: "",
-      jabatan: title,
+      jabatan: state.direktur.length === 0 ? "direktur-utama" : "direktur", // default value jabatan
       noKTP: "",
       fileKTP: "",
       fileNPWP: "",
     };
     setState((prev) => ({
       ...prev,
-      susunanManajemen: [...prev.susunanManajemen, newStructure],
+      direktur: [...prev.direktur, newDirektur],
     }));
   };
 
-  const removeSusunanManajemen = (id: string) => {
+  const removeDirektur = (id: string) => {
     setState((prev) => ({
       ...prev,
-      susunanManajemen: prev.susunanManajemen.filter((s) => s.id !== id),
+      direktur: prev.direktur.filter((s) => s.id !== id),
+    }));
+  };
+
+  const updateKomisaris = (
+    id: string,
+    field: keyof JobStructureFormData,
+    updated: string
+  ) => {
+    setState((prev) => ({
+      ...prev,
+      komisaris: prev.komisaris.map((item) =>
+        item.id === id ? { ...item, [field]: updated } : item
+      ),
+    }));
+  };
+
+  const addKomisaris = () => {
+    if (state.komisaris.length >= maxStructure) return;
+    const newId = `${Date.now()}`;
+    const newKomisaris: JobStructureFormData = {
+      id: newId,
+      nama: "",
+      jabatan: state.komisaris.length === 0 ? "komisaris-utama" : "komisaris", // default value jabatan
+      noKTP: "",
+      fileKTP: "",
+      fileNPWP: "",
+    };
+    setState((prev) => ({
+      ...prev,
+      komisaris: [...prev.komisaris, newKomisaris],
+    }));
+  };
+
+  const removeKomisaris = (id: string) => {
+    setState((prev) => ({
+      ...prev,
+      komisaris: prev.komisaris.filter((s) => s.id !== id),
     }));
   };
 
   return {
     formState: state,
     updateField,
-    updateSusunanManajemen,
-    addSusunanManajemen,
-    removeSusunanManajemen,
+    updateDirektur,
+    addDirektur,
+    removeDirektur,
+    updateKomisaris,
+    addKomisaris,
+    removeKomisaris,
   };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
@@ -28,12 +28,20 @@ export const alamatSchema = z.object({
   detail: z.string().min(1, "Detail alamat wajib diisi"),
 });
 
+const existingCompanies = ["Google", "Microsoft", "OpenAI"];
+
 export const schema = z.object({
-  company_name: z.string().min(1, "Nama perusahaan wajib diisi"),
+  company_name: z
+    .string()
+    .min(1, "Nama perusahaan wajib diisi")
+    .refine((val) => !existingCompanies.includes(val), {
+      message: "Nama perusahaan sudah terdaftar",
+    }),
   address: z
     .array(alamatSchema)
     .min(1, "Minimal 1 alamat harus diisi")
     .max(2, "Maksimal hanya 2 alamat"),
+  sameAsCompany: z.boolean().optional(),
   detailKorespondensi: z.string().optional(),
   total_employees: z.number().min(1, "Jumlah karyawan minimal 1").optional(),
   company_nib_path: z
@@ -49,7 +57,7 @@ export const schema = z.object({
   sk_kumham_terahkir: z
     .string()
     .min(1, { message: "SK Kumham terakhir wajib diunggah" }),
-  npwp_path: z.string().min(1, { message: "NPWP perusahaan wajib diunggah" }),
+  // npwp_path: z.string().min(1, { message: "NPWP perusahaan wajib diunggah" }),
   fileNpwp: z.string().optional(),
 });
 
@@ -106,13 +114,14 @@ export default function PublisherForm({ onNext }: Props) {
     resolver: zodResolver(schema),
     mode: "onBlur",
     defaultValues: {
+      sameAsCompany: false,
       total_employees: 0,
       company_nib_path: "",
       akta_pendirian: "",
       sk_kumham_path: "",
       akta_perubahan_terahkir_path: "",
       sk_kumham_terahkir: "",
-      npwp_path: "",
+      // npwp_path: "",
       address: [
         {
           name: "Company",
@@ -137,6 +146,26 @@ export default function PublisherForm({ onNext }: Props) {
   });
 
   const { fields } = useFieldArray({ control, name: "address" });
+
+  const alamatPerusahaan = useWatch({
+    control,
+    name: "address.0",
+  });
+
+  const sameAsCompany = useWatch({
+    control,
+    name: "sameAsCompany",
+  });
+
+  useEffect(() => {
+    if (!sameAsCompany) return;
+
+    // Ketika checkbox aktif, update address[1] setiap kali address[0] berubah
+    setValue("address.1", {
+      ...alamatPerusahaan,
+      name: "Koresponden", // jangan lupa ubah label
+    });
+  }, [alamatPerusahaan, sameAsCompany]);
 
   useEffect(() => {
     const loadProvinces = async () => {
@@ -173,7 +202,7 @@ export default function PublisherForm({ onNext }: Props) {
         akta_perubahan_terahkir_path:
           "Upload Akta Perubahan Terakhir berhasil!",
         sk_kumham_terahkir: "Upload SK KUMHAM Terakhir berhasil!",
-        npwp_path: "Upload NPWP berhasil!",
+        // npwp_path: "Upload NPWP berhasil!",
       } as const;
 
       if (fileUrl) {
@@ -234,10 +263,25 @@ export default function PublisherForm({ onNext }: Props) {
     return <p>Loading...</p>; // Tunggu reset jalan dulu
   }
 
+  const showErrorToasts = () => {
+    Object.values(errors).forEach((err) => {
+      if (!err?.message) return;
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: err.message,
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+    });
+  };
+
   return (
     <section className="bg-white text-black items-center px-3 md:px-10 py-20 md:py-30">
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(onSubmit, showErrorToasts)}
         className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 max-w-6xl mx-auto"
       >
         {/* Kiri */}
@@ -300,12 +344,12 @@ export default function PublisherForm({ onNext }: Props) {
             error={errors?.sk_kumham_terahkir?.message}
           />
 
-          <FileUpload
-            label="NPWP Perusahaan"
-            fileUrl={watch("npwp_path")}
-            onUpload={(e) => handleUploadFile(e, "npwp_path")}
-            error={errors?.npwp_path?.message}
-          />
+          {/* <FileUpload
+        label="NPWP Perusahaan"
+        fileUrl={watch('npwp_path')}
+        onUpload={(e) => handleUploadFile(e, 'npwp_path')}
+        error={errors?.npwp_path?.message}
+      /> */}
         </div>
 
         {/* Kanan */}
@@ -327,6 +371,7 @@ export default function PublisherForm({ onNext }: Props) {
               setKelurahanList={setKelurahanList}
               fetchOptions={fetchOptions}
               errors={errors}
+              sameAsCompany={watch("sameAsCompany") ?? false}
             />
           ))}
 
@@ -336,6 +381,7 @@ export default function PublisherForm({ onNext }: Props) {
               <input
                 {...register("total_employees", { valueAsNumber: true })}
                 type="number"
+                min={1}
                 className="px-3 py-2 outline-none flex-1"
                 placeholder="0"
               />
