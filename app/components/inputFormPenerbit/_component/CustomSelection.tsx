@@ -9,15 +9,19 @@ interface CustomSelectionProps {
   selected: string;
   onChange: (value: string) => void;
   errorText?: string;
+  showWhenValue?: string;
+  customContent?: React.ReactNode;
 }
 
 const CustomSelection: React.FC<CustomSelectionProps> = ({
   label,
   options,
   selected,
-  enableOtherSelection = true,
+  enableOtherSelection = false,
   onChange,
   errorText,
+  showWhenValue,
+  customContent,
 }) => {
   const isOtherSelected = enableOtherSelection && !options.includes(selected);
 
@@ -37,7 +41,7 @@ const CustomSelection: React.FC<CustomSelectionProps> = ({
   };
 
   return (
-    <div className="w-full mb-6">
+    <div className="w-full mb-5">
       <SectionPoint text={label} className="mb-2" />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-y-2 gap-x-4">
@@ -81,6 +85,10 @@ const CustomSelection: React.FC<CustomSelectionProps> = ({
           className="mt-2"
           errorText={errorText}
         />
+      )}
+
+      {showWhenValue && selected === showWhenValue && (
+        <div className="mt-2">{customContent}</div>
       )}
     </div>
   );
