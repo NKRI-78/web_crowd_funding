@@ -659,6 +659,12 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
               {errors.tujuanInvestasi[0]}
             </p>
           )}
+          {formData.tujuanInvestasi === "Lainnya" &&
+            errors?.tujuanInvestasiLainnya && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.tujuanInvestasiLainnya[0]}
+              </p>
+            )}
         </div>
 
         <div className="mb-4">
@@ -786,7 +792,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             {/* )} */}
           </label>
         </div>
-        {formData.npwpUrl && (
+        {typeof window !== "undefined" && formData.npwpUrl && (
           <a
             href={formData.npwpUrl}
             target="_blank"
@@ -833,7 +839,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             {/* )} */}
           </label>
         </div>
-        {formData.fotoPemodalUrl && (
+        {typeof window !== "undefined" && formData.fotoPemodalUrl && (
           <a
             href={formData.fotoPemodalUrl}
             target="_blank"

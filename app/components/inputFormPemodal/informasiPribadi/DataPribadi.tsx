@@ -20,7 +20,7 @@ interface Props {
     pekerjaan: string;
     pekerjaanLainnya: string;
     addres: string;
-    namaBank: string;
+    namaBank: { value: string; label: string };
     nomorRekening: string;
     namaPemilik: string;
     cabangBank: string;
@@ -50,6 +50,7 @@ interface Props {
     posCode: string;
   }) => void;
   errors?: Record<string, string[]>;
+  onBankChange: (bank: { value: string; label: string } | null) => void;
 }
 
 const ComponentDataPribadi: React.FC<Props> = ({
@@ -62,6 +63,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
   onUploadKTP,
   onAlamatChange,
   errors,
+  onBankChange,
 }) => {
   type OptionType = { value: string; label: string } | null;
 
@@ -112,6 +114,9 @@ const ComponentDataPribadi: React.FC<Props> = ({
   const today = new Date();
   const maxDate = new Date();
   maxDate.setFullYear(today.getFullYear() - 17);
+
+  const [localFormData, setLocalFormData] = useState<any>({});
+  const [hasMounted, setHasMounted] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -273,9 +278,10 @@ const ComponentDataPribadi: React.FC<Props> = ({
   useEffect(() => {
     const fetchBank = async () => {
       try {
-        const response = await axios.get(`http://157.245.193.49:9879/v1/bank`);
-        console.log(response, "bank");
-        setBank(response.data.data);
+        const response = await axios.get(
+          `https://api.gateway.langitdigital78.com/v1/bank`
+        );
+        setBank(response.data.data.beneficiary_banks);
       } catch (error) {
         console.error("Gagal ambil bank:", error);
       }
@@ -301,6 +307,10 @@ const ComponentDataPribadi: React.FC<Props> = ({
   ]);
 
   useEffect(() => {
+    onBankChange(selectedBank);
+  }, [selectedBank]);
+
+  useEffect(() => {
     // if (!formData || !province.length) return;
     if (Object.keys(formData).length && formData.provincePribadi) {
       setSelectedProvincePribadi(formData.provincePribadi);
@@ -320,6 +330,10 @@ const ComponentDataPribadi: React.FC<Props> = ({
 
     if (Object.keys(formData).length && formData.posCode) {
       setPosCode(formData.posCode);
+    }
+
+    if (Object.keys(formData).length && formData.namaBank) {
+      setSelectedBank(formData.namaBank);
     }
   }, []);
 
@@ -351,12 +365,12 @@ const ComponentDataPribadi: React.FC<Props> = ({
     })
   );
 
-  const customOptionsBank = Array.isArray(bank)
-    ? bank.map((item) => ({
-        value: item.code,
-        label: item.name,
-      }))
-    : [];
+  const customOptionsBank = bank.map(
+    (bank: { code: string; name: string }) => ({
+      value: bank.code,
+      label: bank.name,
+    })
+  );
 
   const formatOptionLabel = ({ label, icon }: any) => (
     <div className="flex items-center gap-2">
@@ -364,6 +378,10 @@ const ComponentDataPribadi: React.FC<Props> = ({
       <span>{label}</span>
     </div>
   );
+
+  const tanggalLahirDate = useMemo(() => {
+    return formData.tanggalLahir ? new Date(formData.tanggalLahir) : undefined;
+  }, [formData.tanggalLahir]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 justify-center gap-6 p-6 max-w-6xl mx-auto">
@@ -451,11 +469,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
                   // maxDate: "today",
                   maxDate: maxDate,
                 }}
-                value={
-                  formData.tanggalLahir
-                    ? new Date(formData.tanggalLahir)
-                    : undefined
-                }
+                value={tanggalLahirDate}
                 onChange={(selectedDates) => {
                   const selectedDate = selectedDates[0];
                   if (selectedDate) {
@@ -480,7 +494,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
           </div>
 
           <div className="mb-4">
-            <label className="text-sm font-medium mb-2">
+            <label className="text-md mb-2">
               Jenis Kelamin <span className="text-red-500">*</span>
             </label>
             <div className="flex gap-6">
@@ -509,7 +523,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
           </div>
 
           <div className="mb-4">
-            <label className="text-sm font-medium mb-2">
+            <label className="text-md mb-2">
               Status Pernikahan <span className="text-red-500">*</span>
             </label>
             <div className="flex gap-6">
@@ -566,36 +580,10 @@ const ComponentDataPribadi: React.FC<Props> = ({
               //     : "bg-[#505050] hover:bg-gray-800"
               // } text-white rounded-md transition`}
             >
-              {/* {uploadStatus["ktpUrl"] ? (
-              <>
-                <svg
-                  className="animate-spin h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v8H4z"
-                  ></path>
-                </svg>
-                Uploading...
-              </>
-            ) : ( */}
               <>
                 <FaFileAlt />
                 Upload Dokumen
               </>
-              {/* )} */}
             </label>
           </div>
           <>
@@ -614,7 +602,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
             <p className="text-red-500 text-sm mt-1">{errors.ktpUrl[0]}</p>
           )}
           <div className="mb-4">
-            <label className="text-sm font-medium mb-2">
+            <label className="text-md mb-2">
               Pendidikan Terakhir <span className="text-red-500">*</span>
             </label>
             <div className="grid grid-cols-3 gap-y-2 gap-x-4">
@@ -643,8 +631,8 @@ const ComponentDataPribadi: React.FC<Props> = ({
           </div>
         </div>
 
-        <div className="mb-4">
-          <label className="text-sm font-medium mb-2">
+        <div className="mb-4 mt-2">
+          <label className="text-md mb-2">
             Pekerjaan <span className="text-red-500">*</span>
           </label>
           <div className="flex flex-wrap gap-6">
@@ -679,6 +667,11 @@ const ComponentDataPribadi: React.FC<Props> = ({
 
           {errors?.pekerjaan && (
             <p className="text-red-500 text-sm mt-1">{errors.pekerjaan[0]}</p>
+          )}
+          {formData.pekerjaan === "Lainnya" && errors?.pekerjaanLainnya && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.pekerjaanLainnya[0]}
+            </p>
           )}
         </div>
       </div>

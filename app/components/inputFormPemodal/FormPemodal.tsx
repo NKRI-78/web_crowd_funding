@@ -51,7 +51,15 @@ const FormPemodal: React.FC = () => {
       pekerjaan: z.string().min(1, "Pekerjaan wajib diisi"),
       pekerjaanLainnya: z.string().optional(),
       addres: z.string().min(1, "Alamat wajib diisi"),
-      namaBank: z.string().min(1, "Nama bank wajib diisi"),
+      namaBank: z
+        .object({
+          value: z.string(),
+          label: z.string(),
+        })
+        .nullable()
+        .refine((val) => val !== null, {
+          message: "Nama bank wajib dipilih",
+        }),
       nomorRekening: z.string().min(1, "Nomor rekening wajib diisi"),
       namaPemilik: z.string().min(1, "Nama pemilik rekening wajib diisi"),
       cabangBank: z.string().min(1, "Cabang bank wajib diisi"),
@@ -99,65 +107,94 @@ const FormPemodal: React.FC = () => {
     .refine((data) => data.nama === data.namaPemilik, {
       message: "Nama pemilik rekening harus sama dengan nama",
       path: ["namaPemilik"],
-    });
-
+    })
+    .refine(
+      (data) => {
+        if (data.pekerjaan === "Lainnya") {
+          return data.pekerjaanLainnya && data.pekerjaanLainnya.trim() !== "";
+        }
+        return true;
+      },
+      {
+        message: "Pekerjaan lainnya wajib diisi",
+        path: ["pekerjaanLainnya"],
+      }
+    );
   // Zod schema untuk Data Pekerjaan
-  const schemaDataPekerjaan = z.object({
-    namaPerusahaan: z.string().min(1, "Nama perusahaan wajib diisi"),
-    jabatan: z.string().min(1, "Jabatan wajib diisi"),
-    alamatPerusahaan: z.string().min(1, "Alamat perusahaan wajib diisi"),
-    penghasilanBulanan: z.string().min(1, "Penghasilan tahunan wajib diisi"),
-    tujuanInvestasi: z.string().min(1, "Tujuan investasi wajib diisi"),
-    tujuanInvestasiLainnya: z.string().optional(),
-    toleransiResiko: z.string().min(1, "Toleransi resiko wajib diisi"),
-    pengalamanInvestasi: z.string().min(1, "Pengalaman investasi wajib diisi"),
-    pengetahuanPasarModal: z
-      .string()
-      .min(1, "Pengetahuan pasar modal wajib diisi"),
-    setujuKebenaranData: z.literal(true),
-    setujuRisikoInvestasi: z.literal(true),
-    signature: z.string().min(1, "Tanda tangan wajib"),
-    npwpUrl: z.string().min(1, "Upload NPWP wajib"),
-    fotoPemodalUrl: z.string().min(1, "Upload Foto wajib"),
-    provincePekerjaan: z
-      .object({
-        value: z.string(),
-        label: z.string(),
-      })
-      .nullable()
-      .refine((val) => val !== null, {
-        message: "Provinsi wajib dipilih",
-      }),
-    cityPekerjaan: z
-      .object({
-        value: z.string(),
-        label: z.string(),
-      })
-      .nullable()
-      .refine((val) => val !== null, {
-        message: "Kota wajib dipilih",
-      }),
-    districtPekerjaan: z
-      .object({
-        value: z.string(),
-        label: z.string(),
-      })
-      .nullable()
-      .refine((val) => val !== null, {
-        message: "Kecamatan wajib dipilih",
-      }),
-    subDistrictPekerjaan: z
-      .object({
-        value: z.string(),
-        label: z.string(),
-      })
-      .nullable()
-      .refine((val) => val !== null, {
-        message: "Kelurahan wajib dipilih",
-      }),
+  const schemaDataPekerjaan = z
+    .object({
+      namaPerusahaan: z.string().min(1, "Nama perusahaan wajib diisi"),
+      jabatan: z.string().min(1, "Jabatan wajib diisi"),
+      alamatPerusahaan: z.string().min(1, "Alamat perusahaan wajib diisi"),
+      penghasilanBulanan: z.string().min(1, "Penghasilan tahunan wajib diisi"),
+      tujuanInvestasi: z.string().min(1, "Tujuan investasi wajib diisi"),
+      tujuanInvestasiLainnya: z.string().optional(),
+      toleransiResiko: z.string().min(1, "Toleransi resiko wajib diisi"),
+      pengalamanInvestasi: z
+        .string()
+        .min(1, "Pengalaman investasi wajib diisi"),
+      pengetahuanPasarModal: z
+        .string()
+        .min(1, "Pengetahuan pasar modal wajib diisi"),
+      setujuKebenaranData: z.literal(true),
+      setujuRisikoInvestasi: z.literal(true),
+      // signature: z.string().min(1, "Tanda tangan wajib"),
+      npwpUrl: z.string().min(1, "Upload NPWP wajib"),
+      fotoPemodalUrl: z.string().min(1, "Upload Foto wajib"),
+      provincePekerjaan: z
+        .object({
+          value: z.string(),
+          label: z.string(),
+        })
+        .nullable()
+        .refine((val) => val !== null, {
+          message: "Provinsi wajib dipilih",
+        }),
+      cityPekerjaan: z
+        .object({
+          value: z.string(),
+          label: z.string(),
+        })
+        .nullable()
+        .refine((val) => val !== null, {
+          message: "Kota wajib dipilih",
+        }),
+      districtPekerjaan: z
+        .object({
+          value: z.string(),
+          label: z.string(),
+        })
+        .nullable()
+        .refine((val) => val !== null, {
+          message: "Kecamatan wajib dipilih",
+        }),
+      subDistrictPekerjaan: z
+        .object({
+          value: z.string(),
+          label: z.string(),
+        })
+        .nullable()
+        .refine((val) => val !== null, {
+          message: "Kelurahan wajib dipilih",
+        }),
 
-    posCodePekerjaan: z.string().min(1, "Kode pos wajib dipilih"),
-  });
+      posCodePekerjaan: z.string().min(1, "Kode pos wajib dipilih"),
+    })
+    .refine(
+      (data) => {
+        if (data.tujuanInvestasi === "Lainnya") {
+          return (
+            data.tujuanInvestasiLainnya &&
+            data.tujuanInvestasiLainnya.trim() !== ""
+          );
+        }
+        return true;
+      },
+      {
+        message: "Tujuan inventasi lainnya wajib diisi",
+        path: ["tujuanInvestasiLainnya"],
+      }
+    );
 
   const [dataPribadi, setDataPribadi] = useState(() => {
     if (typeof window !== "undefined") {
@@ -499,6 +536,13 @@ const FormPemodal: React.FC = () => {
     }));
   };
 
+  const handleBank = (namaBank: OptionType) => {
+    setDataPribadi((prev) => ({
+      ...prev,
+      namaBank: namaBank,
+    }));
+  };
+
   const validateStep0 = () => {
     const result = schemaDataPribadi.safeParse(dataPribadi);
     if (!result.success) {
@@ -510,10 +554,11 @@ const FormPemodal: React.FC = () => {
     return true;
   };
 
-  const validateStep1 = () => {
+  const validateStep1 = async () => {
     const result = schemaDataPekerjaan.safeParse(dataPekerjaan);
     if (!result.success) {
       const errors = result.error.flatten().fieldErrors;
+      console.log("Validation Errors:", errors);
       setErrorsPekerjaan(errors); // untuk ditampilkan di UI
       return false;
     }
@@ -548,10 +593,8 @@ const FormPemodal: React.FC = () => {
       return;
     }
 
-    if (selectedIndex === 1) {
-      const isValid = validateStep1();
-      if (!isValid) return;
-    }
+    const isValid = await validateStep1();
+    if (!isValid) return;
 
     try {
       const data = JSON.parse(savedData);
@@ -609,18 +652,18 @@ const FormPemodal: React.FC = () => {
         number_of_unit: "-",
         periode: "-",
         bank: {
-          name: data.namaBank,
+          name: data.namaBank.label,
           no: data.nomorRekening,
           owner: data.namaPemilik,
           branch: data.cabangBank,
-          rek_koran_path: data.rekeningKoran,
+          rek_koran_path: data.rekeningKoran || "-",
         },
         job: {
           province_name: data.provincePekerjaan.label,
           city_name: data.cityPekerjaan.label,
           district_name: data.districtPekerjaan.label,
           subdistrict_name: data.subDistrictPekerjaan.label,
-          postal_code: data.posCodePekerjaan.label,
+          postal_code: data.posCodePekerjaan,
           company: data.namaPerusahaan,
           address: data.alamatPerusahaan,
           position: data.jabatan,
@@ -638,8 +681,6 @@ const FormPemodal: React.FC = () => {
         },
       };
 
-      console.log(payload, "payload");
-
       const response = await axios.post(
         "https://api-capbridge.langitdigital78.com/api/v1/auth/assign/role",
         payload,
@@ -650,9 +691,7 @@ const FormPemodal: React.FC = () => {
         }
       );
 
-      // if (response.status === 200) {
-      // alert("Form berhasil dikirim!");
-      const alertSwal = await Swal.fire({
+      Swal.fire({
         title: "Berhasil",
         text: "Data berhasil dikirim",
         icon: "success",
@@ -661,31 +700,38 @@ const FormPemodal: React.FC = () => {
         // showConfirmButton: false,
       });
 
-      // Hapus localStorage dan reset
       localStorage.removeItem("formPemodal");
       localStorage.removeItem("signature");
       Cookies.remove("formPemodal");
       setSelectedIndex(0);
-      router.push("/");
-      // } else {
-      //   alert("Gagal mengirim data. Silakan coba lagi.");
-      // }
+      router.push("/dashboard");
     } catch (error) {
-      console.error("Error submitting form:", error);
-      // alert("Terjadi kesalahan saat mengirim data.");
-      Swal.fire({
-        title: "Gagal",
-        text: "Terjadi kesalahan saat mengirim data.",
-        icon: "warning",
-        timer: 3000,
-      });
+      if (axios.isAxiosError(error)) {
+        console.error("Error submitting form:", error.response?.data?.message);
+        Swal.fire({
+          title: "Gagal",
+          text:
+            error.response?.data?.message ||
+            "Terjadi kesalahan saat mengirim data.",
+          icon: "warning",
+          timer: 3000,
+        });
+      } else {
+        console.error("Error submitting form:", error);
+        Swal.fire({
+          title: "Gagal",
+          text: "Terjadi kesalahan yang tidak diketahui.",
+          icon: "warning",
+          timer: 3000,
+        });
+      }
     }
   };
 
   return (
     // px-3 md:px-10 py-20 md:py-30
     // px-10 md:px-24 py-24
-    <div className="bg-white w-full mx-auto text-black px-10 md:px-24 py-24">
+    <div className="bg-white w-full mx-auto text-black px-10 md:px-24 py-20">
       {/* Step content */}
       {selectedIndex === 0 && (
         <div>
@@ -701,6 +747,7 @@ const FormPemodal: React.FC = () => {
             }
             onAlamatChange={handleAlamatChange}
             errors={errorsPribadi}
+            onBankChange={handleBank}
           />
         </div>
       )}
