@@ -695,6 +695,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
                   setSelectedCityPribadi(null);
                   setSelectedDistrictPribadi(null);
                   setSelectedSubDistrictPribadi(null);
+                  setPosCode("");
                 }}
                 placeholder="Pilih Provinsi"
               />
@@ -715,6 +716,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
                   setSelectedCityPribadi(e);
                   setSelectedDistrictPribadi(null);
                   setSelectedSubDistrictPribadi(null);
+                  setPosCode("");
                 }}
                 placeholder="Pilih Kota"
                 isDisabled={!selectedProvincePribadi}
@@ -735,6 +737,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
                 onChange={(e) => {
                   setSelectedDistrictPribadi(e);
                   setSelectedSubDistrictPribadi(null);
+                  setPosCode("");
                 }}
                 placeholder="Pilih Kecamatan"
                 isDisabled={!selectedCityPribadi}

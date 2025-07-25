@@ -492,6 +492,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
                   setSelectedCityPekerjaan(null);
                   setSelectedDistrictPekerjaan(null);
                   setSelectedSubDistrictPekerjaan(null);
+                  setPosCode("");
                 }}
                 placeholder="Pilih Provinsi"
               />
@@ -512,6 +513,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
                   setSelectedCityPekerjaan(e);
                   setSelectedDistrictPekerjaan(null);
                   setSelectedSubDistrictPekerjaan(null);
+                  setPosCode("");
                 }}
                 placeholder="Pilih Kota"
                 isDisabled={!selectedProvincePekerjaan}
@@ -532,6 +534,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
                 onChange={(e) => {
                   setSelectedDistrictPekerjaan(e);
                   setSelectedSubDistrictPekerjaan(null);
+                  setPosCode("");
                 }}
                 placeholder="Pilih Kecamatan"
                 isDisabled={!selectedCityPekerjaan}
