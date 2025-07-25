@@ -44,7 +44,13 @@ export default function ClientLayout({
             <div className="">
               <div className="">{children}</div>
             </div>
-            {pathname === "/form-pemodal" || pathname === "/form-penerbit" ? "" : <Footer />}
+            {pathname === "/form-pemodal" ||
+            pathname === "/form-penerbit" ||
+            pathname === "/dashboard" ? (
+              ""
+            ) : (
+              <Footer />
+            )}
           </main>
         )}
         <ModalLogout />
