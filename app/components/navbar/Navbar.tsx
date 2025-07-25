@@ -231,15 +231,17 @@ const Navbar: React.FC = () => {
             <li className={pathname == "/about-us" ? "text-[#4CD137]" : ""}>
               <Link href="/about-us">Tentang Kami</Link>
             </li>
-            {userData.role === "investor / pemodal" && (
-              <li
-                className={
-                  pathname == "/dashboard" ? "text-[#4CD137]" : "text-white"
-                }
-              >
-                <Link href="/dashboard  ">Dashboard</Link>
-              </li>
-            )}
+            {hydrated && userData !== null
+              ? userData.role === "investor / pemodal" && (
+                  <li
+                    className={
+                      pathname == "/dashboard" ? "text-[#4CD137]" : "text-white"
+                    }
+                  >
+                    <Link href="/dashboard  ">Dashboard</Link>
+                  </li>
+                )
+              : ""}
             {hydrated && userData !== null ? (
               <>
                 <li
@@ -253,7 +255,6 @@ const Navbar: React.FC = () => {
                   }}
                   className="bg-[#33206b] flex gap-4 items-center px-4 py-2 rounded-full hover:bg-[#211547] cursor-pointer"
                 >
-                  <li>Halo, {userData.email}</li>
                   <p className="text-white"> Halo, {userData.email}</p>
                   <BellRing size={18} className="text-white" />
                 </li>
