@@ -8,6 +8,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import Swal from "sweetalert2";
 import axios from "axios";
+import Cookies from "js-cookie";
 
 const Login: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -74,15 +75,20 @@ const Login: React.FC = () => {
 
       // Simpan token dan user info ke localStorage
       localStorage.setItem("user", JSON.stringify(response.data.data));
+      Cookies.set("user", JSON.stringify(response.data.data));
 
-      Swal.fire({
+      await Swal.fire({
         icon: "success",
         title: "Login Berhasil",
-        timer: 1500,
+        timer: 2000,
         showConfirmButton: false,
       });
 
-      router.push("/");
+      if (response.data.data.role !== "investor / pemodal") {
+        router.push("/");
+      } else {
+        router.push("/dashboard");
+      }
     } catch (error: any) {
       Swal.fire({
         icon: "error",
