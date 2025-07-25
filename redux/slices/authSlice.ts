@@ -70,7 +70,7 @@ const initialState: AuthState = {
 
 const handleAuthAsyncThunk = <Returned, ThunkArg>(
   builder: any,
-  asyncThunk: AsyncThunk<Returned, ThunkArg, {}>,
+  asyncThunk: AsyncThunk<Returned, ThunkArg, object>,
   onFulfilled?: (state: AuthState, action: PayloadAction<Returned>) => void
 ) => {
   builder

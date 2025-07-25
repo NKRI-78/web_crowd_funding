@@ -2,12 +2,19 @@
 
 import { usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { BellRing, Menu, X } from "lucide-react";
 import { AppDispatch, RootState } from "@redux/store";
 import { useDispatch, useSelector } from "react-redux";
 import { loadSession, logout } from "@redux/slices/authSlice";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
-import RoleModal from "@components/modal/role/Role";
+import {
+  useFloating,
+  offset,
+  useDismiss,
+  useInteractions,
+  useTransitionStyles,
+} from "@floating-ui/react";
 import Modal from "@/app/helper/Modal";
 import RegisterV2 from "../auth/register/RegisterV2";
 import RegisterOtp from "../auth/register/RegisterOtp";
@@ -17,6 +24,24 @@ import Cookies from "js-cookie";
 const Navbar: React.FC = () => {
   const [isSticky, setIsSticky] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  //* floating inbox hooks
+  const [isInboxTooltipOpen, setIsInboxTooltipOpen] = useState(false);
+  const { refs, floatingStyles, context } = useFloating({
+    open: isInboxTooltipOpen,
+    onOpenChange: setIsInboxTooltipOpen,
+    middleware: [offset(10)],
+    placement: "bottom-end",
+  });
+  const dismiss = useDismiss(context);
+  const { isMounted, styles } = useTransitionStyles(context, {
+    initial: {
+      opacity: 0,
+      transform: "scale(0.8)",
+    },
+    duration: 300,
+  });
+  const { getReferenceProps, getFloatingProps } = useInteractions([dismiss]);
 
   const pathname = usePathname();
 
@@ -151,12 +176,12 @@ const Navbar: React.FC = () => {
               </li>
               {hydrated && userData !== null ? (
                 <>
-                  <li>Halo, {userData.email}</li>
+                  <UserMenu email={userData.email} />
                   <li>
                     <button
                       onClick={() => {
-                        localStorage.removeItem("user"); // atau juga token kalau ada
-                        window.location.href = "/auth/login"; // redirect
+                        localStorage.removeItem("user");
+                        window.location.href = "/auth/login";
                       }}
                       className="px-5 py-2 rounded-full bg-red-500 text-white"
                     >
@@ -173,14 +198,16 @@ const Navbar: React.FC = () => {
                   </a>
                 </li>
               )}
-              <div className="flex justify-between px-4">
-                <button
-                  onClick={() => setStep("register")}
-                  className="text-white"
-                >
-                  Daftar
-                </button>
-              </div>
+              {userData === null && (
+                <div className="flex justify-between px-4">
+                  <button
+                    onClick={() => setStep("register")}
+                    className="text-white"
+                  >
+                    Daftar
+                  </button>
+                </div>
+              )}
             </ul>
           </div>
 
@@ -191,6 +218,7 @@ const Navbar: React.FC = () => {
             />
           )}
 
+          {/* navbar md keatas */}
           <ul className="hidden md:flex gap-6 items-center">
             <li className={pathname == "/" ? "text-[#4CD137]" : ""}>
               <Link href="/">Beranda</Link>
@@ -203,39 +231,66 @@ const Navbar: React.FC = () => {
             <li className={pathname == "/about-us" ? "text-[#4CD137]" : ""}>
               <Link href="/about-us">Tentang Kami</Link>
             </li>
+            {userData.role === "investor / pemodal" && (
+              <li
+                className={
+                  pathname == "/dashboard" ? "text-[#4CD137]" : "text-white"
+                }
+              >
+                <Link href="/dashboard  ">Dashboard</Link>
+              </li>
+            )}
             {hydrated && userData !== null ? (
               <>
-                {/* <li
-                  className={
-                    pathname == "/form-penerbit"
-                      ? "text-[#4CD137]"
-                      : "text-white"
-                  }
-                >
-                  <Link href="/form-penerbit">Penerbit</Link>
-                </li>
                 <li
-                  className={
-                    pathname == "/form-pemodal"
-                      ? "text-[#4CD137]"
-                      : "text-white"
-                  }
+                  ref={refs.setReference}
+                  {...getReferenceProps()}
+                  onMouseEnter={() => {
+                    setIsInboxTooltipOpen(true);
+                  }}
+                  onClick={() => {
+                    setIsInboxTooltipOpen(true);
+                  }}
+                  className="bg-[#33206b] flex gap-4 items-center px-4 py-2 rounded-full hover:bg-[#211547] cursor-pointer"
                 >
-                  <Link href="/form-pemodal">Form Pemodal</Link>
-                </li> */}
-                {userData.role === "investor / pemodal" && (
-                  <li
-                    className={
-                      pathname == "/dashboard" ? "text-[#4CD137]" : "text-white"
-                    }
+                  <li>Halo, {userData.email}</li>
+                  <p className="text-white"> Halo, {userData.email}</p>
+                  <BellRing size={18} className="text-white" />
+                </li>
+
+                {isMounted && (
+                  <div
+                    ref={refs.setFloating}
+                    style={{ ...floatingStyles, zIndex: 50 }}
+                    {...getFloatingProps()}
                   >
-                    <Link href="/dashboard  ">Dashboard</Link>
-                  </li>
+                    <div
+                      style={styles}
+                      className="p-2 flex flex-col bg-white border gap-y-2 rounded-md shadow-lg"
+                    >
+                      <Link
+                        href={"/inbox"}
+                        onClick={() => {
+                          setIsInboxTooltipOpen((isOpen) => !isOpen);
+                        }}
+                        className="px-10 py-2 bg-gray-100 text-black justify-center flex rounded-sm cursor-pointer hover:bg-gray-200"
+                      >
+                        Inbox
+                      </Link>
+                      <Link
+                        href={"/transaction"}
+                        onClick={() => {
+                          setIsInboxTooltipOpen((isOpen) => !isOpen);
+                        }}
+                        className="px-10 py-2 bg-gray-100 text-black justify-center flex rounded-sm cursor-pointer hover:bg-gray-200"
+                      >
+                        Transaksi
+                      </Link>
+                    </div>
+                  </div>
                 )}
-                <li>Halo, {userData.email}</li>
                 <li>
                   <button
-                    // onClick={() => dispatch(logout())}
                     onClick={() => {
                       localStorage.removeItem("user");
                       localStorage.removeItem("formPemodal");
@@ -250,17 +305,22 @@ const Navbar: React.FC = () => {
               </>
             ) : (
               <li>
-                <a href="/auth/login">
-                  <button
-                    className={`px-5 py-2 rounded-full ${
-                      isSticky
-                        ? "bg-[#4CD137] text-white"
-                        : "bg-[#4CD137] text-white"
-                    }`}
-                  >
-                    Masuk
-                  </button>
-                </a>
+                <>
+                  <Link href={"/auth/login"}>
+                    <button
+                      className={`px-5 py-2 rounded-full ${
+                        isSticky
+                          ? "bg-[#4CD137] text-white"
+                          : "bg-[#4CD137] text-white"
+                      }`}
+                      onClick={() => {
+                        setIsInboxTooltipOpen((isOpen) => !isOpen);
+                      }}
+                    >
+                      Masuk
+                    </button>
+                  </Link>
+                </>
               </li>
             )}
             {hydrated && userData !== null ? (
@@ -296,6 +356,45 @@ const Navbar: React.FC = () => {
       </Modal>
       {/* <RoleModal open={showModal} onClose={() => setShowModal(false)} /> */}
     </>
+  );
+};
+
+const UserMenu = ({ email }: { email: string }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <ul className="list-none text-sm text-white">
+      <li>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full flex items-center justify-between py-2 rounded hover:bg-violet-700 transition-colors"
+        >
+          <p className=" text-white truncate">{email}</p>
+          {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+
+        {isExpanded && (
+          <ul className="mt-1 ml-6 space-y-1 text-sm text-white">
+            <li>
+              <Link
+                href="/inbox"
+                className="block px-3 py-1 rounded hover:bg-violet-700 transition-colors"
+              >
+                Inbox
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/transaction"
+                className="block px-3 py-1 rounded hover:bg-violet-700 transition-colors"
+              >
+                Transaksi
+              </Link>
+            </li>
+          </ul>
+        )}
+      </li>
+    </ul>
   );
 };
 
