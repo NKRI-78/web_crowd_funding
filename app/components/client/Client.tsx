@@ -46,6 +46,7 @@ export default function ClientLayout({
             </div>
             {pathname === "/form-pemodal" ||
             pathname === "/form-penerbit" ||
+            pathname === "/dashboard" ||
             pathname === "/inbox" ||
             pathname === "/transaction" ? (
               ""

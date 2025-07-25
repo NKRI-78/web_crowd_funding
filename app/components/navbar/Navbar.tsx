@@ -19,6 +19,7 @@ import Modal from "@/app/helper/Modal";
 import RegisterV2 from "../auth/register/RegisterV2";
 import RegisterOtp from "../auth/register/RegisterOtp";
 import RegisterSelectRole from "../auth/register/RegisterSelectRole";
+import Cookies from "js-cookie";
 
 const Navbar: React.FC = () => {
   const [isSticky, setIsSticky] = useState(false);
@@ -230,6 +231,17 @@ const Navbar: React.FC = () => {
             <li className={pathname == "/about-us" ? "text-[#4CD137]" : ""}>
               <Link href="/about-us">Tentang Kami</Link>
             </li>
+            {hydrated && userData !== null
+              ? userData.role === "investor / pemodal" && (
+                  <li
+                    className={
+                      pathname == "/dashboard" ? "text-[#4CD137]" : "text-white"
+                    }
+                  >
+                    <Link href="/dashboard  ">Dashboard</Link>
+                  </li>
+                )
+              : ""}
             {hydrated && userData !== null ? (
               <>
                 <li
@@ -278,11 +290,12 @@ const Navbar: React.FC = () => {
                     </div>
                   </div>
                 )}
-
                 <li>
                   <button
                     onClick={() => {
                       localStorage.removeItem("user");
+                      localStorage.removeItem("formPemodal");
+                      Cookies.remove("user");
                       window.location.href = "/auth/login";
                     }}
                     className="px-5 py-2 rounded-full bg-red-500 text-white"

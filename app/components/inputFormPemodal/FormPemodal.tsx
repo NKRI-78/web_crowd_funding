@@ -691,7 +691,7 @@ const FormPemodal: React.FC = () => {
         }
       );
 
-      Swal.fire({
+      const alertSwal = await Swal.fire({
         title: "Berhasil",
         text: "Data berhasil dikirim",
         icon: "success",
@@ -703,7 +703,9 @@ const FormPemodal: React.FC = () => {
       localStorage.removeItem("formPemodal");
       localStorage.removeItem("signature");
       Cookies.remove("formPemodal");
+
       setSelectedIndex(0);
+
       router.push("/dashboard");
     } catch (error) {
       if (axios.isAxiosError(error)) {
