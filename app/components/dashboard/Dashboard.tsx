@@ -89,9 +89,13 @@ const Dashboard: React.FC = () => {
       <div className="flex flex-col gap-y-4 mt-4">
         {/* Profile Card */}
         {profile && (
-          <div className="shadow-md rounded-2xl p-6 bg-white flex gap-6 items-center">
+          <div className="shadow-md rounded-2xl p-6 bg-white flex gap-6 items-center w-full md:w-1/2">
             <img
-              src={profile.avatar}
+              src={
+                profile.avatar !== "-"
+                  ? profile.avatar
+                  : "/images/default-image.png"
+              }
               alt="Avatar"
               className="w-24 h-24 rounded-full object-cover border-2 border-slate-200"
             />
@@ -111,7 +115,11 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div>
                   <strong>Jenis Kelamin :</strong>{" "}
-                  {profile.gender === "L" ? "Laki-laki" : "Perempuan"}
+                  {profile.gender === "L"
+                    ? "Laki-laki"
+                    : profile.gender === "P"
+                    ? "Perempuan"
+                    : "-"}
                 </div>
                 <div>
                   <strong>Alamat :</strong> {profile.address_detail}
@@ -141,7 +149,7 @@ const Dashboard: React.FC = () => {
         </div>
 
         <div className="flex gap-x-4">
-          <div className="shadow-lg p-6 basis-6/12 h-fit">
+          <div className="shadow-lg p-6 basis-6/12 h-fit bg-white rounded-2xl">
             <h6 className="text-slate-600 font-semibold mb-6">
               Alokasi pembelian berdasarkan efek
             </h6>
