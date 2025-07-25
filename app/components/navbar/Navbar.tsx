@@ -12,6 +12,7 @@ import Modal from "@/app/helper/Modal";
 import RegisterV2 from "../auth/register/RegisterV2";
 import RegisterOtp from "../auth/register/RegisterOtp";
 import RegisterSelectRole from "../auth/register/RegisterSelectRole";
+import Cookies from "js-cookie";
 
 const Navbar: React.FC = () => {
   const [isSticky, setIsSticky] = useState(false);
@@ -222,13 +223,24 @@ const Navbar: React.FC = () => {
                 >
                   <Link href="/form-pemodal">Form Pemodal</Link>
                 </li> */}
+                {userData.role === "investor / pemodal" && (
+                  <li
+                    className={
+                      pathname == "/dashboard" ? "text-[#4CD137]" : "text-white"
+                    }
+                  >
+                    <Link href="/dashboard  ">Dashboard</Link>
+                  </li>
+                )}
                 <li>Halo, {userData.email}</li>
                 <li>
                   <button
                     // onClick={() => dispatch(logout())}
                     onClick={() => {
-                      localStorage.removeItem("user"); // atau juga token kalau ada
-                      window.location.href = "/auth/login"; // redirect
+                      localStorage.removeItem("user");
+                      localStorage.removeItem("formPemodal");
+                      Cookies.remove("user");
+                      window.location.href = "/auth/login";
                     }}
                     className="px-5 py-2 rounded-full bg-red-500 text-white"
                   >
