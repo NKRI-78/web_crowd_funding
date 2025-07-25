@@ -101,6 +101,11 @@ const ComponentDataPribadi: React.FC<Props> = ({
   const [posCode, setPosCode] = useState("");
   const [bank, setBank] = useState<any>([]);
   const [selectedBank, setSelectedBank] = useState<OptionType>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   let urlWilayah = "https://api.wilayah.site";
 
@@ -346,12 +351,12 @@ const ComponentDataPribadi: React.FC<Props> = ({
     })
   );
 
-  const customOptionsBank = bank.map(
-    (subDistrict: { code: string; name: string }) => ({
-      value: subDistrict.code,
-      label: subDistrict.name,
-    })
-  );
+  const customOptionsBank = Array.isArray(bank)
+    ? bank.map((item) => ({
+        value: item.code,
+        label: item.name,
+      }))
+    : [];
 
   const formatOptionLabel = ({ label, icon }: any) => (
     <div className="flex items-center gap-2">
@@ -593,16 +598,18 @@ const ComponentDataPribadi: React.FC<Props> = ({
               {/* )} */}
             </label>
           </div>
-          {formData.ktpUrl && (
-            <a
-              href={formData.ktpUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 underline text-sm block mt-2 mb-2"
-            >
-              Lihat Dokumen KTP
-            </a>
-          )}
+          <>
+            {isClient && formData.ktpUrl && (
+              <a
+                href={formData.ktpUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline text-sm block mt-2 mb-2"
+              >
+                Lihat KTP
+              </a>
+            )}
+          </>
           {errors?.ktpUrl && (
             <p className="text-red-500 text-sm mt-1">{errors.ktpUrl[0]}</p>
           )}
