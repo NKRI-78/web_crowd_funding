@@ -82,7 +82,10 @@ const Transaction = () => {
           <div className="flex flex-col gap-y-3">
             {transactions?.map((transaction) => {
               return (
-                <Link href={`/waiting-payment?orderId=${transaction.id}`}>
+                <Link
+                  key={transaction.id}
+                  href={`/waiting-payment?orderId=${transaction.id}`}
+                >
                   <div
                     className="w-full p-4 rounded-lg bg-white shadow-sm border border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer"
                     onClick={() => {}}
