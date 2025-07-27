@@ -8,7 +8,12 @@ type FileUploadProps = {
   error?: string;
 };
 
-export default function FileUpload({ label, fileUrl, onUpload, error }: FileUploadProps) {
+export default function FileUpload({
+  label,
+  fileUrl,
+  onUpload,
+  error,
+}: FileUploadProps) {
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   return (
@@ -24,7 +29,8 @@ export default function FileUpload({ label, fileUrl, onUpload, error }: FileUplo
       <input
         type="file"
         ref={fileRef}
-        accept="application/pdf"
+        accept="image/*,application/pdf"
+        multiple
         onChange={onUpload}
         className="hidden"
       />
