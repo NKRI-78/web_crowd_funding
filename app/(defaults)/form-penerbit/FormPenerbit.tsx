@@ -182,6 +182,20 @@ export default function PublisherForm({ onNext }: Props) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const maxSizeInMB = 10;
+    const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+
+    if (file.size > maxSizeInBytes) {
+      Swal.fire({
+        title: "Ukuran File Terlalu Besar",
+        text: `Maksimal ukuran file adalah ${maxSizeInMB}MB.`,
+        icon: "error",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
     const formData = new FormData();
     formData.append("folder", "web");
     formData.append("subfolder", "capbridge");
@@ -202,7 +216,7 @@ export default function PublisherForm({ onNext }: Props) {
         akta_perubahan_terahkir_path:
           "Upload Akta Perubahan Terakhir berhasil!",
         sk_kumham_terahkir: "Upload SK KUMHAM Terakhir berhasil!",
-        // npwp_path: "Upload NPWP berhasil!",
+        // npwp_path: "Upload Rekening Koran berhasil!",
       } as const;
 
       if (fileUrl) {
@@ -345,11 +359,11 @@ export default function PublisherForm({ onNext }: Props) {
           />
 
           {/* <FileUpload
-        label="NPWP Perusahaan"
-        fileUrl={watch('npwp_path')}
-        onUpload={(e) => handleUploadFile(e, 'npwp_path')}
-        error={errors?.npwp_path?.message}
-      /> */}
+            label="Rekening Koran"
+            fileUrl={watch("npwp_path")}
+            onUpload={(e) => handleUploadFile(e, "npwp_path")}
+            error={errors?.npwp_path?.message}
+          /> */}
         </div>
 
         {/* Kanan */}

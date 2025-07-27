@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import InboxDialogMessage from "../InboxDialogMessage";
 import Swal from "sweetalert2";
 import { InboxModel } from "../InboxModel";
+import EmptyInbox from "../EmptyInbox";
+import { useRouter } from "next/navigation";
 
 interface InboxState {
   loading?: boolean;
@@ -21,6 +23,10 @@ const Inbox = () => {
   const isOnline = useOnlineStatus();
   const [dialogIsOpen, setOpenDialog] = useState<boolean>(false);
   const [inboxId, setInboxId] = useState<number>(0);
+  const [selectedProject, setSelectedProject] = useState<{
+    projectId: string;
+    price: string;
+  }>({ projectId: "", price: "" });
   const [inboxState, setInboxState] = useState<InboxState>({
     loading: true,
     errorMessage: null,
@@ -32,6 +38,8 @@ const Inbox = () => {
     const userJson = JSON.parse(user);
     return userJson.token;
   }
+
+  const router = useRouter();
 
   //* use effect
   useEffect(() => {
@@ -55,6 +63,10 @@ const Inbox = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+        if (!res.data["data"]) {
+          setInboxes([]);
+          return;
+        }
         const filteredBillingInboxes = res.data["data"].filter(
           (inbox: InboxModel) =>
             inbox.type === "billing" && inbox.status !== "REJECTED"
@@ -131,6 +143,10 @@ const Inbox = () => {
     }
   };
 
+  const approveProject = (projectId: string, price: string) => {
+    return router.push(`/payment-method?projectId=${projectId}&price=${price}`);
+  };
+
   //* delete inbox by id
   const deleteInboxById = (inboxId: number) => {
     const updatedInboxes = inboxes.filter((inbox) => inbox.id !== inboxId);
@@ -150,6 +166,10 @@ const Inbox = () => {
                   onClick={() => {
                     setInboxId(inbox.id);
                     setOpenDialog(true);
+                    setSelectedProject({
+                      projectId: inbox.field_2,
+                      price: inbox.field_1,
+                    });
                     markAsRead(inbox.id);
                   }}
                 >
@@ -175,26 +195,10 @@ const Inbox = () => {
             })}
           </div>
         ) : (
-          <div className="h-[560px] flex flex-col justify-center items-center text-center text-gray-500">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-16 h-16 mb-4 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M20.25 14.25v3.375a2.625 2.625 0 01-2.625 2.625H6.375A2.625 2.625 0 013.75 17.625V14.25M12 12l-9-4.5V6.375a2.625 2.625 0 012.625-2.625h12.75A2.625 2.625 0 0121.25 6.375v1.125L12 12z"
-              />
-            </svg>
-            <p className="text-lg font-semibold">Belum ada inbox</p>
-            <p className="text-sm text-gray-400">
-              Kamu belum menerima pesan apa pun saat ini.
-            </p>
-          </div>
+          <EmptyInbox
+            title="Belum ada inbox"
+            message="Kamu belum menerima pesan apa pun saat ini."
+          />
         )}
       </div>
 
@@ -205,7 +209,9 @@ const Inbox = () => {
           onReject={(id) => {
             rejectProject(id);
           }}
-          onAccept={() => setOpenDialog(false)}
+          onAccept={() =>
+            approveProject(selectedProject.projectId, selectedProject.price)
+          }
           barrierAction={() => {
             setOpenDialog(false);
           }}

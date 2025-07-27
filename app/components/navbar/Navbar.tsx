@@ -176,7 +176,10 @@ const Navbar: React.FC = () => {
               </li>
               {hydrated && userData !== null ? (
                 <>
-                  <UserMenu email={userData.email} />
+                  <UserMenu
+                    email={userData.email}
+                    handleMenuOpen={setMenuOpen}
+                  />
                   <li>
                     <button
                       onClick={() => {
@@ -231,17 +234,7 @@ const Navbar: React.FC = () => {
             <li className={pathname == "/about-us" ? "text-[#4CD137]" : ""}>
               <Link href="/about-us">Tentang Kami</Link>
             </li>
-            {hydrated && userData !== null
-              ? userData.role === "investor / pemodal" && (
-                  <li
-                    className={
-                      pathname == "/dashboard" ? "text-[#4CD137]" : "text-white"
-                    }
-                  >
-                    <Link href="/dashboard  ">Dashboard</Link>
-                  </li>
-                )
-              : ""}
+
             {hydrated && userData !== null ? (
               <>
                 <li
@@ -270,23 +263,36 @@ const Navbar: React.FC = () => {
                       className="p-2 flex flex-col bg-white border gap-y-2 rounded-md shadow-lg"
                     >
                       <Link
-                        href={"/inbox"}
+                        href={"/dashboard"}
+                        className="px-10 py-2 bg-gray-100 text-black justify-center flex rounded-sm cursor-pointer hover:bg-gray-200"
                         onClick={() => {
                           setIsInboxTooltipOpen((isOpen) => !isOpen);
                         }}
-                        className="px-10 py-2 bg-gray-100 text-black justify-center flex rounded-sm cursor-pointer hover:bg-gray-200"
                       >
-                        Inbox
+                        Dashboard
                       </Link>
-                      <Link
-                        href={"/transaction"}
-                        onClick={() => {
-                          setIsInboxTooltipOpen((isOpen) => !isOpen);
-                        }}
-                        className="px-10 py-2 bg-gray-100 text-black justify-center flex rounded-sm cursor-pointer hover:bg-gray-200"
-                      >
-                        Transaksi
-                      </Link>
+                      {userData.role === "emiten / penerbit" && (
+                        <>
+                          <Link
+                            href={"/inbox"}
+                            onClick={() => {
+                              setIsInboxTooltipOpen((isOpen) => !isOpen);
+                            }}
+                            className="px-10 py-2 bg-gray-100 text-black justify-center flex rounded-sm cursor-pointer hover:bg-gray-200"
+                          >
+                            Inbox
+                          </Link>
+                          <Link
+                            href={"/transaction"}
+                            onClick={() => {
+                              setIsInboxTooltipOpen((isOpen) => !isOpen);
+                            }}
+                            className="px-10 py-2 bg-gray-100 text-black justify-center flex rounded-sm cursor-pointer hover:bg-gray-200"
+                          >
+                            Transaksi
+                          </Link>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
@@ -360,7 +366,13 @@ const Navbar: React.FC = () => {
   );
 };
 
-const UserMenu = ({ email }: { email: string }) => {
+const UserMenu = ({
+  email,
+  handleMenuOpen,
+}: {
+  email: string;
+  handleMenuOpen: (isOpen: boolean) => void;
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -380,6 +392,9 @@ const UserMenu = ({ email }: { email: string }) => {
               <Link
                 href="/inbox"
                 className="block px-3 py-1 rounded hover:bg-violet-700 transition-colors"
+                onClick={() => {
+                  handleMenuOpen(false);
+                }}
               >
                 Inbox
               </Link>
@@ -387,6 +402,9 @@ const UserMenu = ({ email }: { email: string }) => {
             <li>
               <Link
                 href="/transaction"
+                onClick={() => {
+                  handleMenuOpen(false);
+                }}
                 className="block px-3 py-1 rounded hover:bg-violet-700 transition-colors"
               >
                 Transaksi

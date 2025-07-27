@@ -5,19 +5,21 @@ import { API_BACKEND } from "@/app/utils/constant";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { InboxModel } from "../InboxModel";
+import Link from "next/link";
+import EmptyTransaction from "../EmptyInbox";
 
-interface InboxState {
+interface TransactionState {
   loading?: boolean;
   errorMessage?: string | null;
 }
 
 const Transaction = () => {
   // data hook
-  const [inboxes, setInboxes] = useState<InboxModel[]>([]);
+  const [transactions, setTransactions] = useState<InboxModel[]>([]);
 
   // state hook
   const isOnline = useOnlineStatus();
-  const [inboxState, setInboxState] = useState<InboxState>({
+  const [inboxState, setTransactionState] = useState<TransactionState>({
     loading: true,
     errorMessage: null,
   });
@@ -32,9 +34,9 @@ const Transaction = () => {
   //* use effect
   useEffect(() => {
     if (isOnline) {
-      fetchInbox();
+      fetchTransaction();
     } else {
-      setInboxState({
+      setTransactionState({
         loading: false,
         errorMessage: "Tidak ada koneksi internet",
       });
@@ -42,25 +44,31 @@ const Transaction = () => {
   }, [isOnline]);
 
   //* fetch inbox
-  const fetchInbox = async () => {
+  const fetchTransaction = async () => {
     try {
       const token = getUserToken();
+      console.log("hastoken ", token);
       if (token) {
         const res = await axios(`${API_BACKEND}/api/v1/inbox/list`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        const filteredTransactionInboxes = res.data["data"].filter(
+        if (!res.data["data"]) {
+          setTransactions([]);
+          return;
+        }
+        const filteredTransactionTransactiones = res.data["data"].filter(
           (inbox: InboxModel) => inbox.type === "transaction"
         );
-        setInboxes(filteredTransactionInboxes);
-        setInboxState({
+        console.log("Fil ", filteredTransactionTransactiones);
+        setTransactions(filteredTransactionTransactiones);
+        setTransactionState({
           loading: false,
         });
       }
     } catch (error) {
-      setInboxState({
+      setTransactionState({
         loading: false,
         errorMessage: "Terjadi Kesalahan",
       });
@@ -70,35 +78,48 @@ const Transaction = () => {
   return (
     <>
       <div className="py-28 px-6 text-black">
-        <div className="flex flex-col gap-y-3">
-          {inboxes?.map((inbox) => {
-            return (
-              <div
-                key={inbox.id}
-                className="w-full p-4 rounded-lg bg-white shadow-sm border border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer"
-                onClick={() => {}}
-              >
-                <div className="flex items-start justify-between">
-                  <p className="text-sm font-semibold">{inbox.title}</p>
-                  {inbox.is_read === false && (
-                    <span className="text-xs text-blue-600 font-medium bg-blue-100 px-2 py-0.5 rounded-full">
-                      Baru
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-gray-400 mt-2">
-                  {new Date(inbox.created_at).toLocaleString("id-ID", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
-            );
-          })}
-        </div>
+        {transactions.length ? (
+          <div className="flex flex-col gap-y-3">
+            {transactions?.map((transaction) => {
+              return (
+                <Link href={`/waiting-payment?orderId=${transaction.id}`}>
+                  <div
+                    className="w-full p-4 rounded-lg bg-white shadow-sm border border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer"
+                    onClick={() => {}}
+                  >
+                    <div className="flex items-start justify-between">
+                      <p className="text-sm font-semibold">
+                        {transaction.title}
+                      </p>
+                      {transaction.is_read === false && (
+                        <span className="text-xs text-blue-600 font-medium bg-blue-100 px-2 py-0.5 rounded-full">
+                          Baru
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-400 mt-2">
+                      {new Date(transaction.created_at).toLocaleString(
+                        "id-ID",
+                        {
+                          day: "2-digit",
+                          month: "long",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        ) : (
+          <EmptyTransaction
+            title="Belum ada transaksi"
+            message="Kamu belum menerima transaksi apa pun saat ini."
+          />
+        )}
       </div>
     </>
   );

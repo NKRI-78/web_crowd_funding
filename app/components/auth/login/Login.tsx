@@ -84,11 +84,7 @@ const Login: React.FC = () => {
         showConfirmButton: false,
       });
 
-      if (response.data.data.role !== "investor / pemodal") {
-        router.push("/");
-      } else {
-        router.push("/dashboard");
-      }
+      router.push("/");
     } catch (error: any) {
       Swal.fire({
         icon: "error",

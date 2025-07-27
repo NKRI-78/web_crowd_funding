@@ -310,8 +310,8 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
         });
 
         // Hapus localStorage dan reset
-        localStorage.removeItem("formPenerbitDraft");
-        localStorage.removeItem("publisherDraft");
+        // localStorage.removeItem("formPenerbitDraft");
+        // localStorage.removeItem("publisherDraft");
         router.push("/");
       }
     } catch (error: any) {
