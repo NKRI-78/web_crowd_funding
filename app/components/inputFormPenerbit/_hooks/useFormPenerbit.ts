@@ -11,9 +11,10 @@ interface JobStructureFormData {
 
 interface FormPenerbitState {
   laporanKeuangan: string;
+  rekeningKoran: string;
   direktur: JobStructureFormData[];
   komisaris: JobStructureFormData[];
-  fotoProyek: string;
+  fotoProyek: string[];
   titleProyek: string;
   nilaiNominal: string;
   jenisObligasi: string;
@@ -35,9 +36,10 @@ export const maxStructure = 3;
 export function useFormPenerbit() {
   const [state, setState] = useState<FormPenerbitState>({
     laporanKeuangan: "",
+    rekeningKoran: "",
     direktur: [],
     komisaris: [],
-    fotoProyek: "",
+    fotoProyek: [],
     titleProyek: "",
     nilaiNominal: "",
     jenisObligasi: "konvensional",
@@ -50,7 +52,7 @@ export function useFormPenerbit() {
     deskripsiPekerjaan: "",
     fileDokumenKontrakApbn: "",
     noKontrakApbn: "",
-    jenisBiaya: "Tidak",
+    jenisBiaya: "Iya",
     companyProfile: "",
   });
 

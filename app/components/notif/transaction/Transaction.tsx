@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { InboxModel } from "../InboxModel";
 import Link from "next/link";
 import EmptyTransaction from "../EmptyInbox";
+import moment from "moment";
 
 interface TransactionState {
   loading?: boolean;
@@ -58,9 +59,9 @@ const Transaction = () => {
           setTransactions([]);
           return;
         }
-        const filteredTransactionTransactiones = res.data["data"].filter(
-          (inbox: InboxModel) => inbox.type === "transaction"
-        );
+        const filteredTransactionTransactiones = res.data["data"]
+          .filter((inbox: InboxModel) => inbox.type === "transaction")
+          .reverse();
         console.log("Fil ", filteredTransactionTransactiones);
         setTransactions(filteredTransactionTransactiones);
         setTransactionState({
@@ -87,30 +88,33 @@ const Transaction = () => {
                   href={`/waiting-payment?orderId=${transaction.id}`}
                 >
                   <div
-                    className="w-full p-4 rounded-lg bg-white shadow-sm border border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer"
+                    className="relative w-full p-4 rounded-lg bg-white shadow-sm border border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer"
                     onClick={() => {}}
                   >
                     <div className="flex items-start justify-between">
                       <p className="text-sm font-semibold">
                         {transaction.title}
                       </p>
+
                       {transaction.is_read === false && (
                         <span className="text-xs text-blue-600 font-medium bg-blue-100 px-2 py-0.5 rounded-full">
                           Baru
                         </span>
                       )}
                     </div>
+
+                    {/* STATUS POJOK KANAN ATAS */}
+                    <div className="absolute top-2 right-2">
+                      <span className="text-xs font-medium bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                        {transaction.status}
+                      </span>
+                    </div>
+
                     <p className="text-sm text-gray-400 mt-2">
-                      {new Date(transaction.created_at).toLocaleString(
-                        "id-ID",
-                        {
-                          day: "2-digit",
-                          month: "long",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }
-                      )}
+                      {moment(transaction.created_at)
+                        .utc()
+                        .locale("id")
+                        .format("DD MMMM YYYY, HH:mm")}
                     </p>
                   </div>
                 </Link>

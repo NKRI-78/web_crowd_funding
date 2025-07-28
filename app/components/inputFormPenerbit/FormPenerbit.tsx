@@ -20,6 +20,7 @@ import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import CustomCheckBox from "./_component/CustomCheckBox";
 import AddButton from "./_component/AddButton";
+import PhotoUploader from "./_component/PhotoUploaderContainer";
 
 type Props = {
   onBack: () => void;
@@ -36,6 +37,7 @@ export interface JobStructureError {
 
 export interface FormPenerbitError {
   laporanKeuangan?: string;
+  rekeningKoran?: string;
   direktur?: JobStructureError[];
   komisaris?: JobStructureError[];
   direkturErrorText?: string;
@@ -84,7 +86,9 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
 
     if (!formState.laporanKeuangan?.trim())
       newErrors.laporanKeuangan = "Laporan Keuangan wajib diisi";
-    if (!formState.fotoProyek?.trim())
+    if (!formState.rekeningKoran?.trim())
+      newErrors.rekeningKoran = "Rekening Koran wajib diisi";
+    if (formState.fotoProyek.length === 0)
       newErrors.fotoProyek = "Foto Proyek wajib diisi";
     if (!formState.titleProyek?.trim())
       newErrors.titleProyek = "Judul Proyek wajib diisi";
@@ -223,6 +227,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
           total_employees: draftParsed.total_employees.toString(),
           laporan_keuangan_path: formState.laporanKeuangan,
           address: draftParsed.address,
+          rekening_koran_path: formState.rekeningKoran,
           directors:
             formState.direktur.length === 1
               ? formState.direktur.map((dir) => ({
@@ -336,27 +341,50 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
         {/* === left section === */}
         <section className="w-full">
           {/* 2. Struktur Permodalan */}
-          <div className="w-full flex flex-col">
-            <SectionTitle text="2. Struktur Permodalan" />
+          <div className="flex gap-x-4 items-end">
+            <div className="flex flex-col">
+              <SectionTitle text="2. Struktur Permodalan" />
 
-            <SectionPoint text="Laporan Keuangan" className="mt-2" />
-            <SectionSubtitle
-              text="File maksimal berukuran 10mb"
-              className="my-1"
-            />
+              <SectionPoint text="Laporan Keuangan" className="mt-2" />
+              <SectionSubtitle
+                text="File maksimal berukuran 10mb"
+                className="my-1"
+              />
 
-            <FileInput
-              fileName="Laporan Keuangan"
-              fileUrl={formState.laporanKeuangan}
-              accept=".pdf,.xlsx,.xlsm,.xls,.xltx,.xltm,.xlsb"
-              onChange={(fileUrl) => {
-                updateField("laporanKeuangan", fileUrl);
-                if (fileUrl) {
-                  setErrors({ ...errors, laporanKeuangan: "" });
-                }
-              }}
-              errorText={errors.laporanKeuangan}
-            />
+              <FileInput
+                fileName="Laporan Keuangan"
+                fileUrl={formState.laporanKeuangan}
+                accept=".pdf,.xlsx,.xlsm,.xls,.xltx,.xltm,.xlsb"
+                onChange={(fileUrl) => {
+                  updateField("laporanKeuangan", fileUrl);
+                  if (fileUrl) {
+                    setErrors({ ...errors, laporanKeuangan: "" });
+                  }
+                }}
+                errorText={errors.laporanKeuangan}
+              />
+            </div>
+
+            <div className="flex flex-col">
+              <SectionPoint text="Rekening Koran" />
+              <SectionSubtitle
+                text="File maksimal berukuran 10mb"
+                className="my-1"
+              />
+
+              <FileInput
+                fileName="Rekening Koran"
+                fileUrl={formState.rekeningKoran}
+                accept=".pdf,.xlsx,.xlsm,.xls,.xltx,.xltm,.xlsb"
+                onChange={(fileUrl) => {
+                  updateField("rekeningKoran", fileUrl);
+                  if (fileUrl) {
+                    setErrors({ ...errors, rekeningKoran: "" });
+                  }
+                }}
+                errorText={errors.rekeningKoran}
+              />
+            </div>
           </div>
 
           {/* 3. Susunan Manajemen */}
@@ -467,31 +495,23 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
             />
 
             <div className="mt-3">
-              <SectionPoint text="Foto Proyek" className="mt-2" />
-              <SectionSubtitle
-                text="File maksimal berukuran 10mb"
-                className="my-1"
-              />
+              <SectionPoint text="Foto Proyek" className="my-2" />
 
-              <FileInput
-                fileName="Foto Proyek"
-                fileUrl={formState.fotoProyek}
-                accept=".jpg,.jpeg,.png,.heic,.heif"
-                onChange={(fileUrl) => {
-                  updateField("fotoProyek", fileUrl);
-                  if (fileUrl) {
+              <PhotoUploader
+                fileOnChange={(urls) => {
+                  updateField("fotoProyek", urls);
+                  if (urls) {
                     setErrors({ ...errors, fotoProyek: "" });
                   }
                 }}
                 errorText={errors.fotoProyek}
-                multiple
               />
 
               <TextField
                 label="Title Proyek"
                 placeholder="Title Proyek"
                 value={formState.titleProyek || ""}
-                className="my-2"
+                className="mt-3 mb-2"
                 onChange={(e) => {
                   updateField("titleProyek", e.target.value);
                   if (e.target.value) {
