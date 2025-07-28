@@ -250,33 +250,35 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
                   npwp_path: "-",
                 })),
           komisaris: formState.komisaris.map((kom) => ({
-                  title:
-                    kom.jabatan === "komisaris-utama"
-                      ? "Komisaris Utama"
-                      : "Komisaris",
-                  name: kom.nama,
-                  position:
-                    kom.jabatan === "komisaris-utama"
-                      ? "Komisaris Utama"
-                      : "Komisaris",
-                  ktp: kom.noKTP,
-                  ktp_path: kom.fileKTP,
-                  npwp: kom.fileNPWP,
-                  npwp_path: "-",
-                })),
+            title:
+              kom.jabatan === "komisaris-utama"
+                ? "Komisaris Utama"
+                : "Komisaris",
+            name: kom.nama,
+            position:
+              kom.jabatan === "komisaris-utama"
+                ? "Komisaris Utama"
+                : "Komisaris",
+            ktp: kom.noKTP,
+            ktp_path: kom.fileKTP,
+            npwp: kom.fileNPWP,
+            npwp_path: "-",
+          })),
           project: {
             title: formState.titleProyek,
             jenis_obligasi: formState.jenisObligasi,
             jumlah_minimal: formState.nilaiNominal,
             jangka_waktu: formState.jangkaWaktu,
             tingkat_bunga: `${formState.tingkatBunga}%`,
-            jaminan_kolateral: formState.jaminanKolateral.map(kolateralValue => ({
-              name: kolateralValue,
-            })),
+            jaminan_kolateral: formState.jaminanKolateral.map(
+              (kolateralValue) => ({
+                name: kolateralValue,
+              })
+            ),
             company_profile: formState.companyProfile,
             jadwal_pembayaran_bunga: formState.jadwalBunga,
             jadwal_pembayaran_pokok: formState.jadwalPokok,
-            penggunaan_dana: formState.penggunaanDana.map(danaValue => ({
+            penggunaan_dana: formState.penggunaanDana.map((danaValue) => ({
               name: danaValue,
             })),
             deskripsi_pekerjaan: formState.deskripsiPekerjaan,
@@ -300,6 +302,10 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
         );
         console.log(res);
 
+        // Hapus localStorage dan reset
+        localStorage.removeItem("formPenerbitDraft");
+        localStorage.removeItem("publisherDraft");
+
         await Swal.fire({
           title: "Berhasil",
           text: "Data berhasil dikirim",
@@ -309,9 +315,6 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
           showConfirmButton: false,
         });
 
-        // Hapus localStorage dan reset
-        // localStorage.removeItem("formPenerbitDraft");
-        // localStorage.removeItem("publisherDraft");
         router.push("/");
       }
     } catch (error: any) {
@@ -481,6 +484,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
                   }
                 }}
                 errorText={errors.fotoProyek}
+                multiple
               />
 
               <TextField
@@ -684,7 +688,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
                   <TextField
                     placeholder="No Kontrak"
                     value={formState.noKontrakApbn || ""}
-                    type="number"
+                    type="text"
                     errorText={errors.noKontrakApbn}
                     onChange={(e) => {
                       updateField("noKontrakApbn", e.target.value);

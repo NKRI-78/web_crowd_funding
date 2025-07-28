@@ -165,12 +165,18 @@ const Inbox = () => {
                   className="w-full p-4 rounded-lg bg-white shadow-sm border border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer"
                   onClick={() => {
                     setInboxId(inbox.id);
-                    setOpenDialog(true);
                     setSelectedProject({
                       projectId: inbox.field_2,
                       price: inbox.field_1,
                     });
                     markAsRead(inbox.id);
+
+                    console.log(
+                      "is update document?" + inbox.field_3 ===
+                        "reupload-document"
+                    );
+
+                    setOpenDialog(true);
                   }}
                 >
                   <div className="flex items-start justify-between">
@@ -206,12 +212,20 @@ const Inbox = () => {
         <InboxDialogMessage
           userToken={getUserToken()!}
           inboxId={inboxId}
-          onReject={(id) => {
-            rejectProject(id);
+          onReject={(id, isUpdateDocument) => {
+            if (isUpdateDocument) {
+              setOpenDialog(false);
+            } else {
+              rejectProject(id);
+            }
           }}
-          onAccept={() =>
-            approveProject(selectedProject.projectId, selectedProject.price)
-          }
+          onAccept={(isUpdateDocument) => {
+            if (isUpdateDocument) {
+              router.push("/form-penerbit?update=true");
+            } else {
+              approveProject(selectedProject.projectId, selectedProject.price);
+            }
+          }}
           barrierAction={() => {
             setOpenDialog(false);
           }}

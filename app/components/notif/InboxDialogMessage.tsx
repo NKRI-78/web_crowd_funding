@@ -7,9 +7,9 @@ import { InboxModel } from "./InboxModel";
 interface InboxDialogMessageProps {
   inboxId: number;
   userToken: string;
-  onAccept: () => void;
+  onAccept: (isUpdateDocument?: boolean) => void;
   barrierAction?: () => void;
-  onReject: (projectId: string) => void;
+  onReject: (projectId: string, isUpdateDocument?: boolean) => void;
 }
 
 const InboxDialogMessage: React.FC<InboxDialogMessageProps> = ({
@@ -22,6 +22,9 @@ const InboxDialogMessage: React.FC<InboxDialogMessageProps> = ({
   const [data, setData] = useState<InboxModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // is update document
+  const isUpdateDocument = data?.field_3 === "reupload-document";
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -46,6 +49,21 @@ const InboxDialogMessage: React.FC<InboxDialogMessageProps> = ({
     fetchDetail();
   }, [inboxId]);
 
+  function formatRupiah(input: string): string {
+    try {
+      const number = parseFloat(input.replace(/[^0-9.-]+/g, ""));
+
+      if (isNaN(number)) {
+        throw new Error("Input bukan angka yang valid");
+      }
+
+      return `Rp ${number.toLocaleString("id-ID")}`;
+    } catch (error) {
+      console.error("formatRupiah error:", error);
+      return "Rp 0";
+    }
+  }
+
   return (
     <Dialog open onOpenChange={barrierAction}>
       <DialogContent>
@@ -61,9 +79,14 @@ const InboxDialogMessage: React.FC<InboxDialogMessageProps> = ({
           <p className="text-red-500">{error}</p>
         ) : data ? (
           <div className="space-y-2 text-black">
-            <p>
-              {data.content} {data?.field_1.length === 0 ? "-" : data.field_1}
-            </p>
+            {isUpdateDocument ? (
+              <p>{data.content}</p>
+            ) : (
+              <p>
+                {data.content}{" "}
+                {data?.field_1.length === 0 ? "-" : formatRupiah(data.field_1)}
+              </p>
+            )}
           </div>
         ) : null}
 
@@ -71,14 +94,18 @@ const InboxDialogMessage: React.FC<InboxDialogMessageProps> = ({
           <Button
             variant="rejected"
             onClick={() => {
-              if (!data?.field_2) return;
-              onReject(data?.field_2);
+              onReject(data?.field_2 ?? "", isUpdateDocument);
             }}
           >
-            Tidak Setuju
+            {isUpdateDocument ? "Batal" : "Tidak Setuju"}
           </Button>
-          <Button onClick={onAccept} disabled={!data}>
-            Setuju
+          <Button
+            onClick={() => {
+              onAccept(isUpdateDocument);
+            }}
+            disabled={!data}
+          >
+            {isUpdateDocument ? "Update" : "Setuju"}
           </Button>
         </DialogFooter>
       </DialogContent>
