@@ -130,7 +130,7 @@ const Navbar: React.FC = () => {
       .catch((err) => {
         console.error("Failed to fetch profile", err);
       });
-  }, [token]);
+  }, [token, pathname]);
 
   return (
     <>
@@ -346,7 +346,8 @@ const Navbar: React.FC = () => {
                     }
                   >
                     {" "}
-                    Halo, {userData.email}
+                    Halo, {profile?.fullname}
+                    {/* {userData.email} */}
                   </p>
                 </li>
                 {/* <li
