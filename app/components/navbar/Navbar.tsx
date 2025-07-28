@@ -436,7 +436,7 @@ const Navbar: React.FC = () => {
                       >
                         Dashboard
                       </Link>
-                      {userData.role === "emiten / penerbit" && (
+                      {userData.role === "emiten" && (
                         <>
                           <Link
                             href={"/inbox"}
