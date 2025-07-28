@@ -92,10 +92,12 @@ const Inbox = () => {
           setInboxes([]);
           return;
         }
-        const filteredBillingInboxes = res.data["data"].filter(
-          (inbox: InboxModel) =>
-            inbox.type === "billing" && inbox.status !== "REJECTED"
-        );
+        const filteredBillingInboxes = res.data["data"]
+          .filter(
+            (inbox: InboxModel) =>
+              inbox.type === "billing" && inbox.status !== "REJECTED"
+          )
+          .reverse();
         setInboxes(filteredBillingInboxes);
         setInboxState({
           loading: false,
