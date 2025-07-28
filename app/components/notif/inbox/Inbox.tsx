@@ -10,6 +10,7 @@ import { InboxModel } from "../InboxModel";
 import EmptyInbox from "../EmptyInbox";
 import { useRouter } from "next/navigation";
 import moment from "moment";
+import Cookies from "js-cookie";
 
 interface InboxState {
   loading?: boolean;
@@ -41,6 +42,30 @@ const Inbox = () => {
   }
 
   const router = useRouter();
+
+  const roleCookie = Cookies.get("role");
+  const userRoleCookie = Cookies.get("user");
+  let role = null;
+
+  if (roleCookie) {
+    try {
+      const parsed = JSON.parse(roleCookie);
+      role = parsed.role;
+    } catch (e) {
+      console.error("Gagal parsing roleCookie", e);
+    }
+  }
+
+  let roleUser = null;
+
+  if (userRoleCookie) {
+    try {
+      const parsed = JSON.parse(userRoleCookie);
+      roleUser = parsed.role;
+    } catch (e) {
+      console.error("Gagal parsing roleCookie", e);
+    }
+  }
 
   //* use effect
   useEffect(() => {
@@ -221,7 +246,11 @@ const Inbox = () => {
           }}
           onAccept={(isUpdateDocument) => {
             if (isUpdateDocument) {
-              router.push("/form-penerbit?update=true");
+              if (role !== 1 || roleUser !== "investor") {
+                router.push("/form-penerbit?update=true");
+              } else {
+                router.push("/form-pemodal?update=true");
+              }
             } else {
               approveProject(selectedProject.projectId, selectedProject.price);
             }

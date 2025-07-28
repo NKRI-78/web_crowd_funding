@@ -382,7 +382,7 @@ const SukukClient = ({ id }: Props) => {
             </div>
 
             <div className="bg-white p-2 rounded-lg space-y-1">
-              <ProgressBar percentage={10}/>
+              <ProgressBar percentage={0} />
 
               <div className="flex flex-wrap justify-between">
                 <p className="text-xs font-bold text-[#677AB9]">

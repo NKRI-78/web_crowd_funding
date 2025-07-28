@@ -9,6 +9,9 @@ import Link from "next/link";
 import { API_BACKEND } from "@/app/utils/constant";
 import CountdownTimer from "@/app/utils/CountDownTimer";
 import FormButton from "@/app/components/inputFormPenerbit/_component/FormButton";
+import socket, { createSocket } from "@/app/utils/sockets";
+import { Socket } from "dgram";
+import { io, Socket as ClientSocket } from "socket.io-client";
 
 interface Bank {
   name: string;
@@ -47,6 +50,10 @@ const WaitingPayment = () => {
   const [error, setError] = useState<any>(null);
   const [status, setStatus] = useState<any>({});
   const [expired, setExpired] = useState(false);
+  const [isConnected, setIsConnected] = useState(socket.connected);
+  const [socketInstance, setSocketInstance] = useState<ClientSocket | null>(
+    null
+  );
 
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
@@ -133,6 +140,46 @@ const WaitingPayment = () => {
   };
 
   useEffect(() => {
+    if (expired) {
+      document.title = "Pembayaran Kadaluarsa | CapBridge";
+    } else if (waitingPayment?.status === "PAID") {
+      document.title = "Pembayaran Berhasil | CapBridge";
+    } else {
+      document.title = "Menunggu Pembayaran | CapBridge";
+    }
+  }, [expired, waitingPayment?.status]);
+
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (!userData || !orderId) return;
+
+    const userParsed = JSON.parse(userData);
+    const socket = createSocket(userParsed.id);
+
+    setSocketInstance(socket);
+
+    socket.emit("joinOrderRoom", orderId);
+
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+      console.log("Socket connected user id :", userParsed.id);
+    });
+
+    socket.on("payment-update", (data) => {
+      console.log("PAID");
+      setWaitingPayment((prev) => ({ ...prev!, status: "PAID" }));
+    });
+
+    socket.on("connect", () => setIsConnected(true));
+    socket.on("disconnect", () => setIsConnected(false));
+
+    return () => {
+      socket.emit("leaveOrderRoom", orderId);
+      socket.disconnect();
+    };
+  }, [orderId]);
+
+  useEffect(() => {
     if (!orderId) return;
     fetchDetailPayment();
   }, [orderId]);
@@ -146,68 +193,148 @@ const WaitingPayment = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error loading payment details.</div>;
-  if (!waitingPayment) return <div>Data not found.</div>;
+  const expiredTime = moment(waitingPayment?.field_4).add().toISOString();
+  if (loading) {
+    return (
+      <div className="py-28 flex flex-col items-center px-4 md:px-12">
+        <div className="w-full md:w-1/2 bg-white rounded-2xl p-6 shadow-md text-center">
+          <div className="w-full h-20 bg-gray-200 animate-pulse rounded-lg" />
+          <p className="mt-4 text-gray-500">Memuat detail pembayaran...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const expiredTime = moment(waitingPayment?.field_4).toISOString();
+  if (error) {
+    return (
+      <div className="py-28 flex flex-col items-center px-4 md:px-12">
+        <div className="text-black font-semibold text-sm mt-4 text-center">
+          Error loading payment details.
+        </div>
+      </div>
+    );
+  }
+
+  if (!waitingPayment) {
+    return (
+      <div className="py-28 flex flex-col items-center px-4 md:px-12">
+        <div className="text-black font-semibold text-sm mt-4 text-center">
+          Data not found.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="py-28 md:flex md:flex-col md:items-center px-4 md:px-12">
       <div className="w-full md:w-1/2 bg-white rounded-2xl p-6 shadow-md text-center">
-        <h2 className="text-gray-700 font-semibold mb-2">Total</h2>
-        <p className="text-2xl font-bold mb-2">
-          Rp
-          {(
-            parseInt(waitingPayment.field_7) + parseInt(waitingPayment.field_2)
-          ).toLocaleString("id-ID")}
-        </p>
+        {/* <p className="text-sm text-gray-500">
+          Status Socket:{" "}
+          <span className={isConnected ? "text-green-500" : "text-red-500"}>
+            {isConnected ? "Terhubung" : "Terputus"}
+          </span>
+        </p> */}
+        {waitingPayment.status == "PAID" ? (
+          <>
+            <div className="text-green-600 font-bold text-xl mt-4">
+              Pembayaran Berhasil!
+            </div>
+            <div className="text-black font-semibold text-sm mt-4 text-center">
+              Pembayaran Anda telah berhasil diproses. Terima kasih!
+            </div>
+          </>
+        ) : (
+          <>
+            <h2 className="text-gray-700 font-semibold mb-2">Total</h2>
+            <p className="text-2xl font-bold mb-2">
+              Rp
+              {(
+                parseInt(waitingPayment.field_7) +
+                parseInt(waitingPayment.field_2)
+              ).toLocaleString("id-ID")}
+            </p>
 
-        <p className="text-gray-500 text-sm mb-1">Bayar sebelum</p>
-        <CountdownTimer
-          expiryDate={expiredTime}
-          onTick={handleTick}
-          onExpire={handleExpire}
-        />
+            <p className="text-gray-500 text-sm mb-1">Bayar sebelum</p>
+            <CountdownTimer
+              expiryDate={expiredTime}
+              onTick={handleTick}
+              onExpire={handleExpire}
+            />
+          </>
+        )}
       </div>
 
-      <div className="w-full md:w-1/2 bg-white my-6 rounded-2xl p-6 shadow-md text-center">
-        <div className="flex items-center justify-between">
-          <img
-            className="w-14 h-10 object-contain"
-            src={waitingPayment.field_6}
-            alt="Bank Logo"
-          />
-          <h2 className="text-gray-700 font-semibold">
-            {waitingPayment.field_1}
-          </h2>
-        </div>
-
-        {waitingPayment.field_1 === "Gopay" ? (
-          <img
-            ref={imgRef}
-            className="w-full md:w-1/2 my-4 m-auto"
-            src={waitingPayment.field_3}
-            alt="QRIS"
-          />
-        ) : (
-          <div className="flex justify-between text-black text-sm my-3">
-            <div>Virtual Account</div>
-            <div className="flex items-center">
-              <span className="mr-2">{waitingPayment.field_3}</span>
-              <button onClick={() => handleCopy(waitingPayment.field_3)}>
-                <Clipboard size={15} />
-              </button>
-            </div>
+      {expired ? (
+        <div className="w-full md:w-1/2 bg-white my-6 rounded-2xl p-6 shadow-md text-center">
+          <div className="text-red-600 font-semibold text-lg mt-4 text-center">
+            Pembayaran tidak diselesaikan tepat waktu dan telah dibatalkan
+            otomatis.
           </div>
-        )}
-
-        <div className="flex text-black justify-between text-sm">
-          <h2>Biaya Admin</h2>
-          <h2>Rp{waitingPayment.field_2}</h2>
         </div>
+      ) : (
+        <div className="w-full md:w-1/2 bg-white my-6 rounded-2xl p-6 shadow-md text-center">
+          <div className="flex items-center justify-between">
+            <img
+              className="w-14 h-10 object-contain"
+              src={waitingPayment.field_6}
+              alt="Bank Logo"
+            />
+            <h2 className="text-gray-700 font-semibold">
+              {waitingPayment.field_1}
+            </h2>
+          </div>
 
-        {/* <FormButton
+          {waitingPayment.status == "PAID" ? (
+            <></>
+          ) : waitingPayment.field_1 === "Gopay" ? (
+            <img
+              ref={imgRef}
+              className="w-full md:w-1/2 my-4 m-auto"
+              src={waitingPayment.field_3}
+              alt="QRIS"
+            />
+          ) : (
+            <div className="flex justify-between text-black text-sm my-3">
+              <div>Virtual Account</div>
+              <div className="flex items-center">
+                <span className="mr-2">{waitingPayment.field_3}</span>
+                <button onClick={() => handleCopy(waitingPayment.field_3)}>
+                  <Clipboard size={15} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {loading ? (
+            <div className="w-full h-20 bg-gray-200 animate-pulse rounded-lg"></div>
+          ) : (
+            <>
+              <div className="flex text-black justify-between text-sm my-3">
+                <h2>Harga</h2>
+                <h2>
+                  Rp{parseInt(waitingPayment.field_7).toLocaleString("id-ID")}
+                </h2>
+              </div>
+              <div className="flex text-black justify-between text-sm my-3">
+                <h2>Biaya Admin</h2>
+                <h2>
+                  Rp{parseInt(waitingPayment.field_2).toLocaleString("id-ID")}
+                </h2>
+              </div>
+              <div className="flex text-black justify-between text-sm my-3">
+                <h2>Total</h2>
+                <h2>
+                  Rp
+                  {(
+                    parseInt(waitingPayment.field_7) +
+                    parseInt(waitingPayment.field_2)
+                  ).toLocaleString("id-ID")}
+                </h2>
+              </div>
+            </>
+          )}
+
+          {/* <FormButton
           onClick={() =>
             handleDownload(waitingPayment.field_3, "qr-download.jpg")
           }
@@ -215,7 +342,8 @@ const WaitingPayment = () => {
         >
           {!loadingDownload ? "Downloading..." : "Download Image"}
         </FormButton> */}
-      </div>
+        </div>
+      )}
 
       {/* <div className="text-center">
         <div className="p-2">
