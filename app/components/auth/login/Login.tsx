@@ -97,7 +97,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="w-1/2  bg-white px-6 md:px-20 py-10">
+    <div className="w-full md:w-1/2 bg-white px-10 md:px-15 py-5 mx-auto">
       <div className="flex justify-between items-center mb-10">
         <img src="/images/img.jpg" alt="CapBridge Logo" className="w-20 h-20" />
         <a href="/">
@@ -141,22 +141,10 @@ const Login: React.FC = () => {
         </div>
 
         <div className="flex flex-row flex-wrap justify-between">
-          {/* <div className="w-1/2">
-            <p>Lupa Kata Sandi</p>
-            <p>
-              Belum Punya Akun?{" "}
-              <a
-                href="/auth/register"
-                className="text-[#321B87] cursor-pointer font-bold hover:underline"
-              >
-                Daftar Sekarang
-              </a>
-            </p>
-          </div> */}
           <button
             type="submit"
             disabled={loading}
-            className={`w-1/4 bg-[#321B87] text-white py-3 rounded-full font-bold transition ${
+            className={`w-full md:w-1/4 bg-[#321B87] text-white py-3 rounded-full font-bold transition ${
               loading ? "opacity-60 cursor-not-allowed" : "hover:bg-[#2A1572]"
             }`}
           >
