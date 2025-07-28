@@ -20,6 +20,20 @@ import RegisterV2 from "../auth/register/RegisterV2";
 import RegisterOtp from "../auth/register/RegisterOtp";
 import RegisterSelectRole from "../auth/register/RegisterSelectRole";
 import Cookies from "js-cookie";
+import axios from "axios";
+import { produce } from "immer";
+import Tippy from "@tippyjs/react";
+import "tippy.js/dist/tippy.css";
+
+interface ProfileData {
+  fullname: string;
+  avatar: string;
+  last_education: string;
+  gender: string;
+  status_marital: string;
+  address_detail: string;
+  occupation: string;
+}
 
 const Navbar: React.FC = () => {
   const [isSticky, setIsSticky] = useState(false);
@@ -57,6 +71,8 @@ const Navbar: React.FC = () => {
   const [hydrated, setHydrated] = useState(false);
 
   const [step, setStep] = useState<"register" | "otp" | "role" | null>(null);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   const closeModal = () => setStep(null);
 
@@ -84,6 +100,37 @@ const Navbar: React.FC = () => {
       }
     }
   }, []);
+
+  useEffect(() => {
+    const userCookie = Cookies.get("user");
+    if (!userCookie) return;
+
+    try {
+      const user = JSON.parse(userCookie);
+      if (user?.token) {
+        setToken(user.token);
+      }
+    } catch (err) {
+      console.error("Failed to parse user cookie", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!token) return;
+
+    axios
+      .get("https://api-capbridge.langitdigital78.com/api/v1/profile", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => {
+        setProfile(res.data.data);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch profile", err);
+      });
+  }, [token]);
 
   return (
     <>
@@ -226,18 +273,83 @@ const Navbar: React.FC = () => {
             <li className={pathname == "/" ? "text-[#4CD137]" : ""}>
               <Link href="/">Beranda</Link>
             </li>
-            <li
+            {/* <li
               className={pathname == "/business-list" ? "text-[#4CD137]" : ""}
             >
               <Link href="/business-list">Daftar Bisnis</Link>
-            </li>
-            <li className={pathname == "/about-us" ? "text-[#4CD137]" : ""}>
+            </li> */}
+            {/* <li className={pathname == "/about-us" ? "text-[#4CD137]" : ""}>
               <Link href="/about-us">Tentang Kami</Link>
-            </li>
+            </li> */}
 
             {hydrated && userData !== null ? (
               <>
                 <li
+                  className={
+                    isSticky && pathname === "/dashboard"
+                      ? "text-[#4CD137]"
+                      : isSticky
+                      ? "text-[#322783]"
+                      : pathname === "/dashboard"
+                      ? "text-[#4CD137]"
+                      : "text-white"
+                  }
+                >
+                  <Link href="/dashboard">Dashboard</Link>
+                </li>
+                <li
+                  className={
+                    isSticky && pathname === "/transaction"
+                      ? "text-[#4CD137]"
+                      : isSticky
+                      ? "text-[#322783]"
+                      : pathname == "/transaction"
+                      ? "text-[#4CD137]"
+                      : "text-white"
+                  }
+                >
+                  <Link href="/transaction">Transaksi</Link>
+                </li>
+                <li>
+                  <Tippy content="Inbox" animation="scale">
+                    <Link
+                      href={"/inbox"}
+                      // onClick={() => {
+                      //   setIsInboxTooltipOpen((isOpen) => !isOpen);
+                      // }}
+                    >
+                      <BellRing
+                        size={18}
+                        className={
+                          isSticky && pathname === "/inbox"
+                            ? "text-[#4CD137]"
+                            : isSticky
+                            ? "text-[#322783]"
+                            : pathname == "/inbox"
+                            ? "text-[#4CD137]"
+                            : "text-white"
+                        }
+                      />
+                    </Link>
+                  </Tippy>
+                </li>
+                <li>
+                  <p
+                    className={
+                      isSticky && pathname === ""
+                        ? "text-[#4CD137]"
+                        : isSticky
+                        ? "text-[#322783]"
+                        : pathname == ""
+                        ? "text-[#4CD137]"
+                        : "text-white"
+                    }
+                  >
+                    {" "}
+                    Halo, {userData.email}
+                  </p>
+                </li>
+                {/* <li
                   ref={refs.setReference}
                   {...getReferenceProps()}
                   onMouseEnter={() => {
@@ -250,9 +362,9 @@ const Navbar: React.FC = () => {
                 >
                   <p className="text-white"> Halo, {userData.email}</p>
                   <BellRing size={18} className="text-white" />
-                </li>
+                </li> */}
 
-                {isMounted && (
+                {/* {isMounted && (
                   <div
                     ref={refs.setFloating}
                     style={{ ...floatingStyles, zIndex: 50 }}
@@ -295,7 +407,7 @@ const Navbar: React.FC = () => {
                       )}
                     </div>
                   </div>
-                )}
+                )} */}
                 <li>
                   <button
                     onClick={() => {
@@ -311,30 +423,42 @@ const Navbar: React.FC = () => {
                 </li>
               </>
             ) : (
-              <li>
-                <>
-                  <Link href={"/auth/login"}>
-                    <button
-                      className={`px-5 py-2 rounded-full ${
-                        isSticky
-                          ? "bg-[#4CD137] text-white"
-                          : "bg-[#4CD137] text-white"
-                      }`}
-                      onClick={() => {
-                        setIsInboxTooltipOpen((isOpen) => !isOpen);
-                      }}
-                    >
-                      Masuk
-                    </button>
-                  </Link>
-                </>
-              </li>
+              <>
+                <li
+                  className={
+                    pathname == "/business-list" ? "text-[#4CD137]" : ""
+                  }
+                >
+                  <Link href="/business-list">Daftar Bisnis</Link>
+                </li>
+                <li className={pathname == "/about-us" ? "text-[#4CD137]" : ""}>
+                  <Link href="/about-us">Tentang Kami</Link>
+                </li>
+                <li>
+                  <>
+                    <Link href={"/auth/login"}>
+                      <button
+                        className={`px-5 py-2 rounded-full ${
+                          isSticky
+                            ? "bg-[#4CD137] text-white"
+                            : "bg-[#4CD137] text-white"
+                        }`}
+                        onClick={() => {
+                          setIsInboxTooltipOpen((isOpen) => !isOpen);
+                        }}
+                      >
+                        Masuk
+                      </button>
+                    </Link>
+                  </>
+                </li>
+              </>
             )}
             {hydrated && userData !== null ? (
               <></>
             ) : (
               <button
-                className="text-white"
+                className={`${isSticky ? "text-[#322783]" : "text-white"}`}
                 onClick={() => setStep("register")}
               >
                 Daftar
