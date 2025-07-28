@@ -167,7 +167,23 @@ const Navbar: React.FC = () => {
             CapBridge
           </div>
 
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-4">
+            <Tippy content="Inbox" animation="scale">
+              <Link href={"/inbox"}>
+                <BellRing
+                  size={18}
+                  className={
+                    isSticky && pathname === "/inbox"
+                      ? "text-[#4CD137]"
+                      : isSticky
+                      ? "text-[#322783]"
+                      : pathname == "/inbox"
+                      ? "text-[#4CD137]"
+                      : "text-white"
+                  }
+                />
+              </Link>
+            </Tippy>
             <button onClick={toggleMenu}>
               {menuOpen ? (
                 <X size={24} />
@@ -180,6 +196,7 @@ const Navbar: React.FC = () => {
             </button>
           </div>
 
+          {/* navbar mobile */}
           <div
             className={`fixed top-0 right-0 h-full w-64 bg-[#4821C1] z-40 p-6 
                     transform transition-transform duration-300 
@@ -190,47 +207,85 @@ const Navbar: React.FC = () => {
               <li className={pathname == "/" ? "text-[#4CD137]" : "text-white"}>
                 <Link href="/">Beranda</Link>
               </li>
-              <li
-                className={
-                  pathname == "/business-list" ? "text-[#4CD137]" : "text-white"
-                }
-              >
-                <Link href="/business-list">Daftar Bisnis</Link>
-              </li>
-              <li
-                className={
-                  pathname == "/about-us" ? "text-[#4CD137]" : "text-white"
-                }
-              >
-                <Link href="/about-us">Tentang Kami</Link>
-              </li>
-              <li
-                className={
-                  pathname == "/terms-conditions"
-                    ? "text-[#4CD137]"
-                    : "text-white"
-                }
-              >
-                <Link href="/terms-conditions">Syarat dan Ketentuan</Link>
-              </li>
-              {/* <li>
-                <Link className="text-white" href="#">
-                  Penerbit
-                </Link>
-              </li> */}
-              <li
-                className={
-                  pathname == "/form-pemodal" ? "text-[#4CD137]" : "text-white"
-                }
-              >
-                <Link href="/form-pemodal">Form Pemodal</Link>
-              </li>
               {hydrated && userData !== null ? (
                 <>
-                  <UserMenu
+                  <li
+                    className={
+                      pathname == "/dashboard" ? "text-[#4CD137]" : "text-white"
+                    }
+                  >
+                    <Link href="/dashboard">Dashboard</Link>
+                  </li>
+                  <li
+                    className={
+                      pathname == "/transaction"
+                        ? "text-[#4CD137]"
+                        : "text-white"
+                    }
+                  >
+                    <Link href="/transaction">Transaksi</Link>
+                  </li>
+                  <li>
+                    <p
+                      className={
+                        pathname == "" ? "text-[#4CD137]" : "text-white"
+                      }
+                    >
+                      {" "}
+                      Halo, {profile?.fullname}
+                      {/* {userData.email} */}
+                    </p>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li
+                    className={
+                      pathname == "/business-list" ? "text-[#4CD137]" : ""
+                    }
+                  >
+                    <Link href="/business-list">Daftar Bisnis</Link>
+                  </li>
+                  <li
+                    className={pathname == "/about-us" ? "text-[#4CD137]" : ""}
+                  >
+                    <Link href="/about-us">Tentang Kami</Link>
+                  </li>
+                  <li
+                    className={
+                      pathname == "/terms-conditions"
+                        ? "text-[#4CD137]"
+                        : "text-white"
+                    }
+                  >
+                    <Link href="/terms-conditions">Syarat dan Ketentuan</Link>
+                  </li>
+                  {/* <li>
+                    <>
+                      <Link href={"/auth/login"}>
+                        <button
+                          className={`px-5 py-2 rounded-full ${
+                            isSticky
+                              ? "bg-[#4CD137] text-white"
+                              : "bg-[#4CD137] text-white"
+                          }`}
+                          onClick={() => {
+                            setIsInboxTooltipOpen((isOpen) => !isOpen);
+                          }}
+                        >
+                          Masuk
+                        </button>
+                      </Link>
+                    </>
+                  </li> */}
+                </>
+              )}
+              {hydrated && userData !== null ? (
+                <>
+                  {/* <UserMenu
                     email={userData.email}
                     handleMenuOpen={setMenuOpen}
-                  />
+                  /> */}
                   <li>
                     <button
                       onClick={() => {
@@ -277,14 +332,6 @@ const Navbar: React.FC = () => {
             <li className={pathname == "/" ? "text-[#4CD137]" : ""}>
               <Link href="/">Beranda</Link>
             </li>
-            {/* <li
-              className={pathname == "/business-list" ? "text-[#4CD137]" : ""}
-            >
-              <Link href="/business-list">Daftar Bisnis</Link>
-            </li> */}
-            {/* <li className={pathname == "/about-us" ? "text-[#4CD137]" : ""}>
-              <Link href="/about-us">Tentang Kami</Link>
-            </li> */}
 
             {hydrated && userData !== null ? (
               <>
@@ -313,19 +360,6 @@ const Navbar: React.FC = () => {
                   }
                 >
                   <Link href="/transaction">Transaksi</Link>
-                </li>
-                <li
-                  className={
-                    isSticky && pathname === "/terms-conditions"
-                      ? "text-[#4CD137]"
-                      : isSticky
-                      ? "text-[#322783]"
-                      : pathname == "/terms-conditions"
-                      ? "text-[#4CD137]"
-                      : "text-white"
-                  }
-                >
-                  <Link href="/terms-conditions">Syarat dan Ketentuan</Link>
                 </li>
 
                 <li>
@@ -452,6 +486,19 @@ const Navbar: React.FC = () => {
                 </li>
                 <li className={pathname == "/about-us" ? "text-[#4CD137]" : ""}>
                   <Link href="/about-us">Tentang Kami</Link>
+                </li>
+                <li
+                  className={
+                    isSticky && pathname === "/terms-conditions"
+                      ? "text-[#4CD137]"
+                      : isSticky
+                      ? "text-[#322783]"
+                      : pathname == "/terms-conditions"
+                      ? "text-[#4CD137]"
+                      : "text-white"
+                  }
+                >
+                  <Link href="/terms-conditions">Syarat dan Ketentuan</Link>
                 </li>
                 <li>
                   <>
