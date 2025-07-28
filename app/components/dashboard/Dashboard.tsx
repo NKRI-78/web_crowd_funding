@@ -6,6 +6,12 @@ import CardStats from "../card-stats/CardStats";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
 import Cookies from "js-cookie";
+import useRole from "@/app/hooks/useRole";
+import { EmitenProjectModel } from "./PenerbitInterface";
+import { ProjectCard } from "../project/Project";
+import ProgressBar from "@/app/(defaults)/sukuk/components/ProgressBar";
+import { formatPriceOrEmpty } from "@/app/lib/price";
+import { useRouter } from "next/navigation";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -47,16 +53,19 @@ interface ProfileData {
 }
 
 const Dashboard: React.FC = () => {
+  const router = useRouter();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [emitenProjects, setEmitenProjects] = useState<EmitenProjectModel[]>(
+    []
+  );
+  const role = useRole();
+  const userCookie = Cookies.get("user");
+  const user = userCookie ? JSON.parse(userCookie) : null;
 
   useEffect(() => {
-    const userCookie = Cookies.get("user");
-    if (!userCookie) return;
-
     try {
-      const user = JSON.parse(userCookie);
-      if (user?.token) {
+      if (user.token) {
         setToken(user.token);
       }
     } catch (err) {
@@ -80,6 +89,27 @@ const Dashboard: React.FC = () => {
         console.error("Failed to fetch profile", err);
       });
   }, [token]);
+
+  useEffect(() => {
+    if (role === 2 && user.token) {
+      axios
+        .get(
+          "https://api-capbridge.langitdigital78.com/api/v1/project-by-emiten/list",
+          {
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+            },
+          }
+        )
+        .then((res) => {
+          console.log(res.data["data"]);
+          setEmitenProjects(res.data["data"]);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch profile", err);
+        });
+    }
+  }, [role, token]);
 
   return (
     <section className="py-28 px-4 md:px-12">
@@ -129,9 +159,94 @@ const Dashboard: React.FC = () => {
           </div>
         )}
 
-        {/* munculkan list card proyek kalau dia role === emiten */}
+        {/* {role === "2" && ( */}
+        <>
+          <div className="my-2">
+            <h2 className="font-bold text-lg text-black">Proyek Saya</h2>
+          </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {emitenProjects.length !== 0 ? (
+              emitenProjects.map((project) => {
+                return (
+                  <div
+                    key={project.id}
+                    onClick={() => {
+                      router.push(`/sukuk/${project.id}`);
+                    }}
+                    className="rounded-xl cursor-pointer overflow-hidden shadow border"
+                  >
+                    <div className="relative h-40">
+                      <img
+                        src={
+                          project.medias.length !== 0
+                            ? project.medias[0].path
+                            : "/images/img.jpg"
+                        }
+                        alt={project.title}
+                        className="object-cover w-full h-full"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.onerror = null; // mencegah infinite loop
+                          target.src = "/images/img.jpg";
+                        }}
+                      />
+
+                      <div className={`absolute inset-0  bg-opacity-60`} />
+                    </div>
+                    <div className="p-4 bg-gray-100 h-full">
+                      <p className="font-semibold text-sm text-start mb-2">
+                        {project.title}
+                      </p>
+                      <ul className="text-xs my-4 space-y-1">
+                        <li className="flex justify-between font-bold">
+                          <span className="text-black">Dana Terkumpul</span>
+                          <span className="text-black">{project.goal}</span>
+                        </li>
+                        <li>
+                          <ProgressBar percentage={0} />
+                        </li>
+                        <li className="flex justify-between">
+                          <span className="text-black">Jenis Obligasi</span>
+                          <span className="text-black capitalize">
+                            {project.type_of_bond}
+                          </span>
+                        </li>
+                        <li className="flex justify-between">
+                          <span className="text-black">Nilai Nominal</span>
+                          <span className="text-black">
+                            {formatPriceOrEmpty(
+                              project.nominal_value,
+                              "id-ID",
+                              "IDR"
+                            )}
+                          </span>
+                        </li>
+                        <li className="flex justify-between">
+                          <span className="text-black">Jangka Waktu</span>
+                          <span className="text-black">
+                            {project.time_periode}
+                          </span>
+                        </li>
+                        <li className="flex justify-between">
+                          <span className="text-black">Tingkat Bunga</span>
+                          <span className="text-black">
+                            {project.interest_rate}
+                          </span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <h6 className="text-black text-left w-full">Tidak ada data</h6>
+            )}
+          </div>
+        </>
+        {/* )} */}
+
+        {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <CardStats
             title="Cash In-hand"
             desc="Dana yang tersedia untuk ditarik atau di investasikan"
@@ -194,7 +309,7 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </section>
   );

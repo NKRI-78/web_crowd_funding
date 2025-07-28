@@ -152,8 +152,11 @@ const Sukuk = ({ id }: Props) => {
     }
   }, []);
 
-
-  return isNotFound ? <><Custom404/></> : (
+  return isNotFound ? (
+    <>
+      <Custom404 />
+    </>
+  ) : (
     <section className="py-28 px-4 md:px-12">
       {showModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
@@ -439,10 +442,7 @@ const Sukuk = ({ id }: Props) => {
             </div>
             <div className="flex flex-wrap my-2 justify-between">
               <p className="text-xs text-[#677AB9]"> Total Unit (Rp) </p>
-              <p className="text-xs">
-                {" "}
-                {formatRupiah(project?.unit_total)}{" "}
-              </p>
+              <p className="text-xs"> {formatRupiah(project?.unit_total)} </p>
             </div>
             <div className="flex flex-wrap my-2 justify-between">
               <p className="text-xs text-[#677AB9]">Periode Pengembalian:</p>
@@ -517,7 +517,6 @@ const Sukuk = ({ id }: Props) => {
       </div>
     </section>
   );
-
 };
 
 export default Sukuk;
