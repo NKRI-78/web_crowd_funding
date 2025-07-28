@@ -204,10 +204,14 @@ const Navbar: React.FC = () => {
               >
                 <Link href="/about-us">Tentang Kami</Link>
               </li>
-              <li>
-                <Link className="text-white" href="#">
-                  Pasar Sekunder
-                </Link>
+              <li
+                className={
+                  pathname == "/terms-conditions"
+                    ? "text-[#4CD137]"
+                    : "text-white"
+                }
+              >
+                <Link href="/terms-conditions">Syarat dan Ketentuan</Link>
               </li>
               {/* <li>
                 <Link className="text-white" href="#">
@@ -310,6 +314,20 @@ const Navbar: React.FC = () => {
                 >
                   <Link href="/transaction">Transaksi</Link>
                 </li>
+                <li
+                  className={
+                    isSticky && pathname === "/terms-conditions"
+                      ? "text-[#4CD137]"
+                      : isSticky
+                      ? "text-[#322783]"
+                      : pathname == "/terms-conditions"
+                      ? "text-[#4CD137]"
+                      : "text-white"
+                  }
+                >
+                  <Link href="/terms-conditions">Syarat dan Ketentuan</Link>
+                </li>
+
                 <li>
                   <Tippy content="Inbox" animation="scale">
                     <Link
