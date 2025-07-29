@@ -35,9 +35,32 @@ const Login: React.FC = () => {
         email,
         password,
       });
+      const userData = response.data.data;
+      Cookies.set("user", JSON.stringify(response.data.data));
+
+      if (!userData.enabled) {
+        await Swal.fire({
+          icon: "info",
+          title: "Verifikasi Diperlukan",
+          text: "Anda belum memasukkan kode OTP. Silakan verifikasi terlebih dahulu.",
+          confirmButtonText: "Oke",
+        });
+
+        const payloads = {
+          val: userData.email,
+        };
+        const { data } = await axios.post(
+          `${API_BACKEND}/api/v1/resend-otp`,
+          payloads
+        );
+
+        localStorage.setItem("showOtp", "true");
+
+        router.push("/");
+        return;
+      }
 
       localStorage.setItem("user", JSON.stringify(response.data.data));
-      Cookies.set("user", JSON.stringify(response.data.data));
 
       await Swal.fire({
         icon: "success",

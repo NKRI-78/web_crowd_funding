@@ -13,7 +13,13 @@ import { Eye, EyeOff } from "lucide-react";
 const schema = z
   .object({
     name: z.string().min(2, "Nama wajib diisi"),
-    phone: z.string().min(8, "No. Tlp wajib diisi"),
+    // phone: z.string().min(8, "No. Tlp wajib diisi"),
+    phone: z
+      .string({
+        required_error: "No. Tlp wajib diisi",
+      })
+      .min(10, "No. Tlp minimal 10 digit")
+      .max(13, "No. Tlp maksimal 13 digit"),
     email: z.string().email("Format email tidak valid"),
     password: z.string().min(6, "Password minimal 6 karakter"),
     confirmPassword: z.string(),
@@ -44,6 +50,12 @@ export default function RegisterForm({
   });
   const [isChecked, setIsChecked] = useState(false);
   const [showModal, setShowModal] = useState(false);
+
+  const handleNumberInput = (e: React.FormEvent<HTMLInputElement>) => {
+    e.currentTarget.value = e.currentTarget.value
+      .replace(/\D/g, "")
+      .slice(0, 13);
+  };
 
   const onSubmit = async (data: RegisterFormSchema) => {
     setLoading(true);
@@ -122,8 +134,11 @@ export default function RegisterForm({
               <input
                 {...register("phone")}
                 type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 placeholder="No. Tlp"
                 className="w-full border border-gray-300 px-4 py-2 rounded"
+                onInput={handleNumberInput}
               />
               {errors.phone && (
                 <p className="text-red-500 text-sm">{errors.phone.message}</p>
