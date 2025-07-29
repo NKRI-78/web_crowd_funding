@@ -10,7 +10,6 @@ import { Navigation, Thumbs } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import { useParams } from "next/navigation";
-import Cookies from "js-cookie";
 import axios from "axios";
 import defaultImage from "/public/images/default-image.png";
 import { API_BACKEND } from "@/app/utils/constant";
@@ -66,6 +65,8 @@ type Props = {
 };
 
 const SukukClient = ({ id }: Props) => {
+  console.log(id, "id");
+
   const [showModal, setShowModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
 
@@ -88,24 +89,6 @@ const SukukClient = ({ id }: Props) => {
   const [userData, setUserData] = useState<any>(null);
   const [hydrated, setHydrated] = useState(false);
   const [isNotFound, setIsNotFound] = useState(false);
-  const [role, setRole] = useState<string | null>(null);
-
-  console.log(role, "id");
-
-  useEffect(() => {
-    const userCookie = Cookies.get("user");
-    if (!userCookie) return;
-
-    try {
-      const user = JSON.parse(userCookie);
-      if (user?.token) {
-        console.log(user.role);
-        setRole(user.role);
-      }
-    } catch (err) {
-      console.error("Failed to parse user cookie", err);
-    }
-  }, []);
 
   const handleInputChange = (value: string) => {
     const numeric = value.replace(/[^\d]/g, "");
@@ -351,24 +334,33 @@ const SukukClient = ({ id }: Props) => {
             </Swiper>
           </div>
 
-          <div className="mt-4">
-            <Swiper
-              onSwiper={setThumbsSwiper}
-              spaceBetween={10}
-              slidesPerView={3}
-              watchSlidesProgress
-              className="cursor-pointer"
-            >
-              {project?.medias.map((item, idx) => (
-                <SwiperSlide key={idx}>
-                  <img
-                    src={item.path}
-                    alt={`Thumbnail ${idx + 1}`}
-                    className="w-full h-20 object-cover rounded-md border-2 border-transparent hover:border-blue-500 transition"
-                  />
-                </SwiperSlide>
-              ))}
-            </Swiper>
+          <div className="mt-4 flex justify-center">
+            <div className="w-full">
+              <Swiper
+                onSwiper={setThumbsSwiper}
+                spaceBetween={10}
+                slidesPerView={Math.min(project?.medias.length ?? 0, 5)} // tampil max 5
+                centeredSlides={false} // biar mulai dari kiri
+                watchSlidesProgress
+                allowTouchMove={(project?.medias.length ?? 0) > 5} // disable scroll kalau <= 5
+                className="cursor-pointer max-w-fit"
+              >
+                {project?.medias.map((item, idx) => (
+                  <SwiperSlide
+                    key={idx}
+                    className={`${
+                      (project?.medias.length ?? 0) == 1 ? "!w-20" : "!w-30"
+                    }`}
+                  >
+                    <img
+                      src={item.path}
+                      alt={`Thumbnail ${idx + 1}`}
+                      className="w-full h-20 object-cover rounded-md border-2 border-transparent hover:border-blue-500 transition"
+                    />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
           </div>
 
           <div className="mt-6">
@@ -514,18 +506,14 @@ const SukukClient = ({ id }: Props) => {
               </button>
             </div>
 
-            {role !== "emiten" ? (
-              hydrated && userData !== null ? (
-                <button className="w-full bg-purple-700 hover:bg-purple-600 text-white font-semibold py-2 rounded-md mt-4 cursor-pointer">
-                  Beli Efek
-                </button>
-              ) : (
-                <button className="w-full bg-gray-300 text-white font-semibold py-2 rounded-md mt-4 cursor-not-allowed">
-                  Beli Efek
-                </button>
-              )
+            {hydrated && userData !== null ? (
+              <button className="w-full bg-purple-700 hover:bg-purple-600 text-white font-semibold py-2 rounded-md mt-4 cursor-pointer">
+                Beli Efek
+              </button>
             ) : (
-              <></>
+              <button className="w-full bg-gray-300 text-white font-semibold py-2 rounded-md mt-4 cursor-not-allowed">
+                Beli Efek
+              </button>
             )}
 
             <p className="text-xs text-center mt-2">

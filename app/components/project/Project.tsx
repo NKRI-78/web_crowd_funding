@@ -56,7 +56,7 @@ export const ProjectCard: React.FC<{ project: IProjectData }> = ({
             <span className="text-black">Dana Terkumpul</span>
             <span className="text-black">{project.goal}</span>
           </li>
-          <li>
+          <li className={isFinish}>
             <ProgressBar percentage={0} />
           </li>
           <li className="flex justify-between">
