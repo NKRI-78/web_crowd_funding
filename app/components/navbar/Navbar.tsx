@@ -170,6 +170,25 @@ const Navbar: React.FC = () => {
           {hydrated && userData !== null ? (
             <>
               <div className="flex items-center gap-4">
+                <div className="hidden md:block">
+                  <p
+                    className={`
+                      ${
+                        isSticky && pathname === ""
+                          ? "text-[#4CD137]"
+                          : isSticky
+                          ? "text-[#322783]"
+                          : pathname == ""
+                          ? "text-[#4CD137]"
+                          : "text-white"
+                      }
+                    `}
+                  >
+                    {" "}
+                    Halo, {profile?.fullname}
+                    {/* {userData.email} */}
+                  </p>
+                </div>
                 <Tippy content="Inbox" animation="scale">
                   <Link href={"/inbox"}>
                     <BellRing
@@ -248,7 +267,7 @@ const Navbar: React.FC = () => {
                           Syarat dan Ketentuan
                         </Link>
                       </li>
-                      <li>
+                      <li className="md:hidden">
                         <p
                           className={
                             pathname == "" ? "text-[#4CD137]" : "text-white"
