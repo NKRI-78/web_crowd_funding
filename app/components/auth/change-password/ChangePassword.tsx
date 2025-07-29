@@ -3,11 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@redux/store";
-import {
-    setPassword,
-    setShowPassword,
-    updatePasswordAsync
-} from "@redux/slices/authSlice";
+import { setPassword, setShowPassword } from "@redux/slices/authSlice";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const ChangePassword: React.FC = () => {
@@ -16,14 +12,12 @@ const ChangePassword: React.FC = () => {
 
   const password = useSelector((state: RootState) => state.auth.password);
   const loading = useSelector((state: RootState) => state.auth.loading);
-  const showPassword = useSelector((state: RootState) => state.auth.showPassword);
+  const showPassword = useSelector(
+    (state: RootState) => state.auth.showPassword
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    await dispatch(
-      updatePasswordAsync({ password: password })
-    ).unwrap();
 
     router.push("/");
   };
@@ -31,11 +25,16 @@ const ChangePassword: React.FC = () => {
   return (
     <div className="flex w-full items-center justify-center h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-lg">
-        <h2 className="text-2xl font-semibold text-center text-gray-800">Update Password</h2>
+        <h2 className="text-2xl font-semibold text-center text-gray-800">
+          Update Password
+        </h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-600">
+            <label
+              htmlFor="newPassword"
+              className="block text-sm font-medium text-gray-600"
+            >
               New Password
             </label>
             <div className="relative">
@@ -52,7 +51,11 @@ const ChangePassword: React.FC = () => {
                 onClick={() => dispatch(setShowPassword(!showPassword))}
                 className="absolute right-3 top-0 transform translate-y-5 text-gray-500"
               >
-                {showPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />} 
+                {showPassword ? (
+                  <FaEyeSlash className="h-5 w-5" />
+                ) : (
+                  <FaEye className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>

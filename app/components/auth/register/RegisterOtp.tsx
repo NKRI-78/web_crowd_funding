@@ -1,5 +1,5 @@
-import { getCookie } from "@/app/helper/cookie";
-import { API_BACKEND } from "@/app/utils/constant";
+import { getCookie } from "@app/helper/cookie";
+import { API_BACKEND } from "@app/utils/constant";
 import axios from "axios";
 import React, { useState } from "react";
 import Countdown from "react-countdown";
@@ -57,7 +57,7 @@ export default function RegisterOtp({
       );
 
       const result: AuthResponse = response.data;
-      
+
       localStorage.setItem("user", JSON.stringify(result.data));
 
       setLoading(false);

@@ -39,7 +39,9 @@ export default function FileUpload({
       />
       {fileUrl && (
         <a
-          href={fileUrl}
+          href={`https://docs.google.com/viewer?url=${encodeURIComponent(
+            fileUrl
+          )}&embedded=true`}
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-600 underline text-sm mt-2 block"

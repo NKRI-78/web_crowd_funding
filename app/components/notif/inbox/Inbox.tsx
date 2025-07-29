@@ -11,6 +11,7 @@ import EmptyInbox from "../EmptyInbox";
 import { useRouter } from "next/navigation";
 import moment from "moment";
 import Cookies from "js-cookie";
+import { createSocket } from "@/app/utils/sockets";
 
 interface InboxState {
   loading?: boolean;
@@ -180,6 +181,28 @@ const Inbox = () => {
     const updatedInboxes = inboxes.filter((inbox) => inbox.id !== inboxId);
     setInboxes(updatedInboxes);
   };
+
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (!userData) return;
+
+    const userParsed = JSON.parse(userData);
+    const socket = createSocket(userParsed.id);
+
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+      console.log("Socket connected user id :", userParsed.id);
+    });
+
+    socket.on("inbox-update", (data) => {
+      console.log("Update");
+      fetchInbox();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   return (
     <>

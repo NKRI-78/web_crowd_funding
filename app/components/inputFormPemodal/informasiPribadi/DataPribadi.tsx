@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import Select from "react-select";
+import { API_BACKEND_MEDIA } from "@/app/utils/constant";
 
 interface Props {
   formData: {
@@ -146,7 +147,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
     setUploadStatus((prev) => ({ ...prev, [keyName]: true }));
     try {
       const res = await axios.post(
-        "https://api-media.inovatiftujuh8.com/api/v1/media/upload",
+        `${API_BACKEND_MEDIA}/api/v1/media/upload`,
         formData
       );
 

@@ -293,8 +293,6 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
             is_apbn: formState.jenisBiaya === "Iya",
           },
         };
-        console.log("data ", payload);
-        console.log("data ", formState);
 
         const res = await axios.post(
           `${API_BACKEND}/api/v1/auth/assign/role`,

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import axios from "axios";
-import { API_BACKEND } from "@/app/utils/constant";
+import { API_BACKEND } from "@app/utils/constant";
 import { setCookie } from "@/app/helper/cookie";
 import Swal from "sweetalert2";
 import { Eye, EyeOff } from "lucide-react";

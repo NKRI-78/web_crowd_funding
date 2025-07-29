@@ -1,54 +1,22 @@
 "use client";
 
-import { loginAsync } from "@/redux/slices/authSlice";
-import { AppDispatch, RootState } from "@redux/store";
+import { AppDispatch } from "@redux/store";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import Swal from "sweetalert2";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { API_BACKEND } from "@/app/utils/constant";
 
 const Login: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-
-  // const loading = useSelector((state: RootState) => state.auth.loading);
-
   const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-
-  //   if (!email || !password) {
-  //     Swal.fire({
-  //       icon: "warning",
-  //       title: "Form Belum Lengkap",
-  //       text: "Mohon isi semua field wajib.",
-  //     });
-  //     return;
-  //   }
-
-  //   try {
-  //     await dispatch(
-  //       loginAsync({
-  //         login: {
-  //           email: email,
-  //           password: password,
-  //         },
-  //       })
-  //     ).unwrap();
-
-  //     router.push("/");
-  //   } catch (error: any) {
-  //     console.error("Register failed:", error);
-  //   }
-  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,17 +31,11 @@ const Login: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post(
-        "https://api-capbridge.langitdigital78.com/api/v1/auth/login",
-        {
-          email,
-          password,
-        }
-      );
+      const response = await axios.post(`${API_BACKEND}/api/v1/auth/login`, {
+        email,
+        password,
+      });
 
-      console.log(response.data.data, "res");
-
-      // Simpan token dan user info ke localStorage
       localStorage.setItem("user", JSON.stringify(response.data.data));
       Cookies.set("user", JSON.stringify(response.data.data));
 

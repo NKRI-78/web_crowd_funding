@@ -1,6 +1,6 @@
 import React from "react";
-import ProfilePage from "./client";
 import { Metadata } from "next";
+import ProfilePage from "../auth/profile/page";
 
 export const metadata: Metadata = {
   title: "Profile | CapBridge",
@@ -8,6 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function page() {
-
-  return <ProfilePage/>;
+  return <ProfilePage />;
 }

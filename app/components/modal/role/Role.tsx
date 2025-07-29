@@ -98,8 +98,8 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
         }
       );
 
-      console.log("✅ Success:", response.data['data']);
-      setCookie("user", JSON.stringify(response.data['data']));
+      console.log("✅ Success:", response.data["data"]);
+      setCookie("user", JSON.stringify(response.data["data"]));
       setStep("otpRegister");
     } catch (error: any) {
       console.error("❌ Gagal submit:", error);
@@ -214,8 +214,9 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
               <div className="space-y-6">
                 <div
                   onClick={() => {
-                    reset()
-                    setStep("penerbit")}}
+                    reset();
+                    setStep("penerbit");
+                  }}
                   className="border border-purple-600 rounded-xl p-4 hover:bg-purple-50 cursor-pointer"
                 >
                   <h3 className="text-purple-700 font-bold text-lg">
@@ -230,8 +231,9 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
 
                 <div
                   onClick={() => {
-                    reset()
-                    setStep("pemodal")}}
+                    reset();
+                    setStep("pemodal");
+                  }}
                   className="border border-green-600 rounded-xl p-4 hover:bg-green-50 cursor-pointer"
                 >
                   <h3 className="text-green-700 font-bold text-lg">Pemodal</h3>
@@ -482,8 +484,8 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
                   Masukkan OTP
                 </h2>
                 <p className="text-sm text-center mt-3 text-black/50 font-medium">
-                  Masukkan OTP yang dikirimkan melalui email  untuk
-                  memverifikasi akun
+                  Masukkan OTP yang dikirimkan melalui email untuk memverifikasi
+                  akun
                 </p>
               </div>
               <div className="font-inter mt-6">

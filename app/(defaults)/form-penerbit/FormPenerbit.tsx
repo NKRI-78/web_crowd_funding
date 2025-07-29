@@ -3,15 +3,12 @@
 import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import { FaFileAlt } from "react-icons/fa";
 import FileUpload from "@/app/helper/FileUpload";
-import Select, { SingleValue } from "react-select";
-import { API_BACKEND } from "@/app/utils/constant";
-import { fetchCities, fetchProvinces } from "@/app/lib/fetchWilayah";
+import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
+import { fetchProvinces } from "@/app/lib/fetchWilayah";
 import FormAlamat from "./FormAlamat";
-import FormButton from "@/app/components/inputFormPenerbit/_component/FormButton";
 import Swal from "sweetalert2";
 
 export const alamatSchema = z.object({
@@ -203,7 +200,7 @@ export default function PublisherForm({ onNext }: Props) {
 
     try {
       const res = await axios.post(
-        "https://api-media.inovatiftujuh8.com/api/v1/media/upload",
+        `${API_BACKEND_MEDIA}/api/v1/media/upload`,
         formData
       );
 

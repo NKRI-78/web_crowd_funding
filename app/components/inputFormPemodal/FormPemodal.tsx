@@ -9,7 +9,8 @@ import Cookies from "js-cookie";
 
 import ComponentDataPribadi from "./informasiPribadi/DataPribadi";
 import ComponentDataPekerjaan from "./informasiPekerjaan/DataPekerjaan";
-``;
+import { API_BACKEND } from "@/app/utils/constant";
+
 const FormPemodal: React.FC = () => {
   type OptionType = { value: string; label: string } | null;
   const router = useRouter();
@@ -682,7 +683,7 @@ const FormPemodal: React.FC = () => {
       };
 
       const response = await axios.post(
-        "https://api-capbridge.langitdigital78.com/api/v1/auth/assign/role",
+        `${API_BACKEND}/api/v1/auth/assign/role`,
         payload,
         {
           headers: {
