@@ -43,7 +43,7 @@ export const schema = z.object({
     .max(2, "Maksimal hanya 2 alamat"),
   sameAsCompany: z.boolean().optional(),
   detailKorespondensi: z.string().optional(),
-  total_employees: z.number().min(1, "Jumlah karyawan minimal 1").optional(),
+  total_employees: z.string().min(1, "Jumlah karyawan minimal 1").optional(),
   company_nib_path: z
     .string()
     .min(1, { message: "Dokumen NIB wajib diunggah" }),
@@ -115,7 +115,7 @@ export default function PublisherForm({ onNext }: Props) {
     mode: "onBlur",
     defaultValues: {
       sameAsCompany: false,
-      total_employees: 0,
+      total_employees: "",
       company_nib_path: "",
       akta_pendirian: "",
       sk_kumham_path: "",
@@ -292,6 +292,14 @@ export default function PublisherForm({ onNext }: Props) {
     });
   };
 
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const numeric = raw.replace(/\D/g, "");
+    // if (/^\d*$/.test(input)) {
+    setValue("total_employees", numeric);
+    // }
+  };
+
   return (
     <section className="bg-white text-black items-center px-3 md:px-10 py-20 md:py-30">
       <form
@@ -309,7 +317,9 @@ export default function PublisherForm({ onNext }: Props) {
           <h3 className="font-semibold text-black">1. Informasi Penerbit</h3>
 
           <div>
-            <label className="block mb-1 text-black">Nama Perusahaan</label>
+            <label className="block mb-1 text-black">
+              Nama Perusahaan<span className="text-red-500 ml-1">*</span>
+            </label>
             <input
               {...register("company_name")}
               className="w-full border px-3 py-2 rounded"
@@ -390,12 +400,14 @@ export default function PublisherForm({ onNext }: Props) {
           ))}
 
           <div>
-            <label className="block mb-1">Jumlah Karyawan</label>
+            <label className="block mb-1">
+              Jumlah Karyawan<span className="text-red-500 ml-1">*</span>
+            </label>
             <div className="flex items-center border rounded overflow-hidden w-80">
               <input
-                {...register("total_employees", { valueAsNumber: true })}
-                type="number"
-                min={1}
+                {...register("total_employees")}
+                type="text"
+                onChange={handleNumberChange}
                 className="px-3 py-2 outline-none flex-1"
                 placeholder="0"
               />

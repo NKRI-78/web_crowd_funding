@@ -85,7 +85,8 @@ const FormAlamat = ({
   return (
     <div key={index} className="space-y-3">
       <h3 className="font-semibold">
-        Alamat {index === 0 ? "Perusahaan" : "Korespondensi"}
+        Alamat {index === 0 ? "Perusahaan" : "Korespondensi"}{" "}
+        <span className="text-red-500">*</span>
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Provinsi */}

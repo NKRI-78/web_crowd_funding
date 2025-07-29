@@ -355,6 +355,10 @@ const Navbar: React.FC = () => {
                     <button
                       onClick={() => {
                         localStorage.removeItem("user");
+                        localStorage.removeItem("formPemodal");
+                        localStorage.removeItem("formPenerbitDraft");
+                        localStorage.removeItem("publisherDraft");
+                        Cookies.remove("user");
                         window.location.href = "/auth/login";
                       }}
                       className="px-5 py-2 rounded-full bg-red-500 text-white"
@@ -539,6 +543,8 @@ const Navbar: React.FC = () => {
                     onClick={() => {
                       localStorage.removeItem("user");
                       localStorage.removeItem("formPemodal");
+                      localStorage.removeItem("formPenerbitDraft");
+                      localStorage.removeItem("publisherDraft");
                       Cookies.remove("user");
                       window.location.href = "/auth/login";
                     }}
