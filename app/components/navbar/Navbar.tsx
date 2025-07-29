@@ -167,100 +167,127 @@ const Navbar: React.FC = () => {
             CapBridge
           </div>
 
-          <div className="md:hidden flex items-center gap-4">
-            <Tippy content="Inbox" animation="scale">
-              <Link href={"/inbox"}>
-                <BellRing
-                  size={18}
-                  className={
-                    isSticky && pathname === "/inbox"
-                      ? "text-[#4CD137]"
-                      : isSticky
-                      ? "text-[#322783]"
-                      : pathname == "/inbox"
-                      ? "text-[#4CD137]"
-                      : "text-white"
-                  }
-                />
-              </Link>
-            </Tippy>
-            <button onClick={toggleMenu}>
-              {menuOpen ? (
-                <X size={24} />
-              ) : (
-                <Menu
-                  size={24}
-                  className={isSticky ? "text-[#322783]" : "text-white"}
-                />
-              )}
-            </button>
-          </div>
+          {hydrated && userData !== null ? (
+            <>
+              <div className="flex items-center gap-4">
+                <Tippy content="Inbox" animation="scale">
+                  <Link href={"/inbox"}>
+                    <BellRing
+                      size={18}
+                      className={
+                        isSticky && pathname === "/inbox"
+                          ? "text-[#4CD137]"
+                          : isSticky
+                          ? "text-[#322783]"
+                          : pathname == "/inbox"
+                          ? "text-[#4CD137]"
+                          : "text-white"
+                      }
+                    />
+                  </Link>
+                </Tippy>
+                <button onClick={toggleMenu}>
+                  {menuOpen ? (
+                    <X size={24} />
+                  ) : (
+                    <Menu
+                      size={24}
+                      className={isSticky ? "text-[#322783]" : "text-white"}
+                    />
+                  )}
+                </button>
+              </div>
 
-          {/* navbar mobile */}
-          <div
-            className={`fixed top-0 right-0 h-full w-64 bg-[#4821C1] z-40 p-6 
+              {/* navbar mobile */}
+              <div
+                className={`fixed top-0 right-0 h-full w-64 bg-[#4821C1] z-40 p-6 
                     transform transition-transform duration-300 
                     ${menuOpen ? "translate-x-0" : "translate-x-full"} 
-                    md:hidden`}
-          >
-            <ul className="flex flex-col gap-6 text-white text-base font-semibold pt-16">
-              <li className={pathname == "/" ? "text-[#4CD137]" : "text-white"}>
-                <Link href="/">Beranda</Link>
-              </li>
-              {hydrated && userData !== null ? (
-                <>
+                    `}
+              >
+                <ul className="flex flex-col gap-6 text-white text-base font-semibold pt-16">
                   <li
                     className={
-                      pathname == "/dashboard" ? "text-[#4CD137]" : "text-white"
+                      pathname == "/" ? "text-[#4CD137]" : "text-white"
                     }
+                    onClick={toggleMenu}
                   >
-                    <Link href="/dashboard">Dashboard</Link>
+                    <Link href="/">Beranda</Link>
                   </li>
-                  <li
-                    className={
-                      pathname == "/transaction"
-                        ? "text-[#4CD137]"
-                        : "text-white"
-                    }
-                  >
-                    <Link href="/transaction">Transaksi</Link>
-                  </li>
-                  <li>
-                    <p
-                      className={
-                        pathname == "" ? "text-[#4CD137]" : "text-white"
-                      }
-                    >
-                      {" "}
-                      Halo, {profile?.fullname}
-                      {/* {userData.email} */}
-                    </p>
-                  </li>
-                </>
-              ) : (
-                <>
-                  <li
-                    className={
-                      pathname == "/business-list" ? "text-[#4CD137]" : ""
-                    }
-                  >
-                    <Link href="/business-list">Daftar Bisnis</Link>
-                  </li>
-                  <li
-                    className={pathname == "/about-us" ? "text-[#4CD137]" : ""}
-                  >
-                    <Link href="/about-us">Tentang Kami</Link>
-                  </li>
-                  <li
-                    className={
-                      pathname == "/terms-conditions"
-                        ? "text-[#4CD137]"
-                        : "text-white"
-                    }
-                  >
-                    <Link href="/terms-conditions">Syarat dan Ketentuan</Link>
-                  </li>
-                  {/* <li>
+                  {hydrated && userData !== null ? (
+                    <>
+                      <li
+                        className={
+                          pathname == "/dashboard"
+                            ? "text-[#4CD137]"
+                            : "text-white"
+                        }
+                        onClick={toggleMenu}
+                      >
+                        <Link href="/dashboard">Dashboard</Link>
+                      </li>
+                      <li
+                        className={
+                          pathname == "/transaction"
+                            ? "text-[#4CD137]"
+                            : "text-white"
+                        }
+                        onClick={toggleMenu}
+                      >
+                        <Link href="/transaction">Transaksi</Link>
+                      </li>
+                      <li
+                        className={
+                          pathname == "/terms-conditions"
+                            ? "text-[#4CD137]"
+                            : "text-white"
+                        }
+                        onClick={toggleMenu}
+                      >
+                        <Link href="/terms-conditions">
+                          Syarat dan Ketentuan
+                        </Link>
+                      </li>
+                      <li>
+                        <p
+                          className={
+                            pathname == "" ? "text-[#4CD137]" : "text-white"
+                          }
+                        >
+                          {" "}
+                          Halo, {profile?.fullname}
+                          {/* {userData.email} */}
+                        </p>
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li
+                        className={
+                          pathname == "/business-list" ? "text-[#4CD137]" : ""
+                        }
+                      >
+                        <Link href="/business-list">Daftar Bisnis</Link>
+                      </li>
+                      <li
+                        className={
+                          pathname == "/about-us" ? "text-[#4CD137]" : ""
+                        }
+                      >
+                        <Link href="/about-us">Tentang Kami</Link>
+                      </li>
+                      <li
+                        className={
+                          pathname == "/terms-conditions"
+                            ? "text-[#4CD137]"
+                            : "text-white"
+                        }
+                      >
+                        <Link href="/terms-conditions">
+                          Syarat dan Ketentuan
+                        </Link>
+                      </li>
+                      {/* <li>
                     <>
                       <Link href={"/auth/login"}>
                         <button
@@ -278,131 +305,320 @@ const Navbar: React.FC = () => {
                       </Link>
                     </>
                   </li> */}
-                </>
-              )}
-              {hydrated && userData !== null ? (
-                <>
-                  {/* <UserMenu
+                    </>
+                  )}
+                  {hydrated && userData !== null ? (
+                    <>
+                      {/* <UserMenu
                     email={userData.email}
                     handleMenuOpen={setMenuOpen}
                   /> */}
-                  <li>
-                    <button
-                      onClick={() => {
-                        localStorage.removeItem("user");
-                        window.location.href = "/auth/login";
-                      }}
-                      className="px-5 py-2 rounded-full bg-red-500 text-white"
-                    >
-                      Keluar
-                    </button>
-                  </li>
-                </>
-              ) : (
-                <li>
-                  <a href="/auth/login">
-                    <button className="mt-2 md:mt-0 px-5 py-2 rounded-full bg-[#4CD137] text-white">
-                      Masuk
-                    </button>
-                  </a>
-                </li>
+                      <li>
+                        <button
+                          onClick={() => {
+                            localStorage.removeItem("user");
+                            window.location.href = "/auth/login";
+                          }}
+                          className="px-5 py-2 rounded-full bg-red-500 text-white"
+                        >
+                          Keluar
+                        </button>
+                      </li>
+                    </>
+                  ) : (
+                    <li>
+                      <a href="/auth/login">
+                        <button className="mt-2 md:mt-0 px-5 py-2 rounded-full bg-[#4CD137] text-white">
+                          Masuk
+                        </button>
+                      </a>
+                    </li>
+                  )}
+                  {userData === null && (
+                    <div className="flex justify-between px-4">
+                      <button
+                        onClick={() => setStep("register")}
+                        className="text-white"
+                      >
+                        Daftar
+                      </button>
+                    </div>
+                  )}
+                </ul>
+              </div>
+
+              {menuOpen && (
+                <div
+                  onClick={toggleMenu}
+                  className="fixed inset-0 bg-black bg-opacity-40 z-30"
+                />
               )}
-              {userData === null && (
-                <div className="flex justify-between px-4">
-                  <button
-                    onClick={() => setStep("register")}
-                    className="text-white"
+            </>
+          ) : (
+            <>
+              <div className="md:hidden flex items-center gap-4">
+                <Tippy content="Inbox" animation="scale">
+                  <Link href={"/inbox"}>
+                    <BellRing
+                      size={18}
+                      className={
+                        isSticky && pathname === "/inbox"
+                          ? "text-[#4CD137]"
+                          : isSticky
+                          ? "text-[#322783]"
+                          : pathname == "/inbox"
+                          ? "text-[#4CD137]"
+                          : "text-white"
+                      }
+                    />
+                  </Link>
+                </Tippy>
+                <button onClick={toggleMenu}>
+                  {menuOpen ? (
+                    <X size={24} />
+                  ) : (
+                    <Menu
+                      size={24}
+                      className={isSticky ? "text-[#322783]" : "text-white"}
+                    />
+                  )}
+                </button>
+              </div>
+
+              {/* navbar mobile */}
+              <div
+                className={`fixed top-0 right-0 h-full w-64 bg-[#4821C1] z-40 p-6 
+                    transform transition-transform duration-300 
+                    ${menuOpen ? "translate-x-0" : "translate-x-full"} 
+                    md:hidden`}
+              >
+                <ul className="flex flex-col gap-6 text-white text-base font-semibold pt-16">
+                  <li
+                    className={
+                      pathname == "/" ? "text-[#4CD137]" : "text-white"
+                    }
                   >
-                    Daftar
-                  </button>
-                </div>
-              )}
-            </ul>
-          </div>
-
-          {menuOpen && (
-            <div
-              onClick={toggleMenu}
-              className="fixed inset-0 bg-black bg-opacity-40 z-30 md:hidden"
-            />
-          )}
-
-          {/* navbar md keatas */}
-          <ul className="hidden md:flex gap-6 items-center">
-            <li className={pathname == "/" ? "text-[#4CD137]" : ""}>
-              <Link href="/">Beranda</Link>
-            </li>
-
-            {hydrated && userData !== null ? (
-              <>
-                <li
-                  className={
-                    isSticky && pathname === "/dashboard"
-                      ? "text-[#4CD137]"
-                      : isSticky
-                      ? "text-[#322783]"
-                      : pathname === "/dashboard"
-                      ? "text-[#4CD137]"
-                      : "text-white"
-                  }
-                >
-                  <Link href="/dashboard">Dashboard</Link>
-                </li>
-                <li
-                  className={
-                    isSticky && pathname === "/transaction"
-                      ? "text-[#4CD137]"
-                      : isSticky
-                      ? "text-[#322783]"
-                      : pathname == "/transaction"
-                      ? "text-[#4CD137]"
-                      : "text-white"
-                  }
-                >
-                  <Link href="/transaction">Transaksi</Link>
-                </li>
-
-                <li>
-                  <Tippy content="Inbox" animation="scale">
-                    <Link
-                      href={"/inbox"}
-                      // onClick={() => {
-                      //   setIsInboxTooltipOpen((isOpen) => !isOpen);
-                      // }}
-                    >
-                      <BellRing
-                        size={18}
+                    <Link href="/">Beranda</Link>
+                  </li>
+                  {hydrated && userData !== null ? (
+                    <>
+                      <li
                         className={
-                          isSticky && pathname === "/inbox"
-                            ? "text-[#4CD137]"
-                            : isSticky
-                            ? "text-[#322783]"
-                            : pathname == "/inbox"
+                          pathname == "/dashboard"
                             ? "text-[#4CD137]"
                             : "text-white"
                         }
-                      />
-                    </Link>
-                  </Tippy>
+                        onClick={toggleMenu}
+                      >
+                        <Link href="/dashboard">Dashboard</Link>
+                      </li>
+                      <li
+                        className={
+                          pathname == "/transaction"
+                            ? "text-[#4CD137]"
+                            : "text-white"
+                        }
+                        onClick={toggleMenu}
+                      >
+                        <Link href="/transaction">Transaksi</Link>
+                      </li>
+                      <li
+                        className={
+                          pathname == "/terms-conditions"
+                            ? "text-[#4CD137]"
+                            : "text-white"
+                        }
+                        onClick={toggleMenu}
+                      >
+                        <Link href="/terms-conditions">
+                          Syarat dan Ketentuan
+                        </Link>
+                      </li>
+                      <li>
+                        <p
+                          className={
+                            pathname == "" ? "text-[#4CD137]" : "text-white"
+                          }
+                        >
+                          {" "}
+                          Halo, {profile?.fullname}
+                          {/* {userData.email} */}
+                        </p>
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li
+                        className={
+                          pathname == "/business-list" ? "text-[#4CD137]" : ""
+                        }
+                        onClick={toggleMenu}
+                      >
+                        <Link href="/business-list">Daftar Bisnis</Link>
+                      </li>
+                      <li
+                        className={
+                          pathname == "/about-us" ? "text-[#4CD137]" : ""
+                        }
+                        onClick={toggleMenu}
+                      >
+                        <Link href="/about-us">Tentang Kami</Link>
+                      </li>
+                      <li
+                        className={
+                          pathname == "/terms-conditions"
+                            ? "text-[#4CD137]"
+                            : "text-white"
+                        }
+                        onClick={toggleMenu}
+                      >
+                        <Link href="/terms-conditions">
+                          Syarat dan Ketentuan
+                        </Link>
+                      </li>
+                      {/* <li>
+                    <>
+                      <Link href={"/auth/login"}>
+                        <button
+                          className={`px-5 py-2 rounded-full ${
+                            isSticky
+                              ? "bg-[#4CD137] text-white"
+                              : "bg-[#4CD137] text-white"
+                          }`}
+                          onClick={() => {
+                            setIsInboxTooltipOpen((isOpen) => !isOpen);
+                          }}
+                        >
+                          Masuk
+                        </button>
+                      </Link>
+                    </>
+                  </li> */}
+                    </>
+                  )}
+                  {hydrated && userData !== null ? (
+                    <>
+                      {/* <UserMenu
+                    email={userData.email}
+                    handleMenuOpen={setMenuOpen}
+                  /> */}
+                      <li>
+                        <button
+                          onClick={() => {
+                            localStorage.removeItem("user");
+                            window.location.href = "/auth/login";
+                          }}
+                          className="px-5 py-2 rounded-full bg-red-500 text-white"
+                        >
+                          Keluar
+                        </button>
+                      </li>
+                    </>
+                  ) : (
+                    <li>
+                      <a href="/auth/login">
+                        <button className="mt-2 md:mt-0 px-5 py-2 rounded-full bg-[#4CD137] text-white">
+                          Masuk
+                        </button>
+                      </a>
+                    </li>
+                  )}
+                  {userData === null && (
+                    <div className="flex justify-between px-4">
+                      <button
+                        onClick={() => setStep("register")}
+                        className="text-white"
+                      >
+                        Daftar
+                      </button>
+                    </div>
+                  )}
+                </ul>
+              </div>
+
+              {menuOpen && (
+                <div
+                  onClick={toggleMenu}
+                  className="fixed inset-0 bg-black bg-opacity-40 z-30 md:hidden"
+                />
+              )}
+
+              {/* navbar md keatas */}
+              <ul className="hidden md:flex gap-6 items-center">
+                <li className={pathname == "/" ? "text-[#4CD137]" : ""}>
+                  <Link href="/">Beranda</Link>
                 </li>
-                <li>
-                  <p
-                    className={
-                      isSticky && pathname === ""
-                        ? "text-[#4CD137]"
-                        : isSticky
-                        ? "text-[#322783]"
-                        : pathname == ""
-                        ? "text-[#4CD137]"
-                        : "text-white"
-                    }
-                  >
-                    {" "}
-                    Halo, {profile?.fullname}
-                    {/* {userData.email} */}
-                  </p>
-                </li>
-                {/* <li
+
+                {hydrated && userData !== null ? (
+                  <>
+                    <li
+                      className={
+                        isSticky && pathname === "/dashboard"
+                          ? "text-[#4CD137]"
+                          : isSticky
+                          ? "text-[#322783]"
+                          : pathname === "/dashboard"
+                          ? "text-[#4CD137]"
+                          : "text-white"
+                      }
+                    >
+                      <Link href="/dashboard">Dashboard</Link>
+                    </li>
+                    <li
+                      className={
+                        isSticky && pathname === "/transaction"
+                          ? "text-[#4CD137]"
+                          : isSticky
+                          ? "text-[#322783]"
+                          : pathname == "/transaction"
+                          ? "text-[#4CD137]"
+                          : "text-white"
+                      }
+                    >
+                      <Link href="/transaction">Transaksi</Link>
+                    </li>
+
+                    <li>
+                      <Tippy content="Inbox" animation="scale">
+                        <Link
+                          href={"/inbox"}
+                          // onClick={() => {
+                          //   setIsInboxTooltipOpen((isOpen) => !isOpen);
+                          // }}
+                        >
+                          <BellRing
+                            size={18}
+                            className={
+                              isSticky && pathname === "/inbox"
+                                ? "text-[#4CD137]"
+                                : isSticky
+                                ? "text-[#322783]"
+                                : pathname == "/inbox"
+                                ? "text-[#4CD137]"
+                                : "text-white"
+                            }
+                          />
+                        </Link>
+                      </Tippy>
+                    </li>
+                    <li>
+                      <p
+                        className={
+                          isSticky && pathname === ""
+                            ? "text-[#4CD137]"
+                            : isSticky
+                            ? "text-[#322783]"
+                            : pathname == ""
+                            ? "text-[#4CD137]"
+                            : "text-white"
+                        }
+                      >
+                        {" "}
+                        Halo, {profile?.fullname}
+                        {/* {userData.email} */}
+                      </p>
+                    </li>
+                    {/* <li
                   ref={refs.setReference}
                   {...getReferenceProps()}
                   onMouseEnter={() => {
@@ -417,7 +633,7 @@ const Navbar: React.FC = () => {
                   <BellRing size={18} className="text-white" />
                 </li> */}
 
-                {/* {isMounted && (
+                    {/* {isMounted && (
                   <div
                     ref={refs.setFloating}
                     style={{ ...floatingStyles, zIndex: 50 }}
@@ -461,76 +677,82 @@ const Navbar: React.FC = () => {
                     </div>
                   </div>
                 )} */}
-                <li>
-                  <button
-                    onClick={() => {
-                      localStorage.removeItem("user");
-                      localStorage.removeItem("formPemodal");
-                      Cookies.remove("user");
-                      window.location.href = "/auth/login";
-                    }}
-                    className="px-5 py-2 rounded-full bg-red-500 text-white"
-                  >
-                    Keluar
-                  </button>
-                </li>
-              </>
-            ) : (
-              <>
-                <li
-                  className={
-                    pathname == "/business-list" ? "text-[#4CD137]" : ""
-                  }
-                >
-                  <Link href="/business-list">Daftar Bisnis</Link>
-                </li>
-                <li className={pathname == "/about-us" ? "text-[#4CD137]" : ""}>
-                  <Link href="/about-us">Tentang Kami</Link>
-                </li>
-                <li
-                  className={
-                    isSticky && pathname === "/terms-conditions"
-                      ? "text-[#4CD137]"
-                      : isSticky
-                      ? "text-[#322783]"
-                      : pathname == "/terms-conditions"
-                      ? "text-[#4CD137]"
-                      : "text-white"
-                  }
-                >
-                  <Link href="/terms-conditions">Syarat dan Ketentuan</Link>
-                </li>
-                <li>
-                  <>
-                    <Link href={"/auth/login"}>
+                    <li>
                       <button
-                        className={`px-5 py-2 rounded-full ${
-                          isSticky
-                            ? "bg-[#4CD137] text-white"
-                            : "bg-[#4CD137] text-white"
-                        }`}
                         onClick={() => {
-                          setIsInboxTooltipOpen((isOpen) => !isOpen);
+                          localStorage.removeItem("user");
+                          localStorage.removeItem("formPemodal");
+                          Cookies.remove("user");
+                          window.location.href = "/auth/login";
                         }}
+                        className="px-5 py-2 rounded-full bg-red-500 text-white"
                       >
-                        Masuk
+                        Keluar
                       </button>
-                    </Link>
+                    </li>
                   </>
-                </li>
-              </>
-            )}
-            {hydrated && userData !== null ? (
-              <></>
-            ) : (
-              <button
-                className={`${isSticky ? "text-[#322783]" : "text-white"}`}
-                onClick={() => setStep("register")}
-              >
-                Daftar
-              </button>
-            )}
-          </ul>
+                ) : (
+                  <>
+                    <li
+                      className={
+                        pathname == "/business-list" ? "text-[#4CD137]" : ""
+                      }
+                    >
+                      <Link href="/business-list">Daftar Bisnis</Link>
+                    </li>
+                    <li
+                      className={
+                        pathname == "/about-us" ? "text-[#4CD137]" : ""
+                      }
+                    >
+                      <Link href="/about-us">Tentang Kami</Link>
+                    </li>
+                    <li
+                      className={
+                        isSticky && pathname === "/terms-conditions"
+                          ? "text-[#4CD137]"
+                          : isSticky
+                          ? "text-[#322783]"
+                          : pathname == "/terms-conditions"
+                          ? "text-[#4CD137]"
+                          : "text-white"
+                      }
+                    >
+                      <Link href="/terms-conditions">Syarat dan Ketentuan</Link>
+                    </li>
+                    <li>
+                      <>
+                        <Link href={"/auth/login"}>
+                          <button
+                            className={`px-5 py-2 rounded-full ${
+                              isSticky
+                                ? "bg-[#4CD137] text-white"
+                                : "bg-[#4CD137] text-white"
+                            }`}
+                            onClick={() => {
+                              setIsInboxTooltipOpen((isOpen) => !isOpen);
+                            }}
+                          >
+                            Masuk
+                          </button>
+                        </Link>
+                      </>
+                    </li>
+                  </>
+                )}
+                {hydrated && userData !== null ? (
+                  <></>
+                ) : (
+                  <button
+                    className={`${isSticky ? "text-[#322783]" : "text-white"}`}
+                    onClick={() => setStep("register")}
+                  >
+                    Daftar
+                  </button>
+                )}
+              </ul>
+            </>
+          )}
         </div>
       </nav>
       <Modal isOpen={step === "register"} onClose={closeModal} title="Daftar">
