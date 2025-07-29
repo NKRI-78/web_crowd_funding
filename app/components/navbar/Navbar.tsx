@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { BellRing, Menu, X } from "lucide-react";
 import { AppDispatch, RootState } from "@redux/store";
 import { useDispatch, useSelector } from "react-redux";
-import { loadSession, logout } from "@redux/slices/authSlice";
+import { loadSession } from "@redux/slices/authSlice";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import {
@@ -205,7 +205,72 @@ const Navbar: React.FC = () => {
           >
             <ul className="flex flex-col gap-6 text-white text-base font-semibold pt-16">
               <li className={pathname == "/" ? "text-[#4CD137]" : "text-white"}>
-                <Link href="/">Beranda</Link>
+                <Link
+                  href="/"
+                  onClick={() => {
+                    setMenuOpen(false);
+                  }}
+                >
+                  Beranda
+                </Link>
+              </li>
+              <li
+                className={
+                  pathname == "/business-list" ? "text-[#4CD137]" : "text-white"
+                }
+              >
+                <Link
+                  href="/business-list"
+                  onClick={() => {
+                    setMenuOpen(false);
+                  }}
+                >
+                  Daftar Bisnis
+                </Link>
+              </li>
+              <li
+                className={
+                  pathname == "/about-us" ? "text-[#4CD137]" : "text-white"
+                }
+              >
+                <Link
+                  href="/about-us"
+                  onClick={() => {
+                    setMenuOpen(false);
+                  }}
+                >
+                  Tentang Kami
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="text-white"
+                  href="#"
+                  onClick={() => {
+                    setMenuOpen(false);
+                  }}
+                >
+                  Pasar Sekunder
+                </Link>
+              </li>
+              {/* <li>
+                <Link className="text-white" href="#">
+                  Penerbit
+                </Link>
+              </li> */}
+              <li
+                className={
+                  pathname == "/form-pemodal" ? "text-[#4CD137]" : "text-white"
+                }
+              >
+                <Link
+                  href="/form-pemodal"
+                  onClick={() => {
+                    setMenuOpen(false);
+                  }}
+                >
+                  Form Pemodal
+                </Link>
               </li>
               {hydrated && userData !== null ? (
                 <>
@@ -290,6 +355,10 @@ const Navbar: React.FC = () => {
                     <button
                       onClick={() => {
                         localStorage.removeItem("user");
+                        localStorage.removeItem("formPemodal");
+                        localStorage.removeItem("formPenerbitDraft");
+                        localStorage.removeItem("publisherDraft");
+                        Cookies.remove("user");
                         window.location.href = "/auth/login";
                       }}
                       className="px-5 py-2 rounded-full bg-red-500 text-white"
@@ -301,7 +370,12 @@ const Navbar: React.FC = () => {
               ) : (
                 <li>
                   <a href="/auth/login">
-                    <button className="mt-2 md:mt-0 px-5 py-2 rounded-full bg-[#4CD137] text-white">
+                    <button
+                      className="mt-2 md:mt-0 px-5 py-2 rounded-full bg-[#4CD137] text-white"
+                      onClick={() => {
+                        setMenuOpen(false);
+                      }}
+                    >
                       Masuk
                     </button>
                   </a>
@@ -310,8 +384,11 @@ const Navbar: React.FC = () => {
               {userData === null && (
                 <div className="flex justify-between px-4">
                   <button
-                    onClick={() => setStep("register")}
                     className="text-white"
+                    onClick={() => {
+                      setStep("register");
+                      setMenuOpen(false);
+                    }}
                   >
                     Daftar
                   </button>
@@ -466,6 +543,8 @@ const Navbar: React.FC = () => {
                     onClick={() => {
                       localStorage.removeItem("user");
                       localStorage.removeItem("formPemodal");
+                      localStorage.removeItem("formPenerbitDraft");
+                      localStorage.removeItem("publisherDraft");
                       Cookies.remove("user");
                       window.location.href = "/auth/login";
                     }}
@@ -524,7 +603,7 @@ const Navbar: React.FC = () => {
               <></>
             ) : (
               <button
-                className={`${isSticky ? "text-[#322783]" : "text-white"}`}
+                className={isSticky ? "text-[#4821C1]" : "text-white"}
                 onClick={() => setStep("register")}
               >
                 Daftar

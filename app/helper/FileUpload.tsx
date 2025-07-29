@@ -18,7 +18,10 @@ export default function FileUpload({
 
   return (
     <div className="mb-4">
-      <p className="text-sm mb-1">{label}</p>
+      <p className="text-sm mb-1">
+        {label}
+        <span className="text-red-500 ml-1">*</span>
+      </p>
       <button
         type="button"
         onClick={() => fileRef.current?.click()}

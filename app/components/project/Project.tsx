@@ -53,33 +53,31 @@ export const ProjectCard: React.FC<{ project: IProjectData }> = ({
         <p className="font-semibold text-sm text-start mb-2">{project.title}</p>
         <ul className="text-xs my-4 space-y-1">
           <li className="flex justify-between font-bold">
-            <span>Dana Terkumpul</span>
-            <span>{project.goal}</span>
+            <span className="text-black">Dana Terkumpul</span>
+            <span className="text-black">{project.goal}</span>
           </li>
-          <li className={isFinish}>
+          <li>
             <ProgressBar percentage={0} />
           </li>
           <li className="flex justify-between">
-            <span>Kebutuhan Modal</span>
-            <span>
-              {formatPriceOrEmpty(
-                (project?.nominal_value ?? 0).toString() ?? "",
-                "id-ID",
-                "IDR"
-              )}
+            <span className="text-black">Jenis Obligasi</span>
+            <span className="text-black capitalize">
+              {project.type_of_bond}
             </span>
           </li>
           <li className="flex justify-between">
-            <span>Minimal Investasi</span>
-            <span>{formatPriceOrEmpty(1000000, "id-ID", "IDR")}</span>
+            <span className="text-black">Nilai Nominal</span>
+            <span className="text-black">
+              {formatPriceOrEmpty(project.nominal_value, "id-ID", "IDR")}
+            </span>
           </li>
           <li className="flex justify-between">
-            <span>Jangka Waktu</span>
-            <span>{project.time_periode}</span>
+            <span className="text-black">Jangka Waktu</span>
+            <span className="text-black">{project.time_periode}</span>
           </li>
           <li className="flex justify-between">
-            <span>Proyeksi ROI</span>
-            <span>18% p.a</span>
+            <span className="text-black">Tingkat Bunga</span>
+            <span className="text-black">{project.interest_rate}</span>
           </li>
         </ul>
       </div>

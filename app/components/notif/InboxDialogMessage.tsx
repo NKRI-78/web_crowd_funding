@@ -84,7 +84,7 @@ const InboxDialogMessage: React.FC<InboxDialogMessageProps> = ({
             ) : (
               <p>
                 {data.content}{" "}
-                {data?.field_1.length === 0 ? "-" : formatRupiah(data.field_1)}
+                {/* {data?.field_1.length === 0 ? "-" : formatRupiah(data.field_1)} */}
               </p>
             )}
           </div>

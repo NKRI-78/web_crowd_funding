@@ -148,7 +148,7 @@ const Home: React.FC = () => {
           temukan peluang untuk berinvestasi hari ini.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {project.map((project: IProjectData, index) => (
             <ProjectCard key={index} project={project} />
           ))}

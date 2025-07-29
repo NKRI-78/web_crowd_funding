@@ -9,6 +9,7 @@ import Swal from "sweetalert2";
 import { InboxModel } from "../InboxModel";
 import EmptyInbox from "../EmptyInbox";
 import { useRouter } from "next/navigation";
+import moment from "moment";
 import Cookies from "js-cookie";
 
 interface InboxState {
@@ -215,13 +216,10 @@ const Inbox = () => {
                     )}
                   </div>
                   <p className="text-sm text-gray-400 mt-2">
-                    {new Date(inbox.created_at).toLocaleString("id-ID", {
-                      day: "2-digit",
-                      month: "long",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {moment(inbox.created_at)
+                      .utc()
+                      .locale("id")
+                      .format("DD MMMM YYYY, HH:mm")}
                   </p>
                 </div>
               );

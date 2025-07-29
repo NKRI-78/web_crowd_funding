@@ -8,7 +8,10 @@ interface SectionPointProps {
 const SectionPoint: React.FC<SectionPointProps> = ({ text, className }) => {
   return (
     <div className={className}>
-      <h4 className="font-semibold text-sm text-gray-600">{text}</h4>
+      <div className="flex gap-1">
+        <h4 className="font-semibold text-sm text-gray-600">{text}</h4>
+        <p className="text-red-500">*</p>
+      </div>
     </div>
   );
 };
