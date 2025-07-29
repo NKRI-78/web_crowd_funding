@@ -9,10 +9,21 @@ export default function RegisterSelectRole({
   onNext?: () => void;
   onClose?: () => void;
 }) {
-  const router = useRouter();
   const handleSelectRole = async (role: number) => {
     try {
-      setCookie("role", JSON.stringify({ role: role }));
+      const userString = localStorage.getItem("user");
+
+      if (userString) {
+        const user = JSON.parse(userString);
+
+        const updatedUser = {
+          ...user,
+          role: role == 2 ? "emiten" : "investor",
+          enabled: true,
+        };
+
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      }
       onClose?.();
       if (role == 2) {
         window.location.href = "/form-penerbit";

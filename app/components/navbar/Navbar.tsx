@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { BellRing, Menu, X } from "lucide-react";
 import { AppDispatch, RootState } from "@redux/store";
 import { useDispatch, useSelector } from "react-redux";
-import { loadSession, logout } from "@redux/slices/authSlice";
+import { loadSession } from "@redux/slices/authSlice";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import {
@@ -652,7 +652,7 @@ const Navbar: React.FC = () => {
                       >
                         Dashboard
                       </Link>
-                      {userData.role === "emiten / penerbit" && (
+                      {userData.role === "emiten" && (
                         <>
                           <Link
                             href={"/inbox"}

@@ -10,6 +10,7 @@ import { Navigation, Thumbs } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import { useParams } from "next/navigation";
+import Cookies from "js-cookie";
 import axios from "axios";
 import defaultImage from "/public/images/default-image.png";
 import { API_BACKEND } from "@/app/utils/constant";
@@ -65,8 +66,6 @@ type Props = {
 };
 
 const SukukClient = ({ id }: Props) => {
-  console.log(id, "id");
-
   const [showModal, setShowModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
 
@@ -89,6 +88,24 @@ const SukukClient = ({ id }: Props) => {
   const [userData, setUserData] = useState<any>(null);
   const [hydrated, setHydrated] = useState(false);
   const [isNotFound, setIsNotFound] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
+
+  console.log(role, "id");
+
+  useEffect(() => {
+    const userCookie = Cookies.get("user");
+    if (!userCookie) return;
+
+    try {
+      const user = JSON.parse(userCookie);
+      if (user?.token) {
+        console.log(user.role);
+        setRole(user.role);
+      }
+    } catch (err) {
+      console.error("Failed to parse user cookie", err);
+    }
+  }, []);
 
   const handleInputChange = (value: string) => {
     const numeric = value.replace(/[^\d]/g, "");
@@ -382,7 +399,7 @@ const SukukClient = ({ id }: Props) => {
             </div>
 
             <div className="bg-white p-2 rounded-lg space-y-1">
-              <ProgressBar percentage={10}/>
+              <ProgressBar percentage={0} />
 
               <div className="flex flex-wrap justify-between">
                 <p className="text-xs font-bold text-[#677AB9]">
@@ -497,14 +514,18 @@ const SukukClient = ({ id }: Props) => {
               </button>
             </div>
 
-            {hydrated && userData !== null ? (
-              <button className="w-full bg-purple-700 hover:bg-purple-600 text-white font-semibold py-2 rounded-md mt-4 cursor-pointer">
-                Beli Efek
-              </button>
+            {role !== "emiten" ? (
+              hydrated && userData !== null ? (
+                <button className="w-full bg-purple-700 hover:bg-purple-600 text-white font-semibold py-2 rounded-md mt-4 cursor-pointer">
+                  Beli Efek
+                </button>
+              ) : (
+                <button className="w-full bg-gray-300 text-white font-semibold py-2 rounded-md mt-4 cursor-not-allowed">
+                  Beli Efek
+                </button>
+              )
             ) : (
-              <button className="w-full bg-gray-300 text-white font-semibold py-2 rounded-md mt-4 cursor-not-allowed">
-                Beli Efek
-              </button>
+              <></>
             )}
 
             <p className="text-xs text-center mt-2">

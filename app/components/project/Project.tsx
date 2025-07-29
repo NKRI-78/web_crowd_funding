@@ -1,3 +1,4 @@
+import ProgressBar from "@/app/(defaults)/sukuk/components/ProgressBar";
 import { IProjectData } from "@/app/interface/IProject";
 import { formatPriceOrEmpty, priceLib } from "@/app/lib/price";
 import { useRouter } from "next/navigation";
@@ -52,41 +53,31 @@ export const ProjectCard: React.FC<{ project: IProjectData }> = ({
         <p className="font-semibold text-sm text-start mb-2">{project.title}</p>
         <ul className="text-xs my-4 space-y-1">
           <li className="flex justify-between font-bold">
-            <span>Dana Terkumpul</span>
-            <span>{project.goal}</span>
+            <span className="text-black">Dana Terkumpul</span>
+            <span className="text-black">{project.goal}</span>
           </li>
-          <li className={isFinish}>
-            <div className="relative w-[80%] h-4 bg-purple-200 rounded-full my-2">
-              <div
-                className="absolute top-0 left-0 h-4 bg-[#3E268D] rounded-full"
-                style={{ width: "80%" }}
-              ></div>
-              <span className="absolute right-[-4px] top-1/2 -translate-y-1/2 translate-x-full bg-green-500 text-white text-xs font-bold px-2 rounded-full shadow">
-                80%
-              </span>
-            </div>
+          <li>
+            <ProgressBar percentage={0} />
           </li>
           <li className="flex justify-between">
-            <span>Kebutuhan Modal</span>
-            <span>
-              {formatPriceOrEmpty(
-                (project?.nominal_value ?? 0).toString() ?? "",
-                "id-ID",
-                "IDR"
-              )}
+            <span className="text-black">Jenis Obligasi</span>
+            <span className="text-black capitalize">
+              {project.type_of_bond}
             </span>
           </li>
           <li className="flex justify-between">
-            <span>Minimal Investasi</span>
-            <span>{formatPriceOrEmpty(1000000, "id-ID", "IDR")}</span>
+            <span className="text-black">Nilai Nominal</span>
+            <span className="text-black">
+              {formatPriceOrEmpty(project.nominal_value, "id-ID", "IDR")}
+            </span>
           </li>
           <li className="flex justify-between">
-            <span>Jangka Waktu</span>
-            <span>{project.time_periode}</span>
+            <span className="text-black">Jangka Waktu</span>
+            <span className="text-black">{project.time_periode}</span>
           </li>
           <li className="flex justify-between">
-            <span>Proyeksi ROI</span>
-            <span>18% p.a</span>
+            <span className="text-black">Tingkat Bunga</span>
+            <span className="text-black">{project.interest_rate}</span>
           </li>
         </ul>
       </div>
