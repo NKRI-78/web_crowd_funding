@@ -1,12 +1,12 @@
 "use client";
 
-import { useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import FileUpload from "@/app/helper/FileUpload";
-import { BASE_URL, BASE_URL_MEDIA } from "@/app/utils/constant";
+import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { fetchProvinces } from "@/app/lib/fetchWilayah";
 import FormAlamat from "./FormAlamat";
 import Swal from "sweetalert2";
@@ -25,14 +25,22 @@ export const alamatSchema = z.object({
   detail: z.string().min(1, "Detail alamat wajib diisi"),
 });
 
+const existingCompanies = ["Google", "Microsoft", "OpenAI"];
+
 export const schema = z.object({
-  company_name: z.string().min(1, "Nama perusahaan wajib diisi"),
+  company_name: z
+    .string()
+    .min(1, "Nama perusahaan wajib diisi")
+    .refine((val) => !existingCompanies.includes(val), {
+      message: "Nama perusahaan sudah terdaftar",
+    }),
   address: z
     .array(alamatSchema)
     .min(1, "Minimal 1 alamat harus diisi")
     .max(2, "Maksimal hanya 2 alamat"),
+  sameAsCompany: z.boolean().optional(),
   detailKorespondensi: z.string().optional(),
-  total_employees: z.number().min(1, "Jumlah karyawan minimal 1").optional(),
+  total_employees: z.string().min(1, "Jumlah karyawan minimal 1").optional(),
   company_nib_path: z
     .string()
     .min(1, { message: "Dokumen NIB wajib diunggah" }),
@@ -46,7 +54,7 @@ export const schema = z.object({
   sk_kumham_terahkir: z
     .string()
     .min(1, { message: "SK Kumham terakhir wajib diunggah" }),
-  npwp_path: z.string().min(1, { message: "NPWP perusahaan wajib diunggah" }),
+  // npwp_path: z.string().min(1, { message: "NPWP perusahaan wajib diunggah" }),
   fileNpwp: z.string().optional(),
 });
 
@@ -55,9 +63,12 @@ export type FormData = z.infer<typeof schema>;
 const fetchOptions = async (url: string, parentId?: string) => {
   try {
     const response = await axios.get(
-      `${BASE_URL}/${url}${parentId ? `/${parentId}` : ""}`
+      `${API_BACKEND}/${url}${parentId ? `/${parentId}` : ""}`
     );
-    console.log("URL", `${BASE_URL}/${url}${parentId ? `/${parentId}` : ""}`);
+    console.log(
+      "URL",
+      `${API_BACKEND}/${url}${parentId ? `/${parentId}` : ""}`
+    );
 
     return response.data?.data.map((item: any) => ({
       value: String(item.id),
@@ -100,13 +111,14 @@ export default function PublisherForm({ onNext }: Props) {
     resolver: zodResolver(schema),
     mode: "onBlur",
     defaultValues: {
-      total_employees: 0,
+      sameAsCompany: false,
+      total_employees: "",
       company_nib_path: "",
       akta_pendirian: "",
       sk_kumham_path: "",
       akta_perubahan_terahkir_path: "",
       sk_kumham_terahkir: "",
-      npwp_path: "",
+      // npwp_path: "",
       address: [
         {
           name: "Company",
@@ -132,6 +144,26 @@ export default function PublisherForm({ onNext }: Props) {
 
   const { fields } = useFieldArray({ control, name: "address" });
 
+  const alamatPerusahaan = useWatch({
+    control,
+    name: "address.0",
+  });
+
+  const sameAsCompany = useWatch({
+    control,
+    name: "sameAsCompany",
+  });
+
+  useEffect(() => {
+    if (!sameAsCompany) return;
+
+    // Ketika checkbox aktif, update address[1] setiap kali address[0] berubah
+    setValue("address.1", {
+      ...alamatPerusahaan,
+      name: "Koresponden", // jangan lupa ubah label
+    });
+  }, [alamatPerusahaan, sameAsCompany]);
+
   useEffect(() => {
     const loadProvinces = async () => {
       const provinsiList = await fetchProvinces();
@@ -147,6 +179,20 @@ export default function PublisherForm({ onNext }: Props) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const maxSizeInMB = 10;
+    const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+
+    if (file.size > maxSizeInBytes) {
+      Swal.fire({
+        title: "Ukuran File Terlalu Besar",
+        text: `Maksimal ukuran file adalah ${maxSizeInMB}MB.`,
+        icon: "error",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
     const formData = new FormData();
     formData.append("folder", "web");
     formData.append("subfolder", "capbridge");
@@ -154,7 +200,7 @@ export default function PublisherForm({ onNext }: Props) {
 
     try {
       const res = await axios.post(
-        `${BASE_URL_MEDIA}/api/v1/media/upload`,
+        `${API_BACKEND_MEDIA}/api/v1/media/upload`,
         formData
       );
 
@@ -167,7 +213,7 @@ export default function PublisherForm({ onNext }: Props) {
         akta_perubahan_terahkir_path:
           "Upload Akta Perubahan Terakhir berhasil!",
         sk_kumham_terahkir: "Upload SK KUMHAM Terakhir berhasil!",
-        npwp_path: "Upload NPWP berhasil!",
+        // npwp_path: "Upload Rekening Koran berhasil!",
       } as const;
 
       if (fileUrl) {
@@ -228,10 +274,33 @@ export default function PublisherForm({ onNext }: Props) {
     return <p>Loading...</p>; // Tunggu reset jalan dulu
   }
 
+  const showErrorToasts = () => {
+    Object.values(errors).forEach((err) => {
+      if (!err?.message) return;
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: err.message,
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+    });
+  };
+
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const numeric = raw.replace(/\D/g, "");
+    // if (/^\d*$/.test(input)) {
+    setValue("total_employees", numeric);
+    // }
+  };
+
   return (
     <section className="bg-white text-black items-center px-3 md:px-10 py-20 md:py-30">
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(onSubmit, showErrorToasts)}
         className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 max-w-6xl mx-auto"
       >
         {/* Kiri */}
@@ -245,7 +314,9 @@ export default function PublisherForm({ onNext }: Props) {
           <h3 className="font-semibold text-black">1. Informasi Penerbit</h3>
 
           <div>
-            <label className="block mb-1 text-black">Nama Perusahaan</label>
+            <label className="block mb-1 text-black">
+              Nama Perusahaan<span className="text-red-500 ml-1">*</span>
+            </label>
             <input
               {...register("company_name")}
               className="w-full border px-3 py-2 rounded"
@@ -294,12 +365,12 @@ export default function PublisherForm({ onNext }: Props) {
             error={errors?.sk_kumham_terahkir?.message}
           />
 
-          <FileUpload
-            label="NPWP Perusahaan"
+          {/* <FileUpload
+            label="Rekening Koran"
             fileUrl={watch("npwp_path")}
             onUpload={(e) => handleUploadFile(e, "npwp_path")}
             error={errors?.npwp_path?.message}
-          />
+          /> */}
         </div>
 
         {/* Kanan */}
@@ -321,15 +392,19 @@ export default function PublisherForm({ onNext }: Props) {
               setKelurahanList={setKelurahanList}
               fetchOptions={fetchOptions}
               errors={errors}
+              sameAsCompany={watch("sameAsCompany") ?? false}
             />
           ))}
 
           <div>
-            <label className="block mb-1">Jumlah Karyawan</label>
+            <label className="block mb-1">
+              Jumlah Karyawan<span className="text-red-500 ml-1">*</span>
+            </label>
             <div className="flex items-center border rounded overflow-hidden w-80">
               <input
-                {...register("total_employees", { valueAsNumber: true })}
-                type="number"
+                {...register("total_employees")}
+                type="text"
+                onChange={handleNumberChange}
                 className="px-3 py-2 outline-none flex-1"
                 placeholder="0"
               />

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import axios from "axios";
-import { BASE_URL } from "@app/utils/constant";
+import { API_BACKEND } from "@app/utils/constant";
 import { setCookie } from "@/app/helper/cookie";
 import Swal from "sweetalert2";
 import { Eye, EyeOff } from "lucide-react";
@@ -42,10 +42,11 @@ export default function RegisterForm({
   } = useForm<RegisterFormSchema>({
     resolver: zodResolver(schema),
   });
+  const [isChecked, setIsChecked] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const onSubmit = async (data: RegisterFormSchema) => {
     setLoading(true);
-    console.log("Data:", data);
 
     const payload = {
       fullname: data.name,
@@ -59,7 +60,7 @@ export default function RegisterForm({
       console.log("Data yang dikirim:", data);
 
       const response = await axios.post(
-        `${BASE_URL}/api/v1/auth/register`,
+        `${API_BACKEND}/api/v1/auth/register`,
         payload
       );
 
@@ -185,12 +186,35 @@ export default function RegisterForm({
               )}
             </div>
 
+            <div className="mb-6 flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="disclamer"
+                checked={isChecked}
+                onChange={(e) => setIsChecked(e.target.checked)}
+                className="form-checkbox text-[#4821C2]"
+              />
+              <label>
+                <span className="text-sm font-medium text-gray-700">
+                  Dengan mendaftar, saya menyetujui{" "}
+                  <span
+                    onClick={() => setShowModal(true)}
+                    className="text-sm text-blue-500 hover:text-blue-700 font-bold underline cursor-pointer"
+                  >
+                    pernyataan
+                  </span>{" "}
+                  kebijakan privasi platform ini, dan memahami risiko yang
+                  mungkin timbul dalam penggunaannya.
+                </span>
+              </label>
+            </div>
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={!isChecked || loading}
               className={`w-full py-2 rounded ${
-                loading
-                  ? "bg-gray-400 cursor-not-allowed"
+                !isChecked || loading
+                  ? "bg-gray-400 cursor-not-allowed text-white"
                   : "bg-green-500 text-white"
               }`}
             >
@@ -208,6 +232,119 @@ export default function RegisterForm({
           />
         </div>
       </div>
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-xl p-6 max-w-3xl w-full relative max-h-[37rem] overflow-y-auto">
+            <h2 className="text-lg font-semibold mb-4">Disclaimer</h2>
+            <p className="text-sm text-gray-700 mb-1">
+              Pembelian saham bisnis merupakan aktivitas beresiko tinggi. Anda
+              berinvestasi pada bisnis yang mungkin saja mengalami kenaikan dan
+              penurunan kinerja bahkan mengalami kegagalan. Harap menggunakan
+              pertimbangan ekstra dalam membuat keputusan untuk membeli saham.
+              Ada kemungkinan Anda tidak bisa menjual kembali saham bisnis
+              dengan cepat. Lakukan diversifikasi investasi, hanya gunakan dana
+              yang siap Anda lepaskan (affors to loose) dan atau disimpan dalam
+              jangka panjang. CapBridge tidak memaksa pengguna untuk membeli
+              saham bisnis sebagai investasi. Semua keputusan pembelian
+              merupakan keputusan independen oleh pengguna.
+            </p>
+            <p className="text-sm text-gray-700 mb-1">
+              CapBridge bertindak sebagai penyelenggara urun dana yang
+              mempertemukan pemodal dan penerbit, bukan sebagai pihak yang
+              menjalankan bisnis (Penerbit). Otoritas Jasa Keuangan bertindak
+              sebagai regulator dan pemberi izin, bukan sebagai penjamin
+              investasi. Keputusan pembelian saham, sepenuhnya merupakan hak dan
+              tanggung jawab Pemodal (investor). Dengan membeli saham di
+              CapBridge berarti Anda sudah menyetujui seluruh syarat dan
+              ketentuan serta memahami semua risiko investasi termasuk resiko
+              kehilangan sebagian atau seluruh modal.
+            </p>
+            <p className="text-sm text-gray-700 mb-1">
+              “OTORITAS JASA KEUANGAN TIDAK MEMBERIKAN PERNYATAAN MENYETUJUI
+              ATAU TIDAK MENYETUJUI EFEK INI, TIDAK JUGA MENYATAKAN KEBENARAN
+              ATAU KECUKUPAN INFORMASI DALAM LAYANAN URUN DANA INI. SETIAP
+              PERNYATAAN YANG BERTENTANGAN DENGAN HAL TERSEBUT ADALAH PERBUATAN
+              MELANGGAR HUKUM.”
+            </p>
+            <p className="text-sm text-gray-700 mb-1">
+              “INFORMASI DALAM LAYANAN URUN DANA INI PENTING DAN PERLU MENDAPAT
+              PERHATIAN SEGERA. APABILA TERDAPAT KERAGUAN PADA TINDAKAN YANG
+              AKAN DIAMBIL, SEBAIKNYA BERKONSULTASI DENGAN PENYELENGGARA.”
+            </p>
+            <p className="text-sm text-gray-700 mb-1">
+              “PENERBIT DAN PENYELENGGARA, BAIK SENDIRI-SENDIRI MAUPUN
+              BERSAMA-SAMA, BERTANGGUNG JAWAB SEPENUHNYA ATAS KEBENARAN SEMUA
+              INFORMASI YANG TERCANTUM DALAM LAYANAN URUN DANA INI.”
+            </p>
+            <div>
+              <span className="text-sm font-bold">Risiko Usaha</span>
+              <p className="text-sm text-gray-700 mb-1">
+                Risiko usaha merupakan sesuatu yang tidak dapat dihindari dalam
+                suatu kegiatan usaha. Sejumlah risiko usaha yang dapat terjadi
+                adalah penutupan kegiatan bisnis secara sementara ataupun
+                permanen sebagai dampak dari adanya bencana alam dan/atau
+                keadaan lainnya
+              </p>
+            </div>
+            <div>
+              <span className="text-sm font-bold">
+                Risiko Kerugian Investasi
+              </span>
+              <p className="text-sm text-gray-700 mb-1">
+                Setiap investasi memiliki tingkat risiko yang bervariasi,
+                seperti tidak terkumpulnya dana investasi selama proses
+                pengumpulan dana dan/atau proyek yang dijalankan tidak
+                menghasilkan keuntungan sesuai dengan yang diharapkan
+              </p>
+            </div>
+            <div>
+              <span className="text-sm font-bold">
+                Risiko Kekurangan Likuiditas
+              </span>
+              <p className="text-sm text-gray-700 mb-1">
+                Investasi memungkinkan tidak likuid karena efek bersifat ekuitas
+                yang ditawarkan tidak terdaftar di bursa efek atau belum
+                dilaksanakan perdagangan efek (pasar sekunder). Hal ini berarti
+                ada kemungkinan tidak dapat dengan mudah menjual saham miliknya
+                kepada pihak lain.
+              </p>
+            </div>
+            <div>
+              <span className="text-sm font-bold">
+                Risiko Kelangkaan Pembagian Dividen dan/atau Dilusi Kepemilikan
+                Saham
+              </span>
+              <p className="text-sm text-gray-700 mb-1">
+                Pemodal yang melakukan investasi Saham, memiliki hak untuk
+                mendapat dividen sesuai dengan jumlah kepemilikan yang dimiliki
+                yang dibagikan oleh Penerbit melalui Penyelenggara secara
+                periodik. Namun, kelangkaan dalam pembagian dividen dimungkinkan
+                terjadi karena kinerja bisnis yang diinvestasikan tidak berjalan
+                sebagaimana mestinya serta berpotensi terdilusi kepemilikan
+                saham karena bertambahnya total saham yang beredar atau
+                ditawarkan.
+              </p>
+            </div>
+            <div>
+              <span className="text-sm font-bold">
+                Risiko Kegagalan Sistem Elektronik
+              </span>
+              <p className="text-sm text-gray-700 mb-1">
+                CapBridge sudah menerapkan sistem elektronik dan keamanan data
+                yang handal. Namun gangguan sistem teknologi informasi dan
+                kegagalan sistem mungkin saja tetap terjadi. Untuk mencegah hal
+                tersebut terjadi.
+              </p>
+            </div>
+            <button
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+              onClick={() => setShowModal(false)}
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

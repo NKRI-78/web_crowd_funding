@@ -1,5 +1,5 @@
 import { getCookie } from "@app/helper/cookie";
-import { BASE_URL } from "@app/utils/constant";
+import { API_BACKEND } from "@app/utils/constant";
 import axios from "axios";
 import React, { useState } from "react";
 import Countdown from "react-countdown";
@@ -29,7 +29,7 @@ export default function RegisterOtp({
         val: user.email,
       };
       const { data } = await axios.post(
-        `${BASE_URL}/api/v1/resend-otp`,
+        `${API_BACKEND}/api/v1/resend-otp`,
         payloads
       );
     } catch (err: any) {
@@ -52,7 +52,7 @@ export default function RegisterOtp({
         otp,
       };
       const response = await axios.post(
-        `${BASE_URL}/api/v1/verify-otp`,
+        `${API_BACKEND}/api/v1/verify-otp`,
         payloads
       );
 

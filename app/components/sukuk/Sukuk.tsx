@@ -12,7 +12,8 @@ import "swiper/css/navigation";
 import { useParams } from "next/navigation";
 import axios from "axios";
 import defaultImage from "../../../public/images/default-image.png";
-import { BASE_URL } from "@/app/utils/constant";
+import { API_BACKEND } from "@/app/utils/constant";
+import Custom404 from "@/app/not-found";
 
 type Project = {
   id: string;
@@ -86,6 +87,7 @@ const Sukuk = ({ id }: Props) => {
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<any>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [isNotFound, setIsNotFound] = useState(false);
 
   const handleInputChange = (value: string) => {
     const numeric = value.replace(/[^\d]/g, "");
@@ -105,11 +107,16 @@ const Sukuk = ({ id }: Props) => {
     const fetchProject = async () => {
       try {
         const response = await axios.get(
-          `${BASE_URL}/api/v1/project/detail/${id}`
+          `${API_BACKEND}/api/v1/project/detail/${id}`
         );
         setProject(response.data.data);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Gagal ambil data project:", error);
+
+        // Cek jika error 404
+        if (error.response?.status === 400) {
+          setIsNotFound(true);
+        }
       } finally {
         setLoading(false);
       }
@@ -145,7 +152,11 @@ const Sukuk = ({ id }: Props) => {
     }
   }, []);
 
-  return (
+  return isNotFound ? (
+    <>
+      <Custom404 />
+    </>
+  ) : (
     <section className="py-28 px-4 md:px-12">
       {showModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
@@ -419,7 +430,7 @@ const Sukuk = ({ id }: Props) => {
             </div>
             <div className="flex flex-wrap my-2 justify-between">
               <p className="text-xs text-[#677AB9]">Minimal Investasi:</p>
-              <p className="text-xs">Rp 1.000.000</p>
+              <p className="text-xs">{formatRupiah(project?.min_invest)}</p>
             </div>
             <div className="flex flex-wrap my-2 justify-between">
               <p className="text-xs text-[#677AB9]">Harga Unit:</p>
@@ -427,14 +438,11 @@ const Sukuk = ({ id }: Props) => {
             </div>
             <div className="flex flex-wrap my-2 justify-between">
               <p className="text-xs text-[#677AB9]"> Jumlah Unit </p>
-              <p className="text-xs">1</p>
+              <p className="text-xs">{formatRupiah(project?.number_of_unit)}</p>
             </div>
             <div className="flex flex-wrap my-2 justify-between">
               <p className="text-xs text-[#677AB9]"> Total Unit (Rp) </p>
-              <p className="text-xs">
-                {" "}
-                {formatRupiah(project?.nominal_value)}{" "}
-              </p>
+              <p className="text-xs"> {formatRupiah(project?.unit_total)} </p>
             </div>
             <div className="flex flex-wrap my-2 justify-between">
               <p className="text-xs text-[#677AB9]">Periode Pengembalian:</p>

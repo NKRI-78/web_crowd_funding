@@ -7,7 +7,8 @@ import { Eye, EyeOff } from "lucide-react";
 import { useDispatch } from "react-redux";
 import Swal from "sweetalert2";
 import axios from "axios";
-import { BASE_URL } from "@/app/utils/constant";
+import Cookies from "js-cookie";
+import { API_BACKEND } from "@/app/utils/constant";
 
 const Login: React.FC = () => {
   const router = useRouter();
@@ -30,17 +31,18 @@ const Login: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post(`${BASE_URL}/api/v1/auth/login`, {
+      const response = await axios.post(`${API_BACKEND}/api/v1/auth/login`, {
         email,
         password,
       });
 
       localStorage.setItem("user", JSON.stringify(response.data.data));
+      Cookies.set("user", JSON.stringify(response.data.data));
 
-      Swal.fire({
+      await Swal.fire({
         icon: "success",
         title: "Login Berhasil",
-        timer: 1500,
+        timer: 2000,
         showConfirmButton: false,
       });
 
@@ -57,7 +59,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="w-1/2  bg-white px-6 md:px-20 py-10">
+    <div className="w-full md:w-1/2 bg-white px-10 md:px-15 py-5 mx-auto">
       <div className="flex justify-between items-center mb-10">
         <img src="/images/img.jpg" alt="CapBridge Logo" className="w-20 h-20" />
         <a href="/">
@@ -101,22 +103,10 @@ const Login: React.FC = () => {
         </div>
 
         <div className="flex flex-row flex-wrap justify-between">
-          {/* <div className="w-1/2">
-            <p>Lupa Kata Sandi</p>
-            <p>
-              Belum Punya Akun?{" "}
-              <a
-                href="/auth/register"
-                className="text-[#321B87] cursor-pointer font-bold hover:underline"
-              >
-                Daftar Sekarang
-              </a>
-            </p>
-          </div> */}
           <button
             type="submit"
             disabled={loading}
-            className={`w-1/4 bg-[#321B87] text-white py-3 rounded-full font-bold transition ${
+            className={`w-full md:w-1/4 bg-[#321B87] text-white py-3 rounded-full font-bold transition ${
               loading ? "opacity-60 cursor-not-allowed" : "hover:bg-[#2A1572]"
             }`}
           >

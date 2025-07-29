@@ -1,11 +1,11 @@
 "use client";
 import { IProject } from "@app/interface/IProject";
-import { BASE_URL } from "@app/utils/constant";
+import { API_BACKEND } from "@app/utils/constant";
 import axios from "axios";
 
 export async function getAllProject() {
   try {
-    const apiUrl = `${BASE_URL}/api/v1/project/list`;
+    const apiUrl = `${API_BACKEND}/api/v1/project/list`;
     const response = await axios(apiUrl);
     const data: IProject = await response.data;
     return data;

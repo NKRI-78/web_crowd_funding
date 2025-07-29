@@ -5,7 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from "react-hook-form";
 import axios from "axios";
-import { BASE_URL } from "@/app/utils/constant";
+import { API_BACKEND } from "@/app/utils/constant";
 import OTPInput from "react-otp-input";
 import ImageUploading, {
   ImageListType,
@@ -75,7 +75,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
       };
 
       const response = await axios.post(
-        `${BASE_URL}/api/v1/auth/register`,
+        `${API_BACKEND}/api/v1/auth/register`,
         payload,
         {
           headers: {
@@ -88,7 +88,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
 
       console.log("TOKEN ", result.token);
       await axios.post(
-        `${BASE_URL}/api/v1/resend-otp`,
+        `${API_BACKEND}/api/v1/resend-otp`,
         { val: data.email },
         {
           headers: {
@@ -117,7 +117,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
         type: "SENDING_OTP",
       };
       const { data } = await axios.post(
-        `${BASE_URL}/api/v1/verify-otp`,
+        `${API_BACKEND}/api/v1/verify-otp`,
         payloads
       );
     } catch (err: any) {
@@ -140,7 +140,7 @@ const RoleModal: React.FC<RoleModalProps> = ({ open, onClose }) => {
         otp,
       };
       const { data } = await axios.post(
-        `${BASE_URL}/api/v1/auth/verify-email`,
+        `${API_BACKEND}/api/v1/auth/verify-email`,
         payloads
       );
 
