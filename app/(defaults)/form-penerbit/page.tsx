@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import ParentPage from "./ParentPage";
 
 import type { Metadata } from "next";
@@ -15,7 +15,11 @@ export const metadata: Metadata = {
 };
 
 const FormPenerbitPage: React.FC = () => {
-  return <MultiStepForm />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MultiStepForm />;
+    </Suspense>
+  );
 };
 
 export default FormPenerbitPage;

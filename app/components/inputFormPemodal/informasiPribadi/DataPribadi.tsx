@@ -110,7 +110,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
     setIsClient(true);
   }, []);
 
-  let urlWilayah = "https://api.wilayah.site";
+  const urlWilayah = "https://api.wilayah.site";
 
   const today = new Date();
   const maxDate = new Date();

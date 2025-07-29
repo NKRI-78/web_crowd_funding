@@ -123,7 +123,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
     useState<OptionType>(null);
   const [posCode, setPosCode] = useState("");
 
-  let urlWilayah = "https://api.wilayah.site";
+  const urlWilayah = "https://api.wilayah.site";
 
   // const uploadSignature = async (dataUrl: string): Promise<string | null> => {
   //   const blob = await (await fetch(dataUrl)).blob();
