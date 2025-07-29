@@ -9,7 +9,6 @@ import Cookies from "js-cookie";
 
 import ComponentDataPribadi from "./informasiPribadi/DataPribadi";
 import ComponentDataPekerjaan from "./informasiPekerjaan/DataPekerjaan";
-``;
 const FormPemodal: React.FC = () => {
   type OptionType = { value: string; label: string } | null;
   const router = useRouter();

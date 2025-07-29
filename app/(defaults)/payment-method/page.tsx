@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import type { Metadata } from "next";
 import PaymentMethod from "./PaymentMethod";
 
@@ -8,7 +8,11 @@ export const metadata: Metadata = {
 };
 
 const FormPenerbitPage: React.FC = () => {
-  return <PaymentMethod />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PaymentMethod />
+    </Suspense>
+  );
 };
 
 export default FormPenerbitPage;
