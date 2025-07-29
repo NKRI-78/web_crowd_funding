@@ -70,7 +70,9 @@ const Navbar: React.FC = () => {
   const [userData, setUserData] = useState<any>(null);
   const [hydrated, setHydrated] = useState(false);
 
-  const [step, setStep] = useState<"register" | "otp" | "role" | null>(null);
+  const [step, setStep] = useState<
+    "register" | "otp" | "role" | "login" | null
+  >(null);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
@@ -170,6 +172,25 @@ const Navbar: React.FC = () => {
           {hydrated && userData !== null ? (
             <>
               <div className="flex items-center gap-4">
+                <div className="hidden md:block">
+                  <p
+                    className={`
+                      ${
+                        isSticky && pathname === ""
+                          ? "text-[#4CD137]"
+                          : isSticky
+                          ? "text-[#322783]"
+                          : pathname == ""
+                          ? "text-[#4CD137]"
+                          : "text-white"
+                      }
+                    `}
+                  >
+                    {" "}
+                    Halo, {profile?.fullname}
+                    {/* {userData.email} */}
+                  </p>
+                </div>
                 <Tippy content="Inbox" animation="scale">
                   <Link href={"/inbox"}>
                     <BellRing
@@ -205,6 +226,13 @@ const Navbar: React.FC = () => {
                     ${menuOpen ? "translate-x-0" : "translate-x-full"} 
                     `}
               >
+                <div
+                  className={`text-xl text-center font-bold ${
+                    isSticky ? "text-[#321B87]" : "text-white"
+                  }`}
+                >
+                  CapBridge
+                </div>
                 <ul className="flex flex-col gap-6 text-white text-base font-semibold pt-16">
                   <li
                     className={
@@ -248,7 +276,7 @@ const Navbar: React.FC = () => {
                           Syarat dan Ketentuan
                         </Link>
                       </li>
-                      <li>
+                      <li className="md:hidden">
                         <p
                           className={
                             pathname == "" ? "text-[#4CD137]" : "text-white"
@@ -316,7 +344,11 @@ const Navbar: React.FC = () => {
                       <li>
                         <button
                           onClick={() => {
+                            localStorage.removeItem("formPenerbitDraft");
+                            localStorage.removeItem("publisherDraft");
                             localStorage.removeItem("user");
+                            localStorage.removeItem("formPemodal");
+                            Cookies.remove("user");
                             window.location.href = "/auth/login";
                           }}
                           className="px-5 py-2 rounded-full bg-red-500 text-white"
@@ -392,6 +424,13 @@ const Navbar: React.FC = () => {
                     ${menuOpen ? "translate-x-0" : "translate-x-full"} 
                     md:hidden`}
               >
+                <div
+                  className={`text-xl text-center font-bold ${
+                    isSticky ? "text-[#321B87]" : "text-white"
+                  }`}
+                >
+                  CapBridge
+                </div>
                 <ul className="flex flex-col gap-6 text-white text-base font-semibold pt-16">
                   <li
                     className={
@@ -505,7 +544,11 @@ const Navbar: React.FC = () => {
                       <li>
                         <button
                           onClick={() => {
+                            localStorage.removeItem("formPenerbitDraft");
+                            localStorage.removeItem("publisherDraft");
                             localStorage.removeItem("user");
+                            localStorage.removeItem("formPemodal");
+                            Cookies.remove("user");
                             window.location.href = "/auth/login";
                           }}
                           className="px-5 py-2 rounded-full bg-red-500 text-white"
@@ -680,6 +723,8 @@ const Navbar: React.FC = () => {
                     <li>
                       <button
                         onClick={() => {
+                          localStorage.removeItem("formPenerbitDraft");
+                          localStorage.removeItem("publisherDraft");
                           localStorage.removeItem("user");
                           localStorage.removeItem("formPemodal");
                           Cookies.remove("user");

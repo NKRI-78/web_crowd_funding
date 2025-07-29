@@ -6,6 +6,8 @@ import { ProjectCard } from "@components/project/Project";
 import { IProjectData } from "@/app/interface/IProject";
 import { getAllProject } from "@/actions/GetAllProject";
 import Modal from "@/app/helper/Modal";
+import RegisterOtp from "../auth/register/RegisterOtp";
+import RegisterSelectRole from "../auth/register/RegisterSelectRole";
 
 const Home: React.FC = () => {
   const router = useRouter();
@@ -17,6 +19,8 @@ const Home: React.FC = () => {
   const [project, seProject] = useState<IProjectData[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [step, setStep] = useState<"otp" | "role" | null>(null);
 
   useEffect(() => {
     const fetchTopVideos = async () => {
@@ -77,6 +81,20 @@ const Home: React.FC = () => {
           "• TIDAK ada masa penambahan jangka waktu penawaran sesuai dengan POJK Nomor 57/2020. \n • Jika penghimpunan dana tidak mencapai batas minimum pendanaan yang telah disepakati, maka proses kerjasama batal demi hukum dan dana investasi akan dikembalikan 100% kepada Pemodal. \n • Jika penghimpunan dana telah mencapai batas minimum pendanaan yang telah disepakati, maka kerjasama akan tetap dilanjutkan sesuai minimum pendanaan yang terkumpul",
       },
     ],
+  };
+
+  useEffect(() => {
+    const shouldShow = localStorage.getItem("showOtp");
+    if (shouldShow === "true") {
+      setShowOtpModal(true);
+      setStep("otp"); // mulai dari otp
+      localStorage.removeItem("showOtp");
+    }
+  }, []);
+
+  const handleClose = () => {
+    setShowOtpModal(false);
+    setStep(null);
   };
 
   return (
@@ -499,6 +517,18 @@ const Home: React.FC = () => {
           Butuh Bantuan?
         </button>
       </div>
+
+      <Modal
+        isOpen={showOtpModal}
+        onClose={handleClose}
+        title={step === "otp" ? "Verifikasi OTP" : "Pilih Role"}
+      >
+        {step === "otp" && (
+          <RegisterOtp onNext={() => setStep("role")} onClose={handleClose} />
+        )}
+
+        {step === "role" && <RegisterSelectRole onClose={handleClose} />}
+      </Modal>
     </div>
   );
 };
