@@ -84,11 +84,18 @@ const Home: React.FC = () => {
   };
 
   useEffect(() => {
-    const shouldShow = localStorage.getItem("showOtp");
-    if (shouldShow === "true") {
+    const shouldShowOtp = localStorage.getItem("showOtp");
+    if (shouldShowOtp === "true") {
       setShowOtpModal(true);
-      setStep("otp"); // mulai dari otp
+      setStep("otp");
       localStorage.removeItem("showOtp");
+    }
+
+    const shouldShowRole = localStorage.getItem("showSelectRole");
+    if (shouldShowRole === "true") {
+      setShowOtpModal(true);
+      setStep("role");
+      localStorage.removeItem("showSelectRole");
     }
   }, []);
 
@@ -526,7 +533,6 @@ const Home: React.FC = () => {
         {step === "otp" && (
           <RegisterOtp onNext={() => setStep("role")} onClose={handleClose} />
         )}
-
         {step === "role" && <RegisterSelectRole onClose={handleClose} />}
       </Modal>
     </div>

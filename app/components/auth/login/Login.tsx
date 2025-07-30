@@ -59,9 +59,22 @@ const Login: React.FC = () => {
         router.push("/");
         return;
       }
+      if (userData.role === "user") {
+        await Swal.fire({
+          icon: "info",
+          title: "Peran Diperlukan",
+          text: "Anda belum memilih Peran. Silakan pilih terlebih dahulu.",
+          confirmButtonText: "Oke",
+        });
 
-      localStorage.setItem("user", JSON.stringify(response.data.data));
+        localStorage.setItem("user", JSON.stringify(response.data.data));
 
+        if (userData.role === "user") {
+          localStorage.setItem("showSelectRole", "true");
+          router.push("/");
+          return;
+        }
+      }
       await Swal.fire({
         icon: "success",
         title: "Login Berhasil",
