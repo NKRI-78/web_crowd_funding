@@ -3,6 +3,7 @@ import { FileText } from "lucide-react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { API_BACKEND_MEDIA } from "@/app/utils/constant";
+import { compressImage } from "@/app/helper/CompressorImage";
 
 interface FileInputProps {
   fileName: string;
@@ -45,10 +46,13 @@ const FileInput: React.FC<FileInputProps> = ({
       return;
     }
 
+    const isImage = file.type.startsWith("image/");
+    const compressedFile = isImage ? await compressImage(file) : file;
+
     const formData = new FormData();
     formData.append("folder", "web");
     formData.append("subfolder", fileName);
-    formData.append("media", file);
+    formData.append("media", compressedFile);
 
     try {
       const res = await axios.post(

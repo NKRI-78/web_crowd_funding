@@ -5,6 +5,7 @@ import SectionPoint from "./SectionPoint";
 import SectionSubtitle from "./SectionSubtitle";
 import { JobStructureError } from "../FormPenerbit";
 import DropdownSelect from "./DropdownSelect";
+import UpdateRing from "./UpdateRing";
 
 export interface JobStructureData {
   nama: string;
@@ -24,6 +25,8 @@ interface JobStructureFormProps {
   isKomisaris?: boolean;
   hasDirekturUtama?: boolean;
   hasKomisarisUtama?: boolean;
+  updateIdentity: string;
+  updateFormKey: string | undefined;
 }
 
 const JobStructureForm: React.FC<JobStructureFormProps> = ({
@@ -36,6 +39,8 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
   isKomisaris = false,
   hasDirekturUtama = false,
   hasKomisarisUtama = false,
+  updateIdentity,
+  updateFormKey,
 }) => {
   return (
     <div className="w-full flex flex-col mt-2 p-3 rounded-md bg-gray-50 border">
@@ -126,22 +131,32 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
       />
 
       <div className="flex gap-2">
-        <FileInput
-          fileName="Upload KTP"
-          placeholder="Upload KTP"
-          fileUrl={data.fileKTP}
-          onChange={(fileUrl) => onChange("fileKTP", fileUrl)}
-          errorText={errors?.fileKTP}
-          accept=".pdf,.jpg,.jpeg,.png,.heic,.heif"
-        />
-        <FileInput
-          fileName="Upload NPWP"
-          placeholder="Upload NPWP"
-          fileUrl={data.fileNPWP}
-          onChange={(fileUrl) => onChange("fileNPWP", fileUrl)}
-          errorText={errors?.fileNPWP}
-          accept=".pdf,.jpg,.jpeg,.png,.heic,.heif"
-        />
+        <UpdateRing
+          identity={`${updateIdentity}-upload-ktp`}
+          formKey={updateFormKey}
+        >
+          <FileInput
+            fileName="Upload KTP"
+            placeholder="Upload KTP"
+            fileUrl={data.fileKTP}
+            onChange={(fileUrl) => onChange("fileKTP", fileUrl)}
+            errorText={errors?.fileKTP}
+            accept=".pdf,.jpg,.jpeg,.png,.heic,.heif"
+          />
+        </UpdateRing>
+        <UpdateRing
+          identity={`${updateIdentity}-upload-npwp`}
+          formKey={updateFormKey}
+        >
+          <FileInput
+            fileName="Upload NPWP"
+            placeholder="Upload NPWP"
+            fileUrl={data.fileNPWP}
+            onChange={(fileUrl) => onChange("fileNPWP", fileUrl)}
+            errorText={errors?.fileNPWP}
+            accept=".pdf,.jpg,.jpeg,.png,.heic,.heif"
+          />
+        </UpdateRing>
       </div>
     </div>
   );

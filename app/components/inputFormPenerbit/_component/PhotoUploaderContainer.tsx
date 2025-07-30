@@ -1,15 +1,18 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FolderUp, X } from "lucide-react";
 import axios from "axios";
+import { compressImage } from "@/app/helper/CompressorImage";
 
 interface PhotoUploaderContainerProps {
   fileOnChange: (urls: string[]) => void;
+  photoPaths?: string[];
   errorText?: string;
 }
 
 const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
   fileOnChange,
   errorText,
+  photoPaths,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -23,10 +26,12 @@ const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
 
   const uploadFile = async (file: File): Promise<string | null> => {
     try {
+      const compressedFile = await compressImage(file);
+
       const formData = new FormData();
       formData.append("folder", "web");
       formData.append("subfolder", file.name);
-      formData.append("media", file);
+      formData.append("media", compressedFile);
 
       const res = await axios.post(
         "https://api-media.inovatiftujuh8.com/api/v1/media/upload",
@@ -91,6 +96,13 @@ const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
     setUploadedUrls(updated);
     fileOnChange(updated);
   };
+
+  useEffect(() => {
+    if (photoPaths && photoPaths.length > 0) {
+      setUploadedUrls(photoPaths);
+      fileOnChange(photoPaths);
+    }
+  }, [photoPaths]);
 
   return (
     <>

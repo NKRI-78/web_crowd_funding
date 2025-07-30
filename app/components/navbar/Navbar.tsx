@@ -142,13 +142,15 @@ const Navbar: React.FC = () => {
         }`}
       >
         <div className="flex justify-between items-center px-10 py-6 text-sm font-semibold">
-          <div
-            className={`text-xl font-bold ${
-              isSticky ? "text-[#321B87]" : "text-white"
-            }`}
-          >
-            CapBridge
-          </div>
+          <Link href={"/"}>
+            <div
+              className={`text-xl font-bold ${
+                isSticky ? "text-[#321B87]" : "text-white"
+              }`}
+            >
+              CapBridge
+            </div>
+          </Link>
 
           {hydrated && userData !== null ? (
             <>
@@ -207,13 +209,16 @@ const Navbar: React.FC = () => {
                     ${menuOpen ? "translate-x-0" : "translate-x-full"} 
                     `}
               >
-                <div
-                  className={`text-xl text-center font-bold ${
-                    isSticky ? "text-[#321B87]" : "text-white"
-                  }`}
-                >
-                  CapBridge
-                </div>
+                <Link href={"/"}>
+                  {" "}
+                  <div
+                    className={`text-xl text-center font-bold ${
+                      isSticky ? "text-[#321B87]" : "text-white"
+                    }`}
+                  >
+                    CapBridge
+                  </div>
+                </Link>
                 <ul className="flex flex-col gap-6 text-white text-base font-semibold pt-16">
                   <li
                     className={
@@ -405,13 +410,15 @@ const Navbar: React.FC = () => {
                     ${menuOpen ? "translate-x-0" : "translate-x-full"} 
                     md:hidden`}
               >
-                <div
-                  className={`text-xl text-center font-bold ${
-                    isSticky ? "text-[#321B87]" : "text-white"
-                  }`}
-                >
-                  CapBridge
-                </div>
+                <Link href={"/"}>
+                  <div
+                    className={`text-xl text-center font-bold ${
+                      isSticky ? "text-[#321B87]" : "text-white"
+                    }`}
+                  >
+                    CapBridge
+                  </div>
+                </Link>
                 <ul className="flex flex-col gap-6 text-white text-base font-semibold pt-16">
                   <li
                     className={
