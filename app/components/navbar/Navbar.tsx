@@ -8,13 +8,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { loadSession } from "@redux/slices/authSlice";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
-import {
-  useFloating,
-  offset,
-  useDismiss,
-  useInteractions,
-  useTransitionStyles,
-} from "@floating-ui/react";
 import Modal from "@/app/helper/Modal";
 import RegisterV2 from "../auth/register/RegisterV2";
 import RegisterOtp from "../auth/register/RegisterOtp";
@@ -41,21 +34,6 @@ const Navbar: React.FC = () => {
 
   //* floating inbox hooks
   const [isInboxTooltipOpen, setIsInboxTooltipOpen] = useState(false);
-  const { refs, floatingStyles, context } = useFloating({
-    open: isInboxTooltipOpen,
-    onOpenChange: setIsInboxTooltipOpen,
-    middleware: [offset(10)],
-    placement: "bottom-end",
-  });
-  const dismiss = useDismiss(context);
-  const { isMounted, styles } = useTransitionStyles(context, {
-    initial: {
-      opacity: 0,
-      transform: "scale(0.8)",
-    },
-    duration: 300,
-  });
-  const { getReferenceProps, getFloatingProps } = useInteractions([dismiss]);
 
   const pathname = usePathname();
 
