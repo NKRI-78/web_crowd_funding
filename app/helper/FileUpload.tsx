@@ -1,5 +1,6 @@
 import { FaFileAlt } from "react-icons/fa";
 import React, { useRef } from "react";
+import { useFileViewerModal } from "../hooks/useFileViewerModal";
 
 type FileUploadProps = {
   label: string;
@@ -15,6 +16,7 @@ export default function FileUpload({
   error,
 }: FileUploadProps) {
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const { openFile } = useFileViewerModal();
 
   return (
     <div className="mb-4">
@@ -38,16 +40,14 @@ export default function FileUpload({
         className="hidden"
       />
       {fileUrl && (
-        <a
-          href={`https://docs.google.com/viewer?url=${encodeURIComponent(
-            fileUrl
-          )}&embedded=true`}
-          target="_blank"
+        <button
+          type="button"
+          onClick={() => openFile(fileUrl)}
           rel="noopener noreferrer"
           className="text-blue-600 underline text-sm mt-2 block"
         >
           Lihat Dokumen
-        </a>
+        </button>
       )}
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
       <p className="text-xs text-gray-500">File maksimal berukuran 10mb</p>
