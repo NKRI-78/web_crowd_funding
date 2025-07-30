@@ -267,10 +267,12 @@ const Inbox = () => {
               rejectProject(id);
             }
           }}
-          onAccept={(isUpdateDocument) => {
+          onAccept={(isUpdateDocument, form) => {
             if (isUpdateDocument) {
               if (role !== 1 || roleUser !== "investor") {
-                router.push("/form-penerbit?update=true");
+                console.log("update dokumen");
+                console.log(form);
+                router.push(`/form-penerbit?update=true&form=${form}`);
               } else {
                 router.push("/form-pemodal?update=true");
               }
