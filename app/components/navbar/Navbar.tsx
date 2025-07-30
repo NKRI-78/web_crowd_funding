@@ -53,6 +53,7 @@ const Navbar: React.FC = () => {
   >(null);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const userCookie = Cookies.get("user");
 
   const closeModal = () => setStep(null);
 
@@ -147,7 +148,7 @@ const Navbar: React.FC = () => {
             CapBridge
           </div>
 
-          {hydrated && userData !== null ? (
+          {hydrated && userData !== null && userCookie !== undefined ? (
             <>
               <div className="flex items-center gap-4">
                 <div className="hidden md:block">
@@ -570,7 +571,7 @@ const Navbar: React.FC = () => {
                   <Link href="/">Beranda</Link>
                 </li>
 
-                {hydrated && userData !== null ? (
+                {hydrated && userData !== null && userCookie !== undefined ? (
                   <>
                     <li
                       className={
@@ -763,7 +764,7 @@ const Navbar: React.FC = () => {
                     </li>
                   </>
                 )}
-                {hydrated && userData !== null ? (
+                {hydrated && userData !== null && userCookie !== undefined ? (
                   <></>
                 ) : (
                   <button
