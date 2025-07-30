@@ -5,6 +5,7 @@ import Swal from "sweetalert2";
 import { FaFileAlt } from "react-icons/fa";
 import Select from "react-select";
 import { API_BACKEND_MEDIA } from "@/app/utils/constant";
+import { compressImage } from "@/app/helper/CompressorImage";
 
 // function getSignatureDataUrlWithWhiteBackground(
 //   canvas: HTMLCanvasElement
@@ -219,10 +220,13 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
       alert("Ukuran file maksimal 10MB");
       return;
     }
+
+    const compressedFile = await compressImage(file);
+
     const formData = new FormData();
     formData.append("folder", "web");
     formData.append("subfolder", keyName);
-    formData.append("media", file);
+    formData.append("media", compressedFile);
 
     setUploadStatus((prev) => ({ ...prev, [keyName]: true }));
     try {

@@ -8,6 +8,7 @@ import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import Select from "react-select";
 import { API_BACKEND_MEDIA } from "@/app/utils/constant";
+import { compressImage } from "@/app/helper/CompressorImage";
 
 interface Props {
   formData: {
@@ -116,11 +117,9 @@ const ComponentDataPribadi: React.FC<Props> = ({
   const maxDate = new Date();
   maxDate.setFullYear(today.getFullYear() - 17);
 
-  const [localFormData, setLocalFormData] = useState<any>({});
-  const [hasMounted, setHasMounted] = useState(false);
-
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+
     const keyName = e.target.getAttribute("data-keyname");
     if (!file || !keyName) return;
 
@@ -138,13 +137,13 @@ const ComponentDataPribadi: React.FC<Props> = ({
       return;
     }
 
+    const compressedFile = await compressImage(file);
+
     const formData = new FormData();
     formData.append("folder", "web");
     formData.append("subfolder", keyName);
-    formData.append("media", file);
+    formData.append("media", compressedFile);
 
-    // setIsUploading(true);
-    setUploadStatus((prev) => ({ ...prev, [keyName]: true }));
     try {
       const res = await axios.post(
         `${API_BACKEND_MEDIA}/api/v1/media/upload`,
@@ -177,7 +176,6 @@ const ComponentDataPribadi: React.FC<Props> = ({
       }
     } catch (error) {
       console.error("Gagal upload KTP:", error);
-      // alert("Upload gagal. Silakan coba lagi.");
       Swal.fire({
         title: "Gagal",
         text: `Upload ${keyName} gagal. Silakan coba lagi.`,
@@ -185,7 +183,6 @@ const ComponentDataPribadi: React.FC<Props> = ({
         timer: 3000,
       });
     } finally {
-      // setIsUploading(false);
       setUploadStatus((prev) => ({ ...prev, [keyName]: false }));
     }
   };
