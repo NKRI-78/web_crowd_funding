@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import { API_BACKEND } from "@/app/utils/constant";
 import { ProfileUpdate, publisherUpdateKeys } from "./UpdateProfileInterface";
+import Cookies from "js-cookie";
 
 function getFormIndex(form: string | null): number {
   console.log("get form index, form= " + form);
@@ -37,13 +38,14 @@ export default function MultiStepFormWrapper() {
 
   const getUser = async () => {
     try {
-      const userString = localStorage.getItem("user");
-      if (!userString) return;
-      const userJSON = JSON.parse(userString);
+      const userCookie = Cookies.get("user");
+      if (!userCookie) return null; // ✅ tambahkan return
+
+      const userJson = JSON.parse(userCookie);
 
       const res = await axios(`${API_BACKEND}/api/v1/profile`, {
         headers: {
-          Authorization: `Bearer ${userJSON.token}`,
+          Authorization: `Bearer ${userJson.token}`,
         },
       });
 

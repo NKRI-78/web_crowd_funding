@@ -36,9 +36,10 @@ const Inbox = () => {
   });
 
   function getUserToken(): string | null {
-    const user = localStorage.getItem("user");
-    if (!user) return null;
-    const userJson = JSON.parse(user);
+    const userCookie = Cookies.get("user");
+    if (!userCookie) return null; // ✅ tambahkan return
+
+    const userJson = JSON.parse(userCookie);
     return userJson.token;
   }
 
@@ -71,6 +72,7 @@ const Inbox = () => {
   //* use effect
   useEffect(() => {
     if (isOnline) {
+      console.log("isOnline" + isOnline);
       fetchInbox();
     } else {
       setInboxState({
@@ -84,6 +86,8 @@ const Inbox = () => {
   const fetchInbox = async () => {
     try {
       const token = getUserToken();
+      console.log("user token");
+      console.log(token);
       if (token) {
         const res = await axios(`${API_BACKEND}/api/v1/inbox/list`, {
           headers: {
