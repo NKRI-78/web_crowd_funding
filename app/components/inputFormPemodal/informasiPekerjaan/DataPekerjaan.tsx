@@ -46,6 +46,8 @@ interface Props {
     subDistrictPekerjaan: { value: string; label: string };
     posCodePekerjaan: string;
   };
+  onLihatNPWP?: () => void;
+  onLihatFotoPemodal?: () => void;
   onChange: (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -86,6 +88,8 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   onUploadKTP,
   onAlamatChange,
   errors,
+  onLihatNPWP,
+  onLihatFotoPemodal,
 }) => {
   type OptionType = { value: string; label: string } | null;
 
@@ -94,7 +98,6 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   const formPemodalStr = localStorage.getItem("formPemodal");
   const formPemodal = formPemodalStr ? JSON.parse(formPemodalStr) : null;
 
-  // const penghasilanBulanan = ["< 100jt", "100jt - 500jt", "500jt - 1m", "> 1m"];
   const penghasilanBulananOptions = [
     { value: "< 100jt", label: "< 100jt" },
     { value: "100jt - 500jt", label: "100jt - 500jt" },
@@ -797,18 +800,16 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
               <FaFileAlt />
               Upload Dokumen
             </>
-            {/* )} */}
           </label>
         </div>
         {typeof window !== "undefined" && formData.npwpUrl && (
-          <a
-            href={formData.npwpUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={onLihatNPWP}
             className="text-blue-600 underline text-sm block mt-2 mb-2"
           >
             Lihat NPWP
-          </a>
+          </button>
         )}
 
         {errors?.npwpUrl && (
@@ -831,7 +832,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             className="hidden"
             onChange={handleFileChange}
             disabled={uploadStatus["fotoPemodalUrl"] === true}
-            accept="application/pdf, image/*"
+            accept="image/*"
             data-keyname="fotoPemodalUrl"
           />
 
@@ -848,14 +849,13 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           </label>
         </div>
         {typeof window !== "undefined" && formData.fotoPemodalUrl && (
-          <a
-            href={formData.fotoPemodalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={onLihatFotoPemodal}
             className="text-blue-600 underline text-sm block mt-2 mb-2"
           >
             Lihat Foto Pemodal
-          </a>
+          </button>
         )}
 
         {errors?.fotoPemodalUrl && (

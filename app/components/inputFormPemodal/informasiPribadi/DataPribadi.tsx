@@ -34,6 +34,7 @@ interface Props {
     subDistrictPribadi: { value: string; label: string };
     posCode: string;
   };
+  onLihatKTP?: () => void;
   onChange: (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -66,6 +67,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
   onAlamatChange,
   errors,
   onBankChange,
+  onLihatKTP,
 }) => {
   type OptionType = { value: string; label: string } | null;
 
@@ -564,7 +566,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
               className="hidden"
               onChange={handleFileChange}
               disabled={uploadStatus["ktpUrl"] === true}
-              accept="application/pdf, image/*"
+              accept="image/*"
               data-keyname="ktpUrl"
             />
 
@@ -586,14 +588,13 @@ const ComponentDataPribadi: React.FC<Props> = ({
           </div>
           <>
             {isClient && formData.ktpUrl && (
-              <a
-                href={formData.ktpUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={onLihatKTP}
                 className="text-blue-600 underline text-sm block mt-2 mb-2"
               >
                 Lihat KTP
-              </a>
+              </button>
             )}
           </>
           {errors?.ktpUrl && (
