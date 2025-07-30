@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "local-dev": "next dev --hostname 192.168.1.33"
   },
   "dependencies": {
     "@cyntler/react-doc-viewer": "^1.17.0",
@@ -21,6 +22,7 @@
     "axios": "^1.7.7",
     "chart.js": "^4.5.0",
     "chartjs-plugin-datalabels": "^2.2.0",
+    "compressorjs": "^1.2.1",
     "immer": "^10.1.1",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.525.0",
