@@ -10,6 +10,7 @@ import Cookies from "js-cookie";
 import ComponentDataPribadi from "./informasiPribadi/DataPribadi";
 import ComponentDataPekerjaan from "./informasiPekerjaan/DataPekerjaan";
 import { API_BACKEND } from "@/app/utils/constant";
+import FileViewerModal from "@/app/(defaults)/viewer/components/FilePriviewModal";
 
 const FormPemodal: React.FC = () => {
   type OptionType = { value: string; label: string } | null;
@@ -24,6 +25,11 @@ const FormPemodal: React.FC = () => {
     const user = userData ? JSON.parse(userData) : null;
     setToken(user?.token);
   }, []);
+
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewFileUrl, setPreviewFileUrl] = useState<string | undefined>(
+    undefined
+  );
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [errorsPribadi, setErrorsPribadi] = useState<Record<string, string[]>>(
@@ -751,6 +757,12 @@ const FormPemodal: React.FC = () => {
             onAlamatChange={handleAlamatChange}
             errors={errorsPribadi}
             onBankChange={handleBank}
+            onLihatKTP={() => setPreviewOpen(true)}
+          />
+          <FileViewerModal
+            src={dataPribadi.ktpUrl}
+            open={previewOpen}
+            onClose={() => setPreviewOpen(false)}
           />
         </div>
       )}
@@ -772,6 +784,22 @@ const FormPemodal: React.FC = () => {
             }
             onAlamatChange={handleAlamatPekerjaanChange}
             errors={errorsPekerjaan}
+            onLihatNPWP={() => {
+              setPreviewFileUrl(dataPekerjaan.npwpUrl);
+              setPreviewOpen(true);
+            }}
+            onLihatFotoPemodal={() => {
+              setPreviewFileUrl(dataPekerjaan.fotoPemodalUrl);
+              setPreviewOpen(true);
+            }}
+          />
+          <FileViewerModal
+            src={previewFileUrl ?? ""}
+            open={previewOpen}
+            onClose={() => {
+              setPreviewOpen(false);
+              setPreviewFileUrl(undefined);
+            }}
           />
         </div>
       )}
