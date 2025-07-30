@@ -69,20 +69,21 @@ const Navbar: React.FC = () => {
     dispatch(loadSession());
   }, []);
 
-  useEffect(() => {
-    setHydrated(true);
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUserData(parsedUser);
-      } catch (err) {
-        console.error("Gagal parsing user dari localStorage", err);
-      }
-    }
-  }, []);
+  // useEffect(() => {
+  //   setHydrated(true);
+  //   const storedUser = localStorage.getItem("user");
+  //   if (storedUser) {
+  //     try {
+  //       const parsedUser = JSON.parse(storedUser);
+  //       setUserData(parsedUser);
+  //     } catch (err) {
+  //       console.error("Gagal parsing user dari localStorage", err);
+  //     }
+  //   }
+  // }, []);
 
   useEffect(() => {
+    setHydrated(true);
     const userCookie = Cookies.get("user");
     if (!userCookie) return;
 
@@ -91,6 +92,7 @@ const Navbar: React.FC = () => {
       if (user?.token) {
         setToken(user.token);
       }
+      setUserData(user);
     } catch (err) {
       console.error("Failed to parse user cookie", err);
     }
@@ -148,7 +150,7 @@ const Navbar: React.FC = () => {
             CapBridge
           </div>
 
-          {hydrated && userData !== null && userCookie !== undefined ? (
+          {hydrated && userData !== null ? (
             <>
               <div className="flex items-center gap-4">
                 <div className="hidden md:block">
