@@ -10,16 +10,14 @@ import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { fetchProvinces } from "@/app/lib/fetchWilayah";
 import FormAlamat from "./FormAlamat";
 import Swal from "sweetalert2";
+import { ProfileUpdate } from "./UpdateProfileInterface";
+import UpdateRing from "@/app/components/inputFormPenerbit/_component/UpdateRing";
 
 export const alamatSchema = z.object({
   name: z.string().optional(),
-  province_id: z.string().min(1, "Provinsi wajib diisi"),
   province_name: z.string(),
-  city_id: z.string().min(1, "Kota wajib diisi"),
   city_name: z.string().min(1, "Kota wajib diisi"),
-  district_id: z.string().min(1, "Kecamatan wajib diisi"),
   district_name: z.string().min(1, "Kecamatan wajib diisi"),
-  subdistrict_id: z.string().min(1, "Kelurahan wajib diisi"),
   subdistrict_name: z.string().min(1, "Kelurahan wajib diisi"),
   postal_code: z.string().min(1, "Kode pos wajib diisi"),
   detail: z.string().min(1, "Detail alamat wajib diisi"),
@@ -85,9 +83,11 @@ type OptionType = { value: string; label: string; zip_code: string };
 
 type Props = {
   onNext: () => void;
+  profile: ProfileUpdate | null;
+  isUpdate: boolean;
 };
 
-export default function PublisherForm({ onNext }: Props) {
+export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
   const [isReady, setIsReady] = useState(false);
 
   const [provinsiList, setProvinsiList] = useState<OptionType[]>([]);
@@ -122,19 +122,19 @@ export default function PublisherForm({ onNext }: Props) {
       address: [
         {
           name: "Company",
-          province_id: "",
-          city_id: "",
-          district_id: "",
-          subdistrict_id: "",
+          province_name: "",
+          city_name: "",
+          district_name: "",
+          subdistrict_name: "",
           postal_code: "",
           detail: "",
         },
         {
           name: "Koresponden",
-          province_id: "",
-          city_id: "",
-          district_id: "",
-          subdistrict_id: "",
+          province_name: "",
+          city_name: "",
+          district_name: "",
+          subdistrict_name: "",
           postal_code: "",
           detail: "",
         },
@@ -236,6 +236,43 @@ export default function PublisherForm({ onNext }: Props) {
     }
   };
 
+  useEffect(() => {
+    if (isUpdate && profile !== null) {
+      setValue("company_name", profile?.company.name ?? "-");
+      setValue("company_nib_path", profile?.company.nib_path ?? "-");
+      setValue("akta_pendirian", profile?.company.akta_pendirian ?? "-");
+      setValue("sk_kumham_path", profile?.company.sk_kumham_path ?? "-");
+      setValue("total_employees", profile?.company.total_employees.toString());
+      setValue(
+        "akta_perubahan_terahkir_path",
+        profile?.company.akta_perubahan_terahkir ?? "-"
+      );
+      setValue(
+        "sk_kumham_terahkir",
+        profile?.company.sk_kumham_terahkir ?? "-"
+      );
+      if (profile?.company.address) {
+        const mappedAddress = profile.company.address.map((addr) => ({
+          province_id: "",
+          province_name: addr.province_name ?? "",
+          city_id: "",
+          city_name: addr.city_name ?? "",
+          district_id: "",
+          district_name: addr.district_name ?? "",
+          subdistrict_id: "",
+          subdistrict_name: addr.subdistrict_name ?? "",
+          postal_code: addr.postal_code ?? "",
+          detail: addr.detail ?? "",
+          name: addr.name ?? "",
+        }));
+
+        console.log("Address ", mappedAddress);
+
+        setValue("address", mappedAddress);
+      }
+    }
+  }, [isUpdate, profile]);
+
   // ✅ Load draft hanya di client
   useEffect(() => {
     const draft = localStorage.getItem("publisherDraft");
@@ -328,42 +365,58 @@ export default function PublisherForm({ onNext }: Props) {
             )}
           </div>
 
-          <FileUpload
-            label="Nomor Induk Berusaha (NIB)"
-            fileUrl={watch("company_nib_path")}
-            onUpload={(e) => handleUploadFile(e, "company_nib_path")}
-            error={errors?.company_nib_path?.message}
-          />
+          <UpdateRing identity={"nib"} formKey={profile?.form}>
+            <FileUpload
+              label="Nomor Induk Berusaha (NIB)"
+              fileUrl={watch("company_nib_path")}
+              onUpload={(e) => handleUploadFile(e, "company_nib_path")}
+              error={errors?.company_nib_path?.message}
+            />
+          </UpdateRing>
 
-          <FileUpload
-            label="Akte Pendirian Perusahaan"
-            fileUrl={watch("akta_pendirian")}
-            onUpload={(e) => handleUploadFile(e, "akta_pendirian")}
-            error={errors?.akta_pendirian?.message}
-          />
+          <UpdateRing
+            identity={"akta-pendirian-perusahaan"}
+            formKey={profile?.form}
+          >
+            <FileUpload
+              label="Akte Pendirian Perusahaan"
+              fileUrl={watch("akta_pendirian")}
+              onUpload={(e) => handleUploadFile(e, "akta_pendirian")}
+              error={errors?.akta_pendirian?.message}
+            />
+          </UpdateRing>
 
-          <FileUpload
-            label="SK Kumham Pendirian"
-            fileUrl={watch("sk_kumham_path")}
-            onUpload={(e) => handleUploadFile(e, "sk_kumham_path")}
-            error={errors?.sk_kumham_path?.message}
-          />
+          <UpdateRing identity={"sk-kumham-pendirian"} formKey={profile?.form}>
+            <FileUpload
+              label="SK Kumham Pendirian"
+              fileUrl={watch("sk_kumham_path")}
+              onUpload={(e) => handleUploadFile(e, "sk_kumham_path")}
+              error={errors?.sk_kumham_path?.message}
+            />
+          </UpdateRing>
 
-          <FileUpload
-            label="Akte Perubahan Terakhir"
-            fileUrl={watch("akta_perubahan_terahkir_path")}
-            onUpload={(e) =>
-              handleUploadFile(e, "akta_perubahan_terahkir_path")
-            }
-            error={errors?.akta_perubahan_terahkir_path?.message}
-          />
+          <UpdateRing
+            identity={"akta-perubahan-terakhir"}
+            formKey={profile?.form}
+          >
+            <FileUpload
+              label="Akte Perubahan Terakhir"
+              fileUrl={watch("akta_perubahan_terahkir_path")}
+              onUpload={(e) =>
+                handleUploadFile(e, "akta_perubahan_terahkir_path")
+              }
+              error={errors?.akta_perubahan_terahkir_path?.message}
+            />
+          </UpdateRing>
 
-          <FileUpload
-            label="SK Kumham Terakhir"
-            fileUrl={watch("sk_kumham_terahkir")}
-            onUpload={(e) => handleUploadFile(e, "sk_kumham_terahkir")}
-            error={errors?.sk_kumham_terahkir?.message}
-          />
+          <UpdateRing identity={"sk-kumham-terakhir"} formKey={profile?.form}>
+            <FileUpload
+              label="SK Kumham Terakhir"
+              fileUrl={watch("sk_kumham_terahkir")}
+              onUpload={(e) => handleUploadFile(e, "sk_kumham_terahkir")}
+              error={errors?.sk_kumham_terahkir?.message}
+            />
+          </UpdateRing>
 
           {/* <FileUpload
             label="Rekening Koran"

@@ -62,8 +62,8 @@ const Login: React.FC = () => {
       if (userData.role === "user") {
         await Swal.fire({
           icon: "info",
-          title: "Peran Diperlukan",
-          text: "Anda belum memilih Peran. Silakan pilih terlebih dahulu.",
+          title: "Data Belum Lengkap",
+          text: "Silakan pilih peran anda dan lengkapi semua data yang dibutuhkan.",
           confirmButtonText: "Oke",
         });
 

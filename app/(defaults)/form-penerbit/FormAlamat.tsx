@@ -105,7 +105,7 @@ const FormAlamat = ({
                   provinsiList.find((opt) => opt.value === field.value) || null
                 }
                 onChange={(val) => {
-                  field.onChange(val?.value); // simpan ID
+                  field.onChange(val?.label); // simpan ID
                   setValue(`address.${index}.province_name`, val?.label || "");
                   setValue(`address.${index}.city_id`, "");
                   setValue(`address.${index}.city_name`, "");
@@ -140,7 +140,7 @@ const FormAlamat = ({
                   ) || null
                 }
                 onChange={(val) => {
-                  field.onChange(val?.value);
+                  field.onChange(val?.label);
                   setValue(`address.${index}.city_name`, val?.label || "");
                   setValue(`address.${index}.district_id`, "");
                   setValue(`address.${index}.district_name`, "");
@@ -172,7 +172,7 @@ const FormAlamat = ({
                   ) || null
                 }
                 onChange={(val) => {
-                  field.onChange(val?.value);
+                  field.onChange(val?.label);
                   setValue(`address.${index}.district_name`, val?.label || "");
                   setValue(`address.${index}.subdistrict_id`, "");
                   setValue(`address.${index}.subdistrict_name`, "");
@@ -202,7 +202,7 @@ const FormAlamat = ({
                   ) || null
                 }
                 onChange={(val) => {
-                  field.onChange(val?.value);
+                  field.onChange(val?.label);
                   setValue(
                     `address.${index}.subdistrict_name`,
                     val?.label || ""

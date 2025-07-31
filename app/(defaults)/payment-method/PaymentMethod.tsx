@@ -105,7 +105,7 @@ const PaymentMethod = () => {
           },
         });
         router.push(
-          `/waiting-payment?orderId=${result.data["data"]["inbox"]["Id"]}`
+          `/waiting-payment?orderId=${result.data["data"]["inbox"]["id"]}`
         );
       }
     } catch (err: any) {
