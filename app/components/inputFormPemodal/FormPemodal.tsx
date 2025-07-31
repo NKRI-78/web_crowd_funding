@@ -16,9 +16,122 @@ const FormPemodal: React.FC = () => {
   type OptionType = { value: string; label: string } | null;
   const router = useRouter();
   const [token, setToken] = useState(null);
-  // const userData = localStorage.getItem("user");
-  // const user = userData ? JSON.parse(userData) : null;
-  // const token = user?.token;
+
+  function getUserToken(): string | null {
+    const userCookie = Cookies.get("user");
+    if (!userCookie) return null;
+
+    try {
+      const userJson = JSON.parse(userCookie);
+      return userJson.token || null;
+    } catch (error) {
+      console.error("Gagal parse user cookie:", error);
+      return null;
+    }
+  }
+
+  useEffect(() => {
+    const token = getUserToken();
+
+    const fetchProfile = async () => {
+      if (!token) {
+        console.warn("Token tidak ditemukan di cookies.");
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          "https://api-capbridge.langitdigital78.com/api/v1/profile",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = response.data?.data;
+        console.log("Data profil:", data);
+
+        if (data) {
+          const placeDateBirth = `${data.investor.ktp?.place_datebirth}, ${data.investor.ktp?.place_datebirth}`;
+          const [placeOfBirth, dateOfBirth] = placeDateBirth.split(", ");
+
+          setDataPribadi((prev) => ({
+            ...prev,
+            nama: data.investor.ktp.name || "",
+            nik: data.investor.ktp.nik || "",
+            tempatLahir: placeOfBirth || "",
+            tanggalLahir: dateOfBirth || "",
+            jenisKelamin: data.gender === "L" ? "Laki-Laki" : "Perempuan",
+            statusPernikahan: data.status_marital || "",
+            pendidikanTerakhir: data.last_education || "",
+            pekerjaan: data.occupation || "",
+            namaBank: data.investor.bank.bank_name || "",
+            nomorRekening: data.investor.bank?.no || "",
+            namaPemilik: data.investor.bank?.bank_owner || "",
+            cabangBank: data.investor.bank?.bank_branch || "",
+            ktpUrl: data.investor.ktp?.path || "",
+            rekeningKoran: data.bank?.rek_koran_path || "",
+            addres: data.address_detail || "",
+            provincePribadi: data.province_name
+              ? { value: data.province_name, label: data.province_name }
+              : null,
+            cityPribadi: data.city_name
+              ? { value: data.city_name, label: data.city_name }
+              : null,
+            districtPribadi: data.district_name
+              ? { value: data.district_name, label: data.district_name }
+              : null,
+            subDistrictPribadi: data.subdistrict_name
+              ? { value: data.subdistrict_name, label: data.subdistrict_name }
+              : null,
+            posCode: data.postal_code || "",
+          }));
+
+          setDataPekerjaan((prev) => ({
+            ...prev,
+            namaPerusahaan: data.investor.job?.company_name || "",
+            jabatan: data.investor.job?.position || "",
+            alamatPerusahaan: data.investor.job?.company_address || "",
+            penghasilanBulanan: data.investor.job?.monthly_income || "",
+            npwpUrl: data.investor.job?.npwp_path || "",
+            fotoPemodalUrl: data.avatar || "",
+
+            provincePekerjaan: data.job?.province_name
+              ? { value: data.job.province_name, label: data.job.province_name }
+              : null,
+            cityPekerjaan: data.job?.city_name
+              ? { value: data.job.city_name, label: data.job.city_name }
+              : null,
+            districtPekerjaan: data.job?.district_name
+              ? { value: data.job.district_name, label: data.job.district_name }
+              : null,
+            subDistrictPekerjaan: data.job?.subdistrict_name
+              ? {
+                  value: data.job.subdistrict_name,
+                  label: data.job.subdistrict_name,
+                }
+              : null,
+            posCodePekerjaan: data.job?.postal_code || "",
+            tujuanInvestasi: data.risk?.goal || "",
+            toleransiResiko: data.risk?.tolerance || "",
+            pengalamanInvestasi: data.risk?.experience || "",
+            pengetahuanPasarModal: data.risk?.pengetahuan_pasar_modal || "",
+            setujuKebenaranData: true, // jika ingin auto-centang
+            setujuRisikoInvestasi: true,
+            signature: data.signature_path || "",
+          }));
+        }
+      } catch (error: any) {
+        console.error(
+          "Gagal mengambil profil:",
+          error.response?.data || error.message
+        );
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");

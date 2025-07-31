@@ -33,7 +33,10 @@ interface Props {
     districtPribadi: { value: string; label: string };
     subDistrictPribadi: { value: string; label: string };
     posCode: string;
+
+    // isUpdate: boolean;
   };
+
   onLihatKTP?: () => void;
   onChange: (
     e: React.ChangeEvent<
@@ -82,7 +85,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
     "Pascasarjana",
   ];
   const pekerjaanOptions = ["PNS", "Swasta", "Wiraswasta", "Lainnya"];
-  const [isUploading, setIsUploading] = useState(false);
+
   const [uploadStatus, setUploadStatus] = useState<{ [key: string]: boolean }>(
     {}
   );
@@ -310,32 +313,46 @@ const ComponentDataPribadi: React.FC<Props> = ({
     onBankChange(selectedBank);
   }, [selectedBank]);
 
+  // useEffect(() => {
+  //   if (Object.keys(formData).length && formData.provincePribadi) {
+  //     setSelectedProvincePribadi(formData.provincePribadi);
+  //   }
+
+  //   if (Object.keys(formData).length && formData.cityPribadi) {
+  //     setSelectedCityPribadi(formData.cityPribadi);
+  //   }
+
+  //   if (Object.keys(formData).length && formData.districtPribadi) {
+  //     setSelectedDistrictPribadi(formData.districtPribadi);
+  //   }
+
+  //   if (Object.keys(formData).length && formData.subDistrictPribadi) {
+  //     setSelectedSubDistrictPribadi(formData.subDistrictPribadi);
+  //   }
+
+  //   if (Object.keys(formData).length && formData.posCode) {
+  //     setPosCode(formData.posCode);
+  //   }
+
+  //   if (Object.keys(formData).length && formData.namaBank) {
+  //     setSelectedBank(formData.namaBank);
+  //   }
+  // }, []);
   useEffect(() => {
-    // if (!formData || !province.length) return;
-    if (Object.keys(formData).length && formData.provincePribadi) {
+    if (!Object.keys(formData).length) return;
+
+    if (formData.provincePribadi)
       setSelectedProvincePribadi(formData.provincePribadi);
-    }
-
-    if (Object.keys(formData).length && formData.cityPribadi) {
-      setSelectedCityPribadi(formData.cityPribadi);
-    }
-
-    if (Object.keys(formData).length && formData.districtPribadi) {
+    if (formData.cityPribadi) setSelectedCityPribadi(formData.cityPribadi);
+    if (formData.districtPribadi)
       setSelectedDistrictPribadi(formData.districtPribadi);
-    }
-
-    if (Object.keys(formData).length && formData.subDistrictPribadi) {
+    if (formData.subDistrictPribadi)
       setSelectedSubDistrictPribadi(formData.subDistrictPribadi);
-    }
+    if (formData.posCode) setPosCode(formData.posCode);
+    if (formData.namaBank) setSelectedBank(formData.namaBank);
+  }, [formData]);
 
-    if (Object.keys(formData).length && formData.posCode) {
-      setPosCode(formData.posCode);
-    }
-
-    if (Object.keys(formData).length && formData.namaBank) {
-      setSelectedBank(formData.namaBank);
-    }
-  }, []);
+  console.log(formData.provincePribadi);
 
   const customOptions = province.map(
     (province: { code: string; nama: string }) => ({
