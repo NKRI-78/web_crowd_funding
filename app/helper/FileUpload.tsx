@@ -34,7 +34,7 @@ export default function FileUpload({
       <input
         type="file"
         ref={fileRef}
-        accept="image/*,application/pdf"
+        accept="application/pdf"
         multiple
         onChange={onUpload}
         className="hidden"

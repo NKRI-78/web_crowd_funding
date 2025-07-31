@@ -61,7 +61,13 @@ export default function MultiStepFormWrapper() {
 
   return (
     <div>
-      {selectedIndex === 0 && <PublisherForm onNext={next} />}
+      {selectedIndex === 0 && (
+        <PublisherForm
+          onNext={next}
+          profile={userProfile}
+          isUpdate={isUpdate !== null}
+        />
+      )}
       {selectedIndex === 1 && (
         <FormPenerbit
           onBack={prev}
