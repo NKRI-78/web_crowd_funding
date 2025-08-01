@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-interface JobStructureFormData {
+export interface JobStructureFormData {
   id: string;
   nama: string;
   jabatan: string;
@@ -9,7 +9,7 @@ interface JobStructureFormData {
   fileNPWP: string;
 }
 
-interface FormPenerbitState {
+export interface FormPenerbitState {
   laporanKeuangan: string;
   rekeningKoran: string;
   direktur: JobStructureFormData[];

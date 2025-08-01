@@ -42,6 +42,7 @@ export interface CompanyAddress {
 }
 
 export interface CompanyPerson {
+  id: string;
   title: string;
   name: string;
   position: string;
