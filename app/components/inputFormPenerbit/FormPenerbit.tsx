@@ -21,8 +21,12 @@ import { useRouter } from "next/navigation";
 import CustomCheckBox from "./_component/CustomCheckBox";
 import AddButton from "./_component/AddButton";
 import PhotoUploader from "./_component/PhotoUploaderContainer";
-import { ProfileUpdate } from "@/app/(defaults)/form-penerbit/UpdateProfileInterface";
+import {
+  ProfileUpdate,
+  publisherUpdateKeys,
+} from "@/app/(defaults)/form-penerbit/UpdateProfileInterface";
 import UpdateRing from "./_component/UpdateRing";
+import Cookies from "js-cookie";
 
 type Props = {
   onBack: () => void;
@@ -423,23 +427,30 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
   const updateDocument = async () => {
     const payload = {
       company_id: profile?.company.id,
-      val: profile?.form,
+      val: getUpdateDocumentValueBasedFormKey(),
     };
 
     try {
-      const userData = localStorage.getItem("user");
-      if (!userData) throw "User Tidak Ditemukan";
-      const userJSON = JSON.parse(userData);
+      const userCookie = Cookies.get("user");
+      if (!userCookie) return null;
+      const userJson = JSON.parse(userCookie);
 
-      await axios.put(
+      const result = await axios.put(
         `${API_BACKEND}/api/v1/document/update/${profile?.form}`,
         payload,
         {
           headers: {
-            Authorization: `Bearer ${userJSON.token}`,
+            Authorization: `Bearer ${userJson.token}`,
           },
         }
       );
+
+      console.log("Payload ", payload);
+      console.log("Result ", result);
+
+      // Hapus localStorage dan reset
+      localStorage.removeItem("formPenerbitDraft");
+      localStorage.removeItem("publisherDraft");
 
       await Swal.fire({
         title: "Berhasil",
@@ -449,6 +460,8 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
         timerProgressBar: true,
         showConfirmButton: false,
       });
+
+      router.push("/");
     } catch (error) {
       console.log(error);
       Swal.fire({
@@ -466,6 +479,55 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
       window.scroll(0, 0);
     }
   }, [isUpdate]);
+
+  const getUpdateDocumentValueBasedFormKey = (): string => {
+    if (!profile?.form) return "-";
+
+    let val: string = "";
+
+    const isFormPunyanyaUdin = publisherUpdateKeys.includes(profile?.form);
+    try {
+      const publisherCache = localStorage.getItem("publisherDraft");
+      const penerbitCache = localStorage.getItem("formPenerbitDraft");
+
+      if (publisherCache && penerbitCache) {
+        const publisherJSON = JSON.parse(publisherCache);
+        const penerbitJSON = JSON.parse(penerbitCache);
+
+        if (isFormPunyanyaUdin) {
+          switch (profile?.form) {
+            case "nib":
+              val = publisherJSON.company_nib_path;
+              break;
+            case "akta-pendirian-perusahaan":
+              val = publisherJSON.akta_pendirian;
+              break;
+            case "sk-kumham-path":
+              val = publisherJSON.sk_kumham_path;
+              break;
+            case "akta-perubahan-terakhir":
+              val = publisherJSON.akta_perubahan_terahkir_path;
+              break;
+            case "sk-kumham-terakhir":
+              val = publisherJSON.sk_kumham_terahkir;
+              break;
+            case "jumlah-karyawan":
+              val = publisherJSON.total_employees;
+              break;
+            default:
+              val = "-";
+              break;
+          }
+        } else {
+          val = "-";
+        }
+      }
+    } catch (_) {
+      val = "-";
+    }
+
+    return val;
+  };
 
   return (
     <div className="px-6 md:px-24 bg-white">

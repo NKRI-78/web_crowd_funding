@@ -42,6 +42,13 @@ const Inbox = () => {
     const userJson = JSON.parse(userCookie);
     return userJson.token;
   }
+  function getUserId(): string | null {
+    const userCookie = Cookies.get("user");
+    if (!userCookie) return null; // ✅ tambahkan return
+
+    const userJson = JSON.parse(userCookie);
+    return userJson.id;
+  }
 
   const router = useRouter();
 
@@ -187,15 +194,15 @@ const Inbox = () => {
   };
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (!userData) return;
+    const userId = getUserId();
+    console.log("user token");
+    console.log(userId);
 
-    const userParsed = JSON.parse(userData);
-    const socket = createSocket(userParsed.id);
+    const socket = createSocket(userId ?? "-");
 
     socket.on("connect", () => {
       console.log("Socket connected:", socket.id);
-      console.log("Socket connected user id :", userParsed.id);
+      console.log("Socket connected user id :", userId ?? "-");
     });
 
     socket.on("inbox-update", (data) => {
