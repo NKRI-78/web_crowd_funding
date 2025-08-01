@@ -6,6 +6,7 @@ import { FaFileAlt } from "react-icons/fa";
 import Select from "react-select";
 import { API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { compressImage } from "@/app/helper/CompressorImage";
+import UpdateRing from "../component/UpdateRing";
 
 // function getSignatureDataUrlWithWhiteBackground(
 //   canvas: HTMLCanvasElement
@@ -70,6 +71,47 @@ interface Props {
     posCodePekerjaan: string;
   }) => void;
   errors?: Record<string, string[]>;
+  dataProfile: {
+    id: string;
+    fullname: string;
+    avatar: string;
+    last_education: string;
+    gender: string;
+    status_marital: string;
+    address_detail: string;
+    occupation: string;
+    investor: {
+      bank: {
+        no: string;
+        bank_name: string;
+        bank_owner: string;
+        bank_branch: string;
+        rek_koran_path: string;
+        created_at: string;
+      };
+      ktp: {
+        name: string;
+        nik: string;
+        place_datebirth: string;
+        path: string;
+        created_at: string;
+      };
+      job: {
+        province_name: string;
+        city_name: string;
+        district_name: string;
+        subdistrict_name: string;
+        postal_code: string;
+        company_name: string;
+        company_address: string;
+        monthly_income: string;
+        npwp_path: string;
+        position: string;
+      };
+    };
+    form: string;
+  };
+  isUpdate: boolean;
 }
 
 // const SIG_W = 300;
@@ -90,6 +132,8 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   errors,
   onLihatNPWP,
   onLihatFotoPemodal,
+  dataProfile,
+  isUpdate,
 }) => {
   type OptionType = { value: string; label: string } | null;
 
@@ -779,42 +823,47 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           <p className="text-sm text-gray-400 mb-2">
             File maksimal berukuran 10mb
           </p>
-
-          {/* Input File yang disembunyikan */}
-          <input
-            type="file"
-            id="npwpUrlUpload"
-            className="hidden"
-            onChange={handleFileChange}
-            disabled={uploadStatus["npwpUrl"] === true}
-            accept="application/pdf, image/*"
-            data-keyname="npwpUrl"
-          />
-
-          {/* Label sebagai tombol */}
-          <label
-            htmlFor="npwpUrlUpload"
-            className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
+          <UpdateRing
+            identity={`${dataProfile?.form}`}
+            // formKey={dataProfile?.form}
+            formKey="npwp"
           >
-            <>
-              <FaFileAlt />
-              Upload Dokumen
-            </>
-          </label>
+            {/* Input File yang disembunyikan */}
+            <input
+              type="file"
+              id="npwpUrlUpload"
+              className="hidden"
+              onChange={handleFileChange}
+              disabled={uploadStatus["npwpUrl"] === true}
+              accept="application/pdf, image/*"
+              data-keyname="npwpUrl"
+            />
+
+            {/* Label sebagai tombol */}
+            <label
+              htmlFor="npwpUrlUpload"
+              className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
+            >
+              <>
+                <FaFileAlt />
+                Upload Dokumen
+              </>
+            </label>
+            {typeof window !== "undefined" && formData.npwpUrl && (
+              <button
+                type="button"
+                onClick={onLihatNPWP}
+                className="text-blue-600 underline text-sm block mt-2 mb-2"
+              >
+                Lihat NPWP
+              </button>
+            )}
+
+            {errors?.npwpUrl && (
+              <p className="text-red-500 text-sm mt-1">{errors.npwpUrl[0]}</p>
+            )}
+          </UpdateRing>
         </div>
-        {typeof window !== "undefined" && formData.npwpUrl && (
-          <button
-            type="button"
-            onClick={onLihatNPWP}
-            className="text-blue-600 underline text-sm block mt-2 mb-2"
-          >
-            Lihat NPWP
-          </button>
-        )}
-
-        {errors?.npwpUrl && (
-          <p className="text-red-500 text-sm mt-1">{errors.npwpUrl[0]}</p>
-        )}
 
         <div className="mb-4 mt-4">
           <label className="text-md mb-2">

@@ -9,6 +9,7 @@ import "flatpickr/dist/flatpickr.min.css";
 import Select from "react-select";
 import { API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { compressImage } from "@/app/helper/CompressorImage";
+import UpdateRing from "../component/UpdateRing";
 
 interface Props {
   formData: {
@@ -97,6 +98,7 @@ interface Props {
         position: string;
       };
     };
+    form: string;
   };
   isUpdate: boolean;
 }
@@ -138,6 +140,15 @@ const ComponentDataPribadi: React.FC<Props> = ({
   const [uploadStatus, setUploadStatus] = useState<{ [key: string]: boolean }>(
     {}
   );
+
+  // const [selectedProvincePribadi, setSelectedProvincePribadi] =
+  //   useState<OptionType>(() => {
+  //     if (typeof window !== "undefined") {
+  //       const saved = localStorage.getItem("selectedSubDistrict");
+  //       return saved ? JSON.parse(saved) : null;
+  //     }
+  //     return null;
+  //   });
 
   const [province, setProvince] = useState<any>([]);
   const [selectedProvincePribadi, setSelectedProvincePribadi] =
@@ -425,6 +436,107 @@ const ComponentDataPribadi: React.FC<Props> = ({
     </div>
   );
 
+  // useEffect(() => {
+  //   if (!isUpdate) return;
+  //   if (
+  //     province.length === 0 ||
+  //     city.length === 0 ||
+  //     district.length === 0 ||
+  //     subDistrict.length === 0 ||
+  //     bank.length === 0 ||
+  //     !dataProfile
+  //   ) {
+  //     const customOptions = province.map(
+  //       (province: { code: string; nama: string }) => ({
+  //         value: province.code,
+  //         label: province.nama,
+  //       })
+  //     );
+
+  //     const customOptionsCity = city.map(
+  //       (city: { code: string; nama: string }) => ({
+  //         value: city.code,
+  //         label: city.nama,
+  //       })
+  //     );
+
+  //     const customOptionsDistrict = district.map(
+  //       (district: { code: string; nama: string }) => ({
+  //         value: district.code,
+  //         label: district.nama,
+  //       })
+  //     );
+
+  //     const customOptionsSubDistrict = subDistrict.map(
+  //       (subDistrict: { code: string; nama: string }) => ({
+  //         value: subDistrict.code,
+  //         label: subDistrict.nama,
+  //       })
+  //     );
+
+  //     const customOptionsBank = bank.map(
+  //       (bank: { code: string; name: string }) => ({
+  //         value: bank.code,
+  //         label: bank.name,
+  //       })
+  //     );
+
+  //     const matchBank = customOptionsBank.find(
+  //       (option: any) => option.label === dataProfile.investor.bank.bank_name
+  //     );
+
+  //     const matchProvince =
+  //       dataProfile.investor.job.province_name &&
+  //       customOptions.find(
+  //         (option: any) =>
+  //           option.label.trim().toLowerCase() ===
+  //           dataProfile.investor.job.province_name.trim().toLowerCase()
+  //       );
+
+  //     const matchCity = customOptionsCity.find(
+  //       (option: any) =>
+  //         option.label.trim().toLowerCase() ===
+  //         dataProfile.investor.job.city_name.trim().toLowerCase()
+  //     );
+
+  //     const matchDistrict = customOptionsDistrict.find(
+  //       (option: any) =>
+  //         option.label.trim().toLowerCase() ===
+  //         dataProfile.investor.job.district_name.trim().toLowerCase()
+  //     );
+
+  //     const matchSubDistrict = customOptionsSubDistrict.find(
+  //       (option: any) =>
+  //         option.label.trim().toLowerCase() ===
+  //         dataProfile.investor.job.subdistrict_name.trim().toLowerCase()
+  //     );
+
+  //     console.log(matchSubDistrict, "matchSubDistrict");
+  //     console.log(customOptionsSubDistrict, "customOptionsSubDistrict");
+
+  //     if (formData.namaBank && matchBank) {
+  //       setSelectedBank(matchBank);
+  //     }
+
+  //     if (matchProvince) {
+  //       setSelectedProvincePribadi(matchProvince);
+  //     }
+  //     if (matchCity) {
+  //       setSelectedCityPribadi(matchCity);
+  //     }
+  //     if (matchDistrict) {
+  //       setSelectedDistrictPribadi(matchDistrict);
+  //     }
+  //     if (matchSubDistrict) {
+  //       setSelectedSubDistrictPribadi(matchSubDistrict);
+  //     }
+  //     if (formData.posCode) setPosCode(formData.posCode);
+  //     return;
+  //   }
+  // }, [isUpdate, province, city, district, subDistrict, bank, dataProfile]);
+
+  // console.log(selectedSubDistrictPribadi, "selectedSubDistrictPribadi");
+
   const tanggalLahirDate = useMemo(() => {
     return formData.tanggalLahir ? new Date(formData.tanggalLahir) : undefined;
   }, [formData.tanggalLahir]);
@@ -605,47 +717,53 @@ const ComponentDataPribadi: React.FC<Props> = ({
               File maksimal berukuran 10mb
             </p>
 
-            {/* Input File yang disembunyikan */}
-            <input
-              type="file"
-              id="ktpUpload"
-              className="hidden"
-              onChange={handleFileChange}
-              disabled={uploadStatus["ktpUrl"] === true}
-              accept="image/*"
-              data-keyname="ktpUrl"
-            />
-
-            {/* Label sebagai tombol */}
-            <label
-              htmlFor="ktpUpload"
-              className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
-              // className={`inline-flex items-center gap-2 px-4 py-2 ${
-              //   uploadStatus["ktpUrl"]
-              //     ? "bg-gray-400 cursor-not-allowed"
-              //     : "bg-[#505050] hover:bg-gray-800"
-              // } text-white rounded-md transition`}
+            <UpdateRing
+              identity={`${dataProfile?.form}`}
+              // formKey={dataProfile?.form}
+              formKey="ktp"
             >
-              <>
-                <FaFileAlt />
-                Upload Dokumen
-              </>
-            </label>
-          </div>
-          <>
-            {isClient && formData.ktpUrl && (
-              <button
-                type="button"
-                onClick={onLihatKTP}
-                className="text-blue-600 underline text-sm block mt-2 mb-2"
+              {/* Input File yang disembunyikan */}
+              <input
+                type="file"
+                id="ktpUpload"
+                className="hidden"
+                onChange={handleFileChange}
+                disabled={uploadStatus["ktpUrl"] === true}
+                accept="image/*"
+                data-keyname="ktpUrl"
+              />
+
+              {/* Label sebagai tombol */}
+              <label
+                htmlFor="ktpUpload"
+                className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
+                // className={`inline-flex items-center gap-2 px-4 py-2 ${
+                //   uploadStatus["ktpUrl"]
+                //     ? "bg-gray-400 cursor-not-allowed"
+                //     : "bg-[#505050] hover:bg-gray-800"
+                // } text-white rounded-md transition`}
               >
-                Lihat KTP
-              </button>
-            )}
-          </>
-          {errors?.ktpUrl && (
-            <p className="text-red-500 text-sm mt-1">{errors.ktpUrl[0]}</p>
-          )}
+                <>
+                  <FaFileAlt />
+                  Upload Dokumen
+                </>
+              </label>
+              <>
+                {isClient && formData.ktpUrl && (
+                  <button
+                    type="button"
+                    onClick={onLihatKTP}
+                    className="text-blue-600 underline text-sm block mt-2 mb-2"
+                  >
+                    Lihat KTP
+                  </button>
+                )}
+              </>
+              {errors?.ktpUrl && (
+                <p className="text-red-500 text-sm mt-1">{errors.ktpUrl[0]}</p>
+              )}
+            </UpdateRing>
+          </div>
           <div className="mb-4">
             <label className="text-md mb-2">
               Pendidikan Terakhir <span className="text-red-500">*</span>

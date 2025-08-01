@@ -273,7 +273,7 @@ const Inbox = () => {
           }}
           onAccept={(isUpdateDocument, form) => {
             if (isUpdateDocument) {
-              if (role !== 1 && roleUser !== "investor") {
+              if (role !== 1 || roleUser !== "investor") {
                 console.log("update dokumen");
                 console.log(form);
                 router.push(`/form-penerbit?update=true&form=${form}`);
