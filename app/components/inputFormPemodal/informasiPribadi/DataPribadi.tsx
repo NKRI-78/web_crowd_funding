@@ -63,6 +63,11 @@ interface Props {
     status_marital: string;
     address_detail: string;
     occupation: string;
+    province_name: string;
+    city_name: string;
+    district_name: string;
+    subdistrict_name: string;
+    postal_code: string;
     investor: {
       bank: {
         no: string;
@@ -111,7 +116,12 @@ const ComponentDataPribadi: React.FC<Props> = ({
   dataProfile,
   isUpdate,
 }) => {
-  type OptionType = { value: string; label: string } | null;
+  type OptionValue = {
+    value: string;
+    label: string;
+  };
+
+  type OptionType = OptionValue | null;
 
   const optionsGender = ["Laki-Laki", "Perempuan"];
   const optionsPernikahan = ["Belum Menikah", "Menikah", "Cerai"];
@@ -128,29 +138,25 @@ const ComponentDataPribadi: React.FC<Props> = ({
   const [uploadStatus, setUploadStatus] = useState<{ [key: string]: boolean }>(
     {}
   );
+
   const [province, setProvince] = useState<any>([]);
-  // const [selectedProvincePribadi, setSelectedProvincePribadi] =
-  //   useState<OptionType>(() => {
-  //     if (typeof window !== "undefined") {
-  //       const saved = localStorage.getItem("selectedSubDistrict");
-  //       return saved ? JSON.parse(saved) : null;
-  //     }
-  //     return null;
-  //   });
   const [selectedProvincePribadi, setSelectedProvincePribadi] =
     useState<OptionType | null>(null);
   const [city, setCity] = useState<any>([]);
   const [selectedCityPribadi, setSelectedCityPribadi] =
     useState<OptionType>(null);
+
   const [district, setDistrict] = useState<any>([]);
   const [selectedDistrictPribadi, setSelectedDistrictPribadi] =
     useState<OptionType>(null);
   const [subDistrict, setSubDistrict] = useState<any>([]);
   const [selectedSubDistrictPribadi, setSelectedSubDistrictPribadi] =
     useState<OptionType>(null);
-  const [posCode, setPosCode] = useState("");
-  const [bank, setBank] = useState<any>([]);
+
+  const [bank, setBank] = useState<any[]>([]);
+
   const [selectedBank, setSelectedBank] = useState<OptionType>(null);
+
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -169,9 +175,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
     const keyName = e.target.getAttribute("data-keyname");
     if (!file || !keyName) return;
 
-    // Validasi maksimal 10MB
     if (file.size > 10 * 1024 * 1024) {
-      // alert("Ukuran file maksimal 10MB");
       Swal.fire({
         title: "Warning",
         text: `Ukuran file maksimal 10MB!`,
@@ -201,7 +205,6 @@ const ComponentDataPribadi: React.FC<Props> = ({
       if (fileUrl) {
         const labelMap: { [key: string]: string } = {
           ktpUrl: "KTP",
-          // rekeningKoran: "Rekening Koran",
           npwpUrl: "NPWP Perusahaan",
         };
 
@@ -309,8 +312,6 @@ const ComponentDataPribadi: React.FC<Props> = ({
             code: selectedSubDistrictPribadi?.value,
           },
         });
-
-        setPosCode(response?.data?.data?.postal_code || "");
       } catch (error) {
         console.error("Gagal ambil subdistrict:", error);
       }
@@ -335,128 +336,25 @@ const ComponentDataPribadi: React.FC<Props> = ({
   }, []);
 
   useEffect(() => {
-    if (isUpdate && Array.isArray(bank) && bank.length !== 0) {
-      const customOptions = province.map(
-        (province: { code: string; nama: string }) => ({
-          value: province.code,
-          label: province.nama,
-        })
-      );
-
-      const customOptionsCity = city.map(
-        (city: { code: string; nama: string }) => ({
-          value: city.code,
-          label: city.nama,
-        })
-      );
-
-      const customOptionsDistrict = district.map(
-        (district: { code: string; nama: string }) => ({
-          value: district.code,
-          label: district.nama,
-        })
-      );
-
-      const customOptionsSubDistrict = subDistrict.map(
-        (subDistrict: { code: string; nama: string }) => ({
-          value: subDistrict.code,
-          label: subDistrict.nama,
-        })
-      );
-
-      const customOptionsBank = bank.map(
-        (bank: { code: string; name: string }) => ({
-          value: bank.code,
-          label: bank.name,
-        })
-      );
-
-      const matchBank = customOptionsBank.find(
-        (option: any) => option.label === dataProfile.investor.bank.bank_name
-      );
-
-      const matchProvince =
-        dataProfile.investor.job.province_name &&
-        customOptions.find(
-          (option: any) =>
-            option.label.trim().toLowerCase() ===
-            dataProfile.investor.job.province_name.trim().toLowerCase()
-        );
-
-      const matchCity = customOptionsCity.find(
-        (option: any) =>
-          option.label.trim().toLowerCase() ===
-          dataProfile.investor.job.city_name.trim().toLowerCase()
-      );
-
-      console.log(dataProfile.investor.job.province_name);
-      console.log(matchProvince);
-
-      if (formData.namaBank && matchBank) {
-        setSelectedBank(matchBank);
-      }
-
-      if (formData.provincePribadi && matchProvince) {
-        setSelectedProvincePribadi(matchProvince);
-      }
-      if (formData.cityPribadi && matchCity) {
-        setSelectedCityPribadi(matchCity);
-      }
-      if (formData.districtPribadi)
-        setSelectedDistrictPribadi(formData.districtPribadi);
-      if (formData.subDistrictPribadi)
-        setSelectedSubDistrictPribadi(formData.subDistrictPribadi);
-      if (formData.posCode) setPosCode(formData.posCode);
-    }
-  }, [bank, formData, province]);
-
-  console.log(selectedProvincePribadi);
-
-  useEffect(() => {
     onAlamatChange({
       provincePribadi: selectedProvincePribadi,
       cityPribadi: selectedCityPribadi,
       districtPribadi: selectedDistrictPribadi,
       subDistrictPribadi: selectedSubDistrictPribadi,
-      posCode: posCode,
+      posCode: formData.posCode,
     });
   }, [
     selectedProvincePribadi,
     selectedCityPribadi,
     selectedDistrictPribadi,
     selectedSubDistrictPribadi,
-    posCode,
+    formData.posCode,
   ]);
 
   useEffect(() => {
     onBankChange(selectedBank);
   }, [selectedBank]);
 
-  // useEffect(() => {
-  //   if (Object.keys(formData).length && formData.provincePribadi) {
-  //     setSelectedProvincePribadi(formData.provincePribadi);
-  //   }
-
-  //   if (Object.keys(formData).length && formData.cityPribadi) {
-  //     setSelectedCityPribadi(formData.cityPribadi);
-  //   }
-
-  //   if (Object.keys(formData).length && formData.districtPribadi) {
-  //     setSelectedDistrictPribadi(formData.districtPribadi);
-  //   }
-
-  //   if (Object.keys(formData).length && formData.subDistrictPribadi) {
-  //     setSelectedSubDistrictPribadi(formData.subDistrictPribadi);
-  //   }
-
-  //   if (Object.keys(formData).length && formData.posCode) {
-  //     setPosCode(formData.posCode);
-  //   }
-
-  //   if (Object.keys(formData).length && formData.namaBank) {
-  //     setSelectedBank(formData.namaBank);
-  //   }
-  // }, []);
   useEffect(() => {
     if (!Object.keys(formData).length) return;
 
@@ -467,50 +365,62 @@ const ComponentDataPribadi: React.FC<Props> = ({
       setSelectedDistrictPribadi(formData.districtPribadi);
     if (formData.subDistrictPribadi)
       setSelectedSubDistrictPribadi(formData.subDistrictPribadi);
-    if (formData.posCode) setPosCode(formData.posCode);
     if (formData.namaBank) setSelectedBank(formData.namaBank);
   }, [formData]);
 
-  // console.log(formData.provincePribadi);
-
-  const customOptions = province.map(
-    (province: { code: string; nama: string }) => ({
+  const customOptions: OptionValue[] = province.map(
+    (province: { code: any; nama: any }) => ({
       value: province.code,
       label: province.nama,
     })
   );
 
-  const customOptionsCity = city.map(
+  const customOptionsCity = city?.map(
     (city: { code: string; nama: string }) => ({
       value: city.code,
       label: city.nama,
     })
   );
 
-  const customOptionsDistrict = district.map(
+  const customOptionsDistrict = district?.map(
     (district: { code: string; nama: string }) => ({
       value: district.code,
       label: district.nama,
     })
   );
 
-  const customOptionsSubDistrict = subDistrict.map(
+  const customOptionsSubDistrict = subDistrict?.map(
     (subDistrict: { code: string; nama: string }) => ({
       value: subDistrict.code,
       label: subDistrict.nama,
     })
   );
 
-  const customOptionsBank = bank.map(
-    (bank: { code: string; name: string }) => ({
-      value: bank.code,
-      label: bank.name,
-    })
-  );
+  const customOptionsBank = useMemo(() => {
+    return bank.map((b) => ({
+      value: b.code,
+      label: b.name,
+    }));
+  }, [bank]);
+
+  useEffect(() => {
+    if (
+      !dataProfile?.investor.bank?.bank_name ||
+      customOptionsBank.length === 0
+    )
+      return;
+
+    const foundBank = customOptionsBank.find(
+      (opt) => opt.label === dataProfile.investor.bank.bank_name
+    );
+
+    if (foundBank) {
+      setSelectedBank(foundBank);
+    }
+  }, [customOptionsBank, dataProfile?.investor.bank?.bank_name]);
 
   const formatOptionLabel = ({ label, icon }: any) => (
     <div className="flex items-center gap-2">
-      {/* <img src={icon} alt={label} className="w-5 h-5" /> */}
       <span>{label}</span>
     </div>
   );
@@ -823,17 +733,17 @@ const ComponentDataPribadi: React.FC<Props> = ({
                 className="mt-0"
                 value={selectedProvincePribadi}
                 options={customOptions}
-                // styles={customStyles}
                 formatOptionLabel={formatOptionLabel}
                 onChange={(e) => {
                   setSelectedProvincePribadi(e);
                   setSelectedCityPribadi(null);
                   setSelectedDistrictPribadi(null);
                   setSelectedSubDistrictPribadi(null);
-                  setPosCode("");
+                  // setPosCode("");
                 }}
                 placeholder="Pilih Provinsi"
               />
+
               {errors?.provincePribadi && (
                 <p className="text-red-500 text-sm mt-1">
                   {errors.provincePribadi[0]}
@@ -845,13 +755,12 @@ const ComponentDataPribadi: React.FC<Props> = ({
                 className="mt-0"
                 value={selectedCityPribadi}
                 options={customOptionsCity}
-                // styles={customStyles}
                 formatOptionLabel={formatOptionLabel}
                 onChange={(e) => {
                   setSelectedCityPribadi(e);
                   setSelectedDistrictPribadi(null);
                   setSelectedSubDistrictPribadi(null);
-                  setPosCode("");
+                  // setPosCode("");
                 }}
                 placeholder="Pilih Kota"
                 isDisabled={!selectedProvincePribadi}
@@ -867,12 +776,11 @@ const ComponentDataPribadi: React.FC<Props> = ({
                 className="mt-0"
                 value={selectedDistrictPribadi}
                 options={customOptionsDistrict}
-                // styles={customStyles}
                 formatOptionLabel={formatOptionLabel}
                 onChange={(e) => {
                   setSelectedDistrictPribadi(e);
                   setSelectedSubDistrictPribadi(null);
-                  setPosCode("");
+                  // setPosCode("");
                 }}
                 placeholder="Pilih Kecamatan"
                 isDisabled={!selectedCityPribadi}
@@ -888,11 +796,10 @@ const ComponentDataPribadi: React.FC<Props> = ({
                 className="mt-0"
                 value={selectedSubDistrictPribadi}
                 options={customOptionsSubDistrict}
-                // styles={customStyles}
                 formatOptionLabel={formatOptionLabel}
                 onChange={(e) => {
                   setSelectedSubDistrictPribadi(e);
-                  setPosCode("");
+                  // setPosCode("");
                 }}
                 placeholder="Pilih Kelurahan"
                 isDisabled={!selectedDistrictPribadi}
@@ -907,9 +814,9 @@ const ComponentDataPribadi: React.FC<Props> = ({
           <div>
             <input
               type="number"
-              name="codePos"
+              name="posCode"
               placeholder="Kode Pos"
-              value={posCode}
+              value={formData.posCode}
               onChange={onChange}
               className="border rounded p-2 w-full mb-2 placeholder:text-sm"
             />
@@ -939,19 +846,11 @@ const ComponentDataPribadi: React.FC<Props> = ({
           <label className="text-sm font-medium mb-2">
             Nama Bank <span className="text-red-500">*</span>
           </label>
-          {/* <input
-            type="text"
-            name="namaBank"
-            placeholder="Nama Bank (misal: BCA)"
-            value={formData.namaBank}
-            onChange={onChange}
-            className="border rounded p-2 w-full mb-0 placeholder:text-sm"
-          /> */}
+
           <Select
             className="mt-0"
             value={selectedBank}
             options={customOptionsBank}
-            // styles={customStyles}
             formatOptionLabel={formatOptionLabel}
             onChange={(e) => {
               setSelectedBank(e);

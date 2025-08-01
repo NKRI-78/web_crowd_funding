@@ -24,6 +24,11 @@ const FormPemodal: React.FC = () => {
     status_marital: string;
     address_detail: string;
     occupation: string;
+    province_name: string;
+    city_name: string;
+    district_name: string;
+    subdistrict_name: string;
+    postal_code: string;
     investor: {
       bank: {
         no: string;
@@ -110,7 +115,6 @@ const FormPemodal: React.FC = () => {
 
         const data = response.data?.data;
         setDataProfile(data);
-        // console.log("Data profil:", data);
 
         if (data) {
           localStorage.setItem("dataProfile", JSON.stringify(data));
@@ -137,6 +141,7 @@ const FormPemodal: React.FC = () => {
             provincePribadi: data.province_name
               ? { value: data.province_name, label: data.province_name }
               : null,
+
             cityPribadi: data.city_name
               ? { value: data.city_name, label: data.city_name }
               : null,
@@ -146,7 +151,7 @@ const FormPemodal: React.FC = () => {
             subDistrictPribadi: data.subdistrict_name
               ? { value: data.subdistrict_name, label: data.subdistrict_name }
               : null,
-            posCode: data.investor.job.postal_code || "",
+            // posCode: data.investor.job.postal_code || "",
           }));
 
           setDataPekerjaan((prev) => ({
@@ -393,7 +398,11 @@ const FormPemodal: React.FC = () => {
           pekerjaan: parsed.pekerjaan || "",
           pekerjaanLainnya: parsed.pekerjaanLainnya || "",
           addres: parsed.addres || "",
-          namaBank: parsed.namaBank || "",
+          namaBank:
+            parsed.namaBank && typeof parsed.namaBank === "object"
+              ? parsed.namaBank
+              : { value: "", label: "" },
+
           nomorRekening: parsed.nomorRekening || "",
           namaPemilik: parsed.namaPemilik || "",
           cabangBank: parsed.cabangBank || "",
@@ -418,7 +427,8 @@ const FormPemodal: React.FC = () => {
       pekerjaan: "",
       pekerjaanLainnya: "",
       addres: "",
-      namaBank: "",
+      namaBank: { value: "", label: "" },
+
       nomorRekening: "",
       namaPemilik: "",
       cabangBank: "",
@@ -431,6 +441,30 @@ const FormPemodal: React.FC = () => {
       posCode: "",
     };
   });
+
+  // useEffect(() => {
+  //   if (!dataProfile) return;
+
+  //   setDataPribadi((prev) => ({
+  //     ...prev,
+  //     provincePribadi: dataProfile.province_name
+  //       ? { value: dataProfile.province_name, label: dataProfile.province_name }
+  //       : null,
+  //     cityPribadi: dataProfile.city_name
+  //       ? { value: dataProfile.city_name, label: dataProfile.city_name }
+  //       : null,
+  //     districtPribadi: dataProfile.district_name
+  //       ? { value: dataProfile.district_name, label: dataProfile.district_name }
+  //       : null,
+  //     subDistrictPribadi: dataProfile.subdistrict_name
+  //       ? {
+  //           value: dataProfile.subdistrict_name,
+  //           label: dataProfile.subdistrict_name,
+  //         }
+  //       : null,
+  //     posCode: dataProfile.postal_code || "",
+  //   }));
+  // }, [dataProfile]);
 
   const [dataPekerjaan, setDataPekerjaan] = useState(() => {
     if (typeof window !== "undefined") {
@@ -912,10 +946,7 @@ const FormPemodal: React.FC = () => {
   };
 
   return (
-    // px-3 md:px-10 py-20 md:py-30
-    // px-10 md:px-24 py-24
     <div className="bg-white w-full mx-auto text-black px-10 md:px-24 py-20">
-      {/* Step content */}
       {selectedIndex === 0 && dataProfile && (
         <div>
           <ComponentDataPribadi
