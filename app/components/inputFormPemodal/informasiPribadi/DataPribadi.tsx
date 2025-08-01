@@ -33,10 +33,7 @@ interface Props {
     districtPribadi: { value: string; label: string };
     subDistrictPribadi: { value: string; label: string };
     posCode: string;
-
-    // isUpdate: boolean;
   };
-
   onLihatKTP?: () => void;
   onChange: (
     e: React.ChangeEvent<
@@ -57,6 +54,46 @@ interface Props {
   }) => void;
   errors?: Record<string, string[]>;
   onBankChange: (bank: { value: string; label: string } | null) => void;
+  dataProfile: {
+    id: string;
+    fullname: string;
+    avatar: string;
+    last_education: string;
+    gender: string;
+    status_marital: string;
+    address_detail: string;
+    occupation: string;
+    investor: {
+      bank: {
+        no: string;
+        bank_name: string;
+        bank_owner: string;
+        bank_branch: string;
+        rek_koran_path: string;
+        created_at: string;
+      };
+      ktp: {
+        name: string;
+        nik: string;
+        place_datebirth: string;
+        path: string;
+        created_at: string;
+      };
+      job: {
+        province_name: string;
+        city_name: string;
+        district_name: string;
+        subdistrict_name: string;
+        postal_code: string;
+        company_name: string;
+        company_address: string;
+        monthly_income: string;
+        npwp_path: string;
+        position: string;
+      };
+    };
+  };
+  isUpdate: boolean;
 }
 
 const ComponentDataPribadi: React.FC<Props> = ({
@@ -71,6 +108,8 @@ const ComponentDataPribadi: React.FC<Props> = ({
   errors,
   onBankChange,
   onLihatKTP,
+  dataProfile,
+  isUpdate,
 }) => {
   type OptionType = { value: string; label: string } | null;
 
@@ -90,14 +129,16 @@ const ComponentDataPribadi: React.FC<Props> = ({
     {}
   );
   const [province, setProvince] = useState<any>([]);
+  // const [selectedProvincePribadi, setSelectedProvincePribadi] =
+  //   useState<OptionType>(() => {
+  //     if (typeof window !== "undefined") {
+  //       const saved = localStorage.getItem("selectedSubDistrict");
+  //       return saved ? JSON.parse(saved) : null;
+  //     }
+  //     return null;
+  //   });
   const [selectedProvincePribadi, setSelectedProvincePribadi] =
-    useState<OptionType>(() => {
-      if (typeof window !== "undefined") {
-        const saved = localStorage.getItem("selectedSubDistrict");
-        return saved ? JSON.parse(saved) : null;
-      }
-      return null;
-    });
+    useState<OptionType | null>(null);
   const [city, setCity] = useState<any>([]);
   const [selectedCityPribadi, setSelectedCityPribadi] =
     useState<OptionType>(null);
@@ -294,6 +335,84 @@ const ComponentDataPribadi: React.FC<Props> = ({
   }, []);
 
   useEffect(() => {
+    if (isUpdate && Array.isArray(bank) && bank.length !== 0) {
+      const customOptions = province.map(
+        (province: { code: string; nama: string }) => ({
+          value: province.code,
+          label: province.nama,
+        })
+      );
+
+      const customOptionsCity = city.map(
+        (city: { code: string; nama: string }) => ({
+          value: city.code,
+          label: city.nama,
+        })
+      );
+
+      const customOptionsDistrict = district.map(
+        (district: { code: string; nama: string }) => ({
+          value: district.code,
+          label: district.nama,
+        })
+      );
+
+      const customOptionsSubDistrict = subDistrict.map(
+        (subDistrict: { code: string; nama: string }) => ({
+          value: subDistrict.code,
+          label: subDistrict.nama,
+        })
+      );
+
+      const customOptionsBank = bank.map(
+        (bank: { code: string; name: string }) => ({
+          value: bank.code,
+          label: bank.name,
+        })
+      );
+
+      const matchBank = customOptionsBank.find(
+        (option: any) => option.label === dataProfile.investor.bank.bank_name
+      );
+
+      const matchProvince =
+        dataProfile.investor.job.province_name &&
+        customOptions.find(
+          (option: any) =>
+            option.label.trim().toLowerCase() ===
+            dataProfile.investor.job.province_name.trim().toLowerCase()
+        );
+
+      const matchCity = customOptionsCity.find(
+        (option: any) =>
+          option.label.trim().toLowerCase() ===
+          dataProfile.investor.job.city_name.trim().toLowerCase()
+      );
+
+      console.log(dataProfile.investor.job.province_name);
+      console.log(matchProvince);
+
+      if (formData.namaBank && matchBank) {
+        setSelectedBank(matchBank);
+      }
+
+      if (formData.provincePribadi && matchProvince) {
+        setSelectedProvincePribadi(matchProvince);
+      }
+      if (formData.cityPribadi && matchCity) {
+        setSelectedCityPribadi(matchCity);
+      }
+      if (formData.districtPribadi)
+        setSelectedDistrictPribadi(formData.districtPribadi);
+      if (formData.subDistrictPribadi)
+        setSelectedSubDistrictPribadi(formData.subDistrictPribadi);
+      if (formData.posCode) setPosCode(formData.posCode);
+    }
+  }, [bank, formData, province]);
+
+  console.log(selectedProvincePribadi);
+
+  useEffect(() => {
     onAlamatChange({
       provincePribadi: selectedProvincePribadi,
       cityPribadi: selectedCityPribadi,
@@ -352,7 +471,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
     if (formData.namaBank) setSelectedBank(formData.namaBank);
   }, [formData]);
 
-  console.log(formData.provincePribadi);
+  // console.log(formData.provincePribadi);
 
   const customOptions = province.map(
     (province: { code: string; nama: string }) => ({

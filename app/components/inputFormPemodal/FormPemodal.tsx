@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import { useSearchParams } from "next/navigation";
 
 import ComponentDataPribadi from "./informasiPribadi/DataPribadi";
 import ComponentDataPekerjaan from "./informasiPekerjaan/DataPekerjaan";
@@ -14,30 +15,88 @@ import FileViewerModal from "@/app/(defaults)/viewer/components/FilePriviewModal
 
 const FormPemodal: React.FC = () => {
   type OptionType = { value: string; label: string } | null;
+  type DataProfile = {
+    id: string;
+    fullname: string;
+    avatar: string;
+    last_education: string;
+    gender: string;
+    status_marital: string;
+    address_detail: string;
+    occupation: string;
+    investor: {
+      bank: {
+        no: string;
+        bank_name: string;
+        bank_owner: string;
+        bank_branch: string;
+        rek_koran_path: string;
+        created_at: string;
+      };
+      ktp: {
+        name: string;
+        nik: string;
+        place_datebirth: string;
+        path: string;
+        created_at: string;
+      };
+      job: {
+        province_name: string;
+        city_name: string;
+        district_name: string;
+        subdistrict_name: string;
+        postal_code: string;
+        company_name: string;
+        company_address: string;
+        monthly_income: string;
+        npwp_path: string;
+        position: string;
+      };
+    };
+  };
   const router = useRouter();
   const [token, setToken] = useState(null);
+  const searchParams = useSearchParams();
+  const isUpdate = searchParams.get("update") === "true";
+  const [dataProfile, setDataProfile] = useState<DataProfile | null>(null);
 
-  function getUserToken(): string | null {
-    const userCookie = Cookies.get("user");
-    if (!userCookie) return null;
+  // function getUserToken(): string | null {
+  //   const userCookie = Cookies.get("user");
+  //   if (!userCookie) return null;
 
-    try {
-      const userJson = JSON.parse(userCookie);
-      return userJson.token || null;
-    } catch (error) {
-      console.error("Gagal parse user cookie:", error);
-      return null;
-    }
-  }
+  //   try {
+  //     const userJson = JSON.parse(userCookie);
+  //     return userJson.token || null;
+  //   } catch (error) {
+  //     console.error("Gagal parse user cookie:", error);
+  //     return null;
+  //   }
+  // }
 
   useEffect(() => {
-    const token = getUserToken();
+    // const userCookie = Cookies.get("user");
+    // console.log(userCookie, "userCookie");
+    // if (!userCookie) return;
+
+    // const user = JSON.parse(userCookie);
+    // const userToken = user?.token;
+
+    // if (!userToken) return;
+
+    // setToken(userToken);
+    const userCookie = Cookies.get("user");
+    if (!userCookie) return;
+
+    const user = JSON.parse(userCookie);
+    const token = user?.token;
+
+    if (!token) return;
 
     const fetchProfile = async () => {
-      if (!token) {
-        console.warn("Token tidak ditemukan di cookies.");
-        return;
-      }
+      // if (!token) {
+      //   console.warn("Token tidak ditemukan di cookies.");
+      //   return;
+      // }
 
       try {
         const response = await axios.get(
@@ -50,9 +109,11 @@ const FormPemodal: React.FC = () => {
         );
 
         const data = response.data?.data;
-        console.log("Data profil:", data);
+        setDataProfile(data);
+        // console.log("Data profil:", data);
 
         if (data) {
+          localStorage.setItem("dataProfile", JSON.stringify(data));
           const placeDateBirth = `${data.investor.ktp?.place_datebirth}, ${data.investor.ktp?.place_datebirth}`;
           const [placeOfBirth, dateOfBirth] = placeDateBirth.split(", ");
 
@@ -85,7 +146,7 @@ const FormPemodal: React.FC = () => {
             subDistrictPribadi: data.subdistrict_name
               ? { value: data.subdistrict_name, label: data.subdistrict_name }
               : null,
-            posCode: data.postal_code || "",
+            posCode: data.investor.job.postal_code || "",
           }));
 
           setDataPekerjaan((prev) => ({
@@ -133,11 +194,11 @@ const FormPemodal: React.FC = () => {
     fetchProfile();
   }, []);
 
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    const user = userData ? JSON.parse(userData) : null;
-    setToken(user?.token);
-  }, []);
+  // useEffect(() => {
+  //   const userData = localStorage.getItem("user");
+  //   const user = userData ? JSON.parse(userData) : null;
+  //   setToken(user?.token);
+  // }, []);
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewFileUrl, setPreviewFileUrl] = useState<string | undefined>(
@@ -855,7 +916,7 @@ const FormPemodal: React.FC = () => {
     // px-10 md:px-24 py-24
     <div className="bg-white w-full mx-auto text-black px-10 md:px-24 py-20">
       {/* Step content */}
-      {selectedIndex === 0 && (
+      {selectedIndex === 0 && dataProfile && (
         <div>
           <ComponentDataPribadi
             formData={dataPribadi}
@@ -871,6 +932,8 @@ const FormPemodal: React.FC = () => {
             errors={errorsPribadi}
             onBankChange={handleBank}
             onLihatKTP={() => setPreviewOpen(true)}
+            isUpdate={isUpdate}
+            dataProfile={dataProfile}
           />
           <FileViewerModal
             src={dataPribadi.ktpUrl}
