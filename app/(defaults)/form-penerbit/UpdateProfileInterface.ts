@@ -42,7 +42,7 @@ export interface CompanyAddress {
 }
 
 export interface CompanyPerson {
-  id: string;
+  id: number;
   title: string;
   name: string;
   position: string;
@@ -53,6 +53,7 @@ export interface CompanyPerson {
 }
 
 export interface CompanyProject {
+  id: string;
   title: string;
   jenis_obligasi: string;
   jumlah_minimal: number;

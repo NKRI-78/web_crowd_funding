@@ -231,7 +231,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
         );
         if (!hasName) {
           addDirektur({
-            id: profile.id,
+            id: direktur.id.toString(),
             nama: direktur.name,
             jabatan:
               direktur.position == "Direktur Utama"
@@ -249,7 +249,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
         );
         if (!hasName) {
           addKomisaris({
-            id: profile.id,
+            id: komisaris.id.toString(),
             nama: komisaris.name,
             jabatan:
               komisaris.position == "Komisaris Utama"
@@ -356,8 +356,8 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
                 : "Komisaris",
             ktp: kom.noKTP,
             ktp_path: kom.fileKTP,
-            npwp: kom.fileNPWP,
-            npwp_path: "-",
+            npwp: "-",
+            npwp_path: kom.fileNPWP,
           })),
           project: {
             title: formState.titleProyek,
@@ -425,59 +425,97 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
 
   //* update dokumen
   const updateDocument = async () => {
-    const payload = {
-      company_id: profile?.company.id,
-      val: getUpdateDocumentValueBasedFormKey(),
-      val_array: [
-        {
-          id: "74",
-          val: "https://storage.googleapis.com/savedlangitdigital78/web/capbridge/Petunjuk-akses-Buku-Ngadsense-dan-produk-lain-dari-Paketbuku-nrfe3t_1753858902308_1753954575144.pdf",
-          type: "ktp",
-        },
-      ],
-    };
+    const penerbitCache = localStorage.getItem("formPenerbitDraft");
+    const isKTP: boolean = profile?.form.endsWith("upload-ktp") ?? false;
+    const isNPWP: boolean = profile?.form.endsWith("upload-npwp") ?? false;
+    const isSusunanManajemen: boolean = isKTP || isNPWP;
+    const isDirektur: boolean = profile?.form.includes("direktur") ?? false;
 
-    try {
-      const userCookie = Cookies.get("user");
-      if (!userCookie) return null;
-      const userJson = JSON.parse(userCookie);
+    if (penerbitCache) {
+      const penerbitJSON = JSON.parse(penerbitCache) as FormPenerbitState;
+      let idManajemen = "-";
+      let valManajemen = "-";
 
-      const result = await axios.put(
-        `${API_BACKEND}/api/v1/document/update/${profile?.form}`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${userJson.token}`,
-          },
+      if (isSusunanManajemen) {
+        if (isDirektur) {
+          const direkturIndex: number = Number(profile?.form[0]);
+          idManajemen = penerbitJSON.direktur[direkturIndex].id;
+
+          if (isKTP) {
+            valManajemen = penerbitJSON.direktur[direkturIndex].fileKTP;
+          } else {
+            valManajemen = penerbitJSON.direktur[direkturIndex].fileNPWP;
+          }
+        } else {
+          const komisarisIndex: number = Number(profile?.form[0]);
+          idManajemen = penerbitJSON.komisaris[komisarisIndex].id;
+
+          if (isKTP) {
+            valManajemen = penerbitJSON.komisaris[komisarisIndex].fileKTP;
+          } else {
+            valManajemen = penerbitJSON.komisaris[komisarisIndex].fileNPWP;
+          }
         }
-      );
+      }
 
-      console.log("Payload ", payload);
-      console.log("Result ", result);
+      const payload = {
+        ...(profile?.form === "company-profile"
+          ? { company_id: profile?.company.id }
+          : { project_id: profile?.company.projects?.[0]?.id }),
+        val: getUpdateDocumentValueBasedFormKey(penerbitJSON),
+        val_array: isSusunanManajemen
+          ? [
+              {
+                id: idManajemen,
+                val: valManajemen,
+                type: isKTP ? "ktp" : "npwp",
+              },
+            ]
+          : [],
+      };
 
-      // Hapus localStorage dan reset
-      localStorage.removeItem("formPenerbitDraft");
-      localStorage.removeItem("publisherDraft");
+      try {
+        const userCookie = Cookies.get("user");
+        if (!userCookie) return null;
+        const userJson = JSON.parse(userCookie);
 
-      await Swal.fire({
-        title: "Berhasil",
-        text: "Data berhasil diupdate",
-        icon: "success",
-        timer: 3000,
-        timerProgressBar: true,
-        showConfirmButton: false,
-      });
+        const result = await axios.put(
+          `${API_BACKEND}/api/v1/document/update/${profile?.form}`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${userJson.token}`,
+            },
+          }
+        );
 
-      router.push("/");
-    } catch (error) {
-      console.log(error);
-      Swal.fire({
-        icon: "error",
-        title: "Update Gagal",
-        text: `${error}`,
-        timer: 3000,
-        timerProgressBar: true,
-      });
+        console.log("Payload ", payload);
+        console.log("Result ", payload);
+
+        // Hapus localStorage dan reset
+        localStorage.removeItem("formPenerbitDraft");
+        localStorage.removeItem("publisherDraft");
+
+        await Swal.fire({
+          title: "Berhasil",
+          text: "Data berhasil diupdate",
+          icon: "success",
+          timer: 3000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+        });
+
+        router.push("/");
+      } catch (error) {
+        console.log(error);
+        Swal.fire({
+          icon: "error",
+          title: "Update Gagal",
+          text: `${error}`,
+          timer: 3000,
+          timerProgressBar: true,
+        });
+      }
     }
   };
 
@@ -487,22 +525,20 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
     }
   }, [isUpdate]);
 
-  const getUpdateDocumentValueBasedFormKey = (): string => {
+  const getUpdateDocumentValueBasedFormKey = (
+    penerbitJSON: FormPenerbitState
+  ): string => {
     if (!profile?.form) return "-";
 
     let val: string = "";
 
     const isFormPunyanyaUdin = publisherUpdateKeys.includes(profile?.form);
     try {
-      const publisherCache = localStorage.getItem("publisherDraft");
-      const penerbitCache = localStorage.getItem("formPenerbitDraft");
-
-      if (publisherCache && penerbitCache) {
-        const publisherJSON = JSON.parse(publisherCache);
-        const penerbitJSON = JSON.parse(penerbitCache) as FormPenerbitState;
-
-        if (isFormPunyanyaUdin) {
-          switch (profile?.form) {
+      if (isFormPunyanyaUdin) {
+        const publisherCache = localStorage.getItem("publisherDraft");
+        if (publisherCache) {
+          const publisherJSON = JSON.parse(publisherCache);
+          switch (profile.form) {
             case "nib":
               val = publisherJSON.company_nib_path;
               break;
@@ -525,67 +561,33 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
               val = "-";
               break;
           }
-        } else {
-          // if (
-          //   profile?.form === "0-direktur-upload-ktp" ||
-          //   profile.form === "1-direktur-upload-ktp" ||
-          //   profile.form === "2-direktur-upload-ktp"
-          // ) {
-          //   const direkturFormIndex = Number(profile.form[0]);
-          //   val = penerbitJSON.direktur[direkturFormIndex].fileKTP;
-          // }
-
-          // if (
-          //   profile?.form === "0-direktur-upload-npwp" ||
-          //   profile.form === "1-direktur-upload-npwp" ||
-          //   profile.form === "2-direktur-upload-npwp"
-          // ) {
-          //   const direkturFormIndex = Number(profile.form[0]);
-          //   val = penerbitJSON.direktur[direkturFormIndex].fileNPWP;
-          // }
-
-          // if (
-          //   profile?.form === "0-komisaris-upload-ktp" ||
-          //   profile.form === "1-komisaris-upload-ktp" ||
-          //   profile.form === "2-komisaris-upload-ktp"
-          // ) {
-          //   const komisarisFormIndex = Number(profile.form[0]);
-          //   val = penerbitJSON.komisaris[komisarisFormIndex].fileKTP;
-          // }
-
-          // if (
-          //   profile?.form === "0-komisaris-upload-npwp" ||
-          //   profile.form === "1-komisaris-upload-npwp" ||
-          //   profile.form === "2-komisaris-upload-npwp"
-          // ) {
-          //   const komisarisFormIndex = Number(profile.form[0]);
-          //   val = penerbitJSON.komisaris[komisarisFormIndex].fileNPWP;
-          // }
-
-          switch (profile?.form) {
-            case "laporan-keuangan":
-              val = penerbitJSON.laporanKeuangan;
-              break;
-            case "rekening-koran":
-              val = penerbitJSON.rekeningKoran;
-              break;
-            case "doc-kontrak":
-              val = penerbitJSON.fileDokumenKontrakApbn ?? "-";
-              break;
-            case "company-profile":
-              val = penerbitJSON.companyProfile;
-              break;
-            default:
-              val = "-";
-              break;
-          }
+        }
+      } else {
+        switch (profile.form) {
+          case "laporan-keuangan":
+            val = penerbitJSON.laporanKeuangan;
+            break;
+          case "rekening-koran":
+            val = penerbitJSON.rekeningKoran;
+            break;
+          case "doc-kontrak":
+            val = penerbitJSON.fileDokumenKontrakApbn ?? "-";
+            break;
+          case "company-profile":
+            val = penerbitJSON.companyProfile;
+            break;
+          default:
+            val = "-";
+            break;
         }
       }
     } catch (_) {
       val = "-";
     }
 
-    console.log(val);
+    console.log("profile.form: ", profile?.form);
+    console.log("form val ? = " + val);
+    console.log(penerbitJSON.rekeningKoran);
 
     return val;
   };
