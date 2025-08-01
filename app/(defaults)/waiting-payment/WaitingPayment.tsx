@@ -12,6 +12,7 @@ import FormButton from "@/app/components/inputFormPenerbit/_component/FormButton
 import socket, { createSocket } from "@/app/utils/sockets";
 import { Socket } from "dgram";
 import { io, Socket as ClientSocket } from "socket.io-client";
+import Cookies from "js-cookie";
 
 interface Bank {
   name: string;
@@ -58,6 +59,14 @@ const WaitingPayment = () => {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
 
+  function getUserToken(): string | null {
+    const userCookie = Cookies.get("user");
+    if (!userCookie) return null; // ✅ tambahkan return
+
+    const userJson = JSON.parse(userCookie);
+    return userJson.token;
+  }
+
   const handleTick = (timeLeft: any) => {
     setStatus(timeLeft);
   };
@@ -69,16 +78,15 @@ const WaitingPayment = () => {
   const fetchDetailPayment = async () => {
     if (!orderId) return;
     setLoading(true);
-    const userData = localStorage.getItem("user");
+    const token = getUserToken();
 
-    if (userData) {
+    if (token) {
       try {
-        const userParsed = JSON.parse(userData);
         const response = await axios.get(
           `${API_BACKEND}/api/v1/inbox/detail/${orderId}`,
           {
             headers: {
-              Authorization: `Bearer ${userParsed.token}`,
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -139,6 +147,14 @@ const WaitingPayment = () => {
     }
   };
 
+  function getUserId(): string | null {
+    const userCookie = Cookies.get("user");
+    if (!userCookie) return null; // ✅ tambahkan return
+
+    const userJson = JSON.parse(userCookie);
+    return userJson.id;
+  }
+
   useEffect(() => {
     if (expired) {
       document.title = "Pembayaran Kadaluarsa | CapBridge";
@@ -150,19 +166,15 @@ const WaitingPayment = () => {
   }, [expired, waitingPayment?.status]);
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (!userData || !orderId) return;
+    const userId = getUserId();
+    console.log("user token");
+    console.log(userId);
 
-    const userParsed = JSON.parse(userData);
-    const socket = createSocket(userParsed.id);
-
-    setSocketInstance(socket);
-
-    socket.emit("joinOrderRoom", orderId);
+    const socket = createSocket(userId ?? "-");
 
     socket.on("connect", () => {
       console.log("Socket connected:", socket.id);
-      console.log("Socket connected user id :", userParsed.id);
+      console.log("Socket connected user id :", userId ?? "-");
     });
 
     socket.on("payment-update", (data) => {
@@ -174,7 +186,6 @@ const WaitingPayment = () => {
     socket.on("disconnect", () => setIsConnected(false));
 
     return () => {
-      socket.emit("leaveOrderRoom", orderId);
       socket.disconnect();
     };
   }, [orderId]);
