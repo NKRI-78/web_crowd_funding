@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useFormPenerbit } from "./_hooks/useFormPenerbit";
+import { FormPenerbitState, useFormPenerbit } from "./_hooks/useFormPenerbit";
 
 import TextField from "./_component/TextField";
 import JobStructureForm from "./_component/JobStructureForm";
@@ -231,7 +231,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
         );
         if (!hasName) {
           addDirektur({
-            id: direktur.name,
+            id: profile.id,
             nama: direktur.name,
             jabatan:
               direktur.position == "Direktur Utama"
@@ -249,7 +249,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
         );
         if (!hasName) {
           addKomisaris({
-            id: komisaris.name,
+            id: profile.id,
             nama: komisaris.name,
             jabatan:
               komisaris.position == "Komisaris Utama"
@@ -428,6 +428,13 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
     const payload = {
       company_id: profile?.company.id,
       val: getUpdateDocumentValueBasedFormKey(),
+      val_array: [
+        {
+          id: "74",
+          val: "https://storage.googleapis.com/savedlangitdigital78/web/capbridge/Petunjuk-akses-Buku-Ngadsense-dan-produk-lain-dari-Paketbuku-nrfe3t_1753858902308_1753954575144.pdf",
+          type: "ktp",
+        },
+      ],
     };
 
     try {
@@ -492,7 +499,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
 
       if (publisherCache && penerbitCache) {
         const publisherJSON = JSON.parse(publisherCache);
-        const penerbitJSON = JSON.parse(penerbitCache);
+        const penerbitJSON = JSON.parse(penerbitCache) as FormPenerbitState;
 
         if (isFormPunyanyaUdin) {
           switch (profile?.form) {
@@ -519,12 +526,66 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
               break;
           }
         } else {
-          val = "-";
+          // if (
+          //   profile?.form === "0-direktur-upload-ktp" ||
+          //   profile.form === "1-direktur-upload-ktp" ||
+          //   profile.form === "2-direktur-upload-ktp"
+          // ) {
+          //   const direkturFormIndex = Number(profile.form[0]);
+          //   val = penerbitJSON.direktur[direkturFormIndex].fileKTP;
+          // }
+
+          // if (
+          //   profile?.form === "0-direktur-upload-npwp" ||
+          //   profile.form === "1-direktur-upload-npwp" ||
+          //   profile.form === "2-direktur-upload-npwp"
+          // ) {
+          //   const direkturFormIndex = Number(profile.form[0]);
+          //   val = penerbitJSON.direktur[direkturFormIndex].fileNPWP;
+          // }
+
+          // if (
+          //   profile?.form === "0-komisaris-upload-ktp" ||
+          //   profile.form === "1-komisaris-upload-ktp" ||
+          //   profile.form === "2-komisaris-upload-ktp"
+          // ) {
+          //   const komisarisFormIndex = Number(profile.form[0]);
+          //   val = penerbitJSON.komisaris[komisarisFormIndex].fileKTP;
+          // }
+
+          // if (
+          //   profile?.form === "0-komisaris-upload-npwp" ||
+          //   profile.form === "1-komisaris-upload-npwp" ||
+          //   profile.form === "2-komisaris-upload-npwp"
+          // ) {
+          //   const komisarisFormIndex = Number(profile.form[0]);
+          //   val = penerbitJSON.komisaris[komisarisFormIndex].fileNPWP;
+          // }
+
+          switch (profile?.form) {
+            case "laporan-keuangan":
+              val = penerbitJSON.laporanKeuangan;
+              break;
+            case "rekening-koran":
+              val = penerbitJSON.rekeningKoran;
+              break;
+            case "doc-kontrak":
+              val = penerbitJSON.fileDokumenKontrakApbn ?? "-";
+              break;
+            case "company-profile":
+              val = penerbitJSON.companyProfile;
+              break;
+            default:
+              val = "-";
+              break;
+          }
         }
       }
     } catch (_) {
       val = "-";
     }
+
+    console.log(val);
 
     return val;
   };
