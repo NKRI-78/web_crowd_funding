@@ -28,6 +28,7 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const isViewer = pathname.startsWith("/viewer");
 
   return (
     <Provider store={store}>
@@ -40,7 +41,7 @@ export default function ClientLayout({
           </div>
         ) : (
           <main className="min-h-screen text-white relative overflow-hidden flex flex-col">
-            <Navbar />
+            {!isViewer && <Navbar />}
             <div className="">
               <div className="">{children}</div>
             </div>
@@ -49,11 +50,9 @@ export default function ClientLayout({
             pathname === "/terms-conditions" ||
             pathname === "/dashboard" ||
             pathname === "/inbox" ||
-            pathname === "/transaction" ? (
-              ""
-            ) : (
-              <Footer />
-            )}
+            pathname === "/transaction"
+              ? ""
+              : !isViewer && <Footer />}
           </main>
         )}
         <ModalLogout />

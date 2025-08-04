@@ -88,10 +88,11 @@ const FormAlamat = ({
         Alamat {index === 0 ? "Perusahaan" : "Korespondensi"}{" "}
         <span className="text-red-500">*</span>
       </h3>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Provinsi */}
+        {/* =================== PROVINSI (menyimpan label) =================== */}
         <Controller
-          name={`address.${index}.province_id`}
+          name={`address.${index}.province_name`}
           control={control}
           rules={{ required: "Provinsi wajib diisi" }}
           render={({ field, fieldState: { error } }) => (
@@ -99,20 +100,32 @@ const FormAlamat = ({
               <Select<OptionType>
                 placeholder="Pilih Provinsi"
                 options={provinsiList}
-                isSearchable={true}
+                isSearchable
                 isDisabled={isDisabled}
                 value={
-                  provinsiList.find((opt) => opt.value === field.value) || null
+                  provinsiList.find((opt) => opt.label === field.value) || null
                 }
-                onChange={(val) => {
-                  field.onChange(val?.value); // simpan ID
-                  setValue(`address.${index}.province_name`, val?.label || "");
-                  setValue(`address.${index}.city_id`, "");
+                onChange={async (opt) => {
+                  // simpan nama provinsi
+                  field.onChange(opt?.label || "");
+
+                  // reset turunan & options
                   setValue(`address.${index}.city_name`, "");
-                  setValue(`address.${index}.district_id`, "");
                   setValue(`address.${index}.district_name`, "");
-                  setValue(`address.${index}.subdistrict_id`, "");
                   setValue(`address.${index}.subdistrict_name`, "");
+                  setValue(`address.${index}.postal_code`, "");
+                  setKotaList((prev) => ({ ...prev, [index]: [] }));
+                  setKecamatanList((prev) => ({ ...prev, [index]: [] }));
+                  setKelurahanList((prev) => ({ ...prev, [index]: [] }));
+
+                  // fetch kota berbasis province.value
+                  if (opt?.value) {
+                    const cities = await fetchOptions(
+                      "api/v1/administration/city",
+                      opt.label
+                    );
+                    setKotaList((prev) => ({ ...prev, [index]: cities || [] }));
+                  }
                 }}
               />
               {error && <p className="text-red-500 text-sm">{error.message}</p>}
@@ -120,115 +133,146 @@ const FormAlamat = ({
           )}
         />
 
-        {/* Hidden input untuk simpan label */}
-        <input type="hidden" {...register(`address.${index}.province_name`)} />
-
-        {/* Kota */}
+        {/* =================== KOTA (menyimpan label) =================== */}
         <Controller
-          name={`address.${index}.city_id`}
+          name={`address.${index}.city_name`}
           control={control}
           rules={{ required: "Kota wajib diisi" }}
-          render={({ field, fieldState: { error } }) => (
-            <div>
-              <Select<OptionType>
-                placeholder="Pilih Kota"
-                options={kotaList[index] || []}
-                isSearchable={true}
-                value={
-                  (kotaList[index] || []).find(
-                    (opt) => opt.value === field.value
-                  ) || null
-                }
-                onChange={(val) => {
-                  field.onChange(val?.value);
-                  setValue(`address.${index}.city_name`, val?.label || "");
-                  setValue(`address.${index}.district_id`, "");
-                  setValue(`address.${index}.district_name`, "");
-                  setValue(`address.${index}.subdistrict_id`, "");
-                  setValue(`address.${index}.subdistrict_name`, "");
-                }}
-                isDisabled={!watchProvinsi || isDisabled}
-              />
-              {error && <p className="text-red-500 text-sm">{error.message}</p>}
-            </div>
-          )}
-        />
-        <input type="hidden" {...register(`address.${index}.city_name`)} />
+          render={({ field, fieldState: { error } }) => {
+            const options = kotaList[index] || [];
+            return (
+              <div>
+                <Select<OptionType>
+                  placeholder="Pilih Kota"
+                  options={options}
+                  isSearchable
+                  isDisabled={!watchProvinsi || isDisabled}
+                  value={
+                    options.find((opt) => opt.label === field.value) || null
+                  }
+                  onChange={async (opt) => {
+                    // simpan nama kota
+                    field.onChange(opt?.label || "");
 
-        {/* Kecamatan */}
+                    // reset turunan & options
+                    setValue(`address.${index}.district_name`, "");
+                    setValue(`address.${index}.subdistrict_name`, "");
+                    setValue(`address.${index}.postal_code`, "");
+                    setKecamatanList((prev) => ({ ...prev, [index]: [] }));
+                    setKelurahanList((prev) => ({ ...prev, [index]: [] }));
+
+                    // fetch kecamatan berbasis city.value
+                    if (opt?.value) {
+                      const dists = await fetchOptions(
+                        "api/v1/administration/district",
+                        opt.label
+                      );
+                      setKecamatanList((prev) => ({
+                        ...prev,
+                        [index]: dists || [],
+                      }));
+                    }
+                  }}
+                />
+                {error && (
+                  <p className="text-red-500 text-sm">{error.message}</p>
+                )}
+              </div>
+            );
+          }}
+        />
+
+        {/* =================== KECAMATAN (menyimpan label) =================== */}
         <Controller
-          name={`address.${index}.district_id`}
+          name={`address.${index}.district_name`}
           control={control}
           rules={{ required: "Kecamatan wajib diisi" }}
-          render={({ field, fieldState: { error } }) => (
-            <div>
-              <Select<OptionType>
-                placeholder="Pilih Kecamatan"
-                isSearchable={true}
-                options={kecamatanList[index] || []}
-                value={
-                  (kecamatanList[index] || []).find(
-                    (opt) => opt.value === field.value
-                  ) || null
-                }
-                onChange={(val) => {
-                  field.onChange(val?.value);
-                  setValue(`address.${index}.district_name`, val?.label || "");
-                  setValue(`address.${index}.subdistrict_id`, "");
-                  setValue(`address.${index}.subdistrict_name`, "");
-                }}
-                isDisabled={!watchKota || isDisabled}
-              />
-              {error && <p className="text-red-500 text-sm">{error.message}</p>}
-            </div>
-          )}
-        />
-        <input type="hidden" {...register(`address.${index}.district_name`)} />
+          render={({ field, fieldState: { error } }) => {
+            const options = kecamatanList[index] || [];
+            return (
+              <div>
+                <Select<OptionType>
+                  placeholder="Pilih Kecamatan"
+                  options={options}
+                  isSearchable
+                  isDisabled={!watchKota || isDisabled}
+                  value={
+                    options.find((opt) => opt.label === field.value) || null
+                  }
+                  onChange={async (opt) => {
+                    // simpan nama kecamatan
+                    field.onChange(opt?.label || "");
 
-        {/* Kelurahan */}
+                    // reset turunan & options
+                    setValue(`address.${index}.subdistrict_name`, "");
+                    setValue(`address.${index}.postal_code`, "");
+                    setKelurahanList((prev) => ({ ...prev, [index]: [] }));
+
+                    // fetch kelurahan berbasis district.value
+                    if (opt?.value) {
+                      const subs = await fetchOptions(
+                        "api/v1/administration/subdistrict",
+                        opt.label
+                      );
+                      setKelurahanList((prev) => ({
+                        ...prev,
+                        [index]: subs || [],
+                      }));
+                    }
+                  }}
+                />
+                {error && (
+                  <p className="text-red-500 text-sm">{error.message}</p>
+                )}
+              </div>
+            );
+          }}
+        />
+
+        {/* =================== KELURAHAN (menyimpan label) =================== */}
         <Controller
-          name={`address.${index}.subdistrict_id`}
+          name={`address.${index}.subdistrict_name`}
           control={control}
           rules={{ required: "Kelurahan wajib diisi" }}
-          render={({ field, fieldState: { error } }) => (
-            <div>
-              <Select<OptionType>
-                placeholder="Pilih Kelurahan"
-                isSearchable={true}
-                options={kelurahanList[index] || []}
-                value={
-                  (kelurahanList[index] || []).find(
-                    (opt) => opt.value === field.value
-                  ) || null
-                }
-                onChange={(val) => {
-                  field.onChange(val?.value);
-                  setValue(
-                    `address.${index}.subdistrict_name`,
-                    val?.label || ""
-                  );
-                  setValue(`address.${index}.postal_code`, val?.zip_code || "");
-                }}
-                isDisabled={!watchKecamatan || isDisabled}
-              />
-              {error && <p className="text-red-500 text-sm">{error.message}</p>}
-            </div>
-          )}
-        />
-        <input
-          type="hidden"
-          {...register(`address.${index}.subdistrict_name`)}
+          render={({ field, fieldState: { error } }) => {
+            const options = kelurahanList[index] || [];
+            return (
+              <div>
+                <Select<OptionType>
+                  placeholder="Pilih Kelurahan"
+                  options={options}
+                  isSearchable
+                  isDisabled={!watchKecamatan || isDisabled}
+                  value={
+                    options.find((opt) => opt.label === field.value) || null
+                  }
+                  onChange={(opt) => {
+                    // simpan nama kelurahan
+                    field.onChange(opt?.label || "");
+                    // isi otomatis kode pos
+                    setValue(
+                      `address.${index}.postal_code`,
+                      opt?.zip_code || ""
+                    );
+                  }}
+                />
+                {error && (
+                  <p className="text-red-500 text-sm">{error.message}</p>
+                )}
+              </div>
+            );
+          }}
         />
       </div>
 
-      {/* Kode Pos */}
+      {/* =================== Kode Pos =================== */}
       <div>
         <input
           {...register(`address.${index}.postal_code`, {
             required: "Kode Pos wajib diisi",
           })}
           placeholder="Kode Pos"
-          type="number"
+          type="text"
           disabled={isDisabled}
           className="border px-3 py-2 rounded w-full"
         />
@@ -239,7 +283,7 @@ const FormAlamat = ({
         )}
       </div>
 
-      {/* Detail Alamat */}
+      {/* =================== Detail Alamat =================== */}
       <div>
         <textarea
           {...register(`address.${index}.detail`, {
@@ -255,6 +299,8 @@ const FormAlamat = ({
           </p>
         )}
       </div>
+
+      {/* =================== Checkbox Same As Company =================== */}
       {index === 0 && (
         <Controller
           name="sameAsCompany"
@@ -266,24 +312,26 @@ const FormAlamat = ({
                 checked={field.value}
                 onChange={(e) => {
                   const checked = e.target.checked;
-                  field.onChange(checked); // ✅ penting untuk simpan ke RHF
+                  field.onChange(checked);
 
                   if (checked) {
                     const company = watch("address")[0];
+                    // salin hanya field yang ada di schema
                     setValue(`address.1`, {
-                      ...company,
                       name: "Koresponden",
+                      province_name: company.province_name || "",
+                      city_name: company.city_name || "",
+                      district_name: company.district_name || "",
+                      subdistrict_name: company.subdistrict_name || "",
+                      postal_code: company.postal_code || "",
+                      detail: company.detail || "",
                     });
                   } else {
                     setValue(`address.1`, {
                       name: "Koresponden",
-                      province_id: "",
                       province_name: "",
-                      city_id: "",
                       city_name: "",
-                      district_id: "",
                       district_name: "",
-                      subdistrict_id: "",
                       subdistrict_name: "",
                       postal_code: "",
                       detail: "",

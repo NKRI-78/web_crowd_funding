@@ -12,6 +12,8 @@ import { useRouter } from "next/navigation";
 import moment from "moment";
 import Cookies from "js-cookie";
 import { createSocket } from "@/app/utils/sockets";
+import { useDispatch, useSelector } from "react-redux";
+import { setBadge } from "@/redux/slices/badgeSlice";
 
 interface InboxState {
   loading?: boolean;
@@ -21,6 +23,9 @@ interface InboxState {
 const Inbox = () => {
   // data hook
   const [inboxes, setInboxes] = useState<InboxModel[]>([]);
+
+  // badge
+  const dispatch = useDispatch();
 
   // state hook
   const isOnline = useOnlineStatus();
@@ -36,10 +41,18 @@ const Inbox = () => {
   });
 
   function getUserToken(): string | null {
-    const user = localStorage.getItem("user");
-    if (!user) return null;
-    const userJson = JSON.parse(user);
+    const userCookie = Cookies.get("user");
+    if (!userCookie) return null; // ✅ tambahkan return
+
+    const userJson = JSON.parse(userCookie);
     return userJson.token;
+  }
+  function getUserId(): string | null {
+    const userCookie = Cookies.get("user");
+    if (!userCookie) return null; // ✅ tambahkan return
+
+    const userJson = JSON.parse(userCookie);
+    return userJson.id;
   }
 
   const router = useRouter();
@@ -71,6 +84,7 @@ const Inbox = () => {
   //* use effect
   useEffect(() => {
     if (isOnline) {
+      console.log("isOnline" + isOnline);
       fetchInbox();
     } else {
       setInboxState({
@@ -80,10 +94,19 @@ const Inbox = () => {
     }
   }, [isOnline]);
 
+  //* set badge to reducer
+  useEffect(() => {
+    dispatch(
+      setBadge(inboxes.filter((inbox) => inbox.is_read == false).length)
+    );
+  }, [inboxes]);
+
   //* fetch inbox
   const fetchInbox = async () => {
     try {
       const token = getUserToken();
+      console.log("user token");
+      console.log(token);
       if (token) {
         const res = await axios(`${API_BACKEND}/api/v1/inbox/list`, {
           headers: {
@@ -183,15 +206,15 @@ const Inbox = () => {
   };
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (!userData) return;
+    const userId = getUserId();
+    console.log("user token");
+    console.log(userId);
 
-    const userParsed = JSON.parse(userData);
-    const socket = createSocket(userParsed.id);
+    const socket = createSocket(userId ?? "-");
 
     socket.on("connect", () => {
       console.log("Socket connected:", socket.id);
-      console.log("Socket connected user id :", userParsed.id);
+      console.log("Socket connected user id :", userId ?? "-");
     });
 
     socket.on("inbox-update", (data) => {
@@ -267,12 +290,14 @@ const Inbox = () => {
               rejectProject(id);
             }
           }}
-          onAccept={(isUpdateDocument) => {
+          onAccept={(isUpdateDocument, form) => {
             if (isUpdateDocument) {
               if (role !== 1 || roleUser !== "investor") {
-                router.push("/form-penerbit?update=true");
+                console.log("update dokumen");
+                console.log(form);
+                router.push(`/form-penerbit?update=true&form=${form}`);
               } else {
-                router.push("/form-pemodal?update=true");
+                router.push(`/form-pemodal?update=true&form=${form}`);
               }
             } else {
               approveProject(selectedProject.projectId, selectedProject.price);

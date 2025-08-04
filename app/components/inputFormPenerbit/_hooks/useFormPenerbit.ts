@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-interface JobStructureFormData {
+export interface JobStructureFormData {
   id: string;
   nama: string;
   jabatan: string;
@@ -9,7 +9,7 @@ interface JobStructureFormData {
   fileNPWP: string;
 }
 
-interface FormPenerbitState {
+export interface FormPenerbitState {
   laporanKeuangan: string;
   rekeningKoran: string;
   direktur: JobStructureFormData[];
@@ -102,7 +102,7 @@ export function useFormPenerbit() {
     }));
   };
 
-  const addDirektur = () => {
+  const addDirektur = (newDirekturFromParam?: JobStructureFormData | null) => {
     if (state.direktur.length >= maxStructure) return;
     const newId = `${Date.now()}`;
     const newDirektur: JobStructureFormData = {
@@ -115,7 +115,7 @@ export function useFormPenerbit() {
     };
     setState((prev) => ({
       ...prev,
-      direktur: [...prev.direktur, newDirektur],
+      direktur: [...prev.direktur, newDirekturFromParam ?? newDirektur],
     }));
   };
 
@@ -139,7 +139,9 @@ export function useFormPenerbit() {
     }));
   };
 
-  const addKomisaris = () => {
+  const addKomisaris = (
+    newKomisarisFromParam?: JobStructureFormData | null
+  ) => {
     if (state.komisaris.length >= maxStructure) return;
     const newId = `${Date.now()}`;
     const newKomisaris: JobStructureFormData = {
@@ -152,7 +154,7 @@ export function useFormPenerbit() {
     };
     setState((prev) => ({
       ...prev,
-      komisaris: [...prev.komisaris, newKomisaris],
+      komisaris: [...prev.komisaris, newKomisarisFromParam ?? newKomisaris],
     }));
   };
 

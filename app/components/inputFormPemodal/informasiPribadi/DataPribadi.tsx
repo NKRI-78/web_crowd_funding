@@ -8,6 +8,8 @@ import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import Select from "react-select";
 import { API_BACKEND_MEDIA } from "@/app/utils/constant";
+import { compressImage } from "@/app/helper/CompressorImage";
+import UpdateRing from "../component/UpdateRing";
 
 interface Props {
   formData: {
@@ -33,6 +35,7 @@ interface Props {
     subDistrictPribadi: { value: string; label: string };
     posCode: string;
   };
+  onLihatKTP?: () => void;
   onChange: (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -52,6 +55,52 @@ interface Props {
   }) => void;
   errors?: Record<string, string[]>;
   onBankChange: (bank: { value: string; label: string } | null) => void;
+  dataProfile: {
+    id: string;
+    fullname: string;
+    avatar: string;
+    last_education: string;
+    gender: string;
+    status_marital: string;
+    address_detail: string;
+    occupation: string;
+    province_name: string;
+    city_name: string;
+    district_name: string;
+    subdistrict_name: string;
+    postal_code: string;
+    investor: {
+      bank: {
+        no: string;
+        bank_name: string;
+        bank_owner: string;
+        bank_branch: string;
+        rek_koran_path: string;
+        created_at: string;
+      };
+      ktp: {
+        name: string;
+        nik: string;
+        place_datebirth: string;
+        path: string;
+        created_at: string;
+      };
+      job: {
+        province_name: string;
+        city_name: string;
+        district_name: string;
+        subdistrict_name: string;
+        postal_code: string;
+        company_name: string;
+        company_address: string;
+        monthly_income: string;
+        npwp_path: string;
+        position: string;
+      };
+    };
+    form: string;
+  };
+  isUpdate: boolean;
 }
 
 const ComponentDataPribadi: React.FC<Props> = ({
@@ -65,8 +114,16 @@ const ComponentDataPribadi: React.FC<Props> = ({
   onAlamatChange,
   errors,
   onBankChange,
+  onLihatKTP,
+  dataProfile,
+  isUpdate,
 }) => {
-  type OptionType = { value: string; label: string } | null;
+  type OptionValue = {
+    value: string;
+    label: string;
+  };
+
+  type OptionType = OptionValue | null;
 
   const optionsGender = ["Laki-Laki", "Perempuan"];
   const optionsPernikahan = ["Belum Menikah", "Menikah", "Cerai"];
@@ -79,22 +136,18 @@ const ComponentDataPribadi: React.FC<Props> = ({
     "Pascasarjana",
   ];
   const pekerjaanOptions = ["PNS", "Swasta", "Wiraswasta", "Lainnya"];
-  const [isUploading, setIsUploading] = useState(false);
+
   const [uploadStatus, setUploadStatus] = useState<{ [key: string]: boolean }>(
     {}
   );
+
   const [province, setProvince] = useState<any>([]);
   const [selectedProvincePribadi, setSelectedProvincePribadi] =
-    useState<OptionType>(() => {
-      if (typeof window !== "undefined") {
-        const saved = localStorage.getItem("selectedSubDistrict");
-        return saved ? JSON.parse(saved) : null;
-      }
-      return null;
-    });
+    useState<OptionType | null>(null);
   const [city, setCity] = useState<any>([]);
   const [selectedCityPribadi, setSelectedCityPribadi] =
     useState<OptionType>(null);
+
   const [district, setDistrict] = useState<any>([]);
   const [selectedDistrictPribadi, setSelectedDistrictPribadi] =
     useState<OptionType>(null);
@@ -102,8 +155,11 @@ const ComponentDataPribadi: React.FC<Props> = ({
   const [selectedSubDistrictPribadi, setSelectedSubDistrictPribadi] =
     useState<OptionType>(null);
   const [posCode, setPosCode] = useState("");
-  const [bank, setBank] = useState<any>([]);
+
+  const [bank, setBank] = useState<any[]>([]);
+
   const [selectedBank, setSelectedBank] = useState<OptionType>(null);
+
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -113,20 +169,23 @@ const ComponentDataPribadi: React.FC<Props> = ({
   const urlWilayah = "https://api.wilayah.site";
 
   const today = new Date();
-  const maxDate = new Date();
-  maxDate.setFullYear(today.getFullYear() - 17);
+  // const maxDate = new Date();
+  // maxDate.setFullYear(today.getFullYear() - 17);
 
-  const [localFormData, setLocalFormData] = useState<any>({});
-  const [hasMounted, setHasMounted] = useState(false);
+  // get tahun dikurang 17
+  const maxDate = new Date(
+    today.getFullYear() - 17,
+    today.getMonth(),
+    today.getDate()
+  );
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+
     const keyName = e.target.getAttribute("data-keyname");
     if (!file || !keyName) return;
 
-    // Validasi maksimal 10MB
     if (file.size > 10 * 1024 * 1024) {
-      // alert("Ukuran file maksimal 10MB");
       Swal.fire({
         title: "Warning",
         text: `Ukuran file maksimal 10MB!`,
@@ -138,13 +197,13 @@ const ComponentDataPribadi: React.FC<Props> = ({
       return;
     }
 
+    const compressedFile = await compressImage(file);
+
     const formData = new FormData();
     formData.append("folder", "web");
     formData.append("subfolder", keyName);
-    formData.append("media", file);
+    formData.append("media", compressedFile);
 
-    // setIsUploading(true);
-    setUploadStatus((prev) => ({ ...prev, [keyName]: true }));
     try {
       const res = await axios.post(
         `${API_BACKEND_MEDIA}/api/v1/media/upload`,
@@ -156,7 +215,6 @@ const ComponentDataPribadi: React.FC<Props> = ({
       if (fileUrl) {
         const labelMap: { [key: string]: string } = {
           ktpUrl: "KTP",
-          // rekeningKoran: "Rekening Koran",
           npwpUrl: "NPWP Perusahaan",
         };
 
@@ -177,7 +235,6 @@ const ComponentDataPribadi: React.FC<Props> = ({
       }
     } catch (error) {
       console.error("Gagal upload KTP:", error);
-      // alert("Upload gagal. Silakan coba lagi.");
       Swal.fire({
         title: "Gagal",
         text: `Upload ${keyName} gagal. Silakan coba lagi.`,
@@ -185,7 +242,6 @@ const ComponentDataPribadi: React.FC<Props> = ({
         timer: 3000,
       });
     } finally {
-      // setIsUploading(false);
       setUploadStatus((prev) => ({ ...prev, [keyName]: false }));
     }
   };
@@ -259,6 +315,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
 
   useEffect(() => {
     if (!selectedSubDistrictPribadi) return;
+
     const fetchPosCode = async () => {
       try {
         const response = await axios.get(`${urlWilayah}/wilayah/postalcode`, {
@@ -266,10 +323,10 @@ const ComponentDataPribadi: React.FC<Props> = ({
             code: selectedSubDistrictPribadi?.value,
           },
         });
-
         setPosCode(response?.data?.data?.postal_code || "");
+        console.log("CEK", response.data);
       } catch (error) {
-        console.error("Gagal ambil subdistrict:", error);
+        console.error("Gagal ambil kode pos:", error);
       }
     };
 
@@ -292,13 +349,21 @@ const ComponentDataPribadi: React.FC<Props> = ({
   }, []);
 
   useEffect(() => {
-    onAlamatChange({
-      provincePribadi: selectedProvincePribadi,
-      cityPribadi: selectedCityPribadi,
-      districtPribadi: selectedDistrictPribadi,
-      subDistrictPribadi: selectedSubDistrictPribadi,
-      posCode: posCode,
-    });
+    if (
+      selectedProvincePribadi &&
+      selectedCityPribadi &&
+      selectedDistrictPribadi &&
+      selectedSubDistrictPribadi &&
+      posCode
+    ) {
+      onAlamatChange({
+        provincePribadi: selectedProvincePribadi,
+        cityPribadi: selectedCityPribadi,
+        districtPribadi: selectedDistrictPribadi,
+        subDistrictPribadi: selectedSubDistrictPribadi,
+        posCode: posCode,
+      });
+    }
   }, [
     selectedProvincePribadi,
     selectedCityPribadi,
@@ -312,70 +377,87 @@ const ComponentDataPribadi: React.FC<Props> = ({
   }, [selectedBank]);
 
   useEffect(() => {
-    // if (!formData || !province.length) return;
-    if (Object.keys(formData).length && formData.provincePribadi) {
+    if (!Object.keys(formData).length) return;
+
+    if (formData.provincePribadi)
       setSelectedProvincePribadi(formData.provincePribadi);
-    }
-
-    if (Object.keys(formData).length && formData.cityPribadi) {
-      setSelectedCityPribadi(formData.cityPribadi);
-    }
-
-    if (Object.keys(formData).length && formData.districtPribadi) {
+    if (formData.cityPribadi) setSelectedCityPribadi(formData.cityPribadi);
+    if (formData.districtPribadi)
       setSelectedDistrictPribadi(formData.districtPribadi);
-    }
-
-    if (Object.keys(formData).length && formData.subDistrictPribadi) {
+    if (formData.subDistrictPribadi)
       setSelectedSubDistrictPribadi(formData.subDistrictPribadi);
-    }
+    if (formData.namaBank) setSelectedBank(formData.namaBank);
 
-    if (Object.keys(formData).length && formData.posCode) {
+    if (formData?.posCode) {
+      console.log("Prefill posCode berhasil:", formData.posCode);
       setPosCode(formData.posCode);
     }
+  }, [formData]);
 
-    if (Object.keys(formData).length && formData.namaBank) {
-      setSelectedBank(formData.namaBank);
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (dataProfile?.postal_code && !formData.posCode) {
+  //     onChange({
+  //       target: {
+  //         name: "posCode",
+  //         value: dataProfile.postal_code,
+  //       },
+  //     } as React.ChangeEvent<HTMLInputElement>);
+  //   }
+  // }, [dataProfile?.postal_code]);
 
-  const customOptions = province.map(
-    (province: { code: string; nama: string }) => ({
+  const customOptions: OptionValue[] = province.map(
+    (province: { code: any; nama: any }) => ({
       value: province.code,
       label: province.nama,
     })
   );
 
-  const customOptionsCity = city.map(
+  const customOptionsCity = city?.map(
     (city: { code: string; nama: string }) => ({
       value: city.code,
       label: city.nama,
     })
   );
 
-  const customOptionsDistrict = district.map(
+  const customOptionsDistrict = district?.map(
     (district: { code: string; nama: string }) => ({
       value: district.code,
       label: district.nama,
     })
   );
 
-  const customOptionsSubDistrict = subDistrict.map(
+  const customOptionsSubDistrict = subDistrict?.map(
     (subDistrict: { code: string; nama: string }) => ({
       value: subDistrict.code,
       label: subDistrict.nama,
     })
   );
 
-  const customOptionsBank = bank.map(
-    (bank: { code: string; name: string }) => ({
-      value: bank.code,
-      label: bank.name,
-    })
-  );
+  const customOptionsBank = useMemo(() => {
+    return bank.map((b) => ({
+      value: b.code,
+      label: b.name,
+    }));
+  }, [bank]);
+
+  useEffect(() => {
+    if (
+      !dataProfile?.investor.bank?.bank_name ||
+      customOptionsBank.length === 0
+    )
+      return;
+
+    const foundBank = customOptionsBank.find(
+      (opt) => opt.label === dataProfile.investor.bank.bank_name
+    );
+
+    if (foundBank) {
+      setSelectedBank(foundBank);
+    }
+  }, [customOptionsBank, dataProfile?.investor.bank?.bank_name]);
 
   const formatOptionLabel = ({ label, icon }: any) => (
     <div className="flex items-center gap-2">
-      {/* <img src={icon} alt={label} className="w-5 h-5" /> */}
       <span>{label}</span>
     </div>
   );
@@ -455,26 +537,25 @@ const ComponentDataPribadi: React.FC<Props> = ({
               <label className="text-sm font-medium mb-2">
                 Tanggal Lahir <span className="text-red-500">*</span>
               </label>
-              {/* <input
-              type="text"
-              name="tanggalLahir"
-              value={formData.tanggalLahir}
-              onChange={onChange}
-              placeholder="Tanggal Lahir"
-              className="border p-2 w-full rounded mb-4"
-            /> */}
-
               <Flatpickr
                 options={{
                   dateFormat: "d-m-Y",
-                  // maxDate: "today",
                   maxDate: maxDate,
                 }}
                 value={tanggalLahirDate}
                 onChange={(selectedDates) => {
                   const selectedDate = selectedDates[0];
                   if (selectedDate) {
-                    const formatted = selectedDate.toISOString().split("T")[0];
+                    const year = selectedDate.getFullYear();
+                    const month = String(selectedDate.getMonth() + 1).padStart(
+                      2,
+                      "0"
+                    );
+                    const day = String(selectedDate.getDate()).padStart(2, "0");
+
+                    // const formatted = selectedDate.toISOString().split("T")[0];
+                    const formatted = `${year}-${month}-${day}`;
+
                     onChange({
                       target: {
                         name: "tanggalLahir",
@@ -560,48 +641,53 @@ const ComponentDataPribadi: React.FC<Props> = ({
               File maksimal berukuran 10mb
             </p>
 
-            {/* Input File yang disembunyikan */}
-            <input
-              type="file"
-              id="ktpUpload"
-              className="hidden"
-              onChange={handleFileChange}
-              disabled={uploadStatus["ktpUrl"] === true}
-              accept="application/pdf, image/*"
-              data-keyname="ktpUrl"
-            />
-
-            {/* Label sebagai tombol */}
-            <label
-              htmlFor="ktpUpload"
-              className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
-              // className={`inline-flex items-center gap-2 px-4 py-2 ${
-              //   uploadStatus["ktpUrl"]
-              //     ? "bg-gray-400 cursor-not-allowed"
-              //     : "bg-[#505050] hover:bg-gray-800"
-              // } text-white rounded-md transition`}
+            <UpdateRing
+              identity={`${dataProfile?.form}`}
+              // formKey={dataProfile?.form}
+              formKey="ktp"
             >
-              <>
-                <FaFileAlt />
-                Upload Dokumen
-              </>
-            </label>
-          </div>
-          <>
-            {isClient && formData.ktpUrl && (
-              <a
-                href={formData.ktpUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline text-sm block mt-2 mb-2"
+              {/* Input File yang disembunyikan */}
+              <input
+                type="file"
+                id="ktpUpload"
+                className="hidden"
+                onChange={handleFileChange}
+                disabled={uploadStatus["ktpUrl"] === true}
+                accept="image/*"
+                data-keyname="ktpUrl"
+              />
+
+              {/* Label sebagai tombol */}
+              <label
+                htmlFor="ktpUpload"
+                className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
+                // className={`inline-flex items-center gap-2 px-4 py-2 ${
+                //   uploadStatus["ktpUrl"]
+                //     ? "bg-gray-400 cursor-not-allowed"
+                //     : "bg-[#505050] hover:bg-gray-800"
+                // } text-white rounded-md transition`}
               >
-                Lihat KTP
-              </a>
-            )}
-          </>
-          {errors?.ktpUrl && (
-            <p className="text-red-500 text-sm mt-1">{errors.ktpUrl[0]}</p>
-          )}
+                <>
+                  <FaFileAlt />
+                  Upload Dokumen
+                </>
+              </label>
+              <>
+                {isClient && formData.ktpUrl && (
+                  <button
+                    type="button"
+                    onClick={onLihatKTP}
+                    className="text-blue-600 underline text-sm block mt-2 mb-2"
+                  >
+                    Lihat KTP
+                  </button>
+                )}
+              </>
+              {errors?.ktpUrl && (
+                <p className="text-red-500 text-sm mt-1">{errors.ktpUrl[0]}</p>
+              )}
+            </UpdateRing>
+          </div>
           <div className="mb-4">
             <label className="text-md mb-2">
               Pendidikan Terakhir <span className="text-red-500">*</span>
@@ -689,7 +775,6 @@ const ComponentDataPribadi: React.FC<Props> = ({
                 className="mt-0"
                 value={selectedProvincePribadi}
                 options={customOptions}
-                // styles={customStyles}
                 formatOptionLabel={formatOptionLabel}
                 onChange={(e) => {
                   setSelectedProvincePribadi(e);
@@ -700,6 +785,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
                 }}
                 placeholder="Pilih Provinsi"
               />
+
               {errors?.provincePribadi && (
                 <p className="text-red-500 text-sm mt-1">
                   {errors.provincePribadi[0]}
@@ -711,7 +797,6 @@ const ComponentDataPribadi: React.FC<Props> = ({
                 className="mt-0"
                 value={selectedCityPribadi}
                 options={customOptionsCity}
-                // styles={customStyles}
                 formatOptionLabel={formatOptionLabel}
                 onChange={(e) => {
                   setSelectedCityPribadi(e);
@@ -733,7 +818,6 @@ const ComponentDataPribadi: React.FC<Props> = ({
                 className="mt-0"
                 value={selectedDistrictPribadi}
                 options={customOptionsDistrict}
-                // styles={customStyles}
                 formatOptionLabel={formatOptionLabel}
                 onChange={(e) => {
                   setSelectedDistrictPribadi(e);
@@ -754,7 +838,6 @@ const ComponentDataPribadi: React.FC<Props> = ({
                 className="mt-0"
                 value={selectedSubDistrictPribadi}
                 options={customOptionsSubDistrict}
-                // styles={customStyles}
                 formatOptionLabel={formatOptionLabel}
                 onChange={(e) => {
                   setSelectedSubDistrictPribadi(e);
@@ -773,9 +856,9 @@ const ComponentDataPribadi: React.FC<Props> = ({
           <div>
             <input
               type="number"
-              name="codePos"
+              name="posCode"
               placeholder="Kode Pos"
-              value={posCode}
+              value={posCode || formData.posCode || ""}
               onChange={onChange}
               className="border rounded p-2 w-full mb-2 placeholder:text-sm"
             />
@@ -805,19 +888,11 @@ const ComponentDataPribadi: React.FC<Props> = ({
           <label className="text-sm font-medium mb-2">
             Nama Bank <span className="text-red-500">*</span>
           </label>
-          {/* <input
-            type="text"
-            name="namaBank"
-            placeholder="Nama Bank (misal: BCA)"
-            value={formData.namaBank}
-            onChange={onChange}
-            className="border rounded p-2 w-full mb-0 placeholder:text-sm"
-          /> */}
+
           <Select
             className="mt-0"
             value={selectedBank}
             options={customOptionsBank}
-            // styles={customStyles}
             formatOptionLabel={formatOptionLabel}
             onChange={(e) => {
               setSelectedBank(e);

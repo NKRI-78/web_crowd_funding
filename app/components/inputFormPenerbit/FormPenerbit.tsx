@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useFormPenerbit } from "./_hooks/useFormPenerbit";
+import { useEffect, useState } from "react";
+import { FormPenerbitState, useFormPenerbit } from "./_hooks/useFormPenerbit";
 
 import TextField from "./_component/TextField";
 import JobStructureForm from "./_component/JobStructureForm";
@@ -21,9 +21,17 @@ import { useRouter } from "next/navigation";
 import CustomCheckBox from "./_component/CustomCheckBox";
 import AddButton from "./_component/AddButton";
 import PhotoUploader from "./_component/PhotoUploaderContainer";
+import {
+  ProfileUpdate,
+  publisherUpdateKeys,
+} from "@/app/(defaults)/form-penerbit/UpdateProfileInterface";
+import UpdateRing from "./_component/UpdateRing";
+import Cookies from "js-cookie";
 
 type Props = {
   onBack: () => void;
+  profile: ProfileUpdate | null;
+  isUpdate: boolean;
 };
 
 export interface JobStructureError {
@@ -59,7 +67,7 @@ export interface FormPenerbitError {
   companyProfile?: string;
 }
 
-const FormPenerbit: React.FC<Props> = ({ onBack }) => {
+const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
   const router = useRouter();
 
   //* main hooks
@@ -196,10 +204,92 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
   };
 
   //* on submit
-  const onSubmit = async () => {
+  const onSubmit = () => {
     const validForm = validateForm();
     if (!validForm) return;
 
+    if (isUpdate) {
+      updateDocument();
+    } else {
+      addDocument();
+    }
+  };
+
+  //* load data ketika update dokumen
+  useEffect(() => {
+    if (isUpdate && profile !== null) {
+      const company = profile.company;
+      console.log("set data di form-penerbit ketika isUpdate ");
+      console.log(company);
+
+      // set data
+      updateField("laporanKeuangan", company.laporan_keuangan_path);
+      updateField("rekeningKoran", company.rekening_koran);
+      for (const direktur of company.directors) {
+        const hasName = formState.direktur.some(
+          (user) => user.nama === direktur.name
+        );
+        if (!hasName) {
+          addDirektur({
+            id: direktur.id.toString(),
+            nama: direktur.name,
+            jabatan:
+              direktur.position == "Direktur Utama"
+                ? "direktur-utama"
+                : "direktur",
+            noKTP: direktur.ktp,
+            fileKTP: direktur.ktp_path,
+            fileNPWP: direktur.npwp_path,
+          });
+        }
+      }
+      for (const komisaris of company.komisaris) {
+        const hasName = formState.komisaris.some(
+          (user) => user.nama === komisaris.name
+        );
+        if (!hasName) {
+          addKomisaris({
+            id: komisaris.id.toString(),
+            nama: komisaris.name,
+            jabatan:
+              komisaris.position == "Komisaris Utama"
+                ? "komisaris-utama"
+                : "komisaris",
+            noKTP: komisaris.ktp,
+            fileKTP: komisaris.ktp_path,
+            fileNPWP: komisaris.npwp_path,
+          });
+        }
+      }
+      for (const project of company.projects) {
+        updateField(
+          "fotoProyek",
+          project.media.map((media) => media.path)
+        );
+        updateField("titleProyek", project.title);
+        updateField("jangkaWaktu", project.jangka_waktu);
+        updateField("nilaiNominal", project.jumlah_minimal.toString());
+        updateField("tingkatBunga", project.tingkat_bunga.replace(/%$/, ""));
+        updateField("jadwalBunga", project.jadwal_pembayaran_bunga);
+        updateField("jadwalPokok", project.jadwal_pembayaran_pokok);
+        updateField(
+          "penggunaanDana",
+          project.penggunaan_dana.map((dana) => dana.name)
+        );
+        updateField(
+          "jaminanKolateral",
+          project.jaminan_kolateral.map((jaminan) => jaminan.name)
+        );
+        updateField("deskripsiPekerjaan", project.deskripsi_pekerjaan);
+        updateField("fileDokumenKontrakApbn", project.nilai_kontrak_path);
+        updateField("noKontrakApbn", project.nilai_kontrak);
+        updateField("companyProfile", project.company_profile);
+      }
+    }
+  }, [profile, isUpdate]);
+
+  //* tambah dokumen
+  const addDocument = async () => {
     // hit api
     console.log("Hit API");
     try {
@@ -236,8 +326,8 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
                   position: "Direktur",
                   ktp: dir.noKTP,
                   ktp_path: dir.fileKTP,
-                  npwp: dir.fileNPWP,
-                  npwp_path: "-",
+                  npwp: "-",
+                  npwp_path: dir.fileNPWP,
                 }))
               : formState.direktur.map((dir) => ({
                   title:
@@ -251,8 +341,8 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
                       : "Direktur",
                   ktp: dir.noKTP,
                   ktp_path: dir.fileKTP,
-                  npwp: dir.fileNPWP,
-                  npwp_path: "-",
+                  npwp: "-",
+                  npwp_path: dir.fileNPWP,
                 })),
           komisaris: formState.komisaris.map((kom) => ({
             title:
@@ -266,8 +356,8 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
                 : "Komisaris",
             ktp: kom.noKTP,
             ktp_path: kom.fileKTP,
-            npwp: kom.fileNPWP,
-            npwp_path: "-",
+            npwp: "-",
+            npwp_path: kom.fileNPWP,
           })),
           project: {
             title: formState.titleProyek,
@@ -333,6 +423,175 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
     }
   };
 
+  //* update dokumen
+  const updateDocument = async () => {
+    const penerbitCache = localStorage.getItem("formPenerbitDraft");
+    const isKTP: boolean = profile?.form.endsWith("upload-ktp") ?? false;
+    const isNPWP: boolean = profile?.form.endsWith("upload-npwp") ?? false;
+    const isSusunanManajemen: boolean = isKTP || isNPWP;
+    const isDirektur: boolean = profile?.form.includes("direktur") ?? false;
+
+    if (penerbitCache) {
+      const penerbitJSON = JSON.parse(penerbitCache) as FormPenerbitState;
+      let idManajemen = "-";
+      let valManajemen = "-";
+
+      if (isSusunanManajemen) {
+        if (isDirektur) {
+          const direkturIndex: number = Number(profile?.form[0]);
+          idManajemen = penerbitJSON.direktur[direkturIndex].id;
+
+          if (isKTP) {
+            valManajemen = penerbitJSON.direktur[direkturIndex].fileKTP;
+          } else {
+            valManajemen = penerbitJSON.direktur[direkturIndex].fileNPWP;
+          }
+        } else {
+          const komisarisIndex: number = Number(profile?.form[0]);
+          idManajemen = penerbitJSON.komisaris[komisarisIndex].id;
+
+          if (isKTP) {
+            valManajemen = penerbitJSON.komisaris[komisarisIndex].fileKTP;
+          } else {
+            valManajemen = penerbitJSON.komisaris[komisarisIndex].fileNPWP;
+          }
+        }
+      }
+
+      const payload = {
+        ...(profile?.form === "company-profile"
+          ? { company_id: profile?.company.id }
+          : { project_id: profile?.company.projects?.[0]?.id }),
+        val: getUpdateDocumentValueBasedFormKey(penerbitJSON),
+        val_array: isSusunanManajemen
+          ? [
+              {
+                id: idManajemen,
+                val: valManajemen,
+                type: isKTP ? "ktp" : "npwp",
+              },
+            ]
+          : [],
+      };
+
+      try {
+        const userCookie = Cookies.get("user");
+        if (!userCookie) return null;
+        const userJson = JSON.parse(userCookie);
+
+        const result = await axios.put(
+          `${API_BACKEND}/api/v1/document/update/${profile?.form}`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${userJson.token}`,
+            },
+          }
+        );
+
+        console.log("Payload ", payload);
+        console.log("Result ", payload);
+
+        // Hapus localStorage dan reset
+        localStorage.removeItem("formPenerbitDraft");
+        localStorage.removeItem("publisherDraft");
+
+        await Swal.fire({
+          title: "Berhasil",
+          text: "Data berhasil diupdate",
+          icon: "success",
+          timer: 3000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+        });
+
+        router.push("/");
+      } catch (error) {
+        console.log(error);
+        Swal.fire({
+          icon: "error",
+          title: "Update Gagal",
+          text: `${error}`,
+          timer: 3000,
+          timerProgressBar: true,
+        });
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (!isUpdate) {
+      window.scroll(0, 0);
+    }
+  }, [isUpdate]);
+
+  const getUpdateDocumentValueBasedFormKey = (
+    penerbitJSON: FormPenerbitState
+  ): string => {
+    if (!profile?.form) return "-";
+
+    let val: string = "";
+
+    const isFormPunyanyaUdin = publisherUpdateKeys.includes(profile?.form);
+    try {
+      if (isFormPunyanyaUdin) {
+        const publisherCache = localStorage.getItem("publisherDraft");
+        if (publisherCache) {
+          const publisherJSON = JSON.parse(publisherCache);
+          switch (profile.form) {
+            case "nib":
+              val = publisherJSON.company_nib_path;
+              break;
+            case "akta-pendirian-perusahaan":
+              val = publisherJSON.akta_pendirian;
+              break;
+            case "sk-kumham-path":
+              val = publisherJSON.sk_kumham_path;
+              break;
+            case "akta-perubahan-terakhir":
+              val = publisherJSON.akta_perubahan_terahkir_path;
+              break;
+            case "sk-kumham-terakhir":
+              val = publisherJSON.sk_kumham_terahkir;
+              break;
+            case "jumlah-karyawan":
+              val = publisherJSON.total_employees;
+              break;
+            default:
+              val = "-";
+              break;
+          }
+        }
+      } else {
+        switch (profile.form) {
+          case "laporan-keuangan":
+            val = penerbitJSON.laporanKeuangan;
+            break;
+          case "rekening-koran":
+            val = penerbitJSON.rekeningKoran;
+            break;
+          case "doc-kontrak":
+            val = penerbitJSON.fileDokumenKontrakApbn ?? "-";
+            break;
+          case "company-profile":
+            val = penerbitJSON.companyProfile;
+            break;
+          default:
+            val = "-";
+            break;
+        }
+      }
+    } catch (_) {
+      val = "-";
+    }
+
+    console.log("profile.form: ", profile?.form);
+    console.log("form val ? = " + val);
+    console.log(penerbitJSON.rekeningKoran);
+
+    return val;
+  };
+
   return (
     <div className="px-6 md:px-24 bg-white">
       <div className="w-full py-28 text-black grid grid-cols-1 md:grid-cols-2 gap-10 mx-auto">
@@ -342,46 +601,50 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
           <div className="flex gap-x-4 items-end">
             <div className="flex flex-col">
               <SectionTitle text="2. Struktur Permodalan" />
+              <div className="my-1"></div>
+              <UpdateRing identity="laporan-keuangan" formKey={profile?.form}>
+                <SectionPoint text="Laporan Keuangan" />
+                <SectionSubtitle
+                  text="File maksimal berukuran 10mb"
+                  className="my-1"
+                />
 
-              <SectionPoint text="Laporan Keuangan" className="mt-2" />
-              <SectionSubtitle
-                text="File maksimal berukuran 10mb"
-                className="my-1"
-              />
-
-              <FileInput
-                fileName="Laporan Keuangan"
-                fileUrl={formState.laporanKeuangan}
-                accept=".pdf,.xlsx,.xlsm,.xls,.xltx,.xltm,.xlsb"
-                onChange={(fileUrl) => {
-                  updateField("laporanKeuangan", fileUrl);
-                  if (fileUrl) {
-                    setErrors({ ...errors, laporanKeuangan: "" });
-                  }
-                }}
-                errorText={errors.laporanKeuangan}
-              />
+                <FileInput
+                  fileName="Laporan Keuangan"
+                  fileUrl={formState.laporanKeuangan}
+                  accept=".pdf,.xlsx,.xlsm,.xls,.xltx,.xltm,.xlsb"
+                  onChange={(fileUrl) => {
+                    updateField("laporanKeuangan", fileUrl);
+                    if (fileUrl) {
+                      setErrors({ ...errors, laporanKeuangan: "" });
+                    }
+                  }}
+                  errorText={errors.laporanKeuangan}
+                />
+              </UpdateRing>
             </div>
 
             <div className="flex flex-col">
-              <SectionPoint text="Rekening Koran" />
-              <SectionSubtitle
-                text="File maksimal berukuran 10mb"
-                className="my-1"
-              />
+              <UpdateRing identity="rekening-koran" formKey={profile?.form}>
+                <SectionPoint text="Rekening Koran" />
+                <SectionSubtitle
+                  text="File maksimal berukuran 10mb"
+                  className="my-1"
+                />
 
-              <FileInput
-                fileName="Rekening Koran"
-                fileUrl={formState.rekeningKoran}
-                accept=".pdf,.xlsx,.xlsm,.xls,.xltx,.xltm,.xlsb"
-                onChange={(fileUrl) => {
-                  updateField("rekeningKoran", fileUrl);
-                  if (fileUrl) {
-                    setErrors({ ...errors, rekeningKoran: "" });
-                  }
-                }}
-                errorText={errors.rekeningKoran}
-              />
+                <FileInput
+                  fileName="Rekening Koran"
+                  fileUrl={formState.rekeningKoran}
+                  accept=".pdf,.xlsx,.xlsm,.xls,.xltx,.xltm,.xlsb"
+                  onChange={(fileUrl) => {
+                    updateField("rekeningKoran", fileUrl);
+                    if (fileUrl) {
+                      setErrors({ ...errors, rekeningKoran: "" });
+                    }
+                  }}
+                  errorText={errors.rekeningKoran}
+                />
+              </UpdateRing>
             </div>
           </div>
 
@@ -396,11 +659,14 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
                 (item) =>
                   item.jabatan === "direktur-utama" && item.id !== structure.id
               );
+
               return (
                 <JobStructureForm
                   key={structure.id}
                   data={structure}
                   hasDirekturUtama={hasDirekturUtama}
+                  updateFormKey={profile?.form}
+                  updateIdentity={`${index}-direktur`}
                   onChange={(fieldKey, value) => {
                     updateDirektur(structure.id, fieldKey, value);
 
@@ -453,6 +719,8 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
                   isKomisaris={true}
                   data={structure}
                   hasKomisarisUtama={hasKomisarisUtama}
+                  updateFormKey={profile?.form}
+                  updateIdentity={`${index}-komisaris`}
                   onChange={(fieldKey, value) => {
                     updateKomisaris(structure.id, fieldKey, value);
 
@@ -502,6 +770,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
                     setErrors({ ...errors, fotoProyek: "" });
                   }
                 }}
+                photoPaths={formState.fotoProyek}
                 errorText={errors.fotoProyek}
               />
 
@@ -518,6 +787,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
                 }}
                 errorText={errors.titleProyek}
               />
+
               <DropdownSelect
                 label="Jenis Obligasi"
                 options={[{ label: "Konvensional", value: "konvensional" }]}
@@ -681,63 +951,69 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
             showWhenValue="Iya"
             customContent={
               <div className="flex gap-x-3">
-                <div>
-                  <p className="text-[12px] mb-1 font-semibold text-gray-500">
-                    Dokumen Kontrak
-                  </p>
-                  <FileInput
-                    fileName="Dokumen Kontrak APBN"
-                    fileUrl={formState.fileDokumenKontrakApbn}
-                    accept=".pdf"
-                    onChange={(fileUrl) => {
-                      updateField("fileDokumenKontrakApbn", fileUrl);
-                      if (fileUrl) {
-                        setErrors({ ...errors, fileDokumenKontrakApbn: "" });
-                      }
-                    }}
-                    errorText={errors.fileDokumenKontrakApbn}
-                  />
-                </div>
+                <UpdateRing identity="doc-kontrak" formKey={profile?.form}>
+                  <div>
+                    <p className="text-[12px] mb-1 font-semibold text-gray-500">
+                      Dokumen Kontrak
+                    </p>
+                    <FileInput
+                      fileName="Dokumen Kontrak APBN"
+                      fileUrl={formState.fileDokumenKontrakApbn}
+                      accept=".pdf"
+                      onChange={(fileUrl) => {
+                        updateField("fileDokumenKontrakApbn", fileUrl);
+                        if (fileUrl) {
+                          setErrors({ ...errors, fileDokumenKontrakApbn: "" });
+                        }
+                      }}
+                      errorText={errors.fileDokumenKontrakApbn}
+                    />
+                  </div>
+                </UpdateRing>
 
-                <div>
-                  <p className="text-[12px] mb-1 font-semibold text-gray-500">
-                    No Kontrak
-                  </p>
-                  <TextField
-                    placeholder="No Kontrak"
-                    value={formState.noKontrakApbn || ""}
-                    type="text"
-                    errorText={errors.noKontrakApbn}
-                    onChange={(e) => {
-                      updateField("noKontrakApbn", e.target.value);
-                      if (e.target.value) {
-                        setErrors({ ...errors, noKontrakApbn: "" });
-                      }
-                    }}
-                  />
-                </div>
+                <UpdateRing identity="no-kontrak" formKey={profile?.form}>
+                  <div>
+                    <p className="text-[12px] mb-1 font-semibold text-gray-500">
+                      No Kontrak
+                    </p>
+                    <TextField
+                      placeholder="No Kontrak"
+                      value={formState.noKontrakApbn || ""}
+                      type="text"
+                      errorText={errors.noKontrakApbn}
+                      onChange={(e) => {
+                        updateField("noKontrakApbn", e.target.value);
+                        if (e.target.value) {
+                          setErrors({ ...errors, noKontrakApbn: "" });
+                        }
+                      }}
+                    />
+                  </div>
+                </UpdateRing>
               </div>
             }
           />
 
           <div className="w-full flex flex-col mt-3">
-            <SectionPoint text="Company Profile" />
-            <SectionSubtitle
-              text="File maksimal berukuran 10mb"
-              className="my-1"
-            />
-            <FileInput
-              fileName="Company Profile"
-              fileUrl={formState.companyProfile}
-              accept=".pdf, .jpg, .png, .jpeg"
-              onChange={(fileUrl) => {
-                updateField("companyProfile", fileUrl);
-                if (fileUrl) {
-                  setErrors({ ...errors, companyProfile: "" });
-                }
-              }}
-              errorText={errors.companyProfile}
-            />
+            <UpdateRing identity="company-profile" formKey={profile?.form}>
+              <SectionPoint text="Company Profile" />
+              <SectionSubtitle
+                text="File maksimal berukuran 10mb"
+                className="my-1"
+              />
+              <FileInput
+                fileName="Company Profile"
+                fileUrl={formState.companyProfile}
+                accept=".pdf, .jpg, .png, .jpeg"
+                onChange={(fileUrl) => {
+                  updateField("companyProfile", fileUrl);
+                  if (fileUrl) {
+                    setErrors({ ...errors, companyProfile: "" });
+                  }
+                }}
+                errorText={errors.companyProfile}
+              />
+            </UpdateRing>
           </div>
 
           <div className="w-ful flex flex-col mt-4">
@@ -779,7 +1055,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack }) => {
               disabled={!agree}
               className={!agree ? "cursor-not-allowed" : ""}
             >
-              Kirim Data
+              {isUpdate ? "Update" : "Kirim"} Data
             </FormButton>
           </div>
         </section>
