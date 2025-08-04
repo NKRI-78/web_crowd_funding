@@ -206,11 +206,7 @@ const Navbar: React.FC = () => {
               >
                 <Link href={"/"}>
                   {" "}
-                  <div
-                    className={`text-xl text-center font-bold ${
-                      isSticky ? "text-[#321B87]" : "text-white"
-                    }`}
-                  >
+                  <div className={`text-xl text-center font-bold text-white`}>
                     CapBridge
                   </div>
                 </Link>
