@@ -4,12 +4,21 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProjectCard } from "@components/project/Project";
 import { IProjectData } from "@/app/interface/IProject";
+import Cookies from "js-cookie";
 import { getAllProject } from "@/actions/GetAllProject";
 import Modal from "@/app/helper/Modal";
 import RegisterOtp from "../auth/register/RegisterOtp";
 import RegisterSelectRole from "../auth/register/RegisterSelectRole";
+import axios from "axios";
+import { API_BACKEND } from "@/app/utils/constant";
+import { InboxModel } from "../notif/InboxModel";
+import { useDispatch } from "react-redux";
+import { setBadge } from "@/redux/slices/badgeSlice";
+import { createSocket } from "@/app/utils/sockets";
 
 const Home: React.FC = () => {
+  const dispatch = useDispatch();
+
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<"Umum" | "Pemodal" | "Penerbit">(
@@ -31,6 +40,71 @@ const Home: React.FC = () => {
     };
 
     fetchTopVideos();
+  }, []);
+
+  function getUserToken(): string | null {
+    const userCookie = Cookies.get("user");
+    if (!userCookie) return null;
+
+    const userJson = JSON.parse(userCookie);
+    return userJson.token;
+  }
+
+  function getUserId(): string | null {
+    const userCookie = Cookies.get("user");
+    if (!userCookie) return null; // ✅ tambahkan return
+
+    const userJson = JSON.parse(userCookie);
+    return userJson.id;
+  }
+
+  useEffect(() => {
+    const token = getUserToken();
+    if (token) fetchInbox(token);
+  }, []);
+
+  const fetchInbox = async (token: string) => {
+    try {
+      const res = await axios(`${API_BACKEND}/api/v1/inbox/list`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.data["data"]) {
+        dispatch(setBadge(0));
+        return;
+      }
+
+      const unReadInboxes = res.data["data"].filter(
+        (inbox: InboxModel) => inbox.is_read === false
+      ) as InboxModel[];
+      dispatch(setBadge(unReadInboxes.length));
+    } catch (e) {
+      dispatch(setBadge(0));
+    }
+  };
+
+  useEffect(() => {
+    const userId = getUserId();
+    console.log("user token");
+    console.log(userId);
+
+    const socket = createSocket(userId ?? "-");
+
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+      console.log("Socket connected user id :", userId ?? "-");
+    });
+
+    socket.on("inbox-update", (data) => {
+      console.log("Update");
+      const token = getUserToken();
+      if (token) fetchInbox(token);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const faqData = {

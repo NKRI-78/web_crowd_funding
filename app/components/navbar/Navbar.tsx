@@ -32,6 +32,8 @@ const Navbar: React.FC = () => {
   const [isSticky, setIsSticky] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const badgeCount = useSelector((state: RootState) => state.badge.badgeCount);
+
   //* floating inbox hooks
   const [isInboxTooltipOpen, setIsInboxTooltipOpen] = useState(false);
 
@@ -68,19 +70,6 @@ const Navbar: React.FC = () => {
   useEffect(() => {
     dispatch(loadSession());
   }, []);
-
-  // useEffect(() => {
-  //   setHydrated(true);
-  //   const storedUser = localStorage.getItem("user");
-  //   if (storedUser) {
-  //     try {
-  //       const parsedUser = JSON.parse(storedUser);
-  //       setUserData(parsedUser);
-  //     } catch (err) {
-  //       console.error("Gagal parsing user dari localStorage", err);
-  //     }
-  //   }
-  // }, []);
 
   useEffect(() => {
     setHydrated(true);
@@ -175,7 +164,7 @@ const Navbar: React.FC = () => {
                   </p>
                 </div>
                 <Tippy content="Inbox" animation="scale">
-                  <Link href={"/inbox"}>
+                  <Link href="/inbox" className="relative inline-block">
                     <BellRing
                       size={18}
                       className={
@@ -188,8 +177,14 @@ const Navbar: React.FC = () => {
                           : "text-white"
                       }
                     />
+                    {badgeCount > 0 && (
+                      <span className="absolute -top-2 -right-1 bg-red-500 text-white text-[10px] min-w-[14px] h-[14px] rounded-full flex items-center justify-center">
+                        {badgeCount}
+                      </span>
+                    )}
                   </Link>
                 </Tippy>
+
                 <button onClick={toggleMenu}>
                   {menuOpen ? (
                     <X size={24} />
@@ -376,7 +371,7 @@ const Navbar: React.FC = () => {
             <>
               <div className="md:hidden flex items-center gap-4">
                 <Tippy content="Inbox" animation="scale">
-                  <Link href={"/inbox"}>
+                  <Link href="/inbox" className="relative inline-block">
                     <BellRing
                       size={18}
                       className={
@@ -389,6 +384,11 @@ const Navbar: React.FC = () => {
                           : "text-white"
                       }
                     />
+                    {badgeCount > 0 && (
+                      <span className="absolute -top-2 -right-1 bg-red-500 text-white text-[10px] min-w-[14px] h-[14px] rounded-full flex items-center justify-center">
+                        {badgeCount}
+                      </span>
+                    )}
                   </Link>
                 </Tippy>
                 <button onClick={toggleMenu}>

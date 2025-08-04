@@ -5,6 +5,7 @@ import modalReducer from "@redux/slices/modalSlice";
 import projectReducer from "@redux/slices/projectSlice";
 import profileReducer from "@redux/slices/profileSlice";
 import authReducer from "@redux/slices/authSlice";
+import badgeReducer from "./slices/badgeSlice";
 
 import { enableMapSet } from "immer";
 
@@ -17,6 +18,7 @@ export const store = configureStore({
     project: projectReducer,
     profile: profileReducer,
     content: contentReducer,
+    badge: badgeReducer,
   },
 });
 

@@ -12,6 +12,8 @@ import { useRouter } from "next/navigation";
 import moment from "moment";
 import Cookies from "js-cookie";
 import { createSocket } from "@/app/utils/sockets";
+import { useDispatch, useSelector } from "react-redux";
+import { setBadge } from "@/redux/slices/badgeSlice";
 
 interface InboxState {
   loading?: boolean;
@@ -21,6 +23,9 @@ interface InboxState {
 const Inbox = () => {
   // data hook
   const [inboxes, setInboxes] = useState<InboxModel[]>([]);
+
+  // badge
+  const dispatch = useDispatch();
 
   // state hook
   const isOnline = useOnlineStatus();
@@ -88,6 +93,13 @@ const Inbox = () => {
       });
     }
   }, [isOnline]);
+
+  //* set badge to reducer
+  useEffect(() => {
+    dispatch(
+      setBadge(inboxes.filter((inbox) => inbox.is_read == false).length)
+    );
+  }, [inboxes]);
 
   //* fetch inbox
   const fetchInbox = async () => {
