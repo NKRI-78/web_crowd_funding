@@ -18,10 +18,6 @@ const UpdateRing: React.FC<UpdateRingProps> = ({
 
   const hasScrolled = useRef(false);
 
-  console.log(containKey, "containKey");
-  console.log(identity, "identity");
-  console.log(formKey, "formKey");
-
   useEffect(() => {
     if (containKey && ref.current && !hasScrolled.current) {
       ref.current.scrollIntoView({
