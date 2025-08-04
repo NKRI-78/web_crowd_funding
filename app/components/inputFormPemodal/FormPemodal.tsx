@@ -59,6 +59,12 @@ const FormPemodal: React.FC = () => {
         npwp_path: string;
         position: string;
       };
+      risk: {
+        goal: string;
+        tolerance: string;
+        experience: string;
+        capital_market_knowledge: string;
+      };
     };
     form: string;
   };
@@ -68,19 +74,6 @@ const FormPemodal: React.FC = () => {
   const isUpdate = searchParams.get("update") === "true";
   const form = searchParams.get("form");
   const [dataProfile, setDataProfile] = useState<DataProfile | null>(null);
-
-  // function getUserToken(): string | null {
-  //   const userCookie = Cookies.get("user");
-  //   if (!userCookie) return null;
-
-  //   try {
-  //     const userJson = JSON.parse(userCookie);
-  //     return userJson.token || null;
-  //   } catch (error) {
-  //     console.error("Gagal parse user cookie:", error);
-  //     return null;
-  //   }
-  // }
 
   useEffect(() => {
     // const userCookie = Cookies.get("user");
@@ -120,7 +113,6 @@ const FormPemodal: React.FC = () => {
         const data = response.data?.data;
 
         setDataProfile({ ...data, form: form });
-        // console.log("Data profil:", data);
 
         if (data) {
           localStorage.setItem("dataProfile", JSON.stringify(data));
@@ -157,7 +149,7 @@ const FormPemodal: React.FC = () => {
             subDistrictPribadi: data.subdistrict_name
               ? { value: data.subdistrict_name, label: data.subdistrict_name }
               : null,
-            // posCode: data.investor.job.postal_code || "",
+            posCode: data.postal_code || "",
           }));
 
           setDataPekerjaan((prev) => ({
@@ -204,12 +196,6 @@ const FormPemodal: React.FC = () => {
 
     fetchProfile();
   }, []);
-
-  // useEffect(() => {
-  //   const userData = localStorage.getItem("user");
-  //   const user = userData ? JSON.parse(userData) : null;
-  //   setToken(user?.token);
-  // }, []);
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewFileUrl, setPreviewFileUrl] = useState<string | undefined>(
@@ -465,30 +451,6 @@ const FormPemodal: React.FC = () => {
       posCode: "",
     };
   });
-
-  // useEffect(() => {
-  //   if (!dataProfile) return;
-
-  //   setDataPribadi((prev) => ({
-  //     ...prev,
-  //     provincePribadi: dataProfile.province_name
-  //       ? { value: dataProfile.province_name, label: dataProfile.province_name }
-  //       : null,
-  //     cityPribadi: dataProfile.city_name
-  //       ? { value: dataProfile.city_name, label: dataProfile.city_name }
-  //       : null,
-  //     districtPribadi: dataProfile.district_name
-  //       ? { value: dataProfile.district_name, label: dataProfile.district_name }
-  //       : null,
-  //     subDistrictPribadi: dataProfile.subdistrict_name
-  //       ? {
-  //           value: dataProfile.subdistrict_name,
-  //           label: dataProfile.subdistrict_name,
-  //         }
-  //       : null,
-  //     posCode: dataProfile.postal_code || "",
-  //   }));
-  // }, [dataProfile]);
 
   const [dataPekerjaan, setDataPekerjaan] = useState(() => {
     if (typeof window !== "undefined") {
@@ -806,11 +768,6 @@ const FormPemodal: React.FC = () => {
   };
 
   const handleNext = () => {
-    // const fullData = {
-    //   ...dataPribadi,
-    // };
-
-    // validasi jika next
     if (selectedIndex === 0) {
       const isValid = validateStep0();
       if (!isValid) return;
@@ -838,19 +795,6 @@ const FormPemodal: React.FC = () => {
     try {
       const data = JSON.parse(savedData);
 
-      // const fullSchema = schemaDataPribadi.merge(schemaDataPekerjaan);
-      // const result = fullSchema.safeParse(data);
-
-      // if (!result.success) {
-      //   const firstError = result.error.errors[0];
-      //   Swal.fire({
-      //     title: "Data belum diisi!",
-      //     text: firstError.message,
-      //     icon: "warning",
-      //     timer: 3000,
-      //   });
-      //   return;
-      // }
       if (!isUpdate) {
         const payload = {
           role: "1",
@@ -1101,14 +1045,7 @@ const FormPemodal: React.FC = () => {
           </button>
         ) : (
           <button
-            // onClick={() => {
-            //   localStorage.removeItem("formPribadi");
-            //   localStorage.removeItem("formBank");
-            //   alert("Form telah selesai dan data dihapus dari localStorage.");
-            //   setSelectedIndex(0);
-            // }}
             onClick={handleSubmit}
-            // className="px-4 py-2 bg-green-600 text-white rounded" bg-[#4821C2]
             disabled={
               !dataPekerjaan.setujuKebenaranData ||
               !dataPekerjaan.setujuRisikoInvestasi
