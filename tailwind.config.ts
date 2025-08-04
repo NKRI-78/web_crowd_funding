@@ -12,6 +12,15 @@ const config: Config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      keyframes: {
+        blinkBackground: {
+          "0%, 100%": { backgroundColor: "#ffffff" },
+          "50%": { backgroundColor: "#ffe5e5" },
+        },
+      },
+      animation: {
+        blinkBgSlow: "blinkBackground 2s infinite",
+      },
     },
   },
   plugins: [],

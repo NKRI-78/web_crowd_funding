@@ -119,7 +119,7 @@ const Dashboard: React.FC = () => {
       <div className="flex flex-col gap-y-4 mt-4">
         {/* Profile Card */}
         {profile && (
-          <div className="shadow-md rounded-2xl p-6 bg-white flex gap-6 items-center w-full md:w-1/2">
+          <div className="shadow-md rounded-2xl p-6 bg-white flex flex-col md:flex-row gap-6 items-center w-full md:w-1/2">
             <img
               src={
                 profile.avatar !== "-"
@@ -136,23 +136,26 @@ const Dashboard: React.FC = () => {
               <p className="text-slate-500 text-sm mt-1">
                 {profile.occupation}
               </p>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2 text-sm text-slate-600">
-                <div>
-                  <strong>Pendidikan :</strong> {profile.last_education}
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2 text-slate-600">
+                <div className="text-xs md:text-sm">
+                  <span className="font-bold">Pendidikan :</span>{" "}
+                  {profile.last_education}
                 </div>
-                <div>
-                  <strong>Status :</strong> {profile.status_marital}
+                <div className="text-xs md:text-sm">
+                  <span className="font-bold">Status :</span>{" "}
+                  {profile.status_marital}
                 </div>
-                <div>
-                  <strong>Jenis Kelamin :</strong>{" "}
+                <div className="text-xs md:text-sm">
+                  <span className="font-bold">Jenis Kelamin :</span>{" "}
                   {profile.gender === "L"
                     ? "Laki-laki"
                     : profile.gender === "P"
                     ? "Perempuan"
                     : "-"}
                 </div>
-                <div>
-                  <strong>Alamat :</strong> {profile.address_detail}
+                <div className="text-xs md:text-sm">
+                  <span className="font-bold">Alamat :</span>{" "}
+                  {profile.address_detail}
                 </div>
               </div>
             </div>

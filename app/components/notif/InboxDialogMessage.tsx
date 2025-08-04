@@ -7,7 +7,7 @@ import { InboxModel } from "./InboxModel";
 interface InboxDialogMessageProps {
   inboxId: number;
   userToken: string;
-  onAccept: (isUpdateDocument?: boolean) => void;
+  onAccept: (isUpdateDocument?: boolean, form?: string) => void;
   barrierAction?: () => void;
   onReject: (projectId: string, isUpdateDocument?: boolean) => void;
 }
@@ -101,7 +101,7 @@ const InboxDialogMessage: React.FC<InboxDialogMessageProps> = ({
           </Button>
           <Button
             onClick={() => {
-              onAccept(isUpdateDocument);
+              onAccept(isUpdateDocument, data?.field_4);
             }}
             disabled={!data}
           >

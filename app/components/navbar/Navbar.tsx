@@ -8,13 +8,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { loadSession } from "@redux/slices/authSlice";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
-import {
-  useFloating,
-  offset,
-  useDismiss,
-  useInteractions,
-  useTransitionStyles,
-} from "@floating-ui/react";
 import Modal from "@/app/helper/Modal";
 import RegisterV2 from "../auth/register/RegisterV2";
 import RegisterOtp from "../auth/register/RegisterOtp";
@@ -39,23 +32,10 @@ const Navbar: React.FC = () => {
   const [isSticky, setIsSticky] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const badgeCount = useSelector((state: RootState) => state.badge.badgeCount);
+
   //* floating inbox hooks
   const [isInboxTooltipOpen, setIsInboxTooltipOpen] = useState(false);
-  const { refs, floatingStyles, context } = useFloating({
-    open: isInboxTooltipOpen,
-    onOpenChange: setIsInboxTooltipOpen,
-    middleware: [offset(10)],
-    placement: "bottom-end",
-  });
-  const dismiss = useDismiss(context);
-  const { isMounted, styles } = useTransitionStyles(context, {
-    initial: {
-      opacity: 0,
-      transform: "scale(0.8)",
-    },
-    duration: 300,
-  });
-  const { getReferenceProps, getFloatingProps } = useInteractions([dismiss]);
 
   const pathname = usePathname();
 
@@ -75,6 +55,7 @@ const Navbar: React.FC = () => {
   >(null);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const userCookie = Cookies.get("user");
 
   const closeModal = () => setStep(null);
 
@@ -92,18 +73,6 @@ const Navbar: React.FC = () => {
 
   useEffect(() => {
     setHydrated(true);
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUserData(parsedUser);
-      } catch (err) {
-        console.error("Gagal parsing user dari localStorage", err);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
     const userCookie = Cookies.get("user");
     if (!userCookie) return;
 
@@ -112,6 +81,7 @@ const Navbar: React.FC = () => {
       if (user?.token) {
         setToken(user.token);
       }
+      setUserData(user);
     } catch (err) {
       console.error("Failed to parse user cookie", err);
     }
@@ -161,13 +131,15 @@ const Navbar: React.FC = () => {
         }`}
       >
         <div className="flex justify-between items-center px-10 py-6 text-sm font-semibold">
-          <div
-            className={`text-xl font-bold ${
-              isSticky ? "text-[#321B87]" : "text-white"
-            }`}
-          >
-            CapBridge
-          </div>
+          <Link href={"/"}>
+            <div
+              className={`text-xl font-bold ${
+                isSticky ? "text-[#321B87]" : "text-white"
+              }`}
+            >
+              CapBridge
+            </div>
+          </Link>
 
           {hydrated && userData !== null ? (
             <>
@@ -192,7 +164,7 @@ const Navbar: React.FC = () => {
                   </p>
                 </div>
                 <Tippy content="Inbox" animation="scale">
-                  <Link href={"/inbox"}>
+                  <Link href="/inbox" className="relative inline-block">
                     <BellRing
                       size={18}
                       className={
@@ -205,8 +177,14 @@ const Navbar: React.FC = () => {
                           : "text-white"
                       }
                     />
+                    {badgeCount > 0 && (
+                      <span className="absolute -top-2 -right-1 bg-red-500 text-white text-[10px] min-w-[14px] h-[14px] rounded-full flex items-center justify-center">
+                        {badgeCount}
+                      </span>
+                    )}
                   </Link>
                 </Tippy>
+
                 <button onClick={toggleMenu}>
                   {menuOpen ? (
                     <X size={24} />
@@ -226,13 +204,16 @@ const Navbar: React.FC = () => {
                     ${menuOpen ? "translate-x-0" : "translate-x-full"} 
                     `}
               >
-                <div
-                  className={`text-xl text-center font-bold ${
-                    isSticky ? "text-[#321B87]" : "text-white"
-                  }`}
-                >
-                  CapBridge
-                </div>
+                <Link href={"/"}>
+                  {" "}
+                  <div
+                    className={`text-xl text-center font-bold ${
+                      isSticky ? "text-[#321B87]" : "text-white"
+                    }`}
+                  >
+                    CapBridge
+                  </div>
+                </Link>
                 <ul className="flex flex-col gap-6 text-white text-base font-semibold pt-16">
                   <li
                     className={
@@ -390,7 +371,7 @@ const Navbar: React.FC = () => {
             <>
               <div className="md:hidden flex items-center gap-4">
                 <Tippy content="Inbox" animation="scale">
-                  <Link href={"/inbox"}>
+                  <Link href="/inbox" className="relative inline-block">
                     <BellRing
                       size={18}
                       className={
@@ -403,6 +384,11 @@ const Navbar: React.FC = () => {
                           : "text-white"
                       }
                     />
+                    {badgeCount > 0 && (
+                      <span className="absolute -top-2 -right-1 bg-red-500 text-white text-[10px] min-w-[14px] h-[14px] rounded-full flex items-center justify-center">
+                        {badgeCount}
+                      </span>
+                    )}
                   </Link>
                 </Tippy>
                 <button onClick={toggleMenu}>
@@ -424,13 +410,15 @@ const Navbar: React.FC = () => {
                     ${menuOpen ? "translate-x-0" : "translate-x-full"} 
                     md:hidden`}
               >
-                <div
-                  className={`text-xl text-center font-bold ${
-                    isSticky ? "text-[#321B87]" : "text-white"
-                  }`}
-                >
-                  CapBridge
-                </div>
+                <Link href={"/"}>
+                  <div
+                    className={`text-xl text-center font-bold ${
+                      isSticky ? "text-[#321B87]" : "text-white"
+                    }`}
+                  >
+                    CapBridge
+                  </div>
+                </Link>
                 <ul className="flex flex-col gap-6 text-white text-base font-semibold pt-16">
                   <li
                     className={
@@ -592,7 +580,7 @@ const Navbar: React.FC = () => {
                   <Link href="/">Beranda</Link>
                 </li>
 
-                {hydrated && userData !== null ? (
+                {hydrated && userData !== null && userCookie !== undefined ? (
                   <>
                     <li
                       className={
@@ -785,7 +773,7 @@ const Navbar: React.FC = () => {
                     </li>
                   </>
                 )}
-                {hydrated && userData !== null ? (
+                {hydrated && userData !== null && userCookie !== undefined ? (
                   <></>
                 ) : (
                   <button

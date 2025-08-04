@@ -8,6 +8,7 @@ import { InboxModel } from "../InboxModel";
 import Link from "next/link";
 import EmptyTransaction from "../EmptyInbox";
 import moment from "moment";
+import Cookies from "js-cookie";
 
 interface TransactionState {
   loading?: boolean;
@@ -26,9 +27,10 @@ const Transaction = () => {
   });
 
   function getUserToken(): string | null {
-    const user = localStorage.getItem("user");
-    if (!user) return null;
-    const userJson = JSON.parse(user);
+    const userCookie = Cookies.get("user");
+    if (!userCookie) return null; // ✅ tambahkan return
+
+    const userJson = JSON.parse(userCookie);
     return userJson.token;
   }
 

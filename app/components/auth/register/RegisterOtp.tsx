@@ -6,6 +6,12 @@ import Countdown from "react-countdown";
 import OTPInput from "react-otp-input";
 import Swal from "sweetalert2";
 
+type AuthResponse = {
+  data: any; // sesuaikan dengan shape data Anda
+  message?: string;
+  status?: string;
+};
+
 export default function RegisterOtp({
   onNext,
   onClose,
@@ -13,42 +19,48 @@ export default function RegisterOtp({
   onNext?: () => void;
   onClose?: () => void;
 }) {
+  // Ambil user dari cookie (sesuaikan sumbernya jika perlu)
   const cookie = getCookie("user");
   const decoded = decodeURIComponent(cookie ?? "");
-  const user = JSON.parse(decoded);
+  let user: any = {};
+  try {
+    user = JSON.parse(decoded || "{}");
+  } catch {
+    user = {};
+  }
+
   const [isDisableResendOTP, setIsDisableResendOTP] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [otpErrorMessage, setOtpErrorMessage] = useState("");
   const [otp, setOtp] = useState("");
-  const [timer, setTimer] = useState(60);
+  const [expiry, setExpiry] = useState<number | null>(null); // deadline yang stabil
 
   const handleResendOTP = async () => {
     try {
       setIsDisableResendOTP(true);
-      const payloads = {
-        val: user.email,
-      };
-      const { data } = await axios.post(
-        `${API_BACKEND}/api/v1/resend-otp`,
-        payloads
-      );
+      setExpiry(Date.now() + 60_000); // mulai countdown 60 detik
+
+      const payloads = { val: user?.email };
+      await axios.post(`${API_BACKEND}/api/v1/resend-otp`, payloads);
     } catch (err: any) {
-      setLoading(false);
+      // Jika gagal, kembalikan state supaya user bisa coba lagi
+      setIsDisableResendOTP(false);
+      setExpiry(null);
       Swal.fire({
         title: "Permintaan Gagal!",
-        text: err.response.data.message,
+        text: err?.response?.data?.message ?? "Terjadi kesalahan",
         icon: "error",
         confirmButtonText: "Ok",
       });
     }
   };
 
-  const handleSendOTP = async (event: any) => {
+  const handleSendOTP = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
       setLoading(true);
       const payloads = {
-        val: user.email,
+        val: user?.email,
         otp,
       };
       const response = await axios.post(
@@ -57,7 +69,6 @@ export default function RegisterOtp({
       );
 
       const result: AuthResponse = response.data;
-
       localStorage.setItem("user", JSON.stringify(result.data));
 
       setLoading(false);
@@ -71,18 +82,15 @@ export default function RegisterOtp({
       onNext?.();
     } catch (err: any) {
       setLoading(false);
-      setOtpErrorMessage(err.response.data.message);
-      if (err.response.data.message == "USER_OR_OTP_IS_INVALID") {
-        Swal.fire({
-          title: "Permintaan Gagal!",
-          text: "OTP tidak sesuai",
-          icon: "error",
-          confirmButtonText: "Ok",
-        });
+      const msg = err?.response?.data?.message ?? "Terjadi kesalahan";
+      setOtpErrorMessage(msg);
+
+      if (msg === "USER_OR_OTP_IS_INVALID") {
+        setOtpErrorMessage("OTP tidak sesuai");
       } else {
         Swal.fire({
           title: "Permintaan Gagal!",
-          text: err.response.data.message,
+          text: msg,
           icon: "error",
           confirmButtonText: "Ok",
         });
@@ -90,28 +98,24 @@ export default function RegisterOtp({
     }
   };
 
-  // ✅ coundownTimerCompletion
+  // Renderer TANPA setState
   interface CountdownRenderProps {
     minutes: number;
     seconds: number;
     completed: boolean;
   }
 
-  const countdownTimerCompletion = ({
+  const countdownRenderer = ({
     minutes,
     seconds,
     completed,
-  }: CountdownRenderProps): JSX.Element | string => {
-    if (completed) {
-      setIsDisableResendOTP(false);
-      return "";
-    } else {
-      return (
-        <span className="text-sm font-medium">
-          ({minutes}:{seconds})
-        </span>
-      );
-    }
+  }: CountdownRenderProps): JSX.Element | null => {
+    if (completed) return null;
+    return (
+      <span className="text-sm font-medium">
+        ({minutes}:{String(seconds).padStart(2, "0")})
+      </span>
+    );
   };
 
   return (
@@ -122,12 +126,12 @@ export default function RegisterOtp({
           Masukan Kode OTP, untuk Melanjutkan
         </div>
         <p className="text-sm mb-6">
-          Masukkan OTP yang dikirimkan melalui email {user.email} untuk
+          Masukkan OTP yang dikirimkan melalui email {user?.email ?? "-"} untuk
           memverifikasi akun
         </p>
 
         <form onSubmit={handleSendOTP} className="space-y-6">
-          <div className="flex ">
+          <div className="flex flex-col items-center">
             <OTPInput
               value={otp}
               onChange={(value) => setOtp(value.toUpperCase())}
@@ -148,15 +152,15 @@ export default function RegisterOtp({
               renderInput={(props) => <input {...props} />}
               containerStyle={{
                 justifyContent: "center",
-                marginBottom: "1rem",
+                marginBottom: "0.5rem",
               }}
             />
-          </div>
-          {/* {otpErrorMessage && (
-              <div className="text-xs text-center text-[#D22E2E]">
+            {otpErrorMessage && (
+              <div className="text-xs text-center text-[#D22E2E] mt-1">
                 {otpErrorMessage}
               </div>
-            )} */}
+            )}
+          </div>
 
           <div className="flex items-center gap-x-2">
             <div className="flex justify-between w-full">
@@ -172,10 +176,15 @@ export default function RegisterOtp({
                 Kirim Ulang
               </button>
             </div>
-            {isDisableResendOTP && (
+
+            {isDisableResendOTP && expiry && (
               <Countdown
-                date={Date.now() + 60000}
-                renderer={countdownTimerCompletion}
+                key={expiry} // reset internal state Countdown hanya saat expiry berubah
+                date={expiry}
+                renderer={countdownRenderer}
+                onComplete={() => {
+                  setIsDisableResendOTP(false);
+                }}
               />
             )}
           </div>

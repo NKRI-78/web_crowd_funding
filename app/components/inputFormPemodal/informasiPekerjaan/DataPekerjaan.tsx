@@ -1,27 +1,11 @@
 import React, { useRef, useState, useEffect } from "react";
-// import SignatureCanvas from "react-signature-canvas";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { FaFileAlt } from "react-icons/fa";
 import Select from "react-select";
 import { API_BACKEND_MEDIA } from "@/app/utils/constant";
-
-// function getSignatureDataUrlWithWhiteBackground(
-//   canvas: HTMLCanvasElement
-// ): string {
-//   const tempCanvas = document.createElement("canvas");
-//   tempCanvas.width = canvas.width;
-//   tempCanvas.height = canvas.height;
-
-//   const ctx = tempCanvas.getContext("2d");
-//   if (!ctx) return "";
-
-//   ctx.fillStyle = "#ffffff";
-//   ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-//   ctx.drawImage(canvas, 0, 0);
-
-//   return tempCanvas.toDataURL("image/png");
-// }
+import { compressImage } from "@/app/helper/CompressorImage";
+import UpdateRing from "../component/UpdateRing";
 
 interface Props {
   formData: {
@@ -45,6 +29,8 @@ interface Props {
     subDistrictPekerjaan: { value: string; label: string };
     posCodePekerjaan: string;
   };
+  onLihatNPWP?: () => void;
+  onLihatFotoPemodal?: () => void;
   onChange: (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -67,10 +53,54 @@ interface Props {
     posCodePekerjaan: string;
   }) => void;
   errors?: Record<string, string[]>;
+  dataProfile: {
+    id: string;
+    fullname: string;
+    avatar: string;
+    last_education: string;
+    gender: string;
+    status_marital: string;
+    address_detail: string;
+    occupation: string;
+    investor: {
+      bank: {
+        no: string;
+        bank_name: string;
+        bank_owner: string;
+        bank_branch: string;
+        rek_koran_path: string;
+        created_at: string;
+      };
+      ktp: {
+        name: string;
+        nik: string;
+        place_datebirth: string;
+        path: string;
+        created_at: string;
+      };
+      job: {
+        province_name: string;
+        city_name: string;
+        district_name: string;
+        subdistrict_name: string;
+        postal_code: string;
+        company_name: string;
+        company_address: string;
+        monthly_income: string;
+        npwp_path: string;
+        position: string;
+      };
+      risk: {
+        goal: string;
+        tolerance: string;
+        experience: string;
+        capital_market_knowledge: string;
+      };
+    };
+    form: string;
+  };
+  isUpdate: boolean;
 }
-
-// const SIG_W = 300;
-// const SIG_H = 200;
 
 const ComponentDataPekerjaan: React.FC<Props> = ({
   formData,
@@ -81,19 +111,19 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   onPengalamanInvestasi,
   onPengetahuanPasarModal,
   onCheckboxChange,
-  // onSignatureSave,
   onUploadKTP,
   onAlamatChange,
   errors,
+  onLihatNPWP,
+  onLihatFotoPemodal,
+  dataProfile,
+  isUpdate,
 }) => {
   type OptionType = { value: string; label: string } | null;
 
-  // const signatureRef = useRef<SignatureCanvas | null>(null);
-  const [isSignatureSaved, setIsSignatureSaved] = useState(false);
   const formPemodalStr = localStorage.getItem("formPemodal");
   const formPemodal = formPemodalStr ? JSON.parse(formPemodalStr) : null;
 
-  // const penghasilanBulanan = ["< 100jt", "100jt - 500jt", "500jt - 1m", "> 1m"];
   const penghasilanBulananOptions = [
     { value: "< 100jt", label: "< 100jt" },
     { value: "100jt - 500jt", label: "100jt - 500jt" },
@@ -104,7 +134,6 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   const toleransiResiko = ["Rendah", "Menengah", "Tinggi"];
   const pengalamanInvestasi = ["Ada", "Tidak Ada"];
   const pengetahuanPasarModal = ["Ada", "Tidak Ada"];
-  // const [isEmpty, setIsEmpty] = useState(true);
   const [uploadStatus, setUploadStatus] = useState<{ [key: string]: boolean }>(
     {}
   );
@@ -125,91 +154,6 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
 
   const urlWilayah = "https://api.wilayah.site";
 
-  // const uploadSignature = async (dataUrl: string): Promise<string | null> => {
-  //   const blob = await (await fetch(dataUrl)).blob();
-  //   const formData = new FormData();
-  //   formData.append("folder", "web");
-  //   formData.append("subfolder", "signature");
-  //   formData.append("media", blob, "signature.png");
-
-  //   try {
-  //     const res = await axios.post(
-  //       "https://api-media.inovatiftujuh8.com/api/v1/media/upload",
-  //       formData
-  //     );
-  //     const fileUrl = res.data?.data?.path;
-
-  //     if (fileUrl) {
-  //       Swal.fire({
-  //         title: "Berhasil",
-  //         text: "Tanda tangan berhasil diupload!",
-  //         icon: "success",
-  //         timer: 3000,
-  //       });
-  //       return fileUrl;
-  //     } else {
-  //       alert("Upload gagal, tidak ada URL yang diterima.");
-  //       return null;
-  //     }
-  //   } catch (error) {
-  //     Swal.fire({
-  //       title: "Gagal",
-  //       text: "Upload tanda tangan gagal. Silakan coba lagi.",
-  //       icon: "error",
-  //       timer: 3000,
-  //     });
-  //     return null;
-  //   }
-  // };
-
-  // const handleSaveSignature = async () => {
-  //   const canvas = signatureRef.current?.getCanvas();
-  //   if (!canvas) return;
-
-  //   const dataUrl = getSignatureDataUrlWithWhiteBackground(canvas);
-  //   if (!dataUrl) {
-  //     alert("Tanda tangan kosong.");
-  //     return;
-  //   }
-
-  //   localStorage.setItem("signature", dataUrl);
-
-  //   const uploadedUrl = await uploadSignature(dataUrl);
-
-  //   if (uploadedUrl) {
-  //     onSignatureSave(uploadedUrl);
-  //     signatureRef.current?.off();
-  //     setIsSignatureSaved(true);
-  //   }
-  // };
-
-  // const handleClearSignature = () => {
-  //   signatureRef.current?.clear();
-  //   signatureRef.current?.on();
-  //   setIsSignatureSaved(false);
-  //   localStorage.removeItem("signature");
-  //   localStorage.setItem(
-  //     "formPemodal",
-  //     JSON.stringify({ ...formPemodal, signature: "" })
-  //   );
-  // };
-
-  // useEffect(() => {
-  //   const storedSignature = localStorage.getItem("signature");
-
-  //   if (storedSignature && signatureRef.current) {
-  //     const img = new Image();
-  //     img.src = storedSignature;
-  //     img.onload = () => {
-  //       const canvas = signatureRef.current?.getCanvas();
-  //       const ctx = canvas?.getContext("2d");
-  //       ctx?.drawImage(img, 0, 0);
-  //       signatureRef.current?.off();
-  //       setIsSignatureSaved(true);
-  //     };
-  //   }
-  // }, []);
-
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     const keyName = e.target.getAttribute("data-keyname");
@@ -219,10 +163,13 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
       alert("Ukuran file maksimal 10MB");
       return;
     }
+
+    const compressedFile = await compressImage(file);
+
     const formData = new FormData();
     formData.append("folder", "web");
     formData.append("subfolder", keyName);
-    formData.append("media", file);
+    formData.append("media", compressedFile);
 
     setUploadStatus((prev) => ({ ...prev, [keyName]: true }));
     try {
@@ -354,13 +301,21 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   }, [selectedSubDistrictPekerjaan]);
 
   useEffect(() => {
-    onAlamatChange({
-      provincePekerjaan: selectedProvincePekerjaan,
-      cityPekerjaan: selectedCityPekerjaan,
-      districtPekerjaan: selectedDistrictPekerjaan,
-      subDistrictPekerjaan: selectedSubDistrictPekerjaan,
-      posCodePekerjaan: posCode,
-    });
+    if (
+      selectedProvincePekerjaan &&
+      selectedCityPekerjaan &&
+      selectedDistrictPekerjaan &&
+      selectedSubDistrictPekerjaan &&
+      posCode
+    ) {
+      onAlamatChange({
+        provincePekerjaan: selectedProvincePekerjaan,
+        cityPekerjaan: selectedCityPekerjaan,
+        districtPekerjaan: selectedDistrictPekerjaan,
+        subDistrictPekerjaan: selectedSubDistrictPekerjaan,
+        posCodePekerjaan: posCode,
+      });
+    }
   }, [
     selectedProvincePekerjaan,
     selectedCityPekerjaan,
@@ -370,27 +325,85 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   ]);
 
   useEffect(() => {
-    // if (!formData || !province.length) return;
-    if (Object.keys(formData).length && formData.provincePekerjaan) {
-      setSelectedProvincePekerjaan(formData.provincePekerjaan);
-    }
-
-    if (Object.keys(formData).length && formData.cityPekerjaan) {
-      setSelectedCityPekerjaan(formData.cityPekerjaan);
-    }
-
-    if (Object.keys(formData).length && formData.districtPekerjaan) {
-      setSelectedDistrictPekerjaan(formData.districtPekerjaan);
-    }
-
-    if (Object.keys(formData).length && formData.subDistrictPekerjaan) {
-      setSelectedSubDistrictPekerjaan(formData.subDistrictPekerjaan);
-    }
-
-    if (Object.keys(formData).length && formData.posCodePekerjaan) {
-      setPosCode(formData.posCodePekerjaan);
+    if (isUpdate && dataProfile?.investor?.risk) {
+      onTujuanInvetasi(dataProfile.investor.risk.goal || "");
+      onToleransiResiko(dataProfile.investor.risk.tolerance || "");
+      onPengalamanInvestasi(dataProfile.investor.risk.experience || "");
+      onPengetahuanPasarModal(
+        dataProfile.investor.risk.capital_market_knowledge || ""
+      );
     }
   }, []);
+
+  useEffect(() => {
+    if (isUpdate && dataProfile?.investor?.job) {
+      const job = dataProfile.investor.job;
+
+      onChange({
+        target: {
+          name: "namaPerusahaan",
+          value: job.company_name || "",
+        },
+      } as React.ChangeEvent<HTMLInputElement>);
+
+      onChange({
+        target: {
+          name: "alamatPerusahaan",
+          value: job.company_address || "",
+        },
+      } as React.ChangeEvent<HTMLInputElement>);
+
+      onChange({
+        target: {
+          name: "jabatan",
+          value: job.position || "",
+        },
+      } as React.ChangeEvent<HTMLInputElement>);
+
+      onPenghasilanBulanan(job.monthly_income || "");
+
+      setSelectedProvincePekerjaan({
+        value: job.province_name,
+        label: job.province_name,
+      });
+
+      setSelectedCityPekerjaan({
+        value: job.city_name,
+        label: job.city_name,
+      });
+
+      setSelectedDistrictPekerjaan({
+        value: job.district_name,
+        label: job.district_name,
+      });
+
+      setSelectedSubDistrictPekerjaan({
+        value: job.subdistrict_name,
+        label: job.subdistrict_name,
+      });
+
+      setPosCode(job.postal_code || "");
+    }
+  }, [isUpdate, dataProfile]);
+
+  useEffect(() => {
+    if (formData?.provincePekerjaan) {
+      setSelectedProvincePekerjaan(formData.provincePekerjaan);
+    }
+    if (formData?.cityPekerjaan) {
+      setSelectedCityPekerjaan(formData.cityPekerjaan);
+    }
+    if (formData?.districtPekerjaan) {
+      setSelectedDistrictPekerjaan(formData.districtPekerjaan);
+    }
+    if (formData?.subDistrictPekerjaan) {
+      setSelectedSubDistrictPekerjaan(formData.subDistrictPekerjaan);
+    }
+    if (formData?.posCodePekerjaan) {
+      console.log("Prefill posCode berhasil:", formData.posCodePekerjaan);
+      setPosCode(formData.posCodePekerjaan);
+    }
+  }, [formData]);
 
   const customOptions = province.map(
     (province: { code: string; nama: string }) => ({
@@ -399,21 +412,21 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
     })
   );
 
-  const customOptionsCity = city.map(
+  const customOptionsCity = city?.map(
     (city: { code: string; nama: string }) => ({
       value: city.code,
       label: city.nama,
     })
   );
 
-  const customOptionsDistrict = district.map(
+  const customOptionsDistrict = district?.map(
     (district: { code: string; nama: string }) => ({
       value: district.code,
       label: district.nama,
     })
   );
 
-  const customOptionsSubDistrict = subDistrict.map(
+  const customOptionsSubDistrict = subDistrict?.map(
     (subDistrict: { code: string; nama: string }) => ({
       value: subDistrict.code,
       label: subDistrict.nama,
@@ -422,7 +435,6 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
 
   const formatOptionLabel = ({ label, icon }: any) => (
     <div className="flex items-center gap-2">
-      {/* <img src={icon} alt={label} className="w-5 h-5" /> */}
       <span>{label}</span>
     </div>
   );
@@ -486,7 +498,6 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
                 className="mt-0"
                 value={selectedProvincePekerjaan}
                 options={customOptions}
-                // styles={customStyles}
                 formatOptionLabel={formatOptionLabel}
                 onChange={(e) => {
                   setSelectedProvincePekerjaan(e);
@@ -508,7 +519,6 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
                 className="mt-0"
                 value={selectedCityPekerjaan}
                 options={customOptionsCity}
-                // styles={customStyles}
                 formatOptionLabel={formatOptionLabel}
                 onChange={(e) => {
                   setSelectedCityPekerjaan(e);
@@ -530,7 +540,6 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
                 className="mt-0"
                 value={selectedDistrictPekerjaan}
                 options={customOptionsDistrict}
-                // styles={customStyles}
                 formatOptionLabel={formatOptionLabel}
                 onChange={(e) => {
                   setSelectedDistrictPekerjaan(e);
@@ -551,7 +560,6 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
                 className="mt-0"
                 value={selectedSubDistrictPekerjaan}
                 options={customOptionsSubDistrict}
-                // styles={customStyles}
                 formatOptionLabel={formatOptionLabel}
                 onChange={(e) => {
                   setSelectedSubDistrictPekerjaan(e);
@@ -570,9 +578,9 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           <div>
             <input
               type="number"
-              name="codePos"
+              name="posCodePekerjaan"
               placeholder="Kode Pos"
-              value={posCode}
+              value={formData.posCodePekerjaan || ""}
               onChange={onChange}
               className="border rounded p-2 w-full mb-2 placeholder:text-sm"
             />
@@ -772,44 +780,47 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           <p className="text-sm text-gray-400 mb-2">
             File maksimal berukuran 10mb
           </p>
-
-          {/* Input File yang disembunyikan */}
-          <input
-            type="file"
-            id="npwpUrlUpload"
-            className="hidden"
-            onChange={handleFileChange}
-            disabled={uploadStatus["npwpUrl"] === true}
-            accept="application/pdf, image/*"
-            data-keyname="npwpUrl"
-          />
-
-          {/* Label sebagai tombol */}
-          <label
-            htmlFor="npwpUrlUpload"
-            className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
+          <UpdateRing
+            identity={`${dataProfile?.form}`}
+            // formKey={dataProfile?.form}
+            formKey="npwp"
           >
-            <>
-              <FaFileAlt />
-              Upload Dokumen
-            </>
-            {/* )} */}
-          </label>
+            {/* Input File yang disembunyikan */}
+            <input
+              type="file"
+              id="npwpUrlUpload"
+              className="hidden"
+              onChange={handleFileChange}
+              disabled={uploadStatus["npwpUrl"] === true}
+              accept="application/pdf, image/*"
+              data-keyname="npwpUrl"
+            />
+
+            {/* Label sebagai tombol */}
+            <label
+              htmlFor="npwpUrlUpload"
+              className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
+            >
+              <>
+                <FaFileAlt />
+                Upload Dokumen
+              </>
+            </label>
+            {typeof window !== "undefined" && formData.npwpUrl && (
+              <button
+                type="button"
+                onClick={onLihatNPWP}
+                className="text-blue-600 underline text-sm block mt-2 mb-2"
+              >
+                Lihat NPWP
+              </button>
+            )}
+
+            {errors?.npwpUrl && (
+              <p className="text-red-500 text-sm mt-1">{errors.npwpUrl[0]}</p>
+            )}
+          </UpdateRing>
         </div>
-        {typeof window !== "undefined" && formData.npwpUrl && (
-          <a
-            href={formData.npwpUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 underline text-sm block mt-2 mb-2"
-          >
-            Lihat NPWP
-          </a>
-        )}
-
-        {errors?.npwpUrl && (
-          <p className="text-red-500 text-sm mt-1">{errors.npwpUrl[0]}</p>
-        )}
 
         <div className="mb-4 mt-4">
           <label className="text-md mb-2">
@@ -827,7 +838,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             className="hidden"
             onChange={handleFileChange}
             disabled={uploadStatus["fotoPemodalUrl"] === true}
-            accept="application/pdf, image/*"
+            accept="image/*"
             data-keyname="fotoPemodalUrl"
           />
 
@@ -844,14 +855,13 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           </label>
         </div>
         {typeof window !== "undefined" && formData.fotoPemodalUrl && (
-          <a
-            href={formData.fotoPemodalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={onLihatFotoPemodal}
             className="text-blue-600 underline text-sm block mt-2 mb-2"
           >
             Lihat Foto Pemodal
-          </a>
+          </button>
         )}
 
         {errors?.fotoPemodalUrl && (
@@ -906,67 +916,6 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             </span>
           </label>
         </div>
-
-        {/* <div className="mb-6">
-          <h3 className="font-semibold text-gray-900 mb-2">
-            Tanda Tangan Pemohon
-          </h3>
-          <div
-            className="border border-gray-500 rounded bg-white overflow-visible"
-            style={{ width: SIG_W, height: SIG_H }}
-          >
-            <SignatureCanvas
-              ref={signatureRef}
-              penColor="black"
-              onEnd={() => {
-                if (signatureRef.current) {
-                  setIsEmpty(signatureRef.current.isEmpty());
-                }
-              }}
-              canvasProps={{
-                width: SIG_W,
-                height: SIG_H,
-                className: "sigCanvas block",
-              }}
-            />
-          </div>
-
-          <div className="flex gap-4 mt-3">
-            <button
-              type="button"
-              onClick={() => {
-                handleClearSignature();
-                Swal.fire({
-                  title: "Berhasil",
-                  text: "Tanda tangan berhasil dihapus!",
-                  icon: "success",
-                  timer: 3000,
-                });
-              }}
-              disabled={!isSignatureSaved}
-              className={`px-3 py-1 text-white text-sm rounded ${
-                !isSignatureSaved
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-red-500 hover:bg-red-600"
-              }`}
-            >
-              Hapus
-            </button>
-
-            <button
-              type="button"
-              disabled={isSignatureSaved}
-              onClick={handleSaveSignature}
-              className={`px-3 py-1 text-white text-sm rounded ${
-                isSignatureSaved
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-green-500"
-              }`}
-            >
-              Simpan Tanda Tangan
-            </button>
-          </div>
-        </div> */}
       </div>
     </div>
   );
