@@ -169,8 +169,15 @@ const ComponentDataPribadi: React.FC<Props> = ({
   const urlWilayah = "https://api.wilayah.site";
 
   const today = new Date();
-  const maxDate = new Date();
-  maxDate.setFullYear(today.getFullYear() - 17);
+  // const maxDate = new Date();
+  // maxDate.setFullYear(today.getFullYear() - 17);
+
+  // get tahun dikurang 17
+  const maxDate = new Date(
+    today.getFullYear() - 17,
+    today.getMonth(),
+    today.getDate()
+  );
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -530,26 +537,25 @@ const ComponentDataPribadi: React.FC<Props> = ({
               <label className="text-sm font-medium mb-2">
                 Tanggal Lahir <span className="text-red-500">*</span>
               </label>
-              {/* <input
-              type="text"
-              name="tanggalLahir"
-              value={formData.tanggalLahir}
-              onChange={onChange}
-              placeholder="Tanggal Lahir"
-              className="border p-2 w-full rounded mb-4"
-            /> */}
-
               <Flatpickr
                 options={{
                   dateFormat: "d-m-Y",
-                  // maxDate: "today",
                   maxDate: maxDate,
                 }}
                 value={tanggalLahirDate}
                 onChange={(selectedDates) => {
                   const selectedDate = selectedDates[0];
                   if (selectedDate) {
-                    const formatted = selectedDate.toISOString().split("T")[0];
+                    const year = selectedDate.getFullYear();
+                    const month = String(selectedDate.getMonth() + 1).padStart(
+                      2,
+                      "0"
+                    );
+                    const day = String(selectedDate.getDate()).padStart(2, "0");
+
+                    // const formatted = selectedDate.toISOString().split("T")[0];
+                    const formatted = `${year}-${month}-${day}`;
+
                     onChange({
                       target: {
                         name: "tanggalLahir",
