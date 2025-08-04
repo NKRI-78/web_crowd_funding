@@ -6,24 +6,195 @@ import Swal from "sweetalert2";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import { useSearchParams } from "next/navigation";
 
 import ComponentDataPribadi from "./informasiPribadi/DataPribadi";
 import ComponentDataPekerjaan from "./informasiPekerjaan/DataPekerjaan";
 import { API_BACKEND } from "@/app/utils/constant";
 import FileViewerModal from "@/app/(defaults)/viewer/components/FilePriviewModal";
 
+export const pemodalKeys: string[] = ["ktp-upload", "npwp-upload"];
+
 const FormPemodal: React.FC = () => {
   type OptionType = { value: string; label: string } | null;
+  type DataProfile = {
+    id: string;
+    fullname: string;
+    avatar: string;
+    last_education: string;
+    gender: string;
+    status_marital: string;
+    address_detail: string;
+    occupation: string;
+    province_name: string;
+    city_name: string;
+    district_name: string;
+    subdistrict_name: string;
+    postal_code: string;
+    investor: {
+      bank: {
+        no: string;
+        bank_name: string;
+        bank_owner: string;
+        bank_branch: string;
+        rek_koran_path: string;
+        created_at: string;
+      };
+      ktp: {
+        name: string;
+        nik: string;
+        place_datebirth: string;
+        path: string;
+        created_at: string;
+      };
+      job: {
+        province_name: string;
+        city_name: string;
+        district_name: string;
+        subdistrict_name: string;
+        postal_code: string;
+        company_name: string;
+        company_address: string;
+        monthly_income: string;
+        npwp_path: string;
+        position: string;
+      };
+      risk: {
+        goal: string;
+        tolerance: string;
+        experience: string;
+        capital_market_knowledge: string;
+      };
+    };
+    form: string;
+  };
   const router = useRouter();
   const [token, setToken] = useState(null);
-  // const userData = localStorage.getItem("user");
-  // const user = userData ? JSON.parse(userData) : null;
-  // const token = user?.token;
+  const searchParams = useSearchParams();
+  const isUpdate = searchParams.get("update") === "true";
+  const form = searchParams.get("form");
+  const [dataProfile, setDataProfile] = useState<DataProfile | null>(null);
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    const user = userData ? JSON.parse(userData) : null;
-    setToken(user?.token);
+    // const userCookie = Cookies.get("user");
+    // console.log(userCookie, "userCookie");
+    // if (!userCookie) return;
+
+    // const user = JSON.parse(userCookie);
+    // const userToken = user?.token;
+
+    // if (!userToken) return;
+
+    const userCookie = Cookies.get("user");
+    if (!userCookie) return;
+
+    const user = JSON.parse(userCookie);
+    const token = user?.token;
+
+    if (!token) return;
+    setToken(token);
+
+    const fetchProfile = async () => {
+      // if (!token) {
+      //   console.warn("Token tidak ditemukan di cookies.");
+      //   return;
+      // }
+
+      try {
+        const response = await axios.get(
+          "https://api-capbridge.langitdigital78.com/api/v1/profile",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = response.data?.data;
+
+        setDataProfile({ ...data, form: form });
+
+        if (data) {
+          localStorage.setItem("dataProfile", JSON.stringify(data));
+          const placeDateBirth = `${data.investor.ktp?.place_datebirth}, ${data.investor.ktp?.place_datebirth}`;
+          const [placeOfBirth, dateOfBirth] = placeDateBirth.split(", ");
+
+          setDataPribadi((prev) => ({
+            ...prev,
+            nama: data.investor.ktp.name || "",
+            nik: data.investor.ktp.nik || "",
+            tempatLahir: placeOfBirth || "",
+            tanggalLahir: dateOfBirth || "",
+            jenisKelamin: data.gender === "L" ? "Laki-Laki" : "Perempuan",
+            statusPernikahan: data.status_marital || "",
+            pendidikanTerakhir: data.last_education || "",
+            pekerjaan: data.occupation || "",
+            namaBank: data.investor.bank.bank_name || "",
+            nomorRekening: data.investor.bank?.no || "",
+            namaPemilik: data.investor.bank?.bank_owner || "",
+            cabangBank: data.investor.bank?.bank_branch || "",
+            ktpUrl: data.investor.ktp?.path || "",
+            rekeningKoran: data.bank?.rek_koran_path || "",
+            addres: data.address_detail || "",
+            provincePribadi: data.province_name
+              ? { value: data.province_name, label: data.province_name }
+              : null,
+
+            cityPribadi: data.city_name
+              ? { value: data.city_name, label: data.city_name }
+              : null,
+            districtPribadi: data.district_name
+              ? { value: data.district_name, label: data.district_name }
+              : null,
+            subDistrictPribadi: data.subdistrict_name
+              ? { value: data.subdistrict_name, label: data.subdistrict_name }
+              : null,
+            posCode: data.postal_code || "",
+          }));
+
+          setDataPekerjaan((prev) => ({
+            ...prev,
+            namaPerusahaan: data.investor.job?.company_name || "",
+            jabatan: data.investor.job?.position || "",
+            alamatPerusahaan: data.investor.job?.company_address || "",
+            penghasilanBulanan: data.investor.job?.monthly_income || "",
+            npwpUrl: data.investor.job?.npwp_path || "",
+            fotoPemodalUrl: data.avatar || "",
+
+            provincePekerjaan: data.job?.province_name
+              ? { value: data.job.province_name, label: data.job.province_name }
+              : null,
+            cityPekerjaan: data.job?.city_name
+              ? { value: data.job.city_name, label: data.job.city_name }
+              : null,
+            districtPekerjaan: data.job?.district_name
+              ? { value: data.job.district_name, label: data.job.district_name }
+              : null,
+            subDistrictPekerjaan: data.job?.subdistrict_name
+              ? {
+                  value: data.job.subdistrict_name,
+                  label: data.job.subdistrict_name,
+                }
+              : null,
+            posCodePekerjaan: data.job?.postal_code || "",
+            tujuanInvestasi: data.risk?.goal || "",
+            toleransiResiko: data.risk?.tolerance || "",
+            pengalamanInvestasi: data.risk?.experience || "",
+            pengetahuanPasarModal: data.risk?.pengetahuan_pasar_modal || "",
+            setujuKebenaranData: true, // jika ingin auto-centang
+            setujuRisikoInvestasi: true,
+            signature: data.signature_path || "",
+          }));
+        }
+      } catch (error: any) {
+        console.error(
+          "Gagal mengambil profil:",
+          error.response?.data || error.message
+        );
+      }
+    };
+
+    fetchProfile();
   }, []);
 
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -31,7 +202,25 @@ const FormPemodal: React.FC = () => {
     undefined
   );
 
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  function getFormIndex(form: string | null): number {
+    // console.log("get form index, form= " + form);
+    if (!form) return 0;
+
+    const lowerForm = form.toLowerCase();
+
+    if (lowerForm.includes("ktp")) {
+      return 0;
+    } else if (lowerForm.includes("npwp")) {
+      return 1;
+    } else {
+      return 0; // default fallback jika tidak ketemu
+    }
+  }
+
+  // const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(
+    isUpdate ? getFormIndex(form) : 0
+  );
   const [errorsPribadi, setErrorsPribadi] = useState<Record<string, string[]>>(
     {}
   );
@@ -219,7 +408,11 @@ const FormPemodal: React.FC = () => {
           pekerjaan: parsed.pekerjaan || "",
           pekerjaanLainnya: parsed.pekerjaanLainnya || "",
           addres: parsed.addres || "",
-          namaBank: parsed.namaBank || "",
+          namaBank:
+            parsed.namaBank && typeof parsed.namaBank === "object"
+              ? parsed.namaBank
+              : { value: "", label: "" },
+
           nomorRekening: parsed.nomorRekening || "",
           namaPemilik: parsed.namaPemilik || "",
           cabangBank: parsed.cabangBank || "",
@@ -244,7 +437,8 @@ const FormPemodal: React.FC = () => {
       pekerjaan: "",
       pekerjaanLainnya: "",
       addres: "",
-      namaBank: "",
+      namaBank: { value: "", label: "" },
+
       nomorRekening: "",
       namaPemilik: "",
       cabangBank: "",
@@ -363,7 +557,7 @@ const FormPemodal: React.FC = () => {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("formPemodal");
-      if (saved) {
+      if (saved && !isUpdate) {
         const parsed = JSON.parse(saved);
         setDataPribadi({
           nama: parsed.nama || "",
@@ -574,11 +768,6 @@ const FormPemodal: React.FC = () => {
   };
 
   const handleNext = () => {
-    // const fullData = {
-    //   ...dataPribadi,
-    // };
-
-    // validasi jika next
     if (selectedIndex === 0) {
       const isValid = validateStep0();
       if (!isValid) return;
@@ -606,97 +795,118 @@ const FormPemodal: React.FC = () => {
     try {
       const data = JSON.parse(savedData);
 
-      // const fullSchema = schemaDataPribadi.merge(schemaDataPekerjaan);
-      // const result = fullSchema.safeParse(data);
-
-      // if (!result.success) {
-      //   const firstError = result.error.errors[0];
-      //   Swal.fire({
-      //     title: "Data belum diisi!",
-      //     text: firstError.message,
-      //     icon: "warning",
-      //     timer: 3000,
-      //   });
-      //   return;
-      // }
-
-      const payload = {
-        role: "1",
-        ktp: {
-          name: data.nama,
-          place_datebirth: `${data.tempatLahir}, ${data.tanggalLahir}`,
-          nik: data.nik,
-          nik_path: data.ktpUrl,
-        },
-        gender: data.jenisKelamin === "Laki-Laki" ? "L" : "P",
-        status_marital: data.statusPernikahan,
-        last_education: data.pendidikanTerakhir,
-        province_name: data.provincePribadi.label,
-        city_name: data.cityPribadi.label,
-        district_name: data.districtPribadi.label,
-        subdistrict_name: data.subDistrictPribadi.label,
-        postal_code: data.posCode,
-        address_detail: data.addres,
-        avatar: data.fotoPemodalUrl,
-        occupation:
-          data.pekerjaan === "Lainnya" ? data.pekerjaanLainnya : data.pekerjaan,
-        signature_path: data.signature,
-        location: {
-          name: "-",
-          url: "-",
-          lat: "-",
-          lng: "-",
-        },
-        doc: {
-          id: "-",
-          path: "-",
-        },
-        capital: "-",
-        roi: "-",
-        min_invest: "-",
-        unit_price: "-",
-        unit_total: "-",
-        number_of_unit: "-",
-        periode: "-",
-        bank: {
-          name: data.namaBank.label,
-          no: data.nomorRekening,
-          owner: data.namaPemilik,
-          branch: data.cabangBank,
-          rek_koran_path: data.rekeningKoran || "-",
-        },
-        job: {
-          province_name: data.provincePekerjaan.label,
-          city_name: data.cityPekerjaan.label,
-          district_name: data.districtPekerjaan.label,
-          subdistrict_name: data.subDistrictPekerjaan.label,
-          postal_code: data.posCodePekerjaan,
-          company: data.namaPerusahaan,
-          address: data.alamatPerusahaan,
-          position: data.jabatan,
-          monthly_income: data.penghasilanBulanan,
-          npwp_path: data.npwpUrl,
-        },
-        risk: {
-          goal:
-            data.tujuanInvestasi === "Lainnya"
-              ? data.tujuanInvestasiLainnya
-              : data.tujuanInvestasi,
-          tolerance: data.toleransiResiko,
-          experience: data.pengalamanInvestasi,
-          pengetahuan_pasar_modal: data.pengetahuanPasarModal,
-        },
-      };
-
-      const response = await axios.post(
-        `${API_BACKEND}/api/v1/auth/assign/role`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+      if (!isUpdate) {
+        const payload = {
+          role: "1",
+          ktp: {
+            name: data.nama,
+            place_datebirth: `${data.tempatLahir}, ${data.tanggalLahir}`,
+            nik: data.nik,
+            nik_path: data.ktpUrl,
           },
+          gender: data.jenisKelamin === "Laki-Laki" ? "L" : "P",
+          status_marital: data.statusPernikahan,
+          last_education: data.pendidikanTerakhir,
+          province_name: data.provincePribadi.label,
+          city_name: data.cityPribadi.label,
+          district_name: data.districtPribadi.label,
+          subdistrict_name: data.subDistrictPribadi.label,
+          postal_code: data.posCode,
+          address_detail: data.addres,
+          avatar: data.fotoPemodalUrl,
+          occupation:
+            data.pekerjaan === "Lainnya"
+              ? data.pekerjaanLainnya
+              : data.pekerjaan,
+          signature_path: data.signature,
+          location: {
+            name: "-",
+            url: "-",
+            lat: "-",
+            lng: "-",
+          },
+          doc: {
+            id: "-",
+            path: "-",
+          },
+          capital: "-",
+          roi: "-",
+          min_invest: "-",
+          unit_price: "-",
+          unit_total: "-",
+          number_of_unit: "-",
+          periode: "-",
+          bank: {
+            name: data.namaBank.label,
+            no: data.nomorRekening,
+            owner: data.namaPemilik,
+            branch: data.cabangBank,
+            rek_koran_path: data.rekeningKoran || "-",
+          },
+          job: {
+            province_name: data.provincePekerjaan.label,
+            city_name: data.cityPekerjaan.label,
+            district_name: data.districtPekerjaan.label,
+            subdistrict_name: data.subDistrictPekerjaan.label,
+            postal_code: data.posCodePekerjaan,
+            company: data.namaPerusahaan,
+            address: data.alamatPerusahaan,
+            position: data.jabatan,
+            monthly_income: data.penghasilanBulanan,
+            npwp_path: data.npwpUrl,
+          },
+          risk: {
+            goal:
+              data.tujuanInvestasi === "Lainnya"
+                ? data.tujuanInvestasiLainnya
+                : data.tujuanInvestasi,
+            tolerance: data.toleransiResiko,
+            experience: data.pengalamanInvestasi,
+            pengetahuan_pasar_modal: data.pengetahuanPasarModal,
+          },
+        };
+
+        console.log(payload, "payload");
+        console.log("buat");
+
+        // const response = await axios.post(
+        //   `${API_BACKEND}/api/v1/auth/assign/role`,
+        //   payload,
+        //   {
+        //     headers: {
+        //       Authorization: `Bearer ${token}`,
+        //     },
+        //   }
+        // );
+      } else {
+        const payload = {
+          val: form === "ktp" ? data.ktpUrl : data.npwpUrl,
+        };
+
+        let dataType = "";
+
+        switch (form) {
+          case "ktp":
+            dataType = "ktp_path";
+            break;
+          case "npwp":
+            dataType = "npwp_path";
+            break;
+          default:
+            dataType = "";
         }
-      );
+
+        const response = await axios.put(
+          `${API_BACKEND}/api/v1/document/update/user/${dataType}`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            // params: { type: dataType },
+          }
+        );
+      }
 
       const alertSwal = await Swal.fire({
         title: "Berhasil",
@@ -738,11 +948,8 @@ const FormPemodal: React.FC = () => {
   };
 
   return (
-    // px-3 md:px-10 py-20 md:py-30
-    // px-10 md:px-24 py-24
     <div className="bg-white w-full mx-auto text-black px-10 md:px-24 py-20">
-      {/* Step content */}
-      {selectedIndex === 0 && (
+      {selectedIndex === 0 && dataProfile && (
         <div>
           <ComponentDataPribadi
             formData={dataPribadi}
@@ -758,6 +965,8 @@ const FormPemodal: React.FC = () => {
             errors={errorsPribadi}
             onBankChange={handleBank}
             onLihatKTP={() => setPreviewOpen(true)}
+            isUpdate={isUpdate}
+            dataProfile={dataProfile}
           />
           <FileViewerModal
             src={dataPribadi.ktpUrl}
@@ -767,7 +976,7 @@ const FormPemodal: React.FC = () => {
         </div>
       )}
 
-      {selectedIndex === 1 && (
+      {selectedIndex === 1 && dataProfile && (
         <div>
           <ComponentDataPekerjaan
             formData={dataPekerjaan}
@@ -792,6 +1001,8 @@ const FormPemodal: React.FC = () => {
               setPreviewFileUrl(dataPekerjaan.fotoPemodalUrl);
               setPreviewOpen(true);
             }}
+            isUpdate={isUpdate}
+            dataProfile={dataProfile}
           />
           <FileViewerModal
             src={previewFileUrl ?? ""}
@@ -834,14 +1045,7 @@ const FormPemodal: React.FC = () => {
           </button>
         ) : (
           <button
-            // onClick={() => {
-            //   localStorage.removeItem("formPribadi");
-            //   localStorage.removeItem("formBank");
-            //   alert("Form telah selesai dan data dihapus dari localStorage.");
-            //   setSelectedIndex(0);
-            // }}
             onClick={handleSubmit}
-            // className="px-4 py-2 bg-green-600 text-white rounded" bg-[#4821C2]
             disabled={
               !dataPekerjaan.setujuKebenaranData ||
               !dataPekerjaan.setujuRisikoInvestasi
@@ -853,7 +1057,7 @@ const FormPemodal: React.FC = () => {
                 : "bg-purple-600 hover:bg-purple-700"
             }`}
           >
-            Kirim Data
+            {isUpdate ? "Update Data" : "Kirim Data"}
           </button>
         )}
       </div>

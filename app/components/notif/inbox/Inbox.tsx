@@ -280,12 +280,12 @@ const Inbox = () => {
           }}
           onAccept={(isUpdateDocument, form) => {
             if (isUpdateDocument) {
-              if (role !== 1 || roleUser !== "investor") {
+              if (role !== 1 && roleUser !== "investor") {
                 console.log("update dokumen");
                 console.log(form);
                 router.push(`/form-penerbit?update=true&form=${form}`);
               } else {
-                router.push("/form-pemodal?update=true");
+                router.push(`/form-pemodal?update=true&form=${form}`);
               }
             } else {
               approveProject(selectedProject.projectId, selectedProject.price);
