@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useFormPenerbit } from "./_hooks/useFormPenerbit";
+import { FormPenerbitState, useFormPenerbit } from "./_hooks/useFormPenerbit";
 
 import TextField from "./_component/TextField";
 import JobStructureForm from "./_component/JobStructureForm";
@@ -21,8 +21,12 @@ import { useRouter } from "next/navigation";
 import CustomCheckBox from "./_component/CustomCheckBox";
 import AddButton from "./_component/AddButton";
 import PhotoUploader from "./_component/PhotoUploaderContainer";
-import { ProfileUpdate } from "@/app/(defaults)/form-penerbit/UpdateProfileInterface";
+import {
+  ProfileUpdate,
+  publisherUpdateKeys,
+} from "@/app/(defaults)/form-penerbit/UpdateProfileInterface";
 import UpdateRing from "./_component/UpdateRing";
+import Cookies from "js-cookie";
 
 type Props = {
   onBack: () => void;
@@ -227,7 +231,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
         );
         if (!hasName) {
           addDirektur({
-            id: direktur.name,
+            id: direktur.id.toString(),
             nama: direktur.name,
             jabatan:
               direktur.position == "Direktur Utama"
@@ -245,7 +249,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
         );
         if (!hasName) {
           addKomisaris({
-            id: komisaris.name,
+            id: komisaris.id.toString(),
             nama: komisaris.name,
             jabatan:
               komisaris.position == "Komisaris Utama"
@@ -352,8 +356,8 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
                 : "Komisaris",
             ktp: kom.noKTP,
             ktp_path: kom.fileKTP,
-            npwp: kom.fileNPWP,
-            npwp_path: "-",
+            npwp: "-",
+            npwp_path: kom.fileNPWP,
           })),
           project: {
             title: formState.titleProyek,
@@ -421,43 +425,97 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
 
   //* update dokumen
   const updateDocument = async () => {
-    const payload = {
-      company_id: profile?.company.id,
-      val: profile?.form,
-    };
+    const penerbitCache = localStorage.getItem("formPenerbitDraft");
+    const isKTP: boolean = profile?.form.endsWith("upload-ktp") ?? false;
+    const isNPWP: boolean = profile?.form.endsWith("upload-npwp") ?? false;
+    const isSusunanManajemen: boolean = isKTP || isNPWP;
+    const isDirektur: boolean = profile?.form.includes("direktur") ?? false;
 
-    try {
-      const userData = localStorage.getItem("user");
-      if (!userData) throw "User Tidak Ditemukan";
-      const userJSON = JSON.parse(userData);
+    if (penerbitCache) {
+      const penerbitJSON = JSON.parse(penerbitCache) as FormPenerbitState;
+      let idManajemen = "-";
+      let valManajemen = "-";
 
-      await axios.put(
-        `${API_BACKEND}/api/v1/document/update/${profile?.form}`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${userJSON.token}`,
-          },
+      if (isSusunanManajemen) {
+        if (isDirektur) {
+          const direkturIndex: number = Number(profile?.form[0]);
+          idManajemen = penerbitJSON.direktur[direkturIndex].id;
+
+          if (isKTP) {
+            valManajemen = penerbitJSON.direktur[direkturIndex].fileKTP;
+          } else {
+            valManajemen = penerbitJSON.direktur[direkturIndex].fileNPWP;
+          }
+        } else {
+          const komisarisIndex: number = Number(profile?.form[0]);
+          idManajemen = penerbitJSON.komisaris[komisarisIndex].id;
+
+          if (isKTP) {
+            valManajemen = penerbitJSON.komisaris[komisarisIndex].fileKTP;
+          } else {
+            valManajemen = penerbitJSON.komisaris[komisarisIndex].fileNPWP;
+          }
         }
-      );
+      }
 
-      await Swal.fire({
-        title: "Berhasil",
-        text: "Data berhasil diupdate",
-        icon: "success",
-        timer: 3000,
-        timerProgressBar: true,
-        showConfirmButton: false,
-      });
-    } catch (error) {
-      console.log(error);
-      Swal.fire({
-        icon: "error",
-        title: "Update Gagal",
-        text: `${error}`,
-        timer: 3000,
-        timerProgressBar: true,
-      });
+      const payload = {
+        ...(profile?.form === "company-profile"
+          ? { company_id: profile?.company.id }
+          : { project_id: profile?.company.projects?.[0]?.id }),
+        val: getUpdateDocumentValueBasedFormKey(penerbitJSON),
+        val_array: isSusunanManajemen
+          ? [
+              {
+                id: idManajemen,
+                val: valManajemen,
+                type: isKTP ? "ktp" : "npwp",
+              },
+            ]
+          : [],
+      };
+
+      try {
+        const userCookie = Cookies.get("user");
+        if (!userCookie) return null;
+        const userJson = JSON.parse(userCookie);
+
+        const result = await axios.put(
+          `${API_BACKEND}/api/v1/document/update/${profile?.form}`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${userJson.token}`,
+            },
+          }
+        );
+
+        console.log("Payload ", payload);
+        console.log("Result ", payload);
+
+        // Hapus localStorage dan reset
+        localStorage.removeItem("formPenerbitDraft");
+        localStorage.removeItem("publisherDraft");
+
+        await Swal.fire({
+          title: "Berhasil",
+          text: "Data berhasil diupdate",
+          icon: "success",
+          timer: 3000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+        });
+
+        router.push("/");
+      } catch (error) {
+        console.log(error);
+        Swal.fire({
+          icon: "error",
+          title: "Update Gagal",
+          text: `${error}`,
+          timer: 3000,
+          timerProgressBar: true,
+        });
+      }
     }
   };
 
@@ -466,6 +524,73 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
       window.scroll(0, 0);
     }
   }, [isUpdate]);
+
+  const getUpdateDocumentValueBasedFormKey = (
+    penerbitJSON: FormPenerbitState
+  ): string => {
+    if (!profile?.form) return "-";
+
+    let val: string = "";
+
+    const isFormPunyanyaUdin = publisherUpdateKeys.includes(profile?.form);
+    try {
+      if (isFormPunyanyaUdin) {
+        const publisherCache = localStorage.getItem("publisherDraft");
+        if (publisherCache) {
+          const publisherJSON = JSON.parse(publisherCache);
+          switch (profile.form) {
+            case "nib":
+              val = publisherJSON.company_nib_path;
+              break;
+            case "akta-pendirian-perusahaan":
+              val = publisherJSON.akta_pendirian;
+              break;
+            case "sk-kumham-path":
+              val = publisherJSON.sk_kumham_path;
+              break;
+            case "akta-perubahan-terakhir":
+              val = publisherJSON.akta_perubahan_terahkir_path;
+              break;
+            case "sk-kumham-terakhir":
+              val = publisherJSON.sk_kumham_terahkir;
+              break;
+            case "jumlah-karyawan":
+              val = publisherJSON.total_employees;
+              break;
+            default:
+              val = "-";
+              break;
+          }
+        }
+      } else {
+        switch (profile.form) {
+          case "laporan-keuangan":
+            val = penerbitJSON.laporanKeuangan;
+            break;
+          case "rekening-koran":
+            val = penerbitJSON.rekeningKoran;
+            break;
+          case "doc-kontrak":
+            val = penerbitJSON.fileDokumenKontrakApbn ?? "-";
+            break;
+          case "company-profile":
+            val = penerbitJSON.companyProfile;
+            break;
+          default:
+            val = "-";
+            break;
+        }
+      }
+    } catch (_) {
+      val = "-";
+    }
+
+    console.log("profile.form: ", profile?.form);
+    console.log("form val ? = " + val);
+    console.log(penerbitJSON.rekeningKoran);
+
+    return val;
+  };
 
   return (
     <div className="px-6 md:px-24 bg-white">
