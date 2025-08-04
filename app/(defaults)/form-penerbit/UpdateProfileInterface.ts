@@ -42,6 +42,7 @@ export interface CompanyAddress {
 }
 
 export interface CompanyPerson {
+  id: number;
   title: string;
   name: string;
   position: string;
@@ -52,6 +53,7 @@ export interface CompanyPerson {
 }
 
 export interface CompanyProject {
+  id: string;
   title: string;
   jenis_obligasi: string;
   jumlah_minimal: number;
@@ -83,7 +85,7 @@ export const publisherUpdateKeys: string[] = [
   "nama-perusahaan",
   "nib",
   "akta-pendirian-perusahaan",
-  "sk-kumham-pendirian",
+  "sk-kumham-path",
   "akta-perubahan-terakhir",
   "sk-kumham-terakhir",
   "alamat-perusahaan",
