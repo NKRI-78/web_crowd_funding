@@ -875,15 +875,15 @@ const FormPemodal: React.FC = () => {
         console.log(payload, "payload");
         console.log("buat");
 
-        // const response = await axios.post(
-        //   `${API_BACKEND}/api/v1/auth/assign/role`,
-        //   payload,
-        //   {
-        //     headers: {
-        //       Authorization: `Bearer ${token}`,
-        //     },
-        //   }
-        // );
+        const response = await axios.post(
+          `${API_BACKEND}/api/v1/auth/assign/role`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
       } else {
         const payload = {
           val: form === "ktp" ? data.ktpUrl : data.npwpUrl,

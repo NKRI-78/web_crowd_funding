@@ -1,6 +1,7 @@
 import { setCookie } from "@/app/helper/cookie";
 import { useRouter } from "next/navigation";
 import React from "react";
+import Cookies from "js-cookie";
 
 export default function RegisterSelectRole({
   onNext,
@@ -11,10 +12,10 @@ export default function RegisterSelectRole({
 }) {
   const handleSelectRole = async (role: number) => {
     try {
-      const userString = localStorage.getItem("user");
+      const userCookie = Cookies.get("user");
 
-      if (userString) {
-        const user = JSON.parse(userString);
+      if (userCookie) {
+        const user = JSON.parse(userCookie);
 
         const updatedUser = {
           ...user,
@@ -22,7 +23,7 @@ export default function RegisterSelectRole({
           enabled: true,
         };
 
-        localStorage.setItem("user", JSON.stringify(updatedUser));
+        Cookies.set("user", JSON.stringify(updatedUser));
       }
       onClose?.();
       if (role == 2) {
