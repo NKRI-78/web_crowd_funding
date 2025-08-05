@@ -9,6 +9,7 @@ import { getAllProject } from "@/actions/GetAllProject";
 import Modal from "@/app/helper/Modal";
 import RegisterOtp from "../auth/register/RegisterOtp";
 import RegisterSelectRole from "../auth/register/RegisterSelectRole";
+import RegisterV2 from "../auth/register/RegisterV2";
 import axios from "axios";
 import { API_BACKEND } from "@/app/utils/constant";
 import { InboxModel } from "../notif/InboxModel";
@@ -29,7 +30,7 @@ const HomeV2: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
-  const [step, setStep] = useState<"otp" | "role" | null>(null);
+  const [step, setStep] = useState<"register" | "otp" | "role" | null>(null);
 
   useEffect(() => {
     const fetchTopVideos = async () => {
@@ -194,7 +195,14 @@ const HomeV2: React.FC = () => {
             yang percaya pada perubahan."
           </p>
 
-          <button className="text-white text-lg bg-[#10565C] hover:bg-[#0c4246] focus:ring-4 focus:ring-green-200 rounded-lg px-7 py-5 me-2 mb-2 dark:bg-[#10565C] dark:hover:bg-[#0c4246] focus:outline-none dark:focus:ring-green-800 font-extrabold">
+          <button
+            className="text-white text-lg bg-[#10565C] hover:bg-[#0c4246] focus:ring-1 focus:ring-white rounded-lg px-6 py-3 me-2 mb-2 dark:bg-[#10565C] dark:hover:bg-[#0c4246] focus:outline-none dark:focus:ring-white font-extrabold"
+            onClick={() => {
+              setStep("register");
+              setShowOtpModal(true);
+              console.log("tes");
+            }}
+          >
             DAFTAR SEKARANG
           </button>
 
@@ -681,6 +689,9 @@ const HomeV2: React.FC = () => {
         onClose={handleClose}
         title={step === "otp" ? "Verifikasi OTP" : "Pilih Role"}
       >
+        {step === "register" && (
+          <RegisterV2 onNext={() => setStep("otp")} onClose={handleClose} />
+        )}
         {step === "otp" && (
           <RegisterOtp onNext={() => setStep("role")} onClose={handleClose} />
         )}
