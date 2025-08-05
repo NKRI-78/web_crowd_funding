@@ -188,7 +188,7 @@ const HomeV2: React.FC = () => {
           <h1 className="text-3xl md:text-6xl font-bold leading-tight">
             Fund the Future. <br /> Together
           </h1>
-          <p className="text-white text-sm leading-relaxed italic">
+          <p className="text-white text-lg leading-relaxed italic">
             "Ide Hebat Layak Diperjuangkan. Bantu wujudkan mimpi besar, satu
             kontribusi kecil pada satu waktu. Gabung bersama ribuan pendukung
             yang percaya pada perubahan."
@@ -231,14 +231,88 @@ const HomeV2: React.FC = () => {
         </div>
       </section>
 
-      {/* Background overlay */}
-      <div className="absolute inset-0 z-0 opacity-10">
-        <img
-          src="/bg.png"
-          alt="background"
-          className="w-full h-full object-cover"
-        />
-      </div>
+      <section className="bg-white relative text-black pt-14 pb-5 px-6 text-center md:px-16">
+        <div className="flex gap-x-6">
+          <div className="basis-6/12">
+            <img
+              className="w-full"
+              src="/images/secure-investment.png"
+              alt="Secure Investment"
+            />
+          </div>
+
+          <div className="basis-6/12 text-left flex flex-col gap-y-6">
+            <h2 className=" text-[#10565C] text-xl md:text-4xl font-extrabold leading-tight tracking-tight">
+              Cara Baru Investasi Aman dan Menguntungkan
+            </h2>
+            <p className="text-[#969696] text-lg">
+              Capbridge adalah penyelenggara urun dana berbasis teknologi
+              informasi di Indonesia yang beroperasi sesuai prinsip ESG
+              (Environmental, Social, Governance). Melalui platform ini, kami
+              memperkuat tata kelola yang transparan, serta menjunjung tinggi
+              etika bisnis yang selaras dengan 17 tujuan pembangunan
+              berkelanjutan.
+            </p>
+            <div>
+              <ul className="flex flex-col gap-y-8">
+                <li className="border-b-2 border-b-[#DDDDDD] pb-8">
+                  <div>
+                    <h3 className="text-[#10565C] text-2xl font-extrabold tracking-tight">
+                      1. Platform resmi yang berizin
+                    </h3>
+                    <ul className="flex flex-col gap-y-5 mt-5 ">
+                      <li className="flex gap-x-1 items-center">
+                        <img
+                          className="w-6"
+                          src="/images/check.png"
+                          alt="Check"
+                        />
+                        <span className="text-[#969696]">
+                          Berizin resmi dan di awasi OJK: Surat KEP-11/D.04/2025
+                        </span>
+                      </li>
+                      <li className="flex gap-x-1 items-center">
+                        <img
+                          className="w-6"
+                          src="/images/check.png"
+                          alt="Check"
+                        />
+                        <span className="text-[#969696]">
+                          Bersertifikasi ISO 27009:2025
+                        </span>
+                      </li>
+                      <li className="flex gap-x-1 items-center">
+                        <img
+                          className="w-6"
+                          src="/images/check.png"
+                          alt="Check"
+                        />
+                        <span className="text-[#969696]">
+                          Anggota resmi dari ALUDI
+                        </span>
+                      </li>
+                    </ul>
+                  </div>
+                </li>
+                <li className="border-b-2 border-b-[#DDDDDD] pb-8">
+                  <div>
+                    <h3 className="text-[#10565C] text-2xl font-extrabold tracking-tight">
+                      2. Imbal hasil yang menarik
+                    </h3>
+                  </div>
+                </li>
+                <li className="">
+                  <div>
+                    <h3 className="text-[#10565C] text-2xl font-extrabold tracking-tight">
+                      3. Syarat dan proses yang mudah
+                    </h3>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Investment Project Section */}
       <section className="bg-white relative text-black py-12 px-6 text-center md:px-16">
@@ -260,7 +334,7 @@ const HomeV2: React.FC = () => {
           onClick={() => {
             router.push("/business-list");
           }}
-          className="bg-[#3C2B90] relative hover:bg-[#2d2171] text-white px-6 py-2 rounded-full font-semibold my-10"
+          className="bg-[#10565C] relative hover:bg-[#0d464b] text-white px-6 py-2 rounded-full font-semibold my-10"
         >
           Lihat Proyek Selengkapnya
         </button>
@@ -372,8 +446,8 @@ const HomeV2: React.FC = () => {
               }}
               className={`px-6 py-2 relative cursor-pointer rounded-full font-semibold transition-all duration-300 ${
                 activeTab === tab
-                  ? "bg-[#3C2B90] text-white"
-                  : "border border-[#3C2B90] text-[#3C2B90] hover:bg-[#3C2B90] hover:text-white"
+                  ? "bg-[#10565C] text-white"
+                  : "border border-[#10565C] text-[#10565C] hover:bg-[#0d464b] hover:text-white"
               }`}
             >
               {tab}

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 
 import ModalLogout from "@components/modal/logout/Logout";
 import Footer from "@components/footer/Footer";
+import FooterV2 from "@components/footer/FooterV2";
 import Navbar from "@components/navbar/Navbar";
 import NavbarV2 from "../navbar/NavbarV2";
 
@@ -53,7 +54,7 @@ export default function ClientLayout({
             pathname === "/inbox" ||
             pathname === "/transaction"
               ? ""
-              : !isViewer && <Footer />}
+              : !isViewer && <FooterV2 />}
           </main>
         )}
         <ModalLogout />
