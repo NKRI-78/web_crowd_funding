@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import ModalLogout from "@components/modal/logout/Logout";
 import Footer from "@components/footer/Footer";
 import Navbar from "@components/navbar/Navbar";
+import NavbarV2 from "../navbar/NavbarV2";
 
 import localFont from "next/font/local";
 
@@ -41,7 +42,7 @@ export default function ClientLayout({
           </div>
         ) : (
           <main className="min-h-screen text-white relative overflow-hidden flex flex-col">
-            {!isViewer && <Navbar />}
+            {!isViewer && <NavbarV2 />}
             <div className="">
               <div className="">{children}</div>
             </div>
