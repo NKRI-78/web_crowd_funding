@@ -181,7 +181,7 @@ const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
 
       <input
         type="file"
-        accept=".jpg,.png"
+        accept=".jpg,.png,.jpeg"
         multiple
         hidden
         ref={inputRef}
