@@ -14,6 +14,7 @@ import Cookies from "js-cookie";
 import { createSocket } from "@/app/utils/sockets";
 import { useDispatch, useSelector } from "react-redux";
 import { setBadge } from "@/redux/slices/badgeSlice";
+import { getUser } from "@/app/lib/auth";
 
 interface InboxState {
   loading?: boolean;
@@ -40,22 +41,8 @@ const Inbox = () => {
     errorMessage: null,
   });
 
-  function getUserToken(): string | null {
-    const userCookie = Cookies.get("user");
-    if (!userCookie) return null; // ✅ tambahkan return
-
-    const userJson = JSON.parse(userCookie);
-    return userJson.token;
-  }
-  function getUserId(): string | null {
-    const userCookie = Cookies.get("user");
-    if (!userCookie) return null; // ✅ tambahkan return
-
-    const userJson = JSON.parse(userCookie);
-    return userJson.id;
-  }
-
   const router = useRouter();
+  const user = getUser();
 
   const roleCookie = Cookies.get("role");
   const userRoleCookie = Cookies.get("user");
@@ -104,13 +91,12 @@ const Inbox = () => {
   //* fetch inbox
   const fetchInbox = async () => {
     try {
-      const token = getUserToken();
       console.log("user token");
-      console.log(token);
-      if (token) {
+      console.log(user?.token);
+      if (user?.token) {
         const res = await axios(`${API_BACKEND}/api/v1/inbox/list`, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${user?.token}`,
           },
         });
         if (!res.data["data"]) {
@@ -165,8 +151,7 @@ const Inbox = () => {
 
     if (result.isConfirmed) {
       try {
-        const token = getUserToken();
-        if (!token) throw new Error("Unauthorized");
+        if (!user?.token) throw new Error("Unauthorized");
 
         await axios.put(
           `${API_BACKEND}/api/v1/admin/verify/project`,
@@ -176,7 +161,7 @@ const Inbox = () => {
           },
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${user?.token}`,
               "Content-Type": "application/json",
             },
           }
@@ -206,15 +191,15 @@ const Inbox = () => {
   };
 
   useEffect(() => {
-    const userId = getUserId();
+    const user = getUser();
     console.log("user token");
-    console.log(userId);
+    console.log(user?.id);
 
-    const socket = createSocket(userId ?? "-");
+    const socket = createSocket(user?.id ?? "-");
 
     socket.on("connect", () => {
       console.log("Socket connected:", socket.id);
-      console.log("Socket connected user id :", userId ?? "-");
+      console.log("Socket connected user id :", user?.id ?? "-");
     });
 
     socket.on("inbox-update", (data) => {
@@ -279,9 +264,9 @@ const Inbox = () => {
         )}
       </div>
 
-      {dialogIsOpen && getUserToken() && (
+      {dialogIsOpen && user?.token && (
         <InboxDialogMessage
-          userToken={getUserToken()!}
+          userToken={user?.token!}
           inboxId={inboxId}
           onReject={(id, isUpdateDocument) => {
             if (isUpdateDocument) {

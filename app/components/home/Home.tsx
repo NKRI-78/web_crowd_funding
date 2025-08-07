@@ -15,6 +15,7 @@ import { InboxModel } from "../notif/InboxModel";
 import { useDispatch } from "react-redux";
 import { setBadge } from "@/redux/slices/badgeSlice";
 import { createSocket } from "@/app/utils/sockets";
+import { getUser } from "@/app/lib/auth";
 
 const Home: React.FC = () => {
   const dispatch = useDispatch();
@@ -41,26 +42,10 @@ const Home: React.FC = () => {
 
     fetchTopVideos();
   }, []);
-
-  function getUserToken(): string | null {
-    const userCookie = Cookies.get("user");
-    if (!userCookie) return null;
-
-    const userJson = JSON.parse(userCookie);
-    return userJson.token;
-  }
-
-  function getUserId(): string | null {
-    const userCookie = Cookies.get("user");
-    if (!userCookie) return null; // ✅ tambahkan return
-
-    const userJson = JSON.parse(userCookie);
-    return userJson.id;
-  }
+  const user = getUser();
 
   useEffect(() => {
-    const token = getUserToken();
-    if (token) fetchInbox(token);
+    if (user?.token) fetchInbox(user?.token);
   }, []);
 
   const fetchInbox = async (token: string) => {
@@ -85,20 +70,16 @@ const Home: React.FC = () => {
   };
 
   useEffect(() => {
-    const userId = getUserId();
-    console.log("user token");
-    console.log(userId);
-
-    const socket = createSocket(userId ?? "-");
+    const socket = createSocket(user?.id ?? "-");
 
     socket.on("connect", () => {
       console.log("Socket connected:", socket.id);
-      console.log("Socket connected user id :", userId ?? "-");
+      console.log("Socket connected user id :", user?.id ?? "-");
     });
 
     socket.on("inbox-update", (data) => {
       console.log("Update");
-      const token = getUserToken();
+      const token = user?.token;
       if (token) fetchInbox(token);
     });
 
