@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 import { API_BACKEND } from "@/app/utils/constant";
 import FormButton from "@/app/components/inputFormPenerbit/_component/FormButton";
+import { getUser } from "@/app/lib/auth";
 
 interface PaymentMethodType {
   id: number;
@@ -55,14 +56,13 @@ const PaymentMethod = () => {
   }, []);
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
+    const userData = getUser();
 
     if (userData) {
-      const userParsed = JSON.parse(userData);
       axios
         .get(`${API_BACKEND}/api/v1/payment/method`, {
           headers: {
-            Authorization: `Bearer ${userParsed.token}`,
+            Authorization: `Bearer ${userData.token}`,
           },
         })
         .then((response) => {
@@ -93,15 +93,14 @@ const PaymentMethod = () => {
 
       console.log("Payload ", payload);
 
-      const userData = localStorage.getItem("user");
+      const userData = getUser();
 
       if (userData) {
-        const userParsed = JSON.parse(userData);
         const endpoint = `${API_BACKEND}/api/v1/payment/order`;
 
         const result = await axios.post(endpoint, payload, {
           headers: {
-            Authorization: `Bearer ${userParsed.token}`,
+            Authorization: `Bearer ${userData?.token}`,
           },
         });
         router.push(

@@ -31,7 +31,12 @@ export const schema = z.object({
     .max(2, "Maksimal hanya 2 alamat"),
   sameAsCompany: z.boolean().optional(),
   detailKorespondensi: z.string().optional(),
-  total_employees: z.string().min(1, "Jumlah karyawan minimal 1").optional(),
+  total_employees: z
+    .string()
+    .min(1, "Jumlah karyawan wajib diisi")
+    .refine((val) => Number(val) >= 1, {
+      message: "Jumlah karyawan minimal 1 orang",
+    }),
   company_nib_path: z
     .string()
     .min(1, { message: "Dokumen NIB wajib diunggah" }),
