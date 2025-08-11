@@ -24,6 +24,7 @@ const ContainerSelfie: React.FC<Props> = ({ photoResult, errorText }) => {
     const checkCameraSupport = async () => {
       if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
         console.log("Device tidak mendukung kamera");
+        setErrorMessage("Device tidak mendukung kamera");
         return;
       }
 
@@ -35,6 +36,7 @@ const ContainerSelfie: React.FC<Props> = ({ photoResult, errorText }) => {
 
         if (!hasCamera) {
           console.log("Tidak ada kamera yang terdeteksi");
+          setErrorMessage("Tidak ada kamera yang terdeteksi");
         } else {
           console.log("Kamera tersedia");
         }
