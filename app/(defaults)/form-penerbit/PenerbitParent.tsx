@@ -8,14 +8,15 @@ import axios from "axios";
 import { API_BACKEND } from "@/app/utils/constant";
 import { ProfileUpdate, publisherUpdateKeys } from "./UpdateProfileInterface";
 import Cookies from "js-cookie";
+import FormUtusanPenerbit from "./FormUtusanPenerbit";
 
 function getFormIndex(form: string | null): number {
   console.log("get form index, form= " + form);
-  if (!form) return 0;
+  if (!form) return 1;
   if (publisherUpdateKeys.includes(form)) {
-    return 0;
-  } else {
     return 1;
+  } else {
+    return 2;
   }
 }
 
@@ -25,7 +26,7 @@ export default function MultiStepFormWrapper() {
   const form = searchParams.get("form");
   const [userProfile, setUserProfile] = useState<ProfileUpdate | null>(null);
 
-  const [selectedIndex, setSelectedIndex] = useState(
+  const [selectedIndex, setSelectedIndex] = useState<number>(
     isUpdate ? getFormIndex(form) : 0
   );
 
@@ -36,10 +37,23 @@ export default function MultiStepFormWrapper() {
     if (isUpdate) getUser();
   }, [isUpdate]);
 
+  useEffect(() => {
+    const formIndexCache = localStorage.getItem("penerbitFormIndex");
+    if (formIndexCache) {
+      setSelectedIndex(Number(formIndexCache));
+    } else {
+      setSelectedIndex(0);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("penerbitFormIndex", `${selectedIndex}`);
+  }, [selectedIndex]);
+
   const getUser = async () => {
     try {
       const userCookie = Cookies.get("user");
-      if (!userCookie) return null; // ✅ tambahkan return
+      if (!userCookie) return null;
 
       const userJson = JSON.parse(userCookie);
 
@@ -61,14 +75,15 @@ export default function MultiStepFormWrapper() {
 
   return (
     <div>
-      {selectedIndex === 0 && (
+      {selectedIndex === 0 && <FormUtusanPenerbit onSubmit={next} />}
+      {selectedIndex === 1 && (
         <PublisherForm
           onNext={next}
           profile={userProfile}
           isUpdate={isUpdate !== null}
         />
       )}
-      {selectedIndex === 1 && (
+      {selectedIndex === 2 && (
         <FormPenerbit
           onBack={prev}
           profile={userProfile}

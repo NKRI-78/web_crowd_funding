@@ -1,5 +1,3 @@
-import { setCookie } from "@/app/helper/cookie";
-import { useRouter } from "next/navigation";
 import React from "react";
 import Cookies from "js-cookie";
 

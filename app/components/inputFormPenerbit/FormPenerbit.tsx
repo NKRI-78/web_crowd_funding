@@ -787,64 +787,69 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
                 }}
                 errorText={errors.titleProyek}
               />
-
-              <DropdownSelect
-                label="Jenis Obligasi"
-                options={[{ label: "Konvensional", value: "konvensional" }]}
-                value={formState.jenisObligasi || ""}
-                onChange={(val) => {
-                  updateField("jenisObligasi", val);
-                  if (val) {
-                    setErrors({ ...errors, titleProyek: "" });
-                  }
-                }}
-                placeholder="Jenis Obligasi"
-                maxHeightDropdown="180px"
-                className="mb-2"
-                errorText={errors.jenisObligasi}
-              />
-
-              <CurrencyField
-                label="Nilai Nominal"
-                placeholder="Rp."
-                value={formState.nilaiNominal || ""}
-                className="mb-2"
-                onChange={(e) => {
-                  const rawValue = e.target.value;
-                  const numericValue = Number(rawValue);
-
-                  updateField("nilaiNominal", rawValue);
-
-                  if (!rawValue) {
-                    setErrors((prev) => ({
-                      ...prev,
-                      nilaiNominal: "Nilai Nominal tidak boleh kosong",
-                    }));
-                  } else if (numericValue > 10_000_000_000) {
-                    setErrors((prev) => ({
-                      ...prev,
-                      nilaiNominal: "Nilai Nominal Maks 10 Miliar",
-                    }));
-                  } else {
-                    setErrors((prev) => ({
-                      ...prev,
-                      nilaiNominal: "",
-                    }));
-                  }
-                }}
-                errorText={errors.nilaiNominal}
-              />
             </div>
           </div>
         </section>
 
         {/* === right section === */}
         <section className="w-full">
+          <DropdownSelect
+            label="Jenis Obligasi"
+            options={[{ label: "Konvensional", value: "konvensional" }]}
+            value={formState.jenisObligasi || ""}
+            onChange={(val) => {
+              updateField("jenisObligasi", val);
+              if (val) {
+                setErrors({ ...errors, titleProyek: "" });
+              }
+            }}
+            placeholder="Jenis Obligasi"
+            maxHeightDropdown="180px"
+            className="mb-2"
+            errorText={errors.jenisObligasi}
+          />
+
+          <CurrencyField
+            label="Nilai Nominal"
+            placeholder="Rp."
+            value={formState.nilaiNominal || ""}
+            className="mb-2"
+            onChange={(e) => {
+              const rawValue = e.target.value;
+              const numericValue = Number(rawValue);
+
+              updateField("nilaiNominal", rawValue);
+
+              if (!rawValue) {
+                setErrors((prev) => ({
+                  ...prev,
+                  nilaiNominal: "Nilai Nominal tidak boleh kosong",
+                }));
+              } else if (numericValue > 10_000_000_000) {
+                setErrors((prev) => ({
+                  ...prev,
+                  nilaiNominal: "Nilai Nominal Maks 10 Miliar",
+                }));
+              } else {
+                setErrors((prev) => ({
+                  ...prev,
+                  nilaiNominal: "",
+                }));
+              }
+            }}
+            errorText={errors.nilaiNominal}
+          />
+
           <div className="w-full flex gap-2 mb-3">
             <DropdownSelect
-              label="Jangka Waktu"
-              options={[{ label: "6 Bulan", value: "6 Bulan" }]}
-              // defaultValue="6 Bulan"
+              label="Tenor"
+              options={[
+                { label: "3 Bulan", value: "3 Bulan" },
+                { label: "6 Bulan", value: "6 Bulan" },
+                { label: "9 Bulan", value: "9 Bulan" },
+                { label: "12 Bulan", value: "12 Bulan" },
+              ]}
+              // defaultValue="3 Bulan"
               value={formState.jangkaWaktu || ""}
               onChange={(val) => {
                 updateField("jangkaWaktu", val);
