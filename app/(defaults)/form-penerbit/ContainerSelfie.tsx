@@ -6,7 +6,7 @@ import { Camera, CameraOff, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 
 interface Props {
-  photoResult: (result: File) => void;
+  photoResult: (result: File | null) => void;
   errorText?: string;
 }
 
@@ -122,6 +122,7 @@ const ContainerSelfie: React.FC<Props> = ({ photoResult, errorText }) => {
   //* re-take photo
   const retakePhoto = () => {
     setPhoto(null);
+    photoResult(null);
     startCamera();
   };
 
@@ -131,22 +132,20 @@ const ContainerSelfie: React.FC<Props> = ({ photoResult, errorText }) => {
       stream.getTracks().forEach((track) => track.stop());
     }
     setPhoto(null);
+    photoResult(null);
     setIsCameraActive(false);
     setErrorMessage("");
     setStream(null);
   };
 
-  useEffect(() => {
-    console.log();
-    if (errorText && isCameraActive) {
-      errorText = "Anda belum mengambil foto";
-    } else {
-      errorText = "";
-    }
-  }, [errorText, isCameraActive]);
-
   return (
-    <div className="flex flex-col bg-slate-50 px-4 pb-4 pt-2 rounded-md">
+    <div
+      className={
+        isCameraActive
+          ? "flex flex-col h-full bg-slate-50 px-4 pb-4 pt-2 rounded-md"
+          : "flex flex-col h-[240px] md:h-full bg-slate-50 px-4 pb-4 pt-2 rounded-md"
+      }
+    >
       <SectionPoint text="Foto Selfie" className="mb-2" />
 
       <div
