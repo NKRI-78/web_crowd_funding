@@ -121,7 +121,7 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
     const newErrors: ErrorSchema = {};
 
     if (!formFields.photo) {
-      newErrors.photo = "Foto Selfie tidak boleh kosong";
+      newErrors.photo = "Anda belum mengambil foto";
     }
     if (!formFields.fullname) {
       newErrors.fullname = "Nama Lengkap tidak boleh kosong";
@@ -198,6 +198,9 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
         <ContainerSelfie
           photoResult={(photoSelfie) => {
             setFormFields({ ...formFields, photo: photoSelfie });
+            if (photoSelfie) {
+              setErrors({ ...errors, photo: "" });
+            }
           }}
           errorText={errors.photo}
         />
