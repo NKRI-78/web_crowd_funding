@@ -43,7 +43,7 @@ export function useFormPenerbit() {
     titleProyek: "",
     nilaiNominal: "",
     jenisObligasi: "konvensional",
-    jangkaWaktu: "6 Bulan",
+    jangkaWaktu: "3 Bulan",
     tingkatBunga: "10",
     jadwalBunga: "1 Bulan",
     jadwalPokok: "1 Bulan",
