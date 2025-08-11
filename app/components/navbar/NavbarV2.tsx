@@ -163,6 +163,22 @@ const NavbarV2: React.FC = () => {
                     {/* {userData.email} */}
                   </p>
                 </div>
+
+                {userData && userData.role === "user" && step !== "role" && (
+                  <>
+                    {/* Desktop */}
+                    <div className="hidden md:block">
+                      <button
+                        onClick={() => setStep("role")}
+                        className="px-3 py-1 rounded-lg bg-red-500 text-white text-sm font-semibold animate-pulse"
+                      >
+                        Anda Belum Memilih Peran
+                      </button>
+                    </div>
+
+                    {/* Mobile */}
+                  </>
+                )}
                 <Tippy content="Inbox" animation="scale">
                   <Link href="/inbox" className="relative inline-block">
                     <BellRing
@@ -185,7 +201,15 @@ const NavbarV2: React.FC = () => {
                   </Link>
                 </Tippy>
 
-                <button onClick={toggleMenu}>
+                <button onClick={toggleMenu} className="relative">
+                  {userData?.role === "user" && step !== "role" && (
+                    <>
+                      {/* Ping hanya untuk mobile */}
+                      <span className="absolute -top-1 -right-1 inline-flex h-3 w-3 animate-ping rounded-full bg-red-400 opacity-85 md:hidden"></span>
+                      <span className="absolute -top-1 -right-1 inline-flex h-3 w-3 rounded-full bg-red-500 md:hidden"></span>
+                    </>
+                  )}
+
                   {menuOpen ? (
                     <X size={24} />
                   ) : (
@@ -211,6 +235,14 @@ const NavbarV2: React.FC = () => {
                   </div>
                 </Link>
                 <ul className="flex flex-col gap-6 text-white text-base font-semibold pt-16">
+                  <div className="block md:hidden">
+                    <button
+                      onClick={() => setStep("role")}
+                      className="px-3 py-1 rounded-md bg-red-500 text-white text-sm font-semibold animate-pulse"
+                    >
+                      Anda Belum Memilih Peran
+                    </button>
+                  </div>
                   <li
                     className={
                       pathname == "/" ? "text-[#4CD137]" : "text-white"

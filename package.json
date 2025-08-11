@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "local-dev": "next dev --hostname 192.168.1.33"
+    "local-dev": "next dev --hostname 192.168.1.25"
   },
   "dependencies": {
     "@cyntler/react-doc-viewer": "^1.17.0",
