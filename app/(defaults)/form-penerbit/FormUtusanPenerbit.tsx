@@ -143,6 +143,8 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
 
     setErrors(newErrors);
 
+    console.log(newErrors);
+
     const isValid = Object.keys(newErrors).length === 0;
 
     if (!isValid) {
@@ -197,6 +199,7 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
           photoResult={(photoSelfie) => {
             setFormFields({ ...formFields, photo: photoSelfie });
           }}
+          errorText={errors.photo}
         />
 
         {/* input data */}

@@ -136,6 +136,15 @@ const ContainerSelfie: React.FC<Props> = ({ photoResult, errorText }) => {
     setStream(null);
   };
 
+  useEffect(() => {
+    console.log();
+    if (errorText && isCameraActive) {
+      errorText = "Anda belum mengambil foto";
+    } else {
+      errorText = "";
+    }
+  }, [errorText, isCameraActive]);
+
   return (
     <div className="flex flex-col bg-slate-50 px-4 pb-4 pt-2 rounded-md">
       <SectionPoint text="Foto Selfie" className="mb-2" />
@@ -207,7 +216,7 @@ const ContainerSelfie: React.FC<Props> = ({ photoResult, errorText }) => {
 
       <canvas ref={canvasRef} className="hidden"></canvas>
 
-      {errorMessage && <p className="text-red-500 text-xs mt-2">{errorText}</p>}
+      {errorText && <p className="text-red-500 text-xs mt-2">{errorText}</p>}
     </div>
   );
 };
