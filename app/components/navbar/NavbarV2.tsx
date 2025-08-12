@@ -132,12 +132,22 @@ const NavbarV2: React.FC = () => {
       >
         <div className="flex justify-between items-center px-10 py-6 text-sm font-semibold">
           <Link href={"/"}>
-            <div
-              className={`text-xl font-bold ${
-                isSticky ? "text-[#10565C]" : "text-white"
-              }`}
-            >
-              CapBridge
+            <div className="flex items-center gap-2">
+              <img
+                src={
+                  isSticky ? "images/logo-green.png" : "images/logo-white.png"
+                }
+                alt="CapBridge Logo"
+                className="h-8 w-8 object-contain transition-all duration-300"
+              />
+
+              <span
+                className={`text-xl font-bold ${
+                  isSticky ? "text-[#10565C]" : "text-white"
+                }`}
+              >
+                CAPBRIDGE
+              </span>
             </div>
           </Link>
 
@@ -149,11 +159,11 @@ const NavbarV2: React.FC = () => {
                     className={`
                       ${
                         isSticky && pathname === ""
-                          ? "text-[#4CD137]"
+                          ? "text-[#16EDFF]"
                           : isSticky
                           ? "text-[#10565C]"
                           : pathname == ""
-                          ? "text-[#4CD137]"
+                          ? "text-[#16EDFF]"
                           : "text-white"
                       }
                     `}
@@ -185,11 +195,11 @@ const NavbarV2: React.FC = () => {
                       size={18}
                       className={
                         isSticky && pathname === "/inbox"
-                          ? "text-[#4CD137]"
+                          ? "text-[#16EDFF]"
                           : isSticky
                           ? "text-[#10565C]"
                           : pathname == "/inbox"
-                          ? "text-[#4CD137]"
+                          ? "text-[#16EDFF]"
                           : "text-white"
                       }
                     />
@@ -231,21 +241,24 @@ const NavbarV2: React.FC = () => {
                 <Link href={"/"}>
                   {" "}
                   <div className={`text-xl text-center font-bold text-white`}>
-                    CapBridge
+                    CAPBRIDGE
                   </div>
                 </Link>
+
                 <ul className="flex flex-col gap-6 text-white text-base font-semibold pt-16">
-                  <div className="block md:hidden">
-                    <button
-                      onClick={() => setStep("role")}
-                      className="px-3 py-1 rounded-md bg-red-500 text-white text-sm font-semibold animate-pulse"
-                    >
-                      Anda Belum Memilih Peran
-                    </button>
-                  </div>
+                  {userData && userData.role === "user" && step !== "role" && (
+                    <div className="block md:hidden">
+                      <button
+                        onClick={() => setStep("role")}
+                        className="px-3 py-1 rounded-md bg-red-500 text-white text-sm font-semibold animate-pulse"
+                      >
+                        Anda Belum Memilih Peran
+                      </button>
+                    </div>
+                  )}
                   <li
                     className={
-                      pathname == "/" ? "text-[#4CD137]" : "text-white"
+                      pathname == "/" ? "text-[#16EDFF]" : "text-white"
                     }
                     onClick={toggleMenu}
                   >
@@ -256,7 +269,7 @@ const NavbarV2: React.FC = () => {
                       <li
                         className={
                           pathname == "/dashboard"
-                            ? "text-[#4CD137]"
+                            ? "text-[#16EDFF]"
                             : "text-white"
                         }
                         onClick={toggleMenu}
@@ -266,7 +279,7 @@ const NavbarV2: React.FC = () => {
                       <li
                         className={
                           pathname == "/transaction"
-                            ? "text-[#4CD137]"
+                            ? "text-[#16EDFF]"
                             : "text-white"
                         }
                         onClick={toggleMenu}
@@ -276,7 +289,7 @@ const NavbarV2: React.FC = () => {
                       <li
                         className={
                           pathname == "/terms-conditions"
-                            ? "text-[#4CD137]"
+                            ? "text-[#16EDFF]"
                             : "text-white"
                         }
                         onClick={toggleMenu}
@@ -288,7 +301,7 @@ const NavbarV2: React.FC = () => {
                       <li className="md:hidden">
                         <p
                           className={
-                            pathname == "" ? "text-[#4CD137]" : "text-white"
+                            pathname == "" ? "text-[#16EDFF]" : "text-white"
                           }
                         >
                           {" "}
@@ -301,14 +314,14 @@ const NavbarV2: React.FC = () => {
                     <>
                       <li
                         className={
-                          pathname == "/business-list" ? "text-[#4CD137]" : ""
+                          pathname == "/business-list" ? "text-[#16EDFF]" : ""
                         }
                       >
                         <Link href="/business-list">Daftar Bisnis</Link>
                       </li>
                       <li
                         className={
-                          pathname == "/about-us" ? "text-[#4CD137]" : ""
+                          pathname == "/about-us" ? "text-[#16EDFF]" : ""
                         }
                       >
                         <Link href="/about-us">Tentang Kami</Link>
@@ -316,7 +329,7 @@ const NavbarV2: React.FC = () => {
                       <li
                         className={
                           pathname == "/terms-conditions"
-                            ? "text-[#4CD137]"
+                            ? "text-[#16EDFF]"
                             : "text-white"
                         }
                       >
@@ -328,10 +341,6 @@ const NavbarV2: React.FC = () => {
                   )}
                   {hydrated && userData !== null ? (
                     <>
-                      {/* <UserMenu
-                    email={userData.email}
-                    handleMenuOpen={setMenuOpen}
-                  /> */}
                       <li>
                         <button
                           onClick={() => {
@@ -342,7 +351,7 @@ const NavbarV2: React.FC = () => {
                             Cookies.remove("user");
                             window.location.href = "/auth/login";
                           }}
-                          className="px-5 py-2 rounded-full bg-red-500 text-white"
+                          className="px-5 py-2 rounded-lg bg-red-500 text-white"
                         >
                           Keluar
                         </button>
@@ -351,7 +360,7 @@ const NavbarV2: React.FC = () => {
                   ) : (
                     <li>
                       <a href="/auth/login">
-                        <button className="mt-2 md:mt-0 px-5 py-2 rounded-full bg-[#4CD137] text-white">
+                        <button className="mt-2 md:mt-0 px-5 py-2 rounded-lg bg-[#4CD137] text-white">
                           Masuk
                         </button>
                       </a>
@@ -386,11 +395,11 @@ const NavbarV2: React.FC = () => {
                       size={18}
                       className={
                         isSticky && pathname === "/inbox"
-                          ? "text-[#4CD137]"
+                          ? "text-[#16EDFF]"
                           : isSticky
                           ? "text-[#10565C]"
                           : pathname == "/inbox"
-                          ? "text-[#4CD137]"
+                          ? "text-[#16EDFF]"
                           : "text-white"
                       }
                     />
@@ -422,7 +431,7 @@ const NavbarV2: React.FC = () => {
               >
                 <Link href={"/"}>
                   <div className={`text-xl text-center font-bold text-white`}>
-                    CapBridge
+                    CAPBRIDGE
                   </div>
                 </Link>
                 <ul className="flex flex-col gap-6 text-white text-base font-semibold pt-16">
@@ -430,6 +439,7 @@ const NavbarV2: React.FC = () => {
                     className={
                       pathname == "/" ? "text-[#16EDFF]" : "text-white"
                     }
+                    onClick={toggleMenu}
                   >
                     <Link href="/">Beranda</Link>
                   </li>
@@ -513,10 +523,6 @@ const NavbarV2: React.FC = () => {
                   )}
                   {hydrated && userData !== null ? (
                     <>
-                      {/* <UserMenu
-                    email={userData.email}
-                    handleMenuOpen={setMenuOpen}
-                  /> */}
                       <li>
                         <button
                           onClick={() => {
@@ -527,7 +533,7 @@ const NavbarV2: React.FC = () => {
                             Cookies.remove("user");
                             window.location.href = "/auth/login";
                           }}
-                          className="px-5 py-2 rounded-full bg-red-500 text-white"
+                          className="px-5 py-2 rounded-lg bg-red-500 text-white"
                         >
                           Keluar
                         </button>
@@ -537,7 +543,6 @@ const NavbarV2: React.FC = () => {
                     <li>
                       <a href="/auth/login">
                         <button
-                          // className="mt-2 md:mt-0 px-5 py-2 rounded-full bg-[#4CD137] text-white"
                           className={`px-5 py-2 rounded-lg ${
                             isSticky
                               ? "bg-white text-[#10565C]"
@@ -553,7 +558,6 @@ const NavbarV2: React.FC = () => {
                     <div className="flex justify-between px-0">
                       <button
                         onClick={() => setStep("register")}
-                        // className="text-white"
                         className={`px-5 py-2 rounded-lg ring-2 ${
                           isSticky
                             ? "text-white ring-white"
@@ -575,7 +579,7 @@ const NavbarV2: React.FC = () => {
               )}
 
               {/* navbar md keatas */}
-              <ul className="hidden md:flex gap-6 items-center">
+              <ul className="hidden md:flex gap-4 items-center">
                 <li className={pathname == "/" ? "text-[#16EDFF]" : ""}>
                   <Link href="/">Beranda</Link>
                 </li>
@@ -611,12 +615,7 @@ const NavbarV2: React.FC = () => {
 
                     <li>
                       <Tippy content="Inbox" animation="scale">
-                        <Link
-                          href={"/inbox"}
-                          // onClick={() => {
-                          //   setIsInboxTooltipOpen((isOpen) => !isOpen);
-                          // }}
-                        >
+                        <Link href={"/inbox"}>
                           <BellRing
                             size={18}
                             className={
@@ -649,65 +648,7 @@ const NavbarV2: React.FC = () => {
                         {/* {userData.email} */}
                       </p>
                     </li>
-                    {/* <li
-                  ref={refs.setReference}
-                  {...getReferenceProps()}
-                  onMouseEnter={() => {
-                    setIsInboxTooltipOpen(true);
-                  }}
-                  onClick={() => {
-                    setIsInboxTooltipOpen(true);
-                  }}
-                  className="bg-[#33206b] flex gap-4 items-center px-4 py-2 rounded-full hover:bg-[#211547] cursor-pointer"
-                >
-                  <p className="text-white"> Halo, {userData.email}</p>
-                  <BellRing size={18} className="text-white" />
-                </li> */}
 
-                    {/* {isMounted && (
-                  <div
-                    ref={refs.setFloating}
-                    style={{ ...floatingStyles, zIndex: 50 }}
-                    {...getFloatingProps()}
-                  >
-                    <div
-                      style={styles}
-                      className="p-2 flex flex-col bg-white border gap-y-2 rounded-md shadow-lg"
-                    >
-                      <Link
-                        href={"/dashboard"}
-                        className="px-10 py-2 bg-gray-100 text-black justify-center flex rounded-sm cursor-pointer hover:bg-gray-200"
-                        onClick={() => {
-                          setIsInboxTooltipOpen((isOpen) => !isOpen);
-                        }}
-                      >
-                        Dashboard
-                      </Link>
-                      {userData.role === "emiten" && (
-                        <>
-                          <Link
-                            href={"/inbox"}
-                            onClick={() => {
-                              setIsInboxTooltipOpen((isOpen) => !isOpen);
-                            }}
-                            className="px-10 py-2 bg-gray-100 text-black justify-center flex rounded-sm cursor-pointer hover:bg-gray-200"
-                          >
-                            Inbox
-                          </Link>
-                          <Link
-                            href={"/transaction"}
-                            onClick={() => {
-                              setIsInboxTooltipOpen((isOpen) => !isOpen);
-                            }}
-                            className="px-10 py-2 bg-gray-100 text-black justify-center flex rounded-sm cursor-pointer hover:bg-gray-200"
-                          >
-                            Transaksi
-                          </Link>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )} */}
                     <li>
                       <button
                         onClick={() => {
@@ -718,7 +659,7 @@ const NavbarV2: React.FC = () => {
                           Cookies.remove("user");
                           window.location.href = "/auth/login";
                         }}
-                        className="px-5 py-2 rounded-full bg-red-500 text-white"
+                        className="px-5 py-2 rounded-lg bg-red-500 text-white"
                       >
                         Keluar
                       </button>
@@ -810,7 +751,6 @@ const NavbarV2: React.FC = () => {
       >
         <RegisterSelectRole onClose={closeModal} />
       </Modal>
-      {/* <RoleModal open={showModal} onClose={() => setShowModal(false)} /> */}
     </>
   );
 };

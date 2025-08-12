@@ -99,7 +99,7 @@ const Login: React.FC = () => {
       <div className="flex justify-between items-center mb-10">
         <img src="/images/img.jpg" alt="CapBridge Logo" className="w-20 h-20" />
         <a href="/">
-          <button className="text-[#321B87] font-bold text-sm">
+          <button className="text-[#10565C] font-bold text-sm">
             &lt; Kembali Ke Beranda
           </button>
         </a>
@@ -107,7 +107,7 @@ const Login: React.FC = () => {
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
         <div>
-          <label className="font-bold text-[#321B87] block mb-1">Email</label>
+          <label className="font-bold text-[#10565C] block mb-1">Email</label>
           <input
             type="email"
             className="w-full p-3 bg-[#F1F5F9] rounded text-black"
@@ -117,7 +117,7 @@ const Login: React.FC = () => {
         </div>
 
         <div>
-          <label className="font-bold text-[#321B87] block mb-1">
+          <label className="font-bold text-[#10565C] block mb-1">
             Kata Sandi
           </label>
           <div className="relative">
@@ -142,8 +142,8 @@ const Login: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full md:w-1/4 bg-[#321B87] text-white py-3 rounded-full font-bold transition ${
-              loading ? "opacity-60 cursor-not-allowed" : "hover:bg-[#2A1572]"
+            className={`w-full md:w-1/4 bg-[#10565C] text-white py-3 rounded-xl font-bold transition ${
+              loading ? "opacity-60 cursor-not-allowed" : "hover:bg-[#16EDFF]"
             }`}
           >
             {loading ? "Loading..." : "Masuk"}
