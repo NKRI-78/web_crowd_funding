@@ -10,10 +10,17 @@ import { getUser } from "@/app/lib/auth";
 
 interface PaymentMethodType {
   id: number;
+  paymentType: string;
   name: string;
-  name_code: string;
+  nameCode: string;
   logo: string;
   fee: number;
+  service_fee: any;
+  platform: string;
+  howToUseUrl: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: any;
 }
 
 interface OrderItemSize {
@@ -60,15 +67,15 @@ const PaymentMethod = () => {
 
     if (userData) {
       axios
-        .get(`${API_BACKEND}/api/v1/payment/method`, {
+        .get(`https://api.pg.capbridge.langitdigital78.com/api/v1/channel`, {
           headers: {
             Authorization: `Bearer ${userData.token}`,
           },
         })
         .then((response) => {
           const data: PaymentMethodType[] = response.data.data;
-          setQris(data.filter((item) => item.name_code === "gopay"));
-          setVirtualAccount(data.filter((item) => item.name_code !== "gopay"));
+          setQris(data.filter((item) => item.nameCode === "gopay"));
+          setVirtualAccount(data.filter((item) => item.nameCode !== "gopay"));
         })
         .catch((error) => {
           console.error("Failed to fetch payment list:", error);

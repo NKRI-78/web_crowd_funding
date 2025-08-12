@@ -1,6 +1,13 @@
 "use client";
 
-import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
+import {
+  Controller,
+  FormProvider,
+  Resolver,
+  useFieldArray,
+  useForm,
+  useWatch,
+} from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
@@ -10,8 +17,14 @@ import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { fetchProvinces } from "@/app/lib/fetchWilayah";
 import FormAlamat from "./FormAlamat";
 import Swal from "sweetalert2";
+import Select from "react-select";
 import { ProfileUpdate } from "./UpdateProfileInterface";
 import UpdateRing from "@/app/components/inputFormPenerbit/_component/UpdateRing";
+import NPWPUploader from "./components/UploadNPWP";
+import { JENIS_USAHA_OPTIONS } from "@/app/utils/jenisUsaha";
+import RHFSelect from "./components/TypeBussiness";
+import RHFSelectGeneric from "./components/RHFSelectGeneric";
+import { fetchJenisUsaha, TypeOption } from "@/app/utils/fetchJenisUsaha";
 
 export const alamatSchema = z.object({
   name: z.string().optional(),
@@ -23,36 +36,105 @@ export const alamatSchema = z.object({
   detail: z.string().min(1, "Detail alamat wajib diisi"),
 });
 
-export const schema = z.object({
-  company_name: z.string().min(1, "Nama perusahaan wajib diisi"),
-  address: z
-    .array(alamatSchema)
-    .min(1, "Minimal 1 alamat harus diisi")
-    .max(2, "Maksimal hanya 2 alamat"),
-  sameAsCompany: z.boolean().optional(),
-  detailKorespondensi: z.string().optional(),
-  total_employees: z
-    .string()
-    .min(1, "Jumlah karyawan wajib diisi")
-    .refine((val) => Number(val) >= 1, {
-      message: "Jumlah karyawan minimal 1 orang",
-    }),
-  company_nib_path: z
-    .string()
-    .min(1, { message: "Dokumen NIB wajib diunggah" }),
-  akta_pendirian: z
-    .string()
-    .min(1, { message: "Akte pendirian wajib diunggah" }),
-  sk_kumham_path: z.string().min(1, { message: "SK Kumham wajib diunggah" }),
-  akta_perubahan_terahkir_path: z
-    .string()
-    .min(1, { message: "Akte perubahan terakhir wajib diunggah" }),
-  sk_kumham_terahkir: z
-    .string()
-    .min(1, { message: "SK Kumham terakhir wajib diunggah" }),
-  // npwp_path: z.string().min(1, { message: "NPWP perusahaan wajib diunggah" }),
-  fileNpwp: z.string().optional(),
-});
+type OptionCompanyType = { label: string; value: string };
+
+const optionsCompanyType: OptionCompanyType[] = [
+  { label: "UMKM", value: "UMKM" },
+  { label: "Enterprise", value: "Enterprise" },
+];
+
+const optionValues = optionsCompanyType.map((o) => o.value);
+
+const statusCompanyType: OptionCompanyType[] = [
+  { label: "SEWA", value: "SEWA" },
+  { label: "MILIK SENDIRI", value: "MILIK SENDIRI" },
+];
+
+const statusCompany = statusCompanyType.map((o) => o.value);
+
+export const schema = z
+  .object({
+    company_name: z.string().min(1, "Nama perusahaan wajib diisi"),
+    jenis_usaha: z.string().min(1, "Jenis usaha wajib dipilih"),
+    address: z
+      .array(alamatSchema)
+      .min(1, "Minimal 1 alamat harus diisi")
+      .max(2, "Maksimal hanya 2 alamat"),
+    sameAsCompany: z.boolean().optional(),
+    detailKorespondensi: z.string().optional(),
+    total_employees: z
+      .string()
+      .min(1, "Jumlah karyawan wajib diisi")
+      .refine((val) => Number(val) >= 1, {
+        message: "Jumlah karyawan minimal 1 orang",
+      }),
+    company_nib_path: z
+      .string()
+      .min(1, { message: "Dokumen NIB wajib diunggah" }),
+    akta_pendirian: z
+      .string()
+      .min(1, { message: "Akte pendirian wajib diunggah" }),
+    sk_kumham_path: z.string().min(1, { message: "SK Kumham wajib diunggah" }),
+    akta_perubahan_terahkir_path: z
+      .string()
+      .min(1, { message: "Akte perubahan terakhir wajib diunggah" }),
+    sk_kumham_terahkir: z
+      .string()
+      .min(1, { message: "SK Kumham terakhir wajib diunggah" }),
+    siup: z
+      .string()
+      .min(1, { message: "Surat Izin Usaha Perdagangan wajib diunggah" }),
+    tdp: z
+      .string()
+      .min(1, { message: "Tanda Daftar Perusahaan wajib diunggah" }),
+    fileNpwp: z.string().min(1, { message: "NPWP wajib diunggah" }),
+    namaBank: z.string().min(1, "Nama bank wajib dipilih"),
+    nomorRekening: z
+      .string()
+      .trim()
+      .min(1, "Nomor rekening wajib diisi")
+      .regex(/^\d+$/, "Hanya angka"),
+    namaPemilik: z.string().trim().min(1, "Nama pemilik wajib diisi"),
+    noPhoneCompany: z
+      .string()
+      .trim()
+      .min(1, "Nomor Telepon Perusahaan wajib diisi"),
+    webCompany: z
+      .string()
+      .trim()
+      .min(1, "Situs Perusahaan wajib diisi")
+      .url("Format URL tidak valid (contoh: https://example.com)"),
+    emailCompany: z
+      .string()
+      .trim()
+      .min(1, "Email Perusahaan wajib diisi")
+      .email("Format email tidak valid"),
+    companyType: z
+      .string()
+      .min(1, "Tipe Perusahaan wajib dipilih")
+      .refine((v) => optionValues.includes(v), "Tipe tidak valid"),
+    statusCompanys: z
+      .string()
+      .min(1, "Tipe Status Kantor/Tempat Usaha wajib dipilih")
+      .refine((v) => statusCompany.includes(v), "Tipe tidak valid"),
+    establishedYear: z
+      .string()
+      .min(1, "Tahun berdiri wajib dipilih")
+      .refine(
+        (v) =>
+          /^\d{4}$/.test(v) && +v >= 1950 && +v <= new Date().getFullYear(),
+        "Tahun tidak valid"
+      ),
+  })
+  .superRefine((data, ctx) => {
+    if (data.namaPemilik !== data.company_name) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["namaPemilik"],
+        message: "Nama pemilik harus sama dengan nama perusahaan",
+      });
+    }
+  });
 
 export type FormData = z.infer<typeof schema>;
 
@@ -78,6 +160,7 @@ const fetchOptions = async (url: string, parentId?: string) => {
 };
 
 type OptionType = { value: string; label: string; zip_code: string };
+type BankOption = { value: string; label: string };
 
 type Props = {
   onNext: () => void;
@@ -90,12 +173,26 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
 
   const [provinsiList, setProvinsiList] = useState<OptionType[]>([]);
   const [kotaList, setKotaList] = useState<Record<number, OptionType[]>>({});
+  const [optionsBussines, setOptionsBussines] = useState<TypeOption[]>([]);
   const [kecamatanList, setKecamatanList] = useState<
     Record<number, OptionType[]>
   >({});
   const [kelurahanList, setKelurahanList] = useState<
     Record<number, OptionType[]>
   >({});
+
+  const [bank, setBank] = useState<Array<{ code: string; name: string }>>([]);
+
+  const bankOptions: BankOption[] = bank.map((b) => ({
+    value: b.name,
+    label: b.name,
+  }));
+
+  useEffect(() => {
+    fetchJenisUsaha()
+      .then(setOptionsBussines)
+      .catch((err) => console.error(err));
+  }, []);
 
   const {
     register,
@@ -106,16 +203,29 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as unknown as Resolver<FormData>,
     mode: "onBlur",
     defaultValues: {
       sameAsCompany: false,
       total_employees: "",
+      jenis_usaha: "",
       company_nib_path: "",
       akta_pendirian: "",
       sk_kumham_path: "",
       akta_perubahan_terahkir_path: "",
       sk_kumham_terahkir: "",
+      fileNpwp: "",
+      siup: "",
+      tdp: "",
+      noPhoneCompany: "",
+      webCompany: "",
+      emailCompany: "",
+      namaBank: "",
+      nomorRekening: "",
+      namaPemilik: "",
+      companyType: undefined,
+      statusCompanys: undefined,
+      establishedYear: "",
       address: [
         {
           name: "Company",
@@ -190,7 +300,9 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
         akta_perubahan_terahkir_path:
           "Upload Akta Perubahan Terakhir berhasil!",
         sk_kumham_terahkir: "Upload SK KUMHAM Terakhir berhasil!",
-        // npwp_path: "Upload Rekening Koran berhasil!",
+        siup: "Upload Surat Izin Usaha Perdagangan berhasil!",
+        tdp: "Upload Tanda Daftar Perusahaan berhasil!",
+        fileNpwp: "Upload NPWP berhasil!",
       } as const;
 
       if (fileUrl) {
@@ -258,7 +370,6 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
   }
 
   function isSameAddress(a: any = {}, b: any = {}) {
-    // Jangan anggap sama kalau kosong
     if (isEmptyAddress(a) || isEmptyAddress(b)) return false;
 
     return [
@@ -271,7 +382,6 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
     ].every((k) => (a?.[k] || "") === (b?.[k] || ""));
   }
 
-  // ✅ 1. Pantau address[0] dan checkbox
   const alamatPerusahaan = useWatch({
     control,
     name: "address.0",
@@ -287,11 +397,9 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
     name: "sameAsCompany",
   });
 
-  // ✅ 2. Sinkronisasi awal saat mount
   useEffect(() => {
     const sama = isSameAddress(alamatPerusahaan, alamatKoresponden);
 
-    // Hanya auto-check kalau belum pernah diceklis manual
     if (sama && !sameAsCompany) {
       setValue("sameAsCompany", true, {
         shouldValidate: false,
@@ -299,16 +407,14 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
       });
     }
 
-    // Optional: uncheck jika ternyata berbeda
     if (!sama && sameAsCompany) {
       setValue("sameAsCompany", false, {
         shouldValidate: false,
         shouldDirty: false,
       });
     }
-  }, [alamatPerusahaan, alamatKoresponden]); // ← ini penting!
+  }, [alamatPerusahaan, alamatKoresponden]);
 
-  // ✅ 3. Setiap kali address.0 berubah dan checkbox aktif → update address.1
   useEffect(() => {
     if (!sameAsCompany) return;
 
@@ -324,6 +430,21 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
       }
     );
   }, [alamatPerusahaan, sameAsCompany, setValue]);
+
+  useEffect(() => {
+    const fetchBank = async () => {
+      try {
+        const response = await axios.get(
+          `https://api.gateway.langitdigital78.com/v1/bank`
+        );
+        setBank(response.data.data.beneficiary_banks);
+      } catch (error) {
+        console.error("Gagal ambil bank:", error);
+      }
+    };
+
+    fetchBank();
+  }, []);
 
   // ✅ Load draft hanya di client
   useEffect(() => {
@@ -341,7 +462,7 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
 
     const timeout = setTimeout(() => {
       localStorage.setItem("publisherDraft", JSON.stringify(values));
-    }, 1000); // hanya simpan setelah 1 detik tidak ada perubahan
+    }, 1000);
 
     return () => clearTimeout(timeout);
   }, [values, isReady]);
@@ -349,9 +470,6 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
   const onSubmit = async (data: FormData) => {
     try {
       console.log("Data, ", data);
-      // localStorage.removeItem("publisherDraft");
-      // alert("Berhasil disimpan!");
-      // reset();
       onNext();
     } catch (err) {
       console.error(err);
@@ -360,7 +478,7 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
   };
 
   if (!isReady) {
-    return <p>Loading...</p>; // Tunggu reset jalan dulu
+    return <p>Loading...</p>;
   }
 
   const showErrorToasts = () => {
@@ -381,10 +499,25 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
     const numeric = raw.replace(/\D/g, "");
-    // if (/^\d*$/.test(input)) {
     setValue("total_employees", numeric);
-    // }
   };
+
+  const onlyDigits: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    setValue("nomorRekening", e.target.value.replace(/\D/g, ""), {
+      shouldValidate: true,
+    });
+  };
+  const phoneNumber: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    setValue("noPhoneCompany", e.target.value.replace(/\D/g, "").slice(0, 13), {
+      shouldValidate: true,
+    });
+  };
+
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: currentYear - 1950 + 1 }, (_, i) => {
+    const y = currentYear - i;
+    return { value: String(y), label: String(y) };
+  });
 
   return (
     <section className="bg-white text-black items-center px-3 md:px-10 py-20 md:py-30">
@@ -392,7 +525,6 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
         onSubmit={handleSubmit(onSubmit, showErrorToasts)}
         className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 max-w-6xl mx-auto"
       >
-        {/* Kiri */}
         <div className="space-y-4">
           <h2 className="text-2xl font-bold">Isi Data Sebagai Penerbit</h2>
           <p className="text-sm text-gray-600">
@@ -409,6 +541,7 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
             <input
               {...register("company_name")}
               className="w-full border px-3 py-2 rounded"
+              placeholder="Masukkan Nama Perusahaan"
             />
             {errors.company_name && (
               <p className="text-red-500 text-sm">
@@ -416,6 +549,111 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
               </p>
             )}
           </div>
+          <label className="block font-medium">
+            Tahun Berdiri <span className="text-red-500">*</span>
+          </label>
+          <RHFSelectGeneric<FormData, "establishedYear">
+            name="establishedYear"
+            control={control}
+            options={yearOptions}
+          />
+          {errors.establishedYear && (
+            <p className="text-sm text-red-600">
+              {errors.establishedYear.message}
+            </p>
+          )}
+          <RHFSelect<FormData, "jenis_usaha">
+            name="jenis_usaha"
+            control={control}
+            options={optionsBussines}
+          />
+
+          <label className="block font-medium">
+            Tipe Perusahaan <span className="text-red-500">*</span>
+          </label>
+          <RHFSelectGeneric<FormData, "companyType">
+            name="companyType"
+            control={control}
+            options={optionsCompanyType}
+          />
+          {errors.companyType && (
+            <p className="text-sm text-red-600">{errors.companyType.message}</p>
+          )}
+
+          <label className="block font-medium">
+            Status Kantor/Tempat Usaha <span className="text-red-500">*</span>
+          </label>
+          <RHFSelectGeneric<FormData, "statusCompanys">
+            name="statusCompanys"
+            control={control}
+            options={statusCompanyType}
+          />
+          {errors.statusCompanys && (
+            <p className="text-sm text-red-600">
+              {errors.statusCompanys.message}
+            </p>
+          )}
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              Nomor Telepon Perusahaan{" "}
+              <span className="text-red-500 ml-1">*</span>
+            </label>
+            <input
+              {...register("noPhoneCompany")}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              onChange={phoneNumber}
+              className="border rounded p-2 w-full placeholder:text-sm"
+              placeholder="Masukkan Nomor Telepon Perusahaan"
+            />
+            {errors.noPhoneCompany && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.noPhoneCompany.message}
+              </p>
+            )}
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              Situs Perusahaan <span className="text-red-500 ml-1">*</span>
+            </label>
+            <input
+              {...register("webCompany")}
+              type="text"
+              className="border rounded p-2 w-full placeholder:text-sm"
+              placeholder="Masukkan Situs Perusahaan"
+            />
+            {errors.webCompany && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.webCompany.message}
+              </p>
+            )}
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              Email Perusahaan <span className="text-red-500 ml-1">*</span>
+            </label>
+            <input
+              {...register("emailCompany")}
+              type="text"
+              className="border rounded p-2 w-full placeholder:text-sm"
+              placeholder="Masukkan Email Perusahaan"
+            />
+            {errors.emailCompany && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.emailCompany.message}
+              </p>
+            )}
+          </div>
+
+          <UpdateRing identity={"fileNpwp"} formKey={profile?.form}>
+            <FileUpload
+              label="NPWP"
+              fileUrl={watch("fileNpwp")}
+              onUpload={(e) => handleUploadFile(e, "fileNpwp")}
+              error={errors?.fileNpwp?.message}
+            />
+          </UpdateRing>
 
           <UpdateRing identity={"nib"} formKey={profile?.form}>
             <FileUpload
@@ -460,7 +698,9 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
               error={errors?.akta_perubahan_terahkir_path?.message}
             />
           </UpdateRing>
+        </div>
 
+        <div className="space-y-4">
           <UpdateRing identity={"sk-kumham-terakhir"} formKey={profile?.form}>
             <FileUpload
               label="SK Kumham Terakhir"
@@ -469,17 +709,23 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
               error={errors?.sk_kumham_terahkir?.message}
             />
           </UpdateRing>
-
-          {/* <FileUpload
-            label="Rekening Koran"
-            fileUrl={watch("npwp_path")}
-            onUpload={(e) => handleUploadFile(e, "npwp_path")}
-            error={errors?.npwp_path?.message}
-          /> */}
-        </div>
-
-        {/* Kanan */}
-        <div className="space-y-4">
+          <UpdateRing identity={"siup"} formKey={profile?.form}>
+            <FileUpload
+              label="Surat Izin Usaha Perdagangan (SIUP)"
+              fileUrl={watch("siup")}
+              onUpload={(e) => handleUploadFile(e, "siup")}
+              error={errors?.siup?.message}
+            />
+          </UpdateRing>
+          <UpdateRing identity={"tdp"} formKey={profile?.form}>
+            <FileUpload
+              label="Tanda Daftar Perusahaan (TDP)"
+              fileUrl={watch("tdp")}
+              onUpload={(e) => handleUploadFile(e, "tdp")}
+              error={errors?.tdp?.message}
+            />
+          </UpdateRing>
+          {/* <NPWPUploader /> */}
           {fields.map((item, index) => (
             <FormAlamat
               key={item.id}
@@ -500,6 +746,55 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
               sameAsCompany={watch("sameAsCompany") ?? false}
             />
           ))}
+
+          <div>
+            <label className="block font-medium">
+              Nama Bank <span className="text-red-500">*</span>
+            </label>
+            <RHFSelectGeneric<FormData, "namaBank">
+              name="namaBank"
+              control={control}
+              options={bankOptions}
+            />
+            {errors.namaBank && (
+              <p className="text-sm text-red-600">{errors.namaBank.message}</p>
+            )}
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              Nomor Rekening Perusahaan{" "}
+              <span className="text-red-500 ml-1">*</span>
+            </label>
+            <input
+              {...register("nomorRekening")}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              onChange={onlyDigits}
+              className="border rounded p-2 w-full placeholder:text-sm"
+              placeholder="Masukkan Nomor Rekening"
+            />
+            {errors.nomorRekening && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.nomorRekening.message}
+              </p>
+            )}
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              Nama Rekening <span className="text-red-500 ml-1">*</span>
+            </label>
+            <input
+              {...register("namaPemilik")}
+              className="border rounded p-2 w-full placeholder:text-sm"
+              placeholder="Masukkan Nama Pemilik Rekening"
+            />
+            {errors.namaPemilik && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.namaPemilik.message}
+              </p>
+            )}
+          </div>
 
           <div>
             <label className="block mb-1">

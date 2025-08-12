@@ -27,6 +27,7 @@ import {
 } from "@/app/(defaults)/form-penerbit/UpdateProfileInterface";
 import UpdateRing from "./_component/UpdateRing";
 import Cookies from "js-cookie";
+import { IFormPublisher } from "@/app/interface/IFormPublisher";
 
 type Props = {
   onBack: () => void;
@@ -298,7 +299,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
       console.log("Test", draft && userData);
       if (draft && userData) {
         console.log(draft);
-        const draftParsed = JSON.parse(draft);
+        const draftParsed: IFormPublisher = JSON.parse(draft);
         const userParsed = JSON.parse(userData);
         const payload = {
           role: "2",
@@ -313,7 +314,14 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
           sk_kumham: draftParsed.sk_kumham_path,
           sk_kumham_path: draftParsed.sk_kumham_path,
           sk_kumham_terahkir: draftParsed.sk_kumham_terahkir,
-          npwp_path: "-",
+          npwp_path: draftParsed.fileNpwp,
+          didirkan: draftParsed.establishedYear,
+          site: draftParsed.webCompany,
+          email: draftParsed.emailCompany,
+          phone: draftParsed.noPhoneCompany,
+          bank_name: draftParsed.namaBank,
+          bank_account: draftParsed.nomorRekening,
+          bank_owner: draftParsed.namaPemilik,
           total_employees: draftParsed.total_employees.toString(),
           laporan_keuangan_path: formState.laporanKeuangan,
           address: draftParsed.address,
@@ -398,6 +406,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
         // Hapus localStorage dan reset
         localStorage.removeItem("formPenerbitDraft");
         localStorage.removeItem("publisherDraft");
+        localStorage.removeItem("utusanPenerbitCache");
 
         await Swal.fire({
           title: "Berhasil",
