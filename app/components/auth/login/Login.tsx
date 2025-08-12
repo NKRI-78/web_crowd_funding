@@ -82,7 +82,7 @@ const Login: React.FC = () => {
         showConfirmButton: false,
       });
 
-      router.push("/");
+      router.push("/dashboard");
     } catch (error: any) {
       Swal.fire({
         icon: "error",
@@ -97,7 +97,19 @@ const Login: React.FC = () => {
   return (
     <div className="w-full md:w-1/2 bg-white px-10 md:px-15 py-5 mx-auto">
       <div className="flex justify-between items-center mb-10">
-        <img src="/images/img.jpg" alt="CapBridge Logo" className="w-20 h-20" />
+        <div className="flex items-center gap-2">
+          <img
+            src="/images/logo-green.png"
+            alt="CapBridge Logo"
+            className="w-12 h-12"
+          />
+          <span
+            className={`text-xl font-bold
+              text-[#00798a]`}
+          >
+            CAPBRIDGE
+          </span>
+        </div>
         <a href="/">
           <button className="text-[#10565C] font-bold text-sm">
             &lt; Kembali Ke Beranda
