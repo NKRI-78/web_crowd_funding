@@ -186,10 +186,10 @@ const HomeV2: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-[#218AC2]/70 to-[#10565C]/70 z-0" />
         {/* Left content */}
         <div className="space-y-6 z-10 relative text-center md:text-left">
-          <h1 className="text-3xl md:text-6xl font-bold leading-tight">
+          <h1 className="text-4xl md:text-6xl font-bold leading-tight m-5">
             Fund the Future. <br /> Together
           </h1>
-          <p className="text-white text-lg leading-relaxed italic">
+          <p className="text-white text-base md:text-lg leading-relaxed italic">
             "Ide Hebat Layak Diperjuangkan. Bantu wujudkan mimpi besar, satu
             kontribusi kecil pada satu waktu. Gabung bersama ribuan pendukung
             yang percaya pada perubahan."
@@ -226,98 +226,80 @@ const HomeV2: React.FC = () => {
             <img
               src="/images/IPHONEMOCKUP.png"
               alt="mockup"
-              className="w-52 md:w-[75%] absolute -top-0 left-1/2 -translate-x-1/2 z-20"
+              className="w-72 md:w-[85%] absolute -top-0 left-1/2 -translate-x-1/2 z-20"
             />
 
             {/* Gambar investment di bawah */}
             <img
               src="/images/investment.png"
               alt="investment"
-              className="w-60 md:w-[150%] relative z-10"
+              className="w-72 md:w-[150%] relative z-10"
             />
           </div>
         </div>
       </section>
 
       <section className="bg-white relative text-black pt-14 pb-5 px-6 text-center md:px-16">
-        <div className="flex gap-x-6">
-          <div className="basis-6/12">
+        <div className="flex flex-col md:flex-row gap-x-6 gap-y-10 md:gap-y-0">
+          {/* Gambar */}
+          <div className="basis-full md:basis-6/12">
             <img
-              className="w-full"
+              className="w-3/4 md:w-full mx-auto"
               src="/images/secure-investment.png"
               alt="Secure Investment"
             />
           </div>
 
-          <div className="basis-6/12 text-left flex flex-col gap-y-6">
-            <h2 className=" text-[#10565C] text-xl md:text-4xl font-extrabold leading-tight tracking-tight">
+          {/* Konten */}
+          <div className="basis-full md:basis-6/12 text-left flex flex-col gap-y-6">
+            <h2 className="text-[#10565C] text-2xl md:text-4xl font-extrabold leading-tight tracking-tight">
               Cara Baru Investasi Aman dan Menguntungkan
             </h2>
-            <p className="text-[#969696] text-lg">
+            <p className="text-[#969696] text-base md:text-lg">
               Capbridge adalah penyelenggara urun dana berbasis teknologi
               informasi di Indonesia yang beroperasi sesuai prinsip ESG
-              (Environmental, Social, Governance). Melalui platform ini, kami
-              memperkuat tata kelola yang transparan, serta menjunjung tinggi
-              etika bisnis yang selaras dengan 17 tujuan pembangunan
-              berkelanjutan.
+              (Environmental, Social, Governance)...
             </p>
-            <div>
-              <ul className="flex flex-col gap-y-8">
-                <li className="border-b-2 border-b-[#DDDDDD] pb-8">
-                  <div>
-                    <h3 className="text-[#10565C] text-2xl font-extrabold tracking-tight">
-                      1. Platform resmi yang berizin
-                    </h3>
-                    <ul className="flex flex-col gap-y-5 mt-5 ">
-                      <li className="flex gap-x-1 items-center">
-                        <img
-                          className="w-6"
-                          src="/images/check.png"
-                          alt="Check"
-                        />
-                        <span className="text-[#969696]">
-                          Berizin resmi dan di awasi OJK: Surat KEP-11/D.04/2025
-                        </span>
-                      </li>
-                      <li className="flex gap-x-1 items-center">
-                        <img
-                          className="w-6"
-                          src="/images/check.png"
-                          alt="Check"
-                        />
-                        <span className="text-[#969696]">
-                          Bersertifikasi ISO 27009:2025
-                        </span>
-                      </li>
-                      <li className="flex gap-x-1 items-center">
-                        <img
-                          className="w-6"
-                          src="/images/check.png"
-                          alt="Check"
-                        />
-                        <span className="text-[#969696]">
-                          Anggota resmi dari ALUDI
-                        </span>
-                      </li>
-                    </ul>
-                  </div>
-                </li>
-                <li className="border-b-2 border-b-[#DDDDDD] pb-8">
-                  <div>
-                    <h3 className="text-[#10565C] text-2xl font-extrabold tracking-tight">
-                      2. Imbal hasil yang menarik
-                    </h3>
-                  </div>
-                </li>
-                <li className="">
-                  <div>
-                    <h3 className="text-[#10565C] text-2xl font-extrabold tracking-tight">
-                      3. Syarat dan proses yang mudah
-                    </h3>
-                  </div>
-                </li>
-              </ul>
-            </div>
+
+            <ul className="flex flex-col gap-y-8">
+              <li className="border-b-2 border-b-[#DDDDDD] pb-8">
+                <h3 className="text-[#10565C] text-xl md:text-2xl font-extrabold tracking-tight">
+                  1. Platform resmi yang berizin
+                </h3>
+                <ul className="flex flex-col gap-y-5 mt-5">
+                  <li className="flex gap-x-2 items-center">
+                    <img className="w-6" src="/images/check.png" alt="Check" />
+                    <span className="text-[#969696]">
+                      Berizin resmi dan diawasi OJK: Surat KEP-11/D.04/2025
+                    </span>
+                  </li>
+                  <li className="flex gap-x-2 items-center">
+                    <img className="w-6" src="/images/check.png" alt="Check" />
+                    <span className="text-[#969696]">
+                      Bersertifikasi ISO 27009:2025
+                    </span>
+                  </li>
+                  <li className="flex gap-x-2 items-center">
+                    <img className="w-6" src="/images/check.png" alt="Check" />
+                    <span className="text-[#969696]">
+                      Anggota resmi dari ALUDI
+                    </span>
+                  </li>
+                </ul>
+              </li>
+
+              <li className="border-b-2 border-b-[#DDDDDD] pb-8">
+                <h3 className="text-[#10565C] text-xl md:text-2xl font-extrabold tracking-tight">
+                  2. Imbal hasil yang menarik
+                </h3>
+              </li>
+
+              <li>
+                <h3 className="text-[#10565C] text-xl md:text-2xl font-extrabold tracking-tight">
+                  3. Syarat dan proses yang mudah
+                </h3>
+              </li>
+            </ul>
           </div>
         </div>
       </section>
