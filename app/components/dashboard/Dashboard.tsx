@@ -12,6 +12,8 @@ import { ProjectCard } from "../project/Project";
 import ProgressBar from "@/app/(defaults)/sukuk/components/ProgressBar";
 import { formatPriceOrEmpty } from "@/app/lib/price";
 import { useRouter } from "next/navigation";
+import StepStatus from "./StatusBar";
+import { API_BACKEND } from "@/app/utils/constant";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -50,6 +52,15 @@ interface ProfileData {
   status_marital: string;
   address_detail: string;
   occupation: string;
+  company: {
+    projects: Project[];
+  };
+}
+
+interface Project {
+  id: number;
+  name: string;
+  status: string;
 }
 
 const Dashboard: React.FC = () => {
@@ -62,6 +73,10 @@ const Dashboard: React.FC = () => {
   const role = useRole();
   const userCookie = Cookies.get("user");
   const user = userCookie ? JSON.parse(userCookie) : null;
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [steps, setSteps] = useState<string[]>([]);
+  const [projectStatus, setProjectStatus] = useState<string>("");
 
   useEffect(() => {
     try {
@@ -77,7 +92,7 @@ const Dashboard: React.FC = () => {
     if (!token) return;
 
     axios
-      .get("https://api-capbridge.langitdigital78.com/api/v1/profile", {
+      .get(`${API_BACKEND}/api/v1/profile`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -87,169 +102,276 @@ const Dashboard: React.FC = () => {
       })
       .catch((err) => {
         console.error("Failed to fetch profile", err);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }, [token]);
 
   useEffect(() => {
-    if (role === 2 && user.token) {
+    if (user.token) {
       axios
-        .get(
-          "https://api-capbridge.langitdigital78.com/api/v1/project-by-emiten/list",
-          {
-            headers: {
-              Authorization: `Bearer ${user.token}`,
-            },
-          }
-        )
+        .get(`${API_BACKEND}/api/v1/project-by-emiten/list`, {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        })
         .then((res) => {
-          console.log(res.data["data"]);
           setEmitenProjects(res.data["data"]);
         })
         .catch((err) => {
           console.error("Failed to fetch profile", err);
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
     }
   }, [role, token]);
 
+  const statusSteps: Record<string, number> = {
+    PENDING: 0,
+    APPROVED: 1,
+    REJECTED: 1,
+    UNPAID: 2,
+    PAID: 2,
+    PUBLISH: 3,
+  };
+
+  const baseSteps = ["Diproses", "Disetujui", "Pembayaran", "Dipublish"];
+
+  useEffect(() => {
+    const statusProject = profile?.company?.projects?.[0]?.status;
+    // const statusProject = "PUBLISH" as string;
+    setProjectStatus(statusProject as string);
+
+    if (statusProject) {
+      let updatedSteps = [...baseSteps];
+
+      if (statusProject === "REJECTED") {
+        updatedSteps[1] = "Ditolak";
+      } else if (statusProject === "APPROVED") {
+        updatedSteps[1] = "Disetujui";
+      }
+
+      if (statusProject === "UNPAID") {
+        updatedSteps[2] = "Belum Dibayar";
+      } else if (statusProject === "PAID" || statusProject === "PUBLISH") {
+        updatedSteps[2] = "Sudah Dibayar";
+      }
+
+      setSteps(updatedSteps);
+      setCurrentStep(statusSteps[statusProject]);
+    }
+    // setSteps(baseSteps);
+    // setCurrentStep(2);
+  }, [profile]);
+
   return (
     <section className="py-28 px-4 md:px-12">
-      <div>
-        <h2 className="text-black text-2xl font-bold">Dashboard</h2>
-      </div>
-      <div className="flex flex-col gap-y-4 mt-4">
-        {/* Profile Card */}
-        {profile && (
-          <div className="shadow-md rounded-2xl p-6 bg-white flex flex-col md:flex-row gap-6 items-center w-full md:w-1/2">
-            <img
-              src={
-                profile.avatar !== "-"
-                  ? profile.avatar
-                  : "/images/default-image.png"
-              }
-              alt="Avatar"
-              className="w-24 h-24 rounded-full object-cover border-2 border-slate-200"
-            />
-            <div>
-              <h3 className="text-xl font-bold text-slate-800">
-                {profile.fullname}
-              </h3>
-              <p className="text-slate-500 text-sm mt-1">
-                {profile.occupation}
-              </p>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2 text-slate-600">
-                <div className="text-xs md:text-sm">
-                  <span className="font-bold">Pendidikan :</span>{" "}
-                  {profile.last_education}
-                </div>
-                <div className="text-xs md:text-sm">
-                  <span className="font-bold">Status :</span>{" "}
-                  {profile.status_marital}
-                </div>
-                <div className="text-xs md:text-sm">
-                  <span className="font-bold">Jenis Kelamin :</span>{" "}
-                  {profile.gender === "L"
-                    ? "Laki-laki"
-                    : profile.gender === "P"
-                    ? "Perempuan"
-                    : "-"}
-                </div>
-                <div className="text-xs md:text-sm">
-                  <span className="font-bold">Alamat :</span>{" "}
-                  {profile.address_detail}
-                </div>
-              </div>
-            </div>
+      {isLoading ? (
+        <div className="flex items-center justify-center h-[60vh] md:mt-8">
+          <div role="status">
+            <svg
+              aria-hidden="true"
+              className="w-12 h-12 text-gray-200 animate-spin dark:text-gray-400 fill-[#10565C]"
+              viewBox="0 0 100 101"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                fill="currentColor"
+              />
+              <path
+                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                fill="currentFill"
+              />
+            </svg>
+            <span className="sr-only">Loading...</span>
           </div>
-        )}
-
-        {/* {role === "2" && ( */}
+        </div>
+      ) : (
         <>
-          <div className="my-2">
-            <h2 className="font-bold text-lg text-black">Proyek Saya</h2>
+          <div>
+            <h2 className="text-black text-2xl font-bold">Dashboard</h2>
           </div>
-
-          <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {emitenProjects.length !== 0 ? (
-              emitenProjects.map((project) => {
-                return (
-                  <div
-                    key={project.id}
-                    onClick={() => {
-                      router.push(`/sukuk/${project.id}`);
-                    }}
-                    className="rounded-xl cursor-pointer overflow-hidden shadow border"
-                  >
-                    <div className="relative h-40">
-                      <img
-                        src={
-                          project.medias.length !== 0
-                            ? project.medias[0].path
-                            : "/images/img.jpg"
-                        }
-                        alt={project.title}
-                        className="object-cover w-full h-full"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.onerror = null; // mencegah infinite loop
-                          target.src = "/images/img.jpg";
-                        }}
-                      />
-
-                      <div className={`absolute inset-0  bg-opacity-60`} />
-                    </div>
-                    <div className="p-4 bg-gray-100 h-full">
-                      <p className="font-semibold text-sm text-start mb-2">
-                        {project.title}
-                      </p>
-                      <ul className="text-xs my-4 space-y-1">
-                        <li className="flex justify-between font-bold">
-                          <span className="text-black">Dana Terkumpul</span>
-                          <span className="text-black">{project.goal}</span>
-                        </li>
-                        <li>
-                          <ProgressBar percentage={0} />
-                        </li>
-                        <li className="flex justify-between">
-                          <span className="text-black">Jenis Obligasi</span>
-                          <span className="text-black capitalize">
-                            {project.type_of_bond}
-                          </span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span className="text-black">Nilai Nominal</span>
-                          <span className="text-black">
-                            {formatPriceOrEmpty(
-                              project.nominal_value,
-                              "id-ID",
-                              "IDR"
-                            )}
-                          </span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span className="text-black">Jangka Waktu</span>
-                          <span className="text-black">
-                            {project.time_periode}
-                          </span>
-                        </li>
-                        <li className="flex justify-between">
-                          <span className="text-black">Tingkat Bunga</span>
-                          <span className="text-black">
-                            {project.interest_rate}
-                          </span>
-                        </li>
-                      </ul>
+          <div className="flex flex-col gap-y-4 mt-4">
+            <div
+              className={`grid grid-cols-1 ${
+                user.role === "emiten"
+                  ? "md:grid-cols-2"
+                  : "md:grid-cols-1 lg:grid-cols-2"
+              } gap-5`}
+            >
+              {/* Profile Card */}
+              {profile && (
+                <div className="shadow-md rounded-2xl p-6 bg-white flex flex-col md:flex-row gap-6 items-center w-full">
+                  <img
+                    src={
+                      profile.avatar !== "-"
+                        ? profile.avatar
+                        : "/images/default-image.png"
+                    }
+                    alt="Avatar"
+                    className="w-24 h-24 rounded-full object-cover border-2 border-slate-200"
+                  />
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-800">
+                      {profile.fullname}
+                    </h3>
+                    <p className="text-slate-500 text-sm mt-1">
+                      {profile.occupation}
+                    </p>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2 text-slate-600">
+                      <div className="text-xs md:text-sm">
+                        <span className="font-bold">Pendidikan :</span>{" "}
+                        {profile.last_education}
+                      </div>
+                      <div className="text-xs md:text-sm">
+                        <span className="font-bold">Status :</span>{" "}
+                        {profile.status_marital}
+                      </div>
+                      <div className="text-xs md:text-sm">
+                        <span className="font-bold">Jenis Kelamin :</span>{" "}
+                        {profile.gender === "L"
+                          ? "Laki-laki"
+                          : profile.gender === "P"
+                          ? "Perempuan"
+                          : "-"}
+                      </div>
+                      <div className="text-xs md:text-sm">
+                        <span className="font-bold">Alamat :</span>{" "}
+                        {profile.address_detail}
+                      </div>
                     </div>
                   </div>
-                );
-              })
-            ) : (
-              <h6 className="text-black text-left w-full">Tidak ada data</h6>
-            )}
-          </div>
-        </>
-        {/* )} */}
+                </div>
+              )}
 
-        {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {user.role === "emiten" && (
+                <div className="shadow-md rounded-2xl p-10 md:px-3 md:py-4 bg-white w-full">
+                  <div className="md:px-9">
+                    <StepStatus
+                      currentStep={currentStep}
+                      steps={steps}
+                      projectStatus={projectStatus}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {user.role === "emiten" && (
+              <>
+                {/* <div className="my-2">
+                  <h2 className="font-bold text-lg text-black">
+                    Status Proyek Saya
+                  </h2>
+                  <div className="shadow-md rounded-2xl p-10 bg-white w-full md:w-1/2 mt-2">
+                    <StepStatus currentStep={currentStep} steps={steps} />
+                  </div>
+                </div> */}
+
+                <div className="my-2">
+                  <h2 className="font-bold text-lg text-black">Proyek Saya</h2>
+                </div>
+
+                <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {emitenProjects.length !== 0 ? (
+                    emitenProjects.map((project) => {
+                      return (
+                        <div
+                          key={project.id}
+                          onClick={() => {
+                            router.push(`/sukuk/${project.id}`);
+                          }}
+                          className="rounded-xl cursor-pointer overflow-hidden shadow border"
+                        >
+                          <div className="relative h-40">
+                            <img
+                              src={
+                                project.medias.length !== 0
+                                  ? project.medias[0].path
+                                  : "/images/img.jpg"
+                              }
+                              alt={project.title}
+                              className="object-cover w-full h-full"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.onerror = null; // mencegah infinite loop
+                                target.src = "/images/img.jpg";
+                              }}
+                            />
+
+                            <div
+                              className={`absolute inset-0  bg-opacity-60`}
+                            />
+                          </div>
+                          <div className="p-4 bg-gray-100 h-full">
+                            <p className="font-semibold text-sm text-start mb-2">
+                              {project.title}
+                            </p>
+                            <ul className="text-xs my-4 space-y-1">
+                              <li className="flex justify-between font-bold">
+                                <span className="text-black">
+                                  Dana Terkumpul
+                                </span>
+                                <span className="text-black">
+                                  {project.goal}
+                                </span>
+                              </li>
+                              <li>
+                                <ProgressBar percentage={0} />
+                              </li>
+                              <li className="flex justify-between">
+                                <span className="text-black">
+                                  Jenis Obligasi
+                                </span>
+                                <span className="text-black capitalize">
+                                  {project.type_of_bond}
+                                </span>
+                              </li>
+                              <li className="flex justify-between">
+                                <span className="text-black">
+                                  Nilai Nominal
+                                </span>
+                                <span className="text-black">
+                                  {formatPriceOrEmpty(
+                                    project.nominal_value,
+                                    "id-ID",
+                                    "IDR"
+                                  )}
+                                </span>
+                              </li>
+                              <li className="flex justify-between">
+                                <span className="text-black">Jangka Waktu</span>
+                                <span className="text-black">
+                                  {project.time_periode}
+                                </span>
+                              </li>
+                              <li className="flex justify-between">
+                                <span className="text-black">
+                                  Tingkat Bunga
+                                </span>
+                                <span className="text-black">
+                                  {project.interest_rate}
+                                </span>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <h6 className="text-black text-left w-full">
+                      Tidak ada data
+                    </h6>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <CardStats
             title="Cash In-hand"
             desc="Dana yang tersedia untuk ditarik atau di investasikan"
@@ -313,7 +435,9 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         </div> */}
-      </div>
+          </div>
+        </>
+      )}
     </section>
   );
 };
