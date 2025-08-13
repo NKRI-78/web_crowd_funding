@@ -90,8 +90,6 @@ const SukukClient = ({ id }: Props) => {
   const [isNotFound, setIsNotFound] = useState(false);
   const [role, setRole] = useState<string | null>(null);
 
-  console.log(role, "id");
-
   useEffect(() => {
     const userCookie = Cookies.get("user");
     if (!userCookie) return;
@@ -159,15 +157,18 @@ const SukukClient = ({ id }: Props) => {
 
   useEffect(() => {
     setHydrated(true);
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUserData(parsedUser);
-      } catch (err) {
-        console.error("Gagal parsing user dari localStorage", err);
-      }
-    }
+    // const storedUser = localStorage.getItem("user");
+    const userCookie = Cookies.get("user");
+    const user = userCookie ? JSON.parse(userCookie) : null;
+    setUserData(user);
+    // if (storedUser) {
+    //   try {
+    //     const parsedUser = JSON.parse(storedUser);
+    //     setUserData(parsedUser);
+    //   } catch (err) {
+    //     console.error("Gagal parsing user dari localStorage", err);
+    //   }
+    // }
   }, []);
 
   return isNotFound ? (
@@ -420,25 +421,25 @@ const SukukClient = ({ id }: Props) => {
 
             <div className="bg-white rounded-lg p-2 flex justify-evenly">
               <div className="flex gap-1 flex-col items-center">
-                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#3E268D] text-white"></div>
+                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#10565c] text-white"></div>
                 <div className="text-xs text-center font-medium text-gray-900">
                   Prelisting
                 </div>
               </div>
               <div className="flex gap-1 flex-col items-center">
-                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#3E268D] text-white"></div>
+                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#10565c] text-white"></div>
                 <div className="text-xs text-center font-medium text-gray-900">
                   Listing
                 </div>
               </div>
               <div className="flex gap-1 flex-col items-center">
-                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#3E268D] text-white"></div>
+                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#10565c] text-white"></div>
                 <div className="text-xs text-center font-medium text-gray-900">
                   Pendanaan Terpenuhi
                 </div>
               </div>
               <div className="flex gap-1 flex-col items-center">
-                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#3E268D] text-white"></div>
+                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#10565c] text-white"></div>
                 <div className="text-xs text-center font-medium text-gray-900">
                   Berjalan
                 </div>
@@ -525,7 +526,7 @@ const SukukClient = ({ id }: Props) => {
 
             {role !== "emiten" ? (
               hydrated && userData !== null ? (
-                <button className="w-full bg-purple-700 hover:bg-purple-600 text-white font-semibold py-2 rounded-md mt-4 cursor-pointer">
+                <button className="w-full bg-[#10565c] hover:bg-[#104348] text-white font-semibold py-2 rounded-md mt-4 cursor-pointer">
                   Beli Efek
                 </button>
               ) : (
