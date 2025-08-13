@@ -135,7 +135,7 @@ const NavbarV2: React.FC = () => {
             <div className="flex items-center gap-2">
               <img
                 src={
-                  isSticky ? "images/logo-green.png" : "images/logo-white.png"
+                  isSticky ? "/images/logo-green.png" : "/images/logo-white.png"
                 }
                 alt="CapBridge Logo"
                 className="h-8 w-8 object-contain transition-all duration-300"
