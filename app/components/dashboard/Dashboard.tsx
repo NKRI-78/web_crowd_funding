@@ -14,6 +14,8 @@ import { formatPriceOrEmpty } from "@/app/lib/price";
 import { useRouter } from "next/navigation";
 import StepStatus from "./StatusBar";
 import { API_BACKEND } from "@/app/utils/constant";
+import { IProjectData } from "@/app/interface/IProject";
+import { getAllProject } from "@/actions/GetAllProject";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -79,6 +81,18 @@ const Dashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [steps, setSteps] = useState<string[]>([]);
   const [projectStatus, setProjectStatus] = useState<string>("");
+  const [project, seProject] = useState<IProjectData[]>([]);
+
+  useEffect(() => {
+    const fetchTopVideos = async () => {
+      setIsLoading(true);
+      const res = await getAllProject();
+      seProject(res?.data ?? []);
+      setIsLoading(false);
+    };
+
+    fetchTopVideos();
+  }, []);
 
   useEffect(() => {
     try {
@@ -375,6 +389,19 @@ const Dashboard: React.FC = () => {
                   )}
                 </div>
               </>
+            )}
+
+            {user.role === "investor" && (
+              <div>
+                <h3 className="text-start text-black text-2xl mb-4 mt-1 font-bold">
+                  Proyek Sedang Berjalan
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {project.map((project: IProjectData, index) => (
+                    <ProjectCard key={index} project={project} />
+                  ))}
+                </div>
+              </div>
             )}
 
             {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
