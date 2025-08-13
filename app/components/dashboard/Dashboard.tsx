@@ -52,6 +52,8 @@ interface ProfileData {
   status_marital: string;
   address_detail: string;
   occupation: string;
+  selfie: string;
+  position: string;
   company: {
     projects: Project[];
   };
@@ -208,7 +210,9 @@ const Dashboard: React.FC = () => {
                 <div className="shadow-md rounded-2xl p-6 bg-white flex flex-col md:flex-row gap-6 items-center w-full">
                   <img
                     src={
-                      profile.avatar !== "-"
+                      user.role === "emiten"
+                        ? profile.selfie || "/images/default-image.png" // jika emiten, pakai selfie
+                        : profile.avatar !== "-"
                         ? profile.avatar
                         : "/images/default-image.png"
                     }
@@ -220,7 +224,9 @@ const Dashboard: React.FC = () => {
                       {profile.fullname}
                     </h3>
                     <p className="text-slate-500 text-sm mt-1">
-                      {profile.occupation}
+                      {user.role === "emiten"
+                        ? profile.position
+                        : profile.occupation}
                     </p>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2 text-slate-600">
                       <div className="text-xs md:text-sm">
