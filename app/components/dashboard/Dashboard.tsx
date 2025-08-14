@@ -147,39 +147,57 @@ const Dashboard: React.FC = () => {
   const statusSteps: Record<string, number> = {
     PENDING: 0,
     APPROVED: 1,
-    REJECTED: 1,
-    UNPAID: 2,
-    PAID: 2,
-    PUBLISH: 3,
+    REJECTED: 2,
+    // UNPAID: 3,
+    PAID: 3,
+    PUBLISH: 4,
   };
 
-  const baseSteps = ["Diproses", "Disetujui", "Pembayaran", "Dipublish"];
+  // const baseSteps = [
+  //   "Data Diproses",
+  //   "Review Project",
+  //   "Pembayaran Administrasi",
+  //   "Project Tayang",
+  // ];
+
+  const statusLabels: Record<string, string> = {
+    PENDING: "Data Diproses",
+    APPROVED: "Review Project",
+    REJECTED: "Ditolak",
+    UNPAID: "Belum Dibayar",
+    PAID: "Pembayaran Administrasi",
+    PUBLISH: "Project Tayang",
+  };
 
   useEffect(() => {
-    const statusProject = profile?.company?.projects?.[0]?.status;
-    // const statusProject = "PUBLISH" as string;
+    // const statusProject = profile?.company?.projects?.[0]?.status;
+    const statusProject = "PUBLISH" as string; //default progres bar
     setProjectStatus(statusProject as string);
 
+    const stepsArray = Object.entries(statusSteps)
+      .sort((a, b) => a[1] - b[1])
+      .map(([status]) => statusLabels[status] ?? status);
+
+    setSteps(stepsArray);
+
     if (statusProject) {
-      let updatedSteps = [...baseSteps];
+      // let updatedSteps = [...baseSteps];
 
-      if (statusProject === "REJECTED") {
-        updatedSteps[1] = "Ditolak";
-      } else if (statusProject === "APPROVED") {
-        updatedSteps[1] = "Disetujui";
-      }
+      // if (statusProject === "REJECTED") {
+      //   updatedSteps[1] = "Ditolak";
+      // } else if (statusProject === "APPROVED") {
+      //   updatedSteps[1] = "Disetujui";
+      // }
 
-      if (statusProject === "UNPAID") {
-        updatedSteps[2] = "Belum Dibayar";
-      } else if (statusProject === "PAID" || statusProject === "PUBLISH") {
-        updatedSteps[2] = "Sudah Dibayar";
-      }
+      // if (statusProject === "UNPAID") {
+      //   updatedSteps[2] = "Belum Dibayar";
+      // } else if (statusProject === "PAID" || statusProject === "PUBLISH") {
+      //   updatedSteps[2] = "Sudah Dibayar";
+      // }
 
-      setSteps(updatedSteps);
+      // setSteps(updatedSteps);
       setCurrentStep(statusSteps[statusProject]);
     }
-    // setSteps(baseSteps);
-    // setCurrentStep(2);
   }, [profile]);
 
   return (
@@ -212,86 +230,23 @@ const Dashboard: React.FC = () => {
             <h2 className="text-black text-2xl font-bold">Dashboard</h2>
           </div>
           <div className="flex flex-col gap-y-4 mt-4">
-            <div
-              className={`grid grid-cols-1 ${
-                user.role === "emiten"
-                  ? "md:grid-cols-2"
-                  : "md:grid-cols-1 lg:grid-cols-2"
-              } gap-5`}
-            >
-              {/* Profile Card */}
-              {profile && (
-                <div className="shadow-md rounded-2xl p-6 bg-white flex flex-col md:flex-row gap-6 items-center w-full">
-                  <img
-                    src={
-                      user.role === "emiten"
-                        ? profile.selfie || "/images/default-image.png" // jika emiten, pakai selfie
-                        : profile.avatar !== "-"
-                        ? profile.avatar
-                        : "/images/default-image.png"
-                    }
-                    alt="Avatar"
-                    className="w-24 h-24 rounded-full object-cover border-2 border-slate-200"
-                  />
-                  <div>
-                    <h3 className="text-xl font-bold text-slate-800">
-                      {profile.fullname}
-                    </h3>
-                    <p className="text-slate-500 text-sm mt-1">
-                      {user.role === "emiten"
-                        ? profile.position
-                        : profile.occupation}
-                    </p>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2 text-slate-600">
-                      <div className="text-xs md:text-sm">
-                        <span className="font-bold">Pendidikan :</span>{" "}
-                        {profile.last_education}
-                      </div>
-                      <div className="text-xs md:text-sm">
-                        <span className="font-bold">Status :</span>{" "}
-                        {profile.status_marital}
-                      </div>
-                      <div className="text-xs md:text-sm">
-                        <span className="font-bold">Jenis Kelamin :</span>{" "}
-                        {profile.gender === "L"
-                          ? "Laki-laki"
-                          : profile.gender === "P"
-                          ? "Perempuan"
-                          : "-"}
-                      </div>
-                      <div className="text-xs md:text-sm">
-                        <span className="font-bold">Alamat :</span>{" "}
-                        {profile.address_detail}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {user.role === "emiten" && (
-                <div className="shadow-md rounded-2xl p-10 md:px-3 md:py-4 bg-white w-full">
-                  <div className="md:px-9">
-                    <StepStatus
-                      currentStep={currentStep}
-                      steps={steps}
-                      projectStatus={projectStatus}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
             {user.role === "emiten" && (
-              <>
-                {/* <div className="my-2">
-                  <h2 className="font-bold text-lg text-black">
-                    Status Proyek Saya
-                  </h2>
-                  <div className="shadow-md rounded-2xl p-10 bg-white w-full md:w-1/2 mt-2">
-                    <StepStatus currentStep={currentStep} steps={steps} />
-                  </div>
-                </div> */}
+              <div className="shadow-md rounded-2xl bg-white w-full p-10 md:py-12">
+                <h2 className="font-bold text-lg text-black mb-5 -mt-9 md:-mt-6 md:mb-14 text-start">
+                  Proyek Saya
+                </h2>
+                <div>
+                  <StepStatus
+                    currentStep={currentStep}
+                    steps={steps}
+                    projectStatus={projectStatus}
+                  />
+                </div>
+              </div>
+            )}
 
+            {/* {user.role === "emiten" && (
+              <>
                 <div className="my-2">
                   <h2 className="font-bold text-lg text-black">Proyek Saya</h2>
                 </div>
@@ -389,7 +344,7 @@ const Dashboard: React.FC = () => {
                   )}
                 </div>
               </>
-            )}
+            )} */}
 
             {user.role === "investor" && (
               <div>
@@ -403,71 +358,6 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
             )}
-
-            {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <CardStats
-            title="Cash In-hand"
-            desc="Dana yang tersedia untuk ditarik atau di investasikan"
-          />
-          <CardStats
-            title="Dana Reward"
-            desc="Dana promosi yang hanya dapat diinvestasikan"
-          />
-          <CardStats
-            title="Dana Interim"
-            desc="Dana hasil dividen interim atau komisi referral"
-          />
-          <CardStats
-            title="Dana Dapat Diinvestasikan"
-            desc="Cash In-hand + Dana Reward + Dana Interim"
-          />
-        </div>
-
-        <div className="flex gap-x-4">
-          <div className="shadow-lg p-6 basis-6/12 h-fit bg-white rounded-2xl">
-            <h6 className="text-slate-600 font-semibold mb-6">
-              Alokasi pembelian berdasarkan efek
-            </h6>
-            <div style={{ width: 350, height: 300, margin: "0 auto" }}>
-              <Doughnut data={data} options={options} />
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-around",
-                marginTop: 20,
-              }}
-            >
-              <div style={{ textAlign: "center" }}>
-                <strong className="text-slate-600">Saham</strong>
-                <br />
-                <div
-                  style={{
-                    height: 5,
-                    width: 30,
-                    backgroundColor: "#2cd4d9",
-                    margin: "4px auto",
-                  }}
-                ></div>
-                <span style={{ color: "#a0aec0" }}>0.00%</span>
-              </div>
-              <div style={{ textAlign: "center" }}>
-                <strong className="text-slate-600">Obligasi</strong>
-                <br />
-                <div
-                  style={{
-                    height: 5,
-                    width: 30,
-                    backgroundColor: "#ffac33",
-                    margin: "4px auto",
-                  }}
-                ></div>
-                <span style={{ color: "#a0aec0" }}>100.00%</span>
-              </div>
-            </div>
-          </div>
-        </div> */}
           </div>
         </>
       )}
