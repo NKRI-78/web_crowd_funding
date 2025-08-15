@@ -186,7 +186,7 @@ const HomeV2: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-[#218AC2]/70 to-[#10565C]/70 z-0" />
         {/* Left content */}
         <div className="space-y-6 z-10 relative text-center md:text-left">
-          <h1 className="text-4xl md:text-6xl font-bold leading-tight m-5">
+          <h1 className="text-4xl md:text-6xl font-bold leading-tight ">
             Fund the Future. <br /> Together
           </h1>
           <p className="text-white text-base md:text-lg leading-relaxed italic">
@@ -195,16 +195,17 @@ const HomeV2: React.FC = () => {
             yang percaya pada perubahan."
           </p>
 
-          <button
-            className="text-white text-lg bg-[#10565C] hover:bg-[#0c4246] focus:ring-1 focus:ring-white rounded-lg px-6 py-3 me-2 mb-2 dark:bg-[#10565C] dark:hover:bg-[#0c4246] focus:outline-none dark:focus:ring-white font-extrabold"
-            onClick={() => {
-              setStep("register");
-              setShowOtpModal(true);
-              console.log("tes");
-            }}
-          >
-            DAFTAR SEKARANG
-          </button>
+          {!getUserToken() && (
+            <button
+              className="text-white text-lg bg-[#10565C] hover:bg-[#0c4246] focus:ring-1 focus:ring-white rounded-lg px-6 py-3 me-2 mb-2 dark:bg-[#10565C] dark:hover:bg-[#0c4246] focus:outline-none dark:focus:ring-white font-extrabold"
+              onClick={() => {
+                setStep("register");
+                setShowOtpModal(true);
+              }}
+            >
+              DAFTAR SEKARANG
+            </button>
+          )}
 
           {/* Logos */}
           <div className="flex justify-center md:justify-start gap-6 items-center">
