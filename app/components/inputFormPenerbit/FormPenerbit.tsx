@@ -3,24 +3,17 @@
 import { useEffect, useState } from "react";
 import { FormPenerbitState, useFormPenerbit } from "./_hooks/useFormPenerbit";
 
-import TextField from "./_component/TextField";
 import JobStructureForm from "./_component/JobStructureForm";
 import FileInput from "./_component/FileInput";
-import MonthSelection from "./_component/MonthSelection";
 import SectionTitle from "./_component/SectionTitle";
 import SectionPoint from "./_component/SectionPoint";
 import SectionSubtitle from "./_component/SectionSubtitle";
-import CustomSelection from "./_component/CustomSelection";
 import FormButton from "./_component/FormButton";
-import DropdownSelect from "./_component/DropdownSelect";
-import CurrencyField from "./_component/CurrencyField";
 import axios from "axios";
 import { API_BACKEND } from "@/app/utils/constant";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
-import CustomCheckBox from "./_component/CustomCheckBox";
 import AddButton from "./_component/AddButton";
-import PhotoUploader from "./_component/PhotoUploaderContainer";
 import {
   ProfileUpdate,
   publisherUpdateKeys,
@@ -51,21 +44,6 @@ export interface FormPenerbitError {
   komisaris?: JobStructureError[];
   direkturErrorText?: string;
   komisarisErrorText?: string;
-  fotoProyek?: string;
-  titleProyek?: string;
-  nilaiNominal?: string;
-  jenisObligasi?: string;
-  jangkaWaktu?: string;
-  tingkatBunga?: string;
-  jadwalBunga?: string;
-  jadwalPokok?: string;
-  penggunaanDana?: string;
-  jaminanKolateral?: string;
-  deskripsiPekerjaan?: string;
-  jenisBiaya?: string;
-  fileDokumenKontrakApbn?: string;
-  noKontrakApbn?: string;
-  companyProfile?: string;
 }
 
 const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
@@ -97,51 +75,10 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
       newErrors.laporanKeuangan = "Laporan Keuangan wajib diisi";
     if (!formState.rekeningKoran?.trim())
       newErrors.rekeningKoran = "Rekening Koran wajib diisi";
-    if (formState.fotoProyek.length === 0)
-      newErrors.fotoProyek = "Foto Proyek wajib diisi";
-    if (!formState.titleProyek?.trim())
-      newErrors.titleProyek = "Judul Proyek wajib diisi";
-    if (!formState.nilaiNominal?.trim())
-      newErrors.nilaiNominal = "Nilai Nominal wajib diisi";
-    if (!formState.jenisObligasi?.trim())
-      newErrors.jenisObligasi = "Jenis Obligasi wajib diisi";
-    if (!formState.jangkaWaktu?.trim())
-      newErrors.jangkaWaktu = "Jangka Waktu wajib diisi";
-    if (!formState.tingkatBunga?.trim())
-      newErrors.tingkatBunga = "Tingkat Bunga wajib diisi";
-    if (!formState.jadwalBunga?.trim())
-      newErrors.jadwalBunga = "Jadwal Bunga wajib diisi";
-    if (!formState.jadwalPokok?.trim())
-      newErrors.jadwalPokok = "Jadwal Pokok wajib diisi";
-    if (formState.penggunaanDana?.length === 0)
-      newErrors.penggunaanDana = "Penggunaan Dana wajib diisi";
-    if (formState.jaminanKolateral?.length === 0)
-      newErrors.jaminanKolateral = "Jaminan Kolateral wajib diisi";
     if (formState.direktur?.length === 0)
       newErrors.direkturErrorText = "Direktur wajib ditambahkan";
     if (formState.komisaris?.length === 0)
       newErrors.komisarisErrorText = "Komisaris wajib ditambahkan";
-    if (!formState.deskripsiPekerjaan?.trim())
-      newErrors.deskripsiPekerjaan = "Deskripsi Pekerjaan wajib diisi";
-    if (!formState.jenisBiaya?.trim())
-      newErrors.jenisBiaya = "Jenis Biaya wajib diisi";
-    if (!formState.companyProfile?.trim())
-      newErrors.companyProfile = "Company Profile wajib diisi";
-    if (!formState.jaminanKolateral) {
-      newErrors.jaminanKolateral = "Jaminan Kolateral wajib diisi";
-    }
-    if (Number(formState.nilaiNominal) > 10_000_000_000) {
-      newErrors.nilaiNominal = "Nilai Nominal Maks 10 Miliar";
-    }
-    if (formState.jenisBiaya === "Iya") {
-      if (!formState.fileDokumenKontrakApbn) {
-        newErrors.fileDokumenKontrakApbn = "Dokumen Kontrak wajib diisi";
-      }
-      if (!formState.noKontrakApbn) {
-        newErrors.noKontrakApbn = "Nomor Kontrak wajib diisi";
-      }
-    }
-
     const direkturError: JobStructureError[] = formState.direktur.map(
       (item) => {
         const jobError: JobStructureError = {};
@@ -262,30 +199,6 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
           });
         }
       }
-      for (const project of company.projects) {
-        updateField(
-          "fotoProyek",
-          project.media.map((media) => media.path)
-        );
-        updateField("titleProyek", project.title);
-        updateField("jangkaWaktu", project.jangka_waktu);
-        updateField("nilaiNominal", project.jumlah_minimal.toString());
-        updateField("tingkatBunga", project.tingkat_bunga.replace(/%$/, ""));
-        updateField("jadwalBunga", project.jadwal_pembayaran_bunga);
-        updateField("jadwalPokok", project.jadwal_pembayaran_pokok);
-        updateField(
-          "penggunaanDana",
-          project.penggunaan_dana.map((dana) => dana.name)
-        );
-        updateField(
-          "jaminanKolateral",
-          project.jaminan_kolateral.map((jaminan) => jaminan.name)
-        );
-        updateField("deskripsiPekerjaan", project.deskripsi_pekerjaan);
-        updateField("fileDokumenKontrakApbn", project.nilai_kontrak_path);
-        updateField("noKontrakApbn", project.nilai_kontrak);
-        updateField("companyProfile", project.company_profile);
-      }
     }
   }, [profile, isUpdate]);
 
@@ -367,29 +280,6 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
             npwp: "-",
             npwp_path: kom.fileNPWP,
           })),
-          project: {
-            title: formState.titleProyek,
-            jenis_obligasi: formState.jenisObligasi,
-            jumlah_minimal: formState.nilaiNominal,
-            jangka_waktu: formState.jangkaWaktu,
-            tingkat_bunga: `${formState.tingkatBunga}%`,
-            jaminan_kolateral: formState.jaminanKolateral.map(
-              (kolateralValue) => ({
-                name: kolateralValue,
-              })
-            ),
-            company_profile: formState.companyProfile,
-            jadwal_pembayaran_bunga: formState.jadwalBunga,
-            jadwal_pembayaran_pokok: formState.jadwalPokok,
-            penggunaan_dana: formState.penggunaanDana.map((danaValue) => ({
-              name: danaValue,
-            })),
-            deskripsi_pekerjaan: formState.deskripsiPekerjaan,
-            project_media_path: formState.fotoProyek,
-            no_contract_path: formState.fileDokumenKontrakApbn ?? "-",
-            no_contract_value: formState.noKontrakApbn ?? "-",
-            is_apbn: formState.jenisBiaya === "Iya",
-          },
         };
 
         const res = await axios.post(
@@ -579,12 +469,6 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
           case "rekening-koran":
             val = penerbitJSON.rekeningKoran;
             break;
-          case "doc-kontrak":
-            val = penerbitJSON.fileDokumenKontrakApbn ?? "-";
-            break;
-          case "company-profile":
-            val = penerbitJSON.companyProfile;
-            break;
           default:
             val = "-";
             break;
@@ -768,268 +652,11 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
                 addKomisaris();
               }}
             />
-
-            <div className="mt-3">
-              <SectionPoint text="Foto Proyek" className="my-2" />
-
-              <PhotoUploader
-                fileOnChange={(urls) => {
-                  updateField("fotoProyek", urls);
-                  if (urls) {
-                    setErrors({ ...errors, fotoProyek: "" });
-                  }
-                }}
-                photoPaths={formState.fotoProyek}
-                errorText={errors.fotoProyek}
-              />
-
-              <TextField
-                label="Title Proyek"
-                placeholder="Title Proyek"
-                value={formState.titleProyek || ""}
-                className="mt-3 mb-2"
-                onChange={(e) => {
-                  updateField("titleProyek", e.target.value);
-                  if (e.target.value) {
-                    setErrors({ ...errors, titleProyek: "" });
-                  }
-                }}
-                errorText={errors.titleProyek}
-              />
-            </div>
           </div>
         </section>
 
         {/* === right section === */}
         <section className="w-full">
-          <DropdownSelect
-            label="Jenis Obligasi"
-            options={[{ label: "Konvensional", value: "konvensional" }]}
-            value={formState.jenisObligasi || ""}
-            onChange={(val) => {
-              updateField("jenisObligasi", val);
-              if (val) {
-                setErrors({ ...errors, titleProyek: "" });
-              }
-            }}
-            placeholder="Jenis Obligasi"
-            maxHeightDropdown="180px"
-            className="mb-2"
-            errorText={errors.jenisObligasi}
-          />
-
-          <CurrencyField
-            label="Nilai Nominal"
-            placeholder="Rp."
-            value={formState.nilaiNominal || ""}
-            className="mb-2"
-            onChange={(e) => {
-              const rawValue = e.target.value;
-              const numericValue = Number(rawValue);
-
-              updateField("nilaiNominal", rawValue);
-
-              if (!rawValue) {
-                setErrors((prev) => ({
-                  ...prev,
-                  nilaiNominal: "Nilai Nominal tidak boleh kosong",
-                }));
-              } else if (numericValue > 10_000_000_000) {
-                setErrors((prev) => ({
-                  ...prev,
-                  nilaiNominal: "Nilai Nominal Maks 10 Miliar",
-                }));
-              } else {
-                setErrors((prev) => ({
-                  ...prev,
-                  nilaiNominal: "",
-                }));
-              }
-            }}
-            errorText={errors.nilaiNominal}
-          />
-
-          <div className="w-full flex gap-2 mb-3">
-            <DropdownSelect
-              label="Tenor"
-              options={[
-                { label: "3 Bulan", value: "3 Bulan" },
-                { label: "6 Bulan", value: "6 Bulan" },
-                { label: "9 Bulan", value: "9 Bulan" },
-                { label: "12 Bulan", value: "12 Bulan" },
-              ]}
-              // defaultValue="3 Bulan"
-              value={formState.jangkaWaktu || ""}
-              onChange={(val) => {
-                updateField("jangkaWaktu", val);
-                if (val) {
-                  setErrors({ ...errors, jangkaWaktu: "" });
-                }
-              }}
-              placeholder="Jangka Waktu"
-              maxHeightDropdown="180px"
-              className="flex-[1]"
-              errorText={errors.jangkaWaktu}
-            />
-            <DropdownSelect
-              label="Tingkat Bunga"
-              options={[{ label: "10%", value: "10" }]}
-              // defaultValue="10"
-              value={formState.tingkatBunga || ""}
-              onChange={(val) => {
-                updateField("tingkatBunga", val);
-                if (val) {
-                  setErrors({ ...errors, tingkatBunga: "" });
-                }
-              }}
-              placeholder="Tingkat Bunga"
-              maxHeightDropdown="180px"
-              className="flex-[1]"
-              errorText={errors.tingkatBunga}
-            />
-          </div>
-
-          <MonthSelection
-            label="Jadwal Pembayaran Bunga"
-            selected={formState.jadwalBunga || ""}
-            onChange={(val) => updateField("jadwalBunga", val)}
-          />
-
-          <MonthSelection
-            label="Jadwal Pembayaran Pokok"
-            selected={formState.jadwalPokok || ""}
-            onChange={(val) => updateField("jadwalPokok", val)}
-          />
-
-          <CustomCheckBox
-            label="Penggunaan Dana"
-            options={["Modal Usaha", "Pengembangan Usaha", "Proyek"]}
-            selected={formState.penggunaanDana}
-            onChange={(val) => {
-              updateField("penggunaanDana", val);
-              if (val) {
-                setErrors({ ...errors, penggunaanDana: "" });
-              }
-            }}
-            errorText={errors.penggunaanDana}
-          />
-
-          <CustomCheckBox
-            label="Jaminan Kolateral"
-            options={[
-              "Tanah Bangunan",
-              "Kendaraan Bermotor",
-              "Rumah",
-              "Surat Berharga",
-            ]}
-            selected={formState.jaminanKolateral}
-            onChange={(val) => {
-              updateField("jaminanKolateral", val);
-              if (val) {
-                setErrors({ ...errors, jaminanKolateral: "" });
-              }
-            }}
-            errorText={errors.jaminanKolateral}
-          />
-
-          <TextField
-            label="Deskripsi Pekerjaan"
-            placeholder="Maks 1500 kata"
-            type="textarea"
-            maxWords={1500}
-            value={formState.deskripsiPekerjaan || ""}
-            onChange={(e) => {
-              updateField("deskripsiPekerjaan", e.target.value);
-              if (e.target.value) {
-                setErrors({ ...errors, deskripsiPekerjaan: "" });
-              }
-            }}
-            errorText={errors.deskripsiPekerjaan}
-          />
-
-          <CustomSelection
-            label="Apakah di biaya oleh APBN/APBD?"
-            options={["Iya", "Tidak"]}
-            selected={formState.jenisBiaya || ""}
-            onChange={(val) => {
-              updateField("jenisBiaya", val);
-
-              if (val === "Tidak") {
-                setErrors({
-                  ...errors,
-                  fileDokumenKontrakApbn: "",
-                  noKontrakApbn: "",
-                });
-              }
-            }}
-            showWhenValue="Iya"
-            customContent={
-              <div className="flex gap-x-3">
-                <UpdateRing identity="doc-kontrak" formKey={profile?.form}>
-                  <div>
-                    <p className="text-[12px] mb-1 font-semibold text-gray-500">
-                      Dokumen Kontrak
-                    </p>
-                    <FileInput
-                      fileName="Dokumen Kontrak APBN"
-                      fileUrl={formState.fileDokumenKontrakApbn}
-                      accept=".pdf"
-                      onChange={(fileUrl) => {
-                        updateField("fileDokumenKontrakApbn", fileUrl);
-                        if (fileUrl) {
-                          setErrors({ ...errors, fileDokumenKontrakApbn: "" });
-                        }
-                      }}
-                      errorText={errors.fileDokumenKontrakApbn}
-                    />
-                  </div>
-                </UpdateRing>
-
-                <UpdateRing identity="no-kontrak" formKey={profile?.form}>
-                  <div>
-                    <p className="text-[12px] mb-1 font-semibold text-gray-500">
-                      No Kontrak
-                    </p>
-                    <TextField
-                      placeholder="No Kontrak"
-                      value={formState.noKontrakApbn || ""}
-                      type="text"
-                      errorText={errors.noKontrakApbn}
-                      onChange={(e) => {
-                        updateField("noKontrakApbn", e.target.value);
-                        if (e.target.value) {
-                          setErrors({ ...errors, noKontrakApbn: "" });
-                        }
-                      }}
-                    />
-                  </div>
-                </UpdateRing>
-              </div>
-            }
-          />
-
-          <div className="w-full flex flex-col mt-3">
-            <UpdateRing identity="company-profile" formKey={profile?.form}>
-              <SectionPoint text="Company Profile" />
-              <SectionSubtitle
-                text="File maksimal berukuran 10mb"
-                className="my-1"
-              />
-              <FileInput
-                fileName="Company Profile"
-                fileUrl={formState.companyProfile}
-                accept=".pdf, .jpg, .png, .jpeg"
-                onChange={(fileUrl) => {
-                  updateField("companyProfile", fileUrl);
-                  if (fileUrl) {
-                    setErrors({ ...errors, companyProfile: "" });
-                  }
-                }}
-                errorText={errors.companyProfile}
-              />
-            </UpdateRing>
-          </div>
-
           <div className="w-ful flex flex-col mt-4">
             <SectionPoint text="Pernyataan Kebenaran Data" />
             <p className="text-sm text-gray-500 my-2">

@@ -7,7 +7,18 @@ interface MonthSelectionProps {
   onChange: (value: string) => void;
 }
 
-const options = ["3 Bulan", "6 Bulan", "9 Bulan", "12 Bulan"];
+const options = [
+  "1 Bulan",
+  "2 Bulan",
+  "3 Bulan",
+  "4 Bulan",
+  "5 Bulan",
+  "6 Bulan",
+  "9 Bulan",
+  "12 Bulan",
+  "18 Bulan",
+  "24 Bulan",
+];
 
 const MonthSelection: React.FC<MonthSelectionProps> = ({
   label,
