@@ -7,6 +7,7 @@ export interface IFormPublisher {
   sk_kumham_path: string;
   akta_perubahan_terahkir_path: string;
   sk_kumham_terahkir: string;
+  fileNpwp: string;
   siup: string;
   tdp: string;
   noPhoneCompany: string;
@@ -15,11 +16,11 @@ export interface IFormPublisher {
   namaBank: string;
   nomorRekening: string;
   namaPemilik: string;
-  cabangBank: string;
   establishedYear: string;
   address: Address[];
   company_name: string;
-  fileNpwp: string;
+  companyType: string;
+  statusCompanys: string;
 }
 
 export interface Address {

@@ -1,13 +1,12 @@
 import axios from "axios";
-import { z } from "zod";
 import { API_BACKEND } from "./constant";
 import { getUser } from "../lib/auth";
 
 export type TypeOption = { value: string; label: string };
 
-export async function fetchJenisUsaha(): Promise<TypeOption[]> {
+export async function fetchJenisPerusahaan(): Promise<TypeOption[]> {
   const user = getUser();
-  const { data } = await axios.get(`${API_BACKEND}/api/v1/business/type/list`, {
+  const { data } = await axios.get(`${API_BACKEND}/api/v1/company/type/list`, {
     headers: {
       Authorization: `Bearer ${user?.token}`,
     },

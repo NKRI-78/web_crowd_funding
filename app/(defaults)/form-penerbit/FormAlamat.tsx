@@ -94,7 +94,6 @@ const FormAlamat = ({
         <Controller
           name={`address.${index}.province_name`}
           control={control}
-          rules={{ required: "Provinsi wajib diisi" }}
           render={({ field, fieldState: { error } }) => (
             <div>
               <Select<OptionType>
@@ -137,7 +136,6 @@ const FormAlamat = ({
         <Controller
           name={`address.${index}.city_name`}
           control={control}
-          rules={{ required: "Kota wajib diisi" }}
           render={({ field, fieldState: { error } }) => {
             const options = kotaList[index] || [];
             return (
@@ -186,7 +184,6 @@ const FormAlamat = ({
         <Controller
           name={`address.${index}.district_name`}
           control={control}
-          rules={{ required: "Kecamatan wajib diisi" }}
           render={({ field, fieldState: { error } }) => {
             const options = kecamatanList[index] || [];
             return (
@@ -233,7 +230,6 @@ const FormAlamat = ({
         <Controller
           name={`address.${index}.subdistrict_name`}
           control={control}
-          rules={{ required: "Kelurahan wajib diisi" }}
           render={({ field, fieldState: { error } }) => {
             const options = kelurahanList[index] || [];
             return (
