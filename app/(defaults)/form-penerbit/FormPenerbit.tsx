@@ -25,6 +25,8 @@ import { JENIS_USAHA_OPTIONS } from "@/app/utils/jenisUsaha";
 import RHFSelect from "./components/TypeBussiness";
 import RHFSelectGeneric from "./components/RHFSelectGeneric";
 import { fetchJenisUsaha, TypeOption } from "@/app/utils/fetchJenisUsaha";
+import { fetchJenisPerusahaan } from "@/app/utils/fetchJenisPerusahaan";
+import { fetchStatusCompany } from "@/app/utils/fetchStatusPerushaan";
 
 export const alamatSchema = z.object({
   name: z.string().optional(),
@@ -36,22 +38,6 @@ export const alamatSchema = z.object({
   detail: z.string().min(1, "Detail alamat wajib diisi"),
 });
 
-type OptionCompanyType = { label: string; value: string };
-
-const optionsCompanyType: OptionCompanyType[] = [
-  { label: "UMKM", value: "UMKM" },
-  { label: "Enterprise", value: "Enterprise" },
-];
-
-const optionValues = optionsCompanyType.map((o) => o.value);
-
-const statusCompanyType: OptionCompanyType[] = [
-  { label: "SEWA", value: "SEWA" },
-  { label: "MILIK SENDIRI", value: "MILIK SENDIRI" },
-];
-
-const statusCompany = statusCompanyType.map((o) => o.value);
-
 export const schema = z
   .object({
     company_name: z.string().min(1, "Nama perusahaan wajib diisi"),
@@ -62,32 +48,6 @@ export const schema = z
       .max(2, "Maksimal hanya 2 alamat"),
     sameAsCompany: z.boolean().optional(),
     detailKorespondensi: z.string().optional(),
-    total_employees: z
-      .string()
-      .min(1, "Jumlah karyawan wajib diisi")
-      .refine((val) => Number(val) >= 1, {
-        message: "Jumlah karyawan minimal 1 orang",
-      }),
-    company_nib_path: z
-      .string()
-      .min(1, { message: "Dokumen NIB wajib diunggah" }),
-    akta_pendirian: z
-      .string()
-      .min(1, { message: "Akte pendirian wajib diunggah" }),
-    sk_kumham_path: z.string().min(1, { message: "SK Kumham wajib diunggah" }),
-    akta_perubahan_terahkir_path: z
-      .string()
-      .min(1, { message: "Akte perubahan terakhir wajib diunggah" }),
-    sk_kumham_terahkir: z
-      .string()
-      .min(1, { message: "SK Kumham terakhir wajib diunggah" }),
-    siup: z
-      .string()
-      .min(1, { message: "Surat Izin Usaha Perdagangan wajib diunggah" }),
-    tdp: z
-      .string()
-      .min(1, { message: "Tanda Daftar Perusahaan wajib diunggah" }),
-    fileNpwp: z.string().min(1, { message: "NPWP wajib diunggah" }),
     namaBank: z.string().min(1, "Nama bank wajib dipilih"),
     nomorRekening: z
       .string()
@@ -109,14 +69,10 @@ export const schema = z
       .trim()
       .min(1, "Email Perusahaan wajib diisi")
       .email("Format email tidak valid"),
-    companyType: z
-      .string()
-      .min(1, "Tipe Perusahaan wajib dipilih")
-      .refine((v) => optionValues.includes(v), "Tipe tidak valid"),
+    companyType: z.string().min(1, "Tipe Perusahaan wajib dipilih"),
     statusCompanys: z
       .string()
-      .min(1, "Tipe Status Kantor/Tempat Usaha wajib dipilih")
-      .refine((v) => statusCompany.includes(v), "Tipe tidak valid"),
+      .min(1, "Tipe Status Kantor/Tempat Usaha wajib dipilih"),
     establishedYear: z
       .string()
       .min(1, "Tahun berdiri wajib dipilih")
@@ -173,7 +129,6 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
 
   const [provinsiList, setProvinsiList] = useState<OptionType[]>([]);
   const [kotaList, setKotaList] = useState<Record<number, OptionType[]>>({});
-  const [optionsBussines, setOptionsBussines] = useState<TypeOption[]>([]);
   const [kecamatanList, setKecamatanList] = useState<
     Record<number, OptionType[]>
   >({});
@@ -188,9 +143,25 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
     label: b.name,
   }));
 
+  const [optionsBussines, setOptionsBussines] = useState<TypeOption[]>([]);
+  const [optionsCompanyType, setOptionsCompanyType] = useState<TypeOption[]>(
+    []
+  );
+  const [statusCompany, setstatusCompany] = useState<TypeOption[]>([]);
+
   useEffect(() => {
     fetchJenisUsaha()
       .then(setOptionsBussines)
+      .catch((err) => console.error(err));
+  }, []);
+  useEffect(() => {
+    fetchJenisPerusahaan()
+      .then(setOptionsCompanyType)
+      .catch((err) => console.error(err));
+  }, []);
+  useEffect(() => {
+    fetchStatusCompany()
+      .then(setstatusCompany)
       .catch((err) => console.error(err));
   }, []);
 
@@ -207,16 +178,6 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
     mode: "onBlur",
     defaultValues: {
       sameAsCompany: false,
-      total_employees: "",
-      jenis_usaha: "",
-      company_nib_path: "",
-      akta_pendirian: "",
-      sk_kumham_path: "",
-      akta_perubahan_terahkir_path: "",
-      sk_kumham_terahkir: "",
-      fileNpwp: "",
-      siup: "",
-      tdp: "",
       noPhoneCompany: "",
       webCompany: "",
       emailCompany: "",
@@ -259,87 +220,9 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
     loadProvinces();
   }, []);
 
-  const handleUploadFile = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-    field: keyof FormData
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const maxSizeInMB = 10;
-    const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
-
-    if (file.size > maxSizeInBytes) {
-      Swal.fire({
-        title: "Ukuran File Terlalu Besar",
-        text: `Maksimal ukuran file adalah ${maxSizeInMB}MB.`,
-        icon: "error",
-        timer: 3000,
-        showConfirmButton: false,
-      });
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("folder", "web");
-    formData.append("subfolder", "capbridge");
-    formData.append("media", file);
-
-    try {
-      const res = await axios.post(
-        `${API_BACKEND_MEDIA}/api/v1/media/upload`,
-        formData
-      );
-
-      const fileUrl = res.data?.data?.path;
-
-      const uploadMessages = {
-        company_nib_path: "Upload NIB Perusahaan berhasil!",
-        akta_pendirian: "Upload Akta Pendirian berhasil!",
-        sk_kumham_path: "Upload SK KUMHAM berhasil!",
-        akta_perubahan_terahkir_path:
-          "Upload Akta Perubahan Terakhir berhasil!",
-        sk_kumham_terahkir: "Upload SK KUMHAM Terakhir berhasil!",
-        siup: "Upload Surat Izin Usaha Perdagangan berhasil!",
-        tdp: "Upload Tanda Daftar Perusahaan berhasil!",
-        fileNpwp: "Upload NPWP berhasil!",
-      } as const;
-
-      if (fileUrl) {
-        setValue(field, fileUrl, { shouldValidate: true });
-        if (field in uploadMessages) {
-          const message = uploadMessages[field as keyof typeof uploadMessages];
-          Swal.fire({
-            title: "Berhasil",
-            text: message,
-            icon: "success",
-            timer: 3000,
-            showConfirmButton: false,
-          });
-        }
-      } else {
-        alert(`Upload ${field} gagal!`);
-      }
-    } catch (error) {
-      alert(`Upload ${field} error!`);
-    }
-  };
-
   useEffect(() => {
     if (isUpdate && profile !== null) {
       setValue("company_name", profile?.company.name ?? "-");
-      setValue("company_nib_path", profile?.company.nib_path ?? "-");
-      setValue("akta_pendirian", profile?.company.akta_pendirian ?? "-");
-      setValue("sk_kumham_path", profile?.company.sk_kumham_path ?? "-");
-      setValue("total_employees", profile?.company.total_employees.toString());
-      setValue(
-        "akta_perubahan_terahkir_path",
-        profile?.company.akta_perubahan_terahkir ?? "-"
-      );
-      setValue(
-        "sk_kumham_terahkir",
-        profile?.company.sk_kumham_terahkir ?? "-"
-      );
       if (profile?.company.address) {
         const mappedAddress = profile.company.address.map((addr) => ({
           province_name: addr.province_name ?? "",
@@ -446,7 +329,6 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
     fetchBank();
   }, []);
 
-  // ✅ Load draft hanya di client
   useEffect(() => {
     const draft = localStorage.getItem("publisherDraft");
     if (draft) {
@@ -455,7 +337,6 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
     setIsReady(true);
   }, [reset]);
 
-  // ✅ Simpan draft setiap perubahan
   const values = watch();
   useEffect(() => {
     if (!isReady) return;
@@ -494,12 +375,6 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
         timerProgressBar: true,
       });
     });
-  };
-
-  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    const numeric = raw.replace(/\D/g, "");
-    setValue("total_employees", numeric);
   };
 
   const onlyDigits: React.ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -586,7 +461,7 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
           <RHFSelectGeneric<FormData, "statusCompanys">
             name="statusCompanys"
             control={control}
-            options={statusCompanyType}
+            options={statusCompany}
           />
           {errors.statusCompanys && (
             <p className="text-sm text-red-600">
@@ -645,86 +520,9 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
               </p>
             )}
           </div>
-
-          <UpdateRing identity={"fileNpwp"} formKey={profile?.form}>
-            <FileUpload
-              label="NPWP"
-              fileUrl={watch("fileNpwp")}
-              onUpload={(e) => handleUploadFile(e, "fileNpwp")}
-              error={errors?.fileNpwp?.message}
-            />
-          </UpdateRing>
-
-          <UpdateRing identity={"nib"} formKey={profile?.form}>
-            <FileUpload
-              label="Nomor Induk Berusaha (NIB)"
-              fileUrl={watch("company_nib_path")}
-              onUpload={(e) => handleUploadFile(e, "company_nib_path")}
-              error={errors?.company_nib_path?.message}
-            />
-          </UpdateRing>
-
-          <UpdateRing
-            identity={"akta-pendirian-perusahaan"}
-            formKey={profile?.form}
-          >
-            <FileUpload
-              label="Akte Pendirian Perusahaan"
-              fileUrl={watch("akta_pendirian")}
-              onUpload={(e) => handleUploadFile(e, "akta_pendirian")}
-              error={errors?.akta_pendirian?.message}
-            />
-          </UpdateRing>
-
-          <UpdateRing identity={"sk-kumham-path"} formKey={profile?.form}>
-            <FileUpload
-              label="SK Kumham Pendirian"
-              fileUrl={watch("sk_kumham_path")}
-              onUpload={(e) => handleUploadFile(e, "sk_kumham_path")}
-              error={errors?.sk_kumham_path?.message}
-            />
-          </UpdateRing>
-
-          <UpdateRing
-            identity={"akta-perubahan-terakhir"}
-            formKey={profile?.form}
-          >
-            <FileUpload
-              label="Akte Perubahan Terakhir"
-              fileUrl={watch("akta_perubahan_terahkir_path")}
-              onUpload={(e) =>
-                handleUploadFile(e, "akta_perubahan_terahkir_path")
-              }
-              error={errors?.akta_perubahan_terahkir_path?.message}
-            />
-          </UpdateRing>
         </div>
 
         <div className="space-y-4">
-          <UpdateRing identity={"sk-kumham-terakhir"} formKey={profile?.form}>
-            <FileUpload
-              label="SK Kumham Terakhir"
-              fileUrl={watch("sk_kumham_terahkir")}
-              onUpload={(e) => handleUploadFile(e, "sk_kumham_terahkir")}
-              error={errors?.sk_kumham_terahkir?.message}
-            />
-          </UpdateRing>
-          <UpdateRing identity={"siup"} formKey={profile?.form}>
-            <FileUpload
-              label="Surat Izin Usaha Perdagangan (SIUP)"
-              fileUrl={watch("siup")}
-              onUpload={(e) => handleUploadFile(e, "siup")}
-              error={errors?.siup?.message}
-            />
-          </UpdateRing>
-          <UpdateRing identity={"tdp"} formKey={profile?.form}>
-            <FileUpload
-              label="Tanda Daftar Perusahaan (TDP)"
-              fileUrl={watch("tdp")}
-              onUpload={(e) => handleUploadFile(e, "tdp")}
-              error={errors?.tdp?.message}
-            />
-          </UpdateRing>
           {/* <NPWPUploader /> */}
           {fields.map((item, index) => (
             <FormAlamat
@@ -792,29 +590,6 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
             {errors.namaPemilik && (
               <p className="text-red-500 text-sm mt-1">
                 {errors.namaPemilik.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block mb-1">
-              Jumlah Karyawan<span className="text-red-500 ml-1">*</span>
-            </label>
-            <div className="flex items-center border rounded overflow-hidden w-80">
-              <input
-                {...register("total_employees")}
-                type="text"
-                onChange={handleNumberChange}
-                className="px-3 py-2 outline-none flex-1"
-                placeholder="0"
-              />
-              <span className="px-3 py-2 border-l bg-gray-100 text-gray-500 text-sm">
-                Orang
-              </span>
-            </div>
-            {errors.total_employees && (
-              <p className="text-red-500 text-sm">
-                {errors.total_employees.message}
               </p>
             )}
           </div>

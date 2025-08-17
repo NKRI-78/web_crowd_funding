@@ -348,6 +348,7 @@ const NavbarV2: React.FC = () => {
                             localStorage.removeItem("publisherDraft");
                             localStorage.removeItem("user");
                             localStorage.removeItem("formPemodal");
+                            localStorage.removeItem("utusanPenerbitCache");
                             Cookies.remove("user");
                             window.location.href = "/auth/login";
                           }}
@@ -530,6 +531,7 @@ const NavbarV2: React.FC = () => {
                             localStorage.removeItem("publisherDraft");
                             localStorage.removeItem("user");
                             localStorage.removeItem("formPemodal");
+                            localStorage.removeItem("utusanPenerbitCache");
                             Cookies.remove("user");
                             window.location.href = "/auth/login";
                           }}
@@ -656,6 +658,7 @@ const NavbarV2: React.FC = () => {
                           localStorage.removeItem("publisherDraft");
                           localStorage.removeItem("user");
                           localStorage.removeItem("formPemodal");
+                          localStorage.removeItem("utusanPenerbitCache");
                           Cookies.remove("user");
                           window.location.href = "/auth/login";
                         }}
