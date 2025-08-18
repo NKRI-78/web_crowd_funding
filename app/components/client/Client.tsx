@@ -51,6 +51,7 @@ export default function ClientLayout({
             pathname === "/form-penerbit" ||
             pathname === "/terms-conditions" ||
             pathname === "/dashboard" ||
+            pathname === "/dashboard/create-project" ||
             pathname === "/inbox" ||
             pathname === "/transaction"
               ? ""
