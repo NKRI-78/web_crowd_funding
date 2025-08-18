@@ -2,17 +2,20 @@ import React, { useEffect, useRef, useState } from "react";
 import { FolderUp, X } from "lucide-react";
 import axios from "axios";
 import { compressImage } from "@/app/helper/CompressorImage";
+import SectionPoint from "./SectionPoint";
 
 interface PhotoUploaderContainerProps {
   fileOnChange: (urls: string[]) => void;
   photoPaths?: string[];
   errorText?: string;
+  label?: string;
 }
 
 const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
   fileOnChange,
   errorText,
   photoPaths,
+  label,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -106,6 +109,8 @@ const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
 
   return (
     <>
+      {label && <SectionPoint text={label} className="mb-1" />}
+
       <div
         className={`w-full flex flex-col items-center justify-center border-2 border-dashed rounded-md p-4 text-center cursor-pointer transition ${
           errorText
@@ -191,7 +196,7 @@ const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
       {errorText ? (
         <p className="text-red-500 text-xs mt-2">{errorText}</p>
       ) : (
-        <p className="mt-2 text-xs text-gray-500">
+        <p className="text-xs text-gray-500">
           Hanya mendukung file .jpg dan .png.{" "}
           <span className="text-black">Maksimal 5 foto.</span>
         </p>

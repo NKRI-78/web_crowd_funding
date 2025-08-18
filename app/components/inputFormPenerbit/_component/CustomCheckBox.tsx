@@ -26,7 +26,7 @@ const CustomCheckBox: React.FC<CustomCheckBoxProps> = ({
 
   return (
     <div className="w-full mb-6">
-      <SectionPoint text={label} className="mb-2" />
+      <SectionPoint text={label} className="mb-1" />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-y-2 gap-x-4">
         {options.map((option) => (
