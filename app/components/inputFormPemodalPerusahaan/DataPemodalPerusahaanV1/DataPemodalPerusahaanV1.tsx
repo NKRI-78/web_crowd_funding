@@ -44,14 +44,6 @@ interface Props {
     >
   ) => void;
 
-  // onAlamatChange: (alamat: {
-  //   provincePemodalPerusahaan: { value: string; label: string } | null;
-  //   cityPemodalPerusahaan: { value: string; label: string } | null;
-  //   districtPemodalPerusahaan: { value: string; label: string } | null;
-  //   subDistrictPemodalPerusahaan: { value: string; label: string } | null;
-  //   posCode: string;
-  // }) => void;
-
   onUploadAktaPendirianPerusahaan: (url: string, keyName: string) => void;
   onUploadSkPendirian: (url: string, keyName: string) => void;
   onUploadSkKumhamPerusahaan: (url: string, keyName: string) => void;
@@ -85,14 +77,11 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
 
   type OptionType = OptionValue | null;
 
-  const [selectedBank, setSelectedBank] = useState<OptionType>(null);
-  const [bank, setBank] = useState<any[]>([]);
-
   const [province, setProvince] = useState<any>([]);
   const [
     selectedProvincePemodalPerusahaan,
     setSelectedProvincePemodalPerusahaan,
-  ] = useState<OptionType | null>(null);
+  ] = useState<OptionType>(null);
   const [city, setCity] = useState<any>([]);
   const [selectedCityPemodalPerusahaan, setSelectedCityPemodalPerusahaan] =
     useState<OptionType>(null);
@@ -108,6 +97,9 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
     setSelectedSubDistrictPemodalPerusahaan,
   ] = useState<OptionType>(null);
   const [posCode, setPosCode] = useState("");
+
+  const [selectedBank, setSelectedBank] = useState<OptionType>(null);
+  const [bank, setBank] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchBank = async () => {
@@ -234,8 +226,8 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
     fetchPosCode();
   }, [selectedSubDistrictPemodalPerusahaan]);
 
-  const customOptions: OptionValue[] = province.map(
-    (province: { code: any; nama: any }) => ({
+  const customOptions = province?.map(
+    (province: { code: string; nama: string }) => ({
       value: province.code,
       label: province.nama,
     })
@@ -274,24 +266,6 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
       <span>{label}</span>
     </div>
   );
-
-  // Ambil data dari localStorage saat mount
-  // useEffect(() => {
-  //   const savedForm = localStorage.getItem("formPemodalPerusahaan");
-  //   if (savedForm) {
-  //     const parsed = JSON.parse(savedForm);
-  //     Object.keys(parsed).forEach((key) => {
-  //       onChange({
-  //         target: { name: key, value: parsed[key] },
-  //       } as React.ChangeEvent<HTMLInputElement>);
-  //     });
-  //   }
-  // }, []);
-
-  // Simpan ke localStorage setiap kali formData berubah
-  // useEffect(() => {
-  //   localStorage.setItem("formPemodalPerusahaan", JSON.stringify(formData));
-  // }, [formData]);
 
   // Fetch options bisnis
   useEffect(() => {
@@ -807,16 +781,18 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           <label className="text-sm font-medium mb-2 text-black">
             Nomor Rekening
           </label>
-          <input
-            type="text"
-            name="nomorRekening"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            placeholder="Masukkan Nomor Rekening"
-            value={formData.nomorRekening}
-            onChange={onChange}
-            className="border rounded p-2 w-full mb-0 placeholder:text-sm"
-          />
+          <div className="text-black">
+            <input
+              type="text"
+              name="nomorRekening"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="Masukkan Nomor Rekening"
+              value={formData.nomorRekening}
+              onChange={onChange}
+              className="border rounded p-2 w-full mb-0 placeholder:text-sm"
+            />
+          </div>
           {errors?.nomorRekening && (
             <p className="text-red-500 text-sm mt-1">
               {errors.nomorRekening[0]}
@@ -827,14 +803,16 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
             <label className="text-sm font-medium mb-2 text-black">
               Nama Pemilik Rekening
             </label>
-            <input
-              type="text"
-              name="namaPemilik"
-              placeholder="Masukkan Nama Pemilik Rekening"
-              value={formData.namaPemilik}
-              onChange={onChange}
-              className="border rounded p-2 w-full mb-0 placeholder:text-sm"
-            />
+            <div className="text-black">
+              <input
+                type="text"
+                name="namaPemilik"
+                placeholder="Masukkan Nama Pemilik Rekening"
+                value={formData.namaPemilik}
+                onChange={onChange}
+                className="border rounded p-2 w-full mb-0 placeholder:text-sm"
+              />
+            </div>
             {errors?.namaPemilik && (
               <p className="text-red-500 text-sm mt-1">
                 {errors.namaPemilik[0]}

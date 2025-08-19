@@ -59,10 +59,10 @@ const FormDataPemodalPerusahaan: React.FC = () => {
       skKumhamPerusahaanUrl: "",
       npwpPerusahaanUrl: "",
 
-      provincePemodalPerusahaan: { value: "", label: "" },
-      cityPemodalPerusahaan: { value: "", label: "" },
-      districtPemodalPerusahaan: { value: "", label: "" },
-      subDistrictPemodalPerusahaan: { value: "", label: "" },
+      provincePemodalPerusahaan: "",
+      cityPemodalPerusahaan: "",
+      districtPemodalPerusahaan: "",
+      subDistrictPemodalPerusahaan: "",
 
       posCode: "",
       addres: "",
@@ -107,11 +107,10 @@ const FormDataPemodalPerusahaan: React.FC = () => {
         skKumhamPerusahaanUrl: parsed.skKumhamPerusahaanUrl || "",
         npwpPerusahaanUrl: parsed.npwpPerusahaanUrl || "",
 
-        provincePemodalPerusahaan: parsed.provincePemodalPerusahaan ?? null,
-        cityPemodalPerusahaan: parsed.cityPemodalPerusahaan ?? null,
-        districtPemodalPerusahaan: parsed.districtPemodalPerusahaan ?? null,
-        subDistrictPemodalPerusahaan:
-          parsed.subDistrictPemodalPerusahaan ?? null,
+        provincePemodalPerusahaan: parsed.provincePemodalPerusahaan || "",
+        cityPemodalPerusahaan: parsed.cityPemodalPerusahaan || "",
+        districtPemodalPerusahaan: parsed.districtPemodalPerusahaan || "",
+        subDistrictPemodalPerusahaan: parsed.subDistrictPemodalPerusahaan || "",
 
         posCode: parsed.posCode || "",
         addres: parsed.addres || "",
