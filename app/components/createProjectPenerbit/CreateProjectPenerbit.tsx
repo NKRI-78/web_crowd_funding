@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
+import Flatpickr from "react-flatpickr";
+import "flatpickr/dist/flatpickr.min.css";
 import TextField from "../inputFormPenerbit/_component/TextField";
 import DropdownSelect from "../inputFormPenerbit/_component/DropdownSelect";
 import CustomCheckBox from "../inputFormPenerbit/_component/CustomCheckBox";
@@ -178,6 +180,37 @@ const CreateProjectPenerbit: React.FC = () => {
               );
             }}
           />
+
+          <div className="w-full">
+            <SectionPoint text="Batas Akhir Pengerjaan" className="mb-1" />
+            <Controller
+              name="batasAkhirPengerjaan"
+              control={control}
+              render={({ field }) => {
+                return (
+                  <Flatpickr
+                    placeholder="Pilih tanggal batas akhir"
+                    value={field.value ? new Date(field.value) : new Date()}
+                    options={{
+                      dateFormat: "j F Y",
+                      locale: "id",
+                      allowInput: false,
+                    }}
+                    className="border p-2 w-full rounded placeholder:text-sm focus:border-gray-400"
+                    onChange={(dates) => {
+                      const selected = dates[0] ? dates[0].toISOString() : "";
+                      field.onChange(selected);
+                    }}
+                  />
+                );
+              }}
+            />
+            {errors.batasAkhirPengerjaan && (
+              <p className="text-red-500 text-xs my-1">
+                {errors.batasAkhirPengerjaan?.message}
+              </p>
+            )}
+          </div>
 
           <Controller
             name="jaminanKolateral"
