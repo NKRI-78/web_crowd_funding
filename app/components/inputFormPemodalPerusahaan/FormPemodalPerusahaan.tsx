@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
+import { useRouter } from "next/navigation";
 
 interface FormSchema {
   photo: File | null;
@@ -52,6 +53,7 @@ const FormPemodalPerusahaan: React.FC<FormPemodalPerusahaanProps> = ({
   });
 
   const [errors, setErrors] = useState<ErrorSchema>({});
+  const router = useRouter();
 
   //* handle submit
   const handleSubmit = async () => {
@@ -87,9 +89,16 @@ const FormPemodalPerusahaan: React.FC<FormPemodalPerusahaanProps> = ({
             }
           );
 
-          onSubmit();
+          await Swal.fire({
+            icon: "success",
+            title: "Data berhasil dikirim",
+            text: "Data Anda telah berhasil dikirim.",
+            timer: 3000,
+            timerProgressBar: true,
+          });
 
           localStorage.removeItem("pemodalPerusahaanCache");
+          router.push("/form-data-pemodal-perusahaan");
         }
       } catch (error: any) {
         Swal.fire({
@@ -341,6 +350,7 @@ const FormPemodalPerusahaan: React.FC<FormPemodalPerusahaanProps> = ({
             <div>
               <SectionPoint text="Surat Kuasa" />
               <Subtitle text="File maksimal berukuran 10mb" className="mb-1" />
+              <Subtitle text="Bermaterai dan di cap basah" className="mb-1" />
               <FileInput
                 fileName="Surat-Kuasa"
                 accept=".pdf,.word"
@@ -357,7 +367,8 @@ const FormPemodalPerusahaan: React.FC<FormPemodalPerusahaanProps> = ({
 
             <div>
               <SectionPoint text="File KTP" />
-              <Subtitle text="File maksimal berukuran 10mb" className="mb-1" />
+              <Subtitle text="File maksimal berukuran 10mb" className="mb-7" />
+
               <FileInput
                 fileName="File-KTP"
                 accept=".pdf,.jpg,.jpeg,.png"

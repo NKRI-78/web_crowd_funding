@@ -7,7 +7,7 @@ export type TypeOption = { value: string; label: string };
 
 export async function fetchJenisUsaha(): Promise<TypeOption[]> {
   const user = getUser();
-  const { data } = await axios.get(`${API_BACKEND}/api/v1/business/list`, {
+  const { data } = await axios.get(`${API_BACKEND}/api/v1/business/type/list`, {
     headers: {
       Authorization: `Bearer ${user?.token}`,
     },
