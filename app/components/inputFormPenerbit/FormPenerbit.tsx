@@ -171,12 +171,10 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
         sk_kumham: draftParsed.sk_kumham_path,
         sk_kumham_path: draftParsed.sk_kumham_path,
         sk_kumham_terahkir: draftParsed.sk_kumham_terahkir,
+        npwp: "-",
         npwp_path: draftParsed.fileNpwp,
         didirkan: draftParsed.establishedYear,
         site: draftParsed.webCompany,
-        jenis_usaha: draftParsed.jenis_usaha,
-        jenis_perusahaan: draftParsed.companyType,
-        status_kantor: draftParsed.statusCompanys,
         email: draftParsed.emailCompany,
         phone: draftParsed.noPhoneCompany,
         bank_name: draftParsed.namaBank,
@@ -184,10 +182,12 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
         bank_owner: draftParsed.namaPemilik,
         siup: draftParsed.siup,
         tdp: draftParsed.tdp,
+        jenis_usaha: draftParsed.jenis_usaha,
+        jenis_perusahaan: draftParsed.companyType,
+        status_kantor: draftParsed.statusCompanys,
         total_employees: String(draftParsed.total_employees),
         laporan_keuangan_path: values.laporanKeuangan,
         address: draftParsed.address,
-        rekening_koran_path: values.rekeningKoran,
         directors:
           values.direktur.length === 1
             ? values.direktur.map((dir) => ({
@@ -237,6 +237,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
       console.log(res);
 
       localStorage.removeItem("publisherDraft");
+      localStorage.removeItem("penerbitFormIndex");
       localStorage.removeItem("utusanPenerbitCache");
 
       await Swal.fire({
@@ -248,7 +249,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
         showConfirmButton: false,
       });
 
-      router.push("/");
+      router.push("/dashboard");
     } catch (error: any) {
       Swal.fire({
         icon: "error",
