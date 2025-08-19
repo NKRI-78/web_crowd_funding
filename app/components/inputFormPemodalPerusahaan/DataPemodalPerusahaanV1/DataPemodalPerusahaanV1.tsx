@@ -21,7 +21,6 @@ interface Props {
     namaBank: { value: string; label: string };
     nomorRekening: string;
     namaPemilik: string;
-    cabangBank: string;
 
     aktaPendirianPerusahaanUrl?: string;
     skPendirianUrl?: string;
@@ -57,6 +56,13 @@ interface Props {
   onUploadSkPendirian: (url: string, keyName: string) => void;
   onUploadSkKumhamPerusahaan: (url: string, keyName: string) => void;
   onUploadNpwpPerusahaan: (url: string, keyName: string) => void;
+  onAlamatChange: (alamat: {
+    provincePemodalPerusahaan: { value: string; label: string } | null;
+    cityPemodalPerusahaan: { value: string; label: string } | null;
+    districtPemodalPerusahaan: { value: string; label: string } | null;
+    subDistrictPemodalPerusahaan: { value: string; label: string } | null;
+    posCode: string;
+  }) => void;
 }
 
 const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
@@ -64,7 +70,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
   onChange,
   onUploadAktaPendirianPerusahaan,
   onBankChange,
-  // onAlamatChange,
+  onAlamatChange,
   errors,
 }) => {
   const [optionsBussines, setOptionsBussines] = useState<TypeOption[]>([]);
@@ -270,22 +276,22 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
   );
 
   // Ambil data dari localStorage saat mount
-  useEffect(() => {
-    const savedForm = localStorage.getItem("formPemodalPerusahaan");
-    if (savedForm) {
-      const parsed = JSON.parse(savedForm);
-      Object.keys(parsed).forEach((key) => {
-        onChange({
-          target: { name: key, value: parsed[key] },
-        } as React.ChangeEvent<HTMLInputElement>);
-      });
-    }
-  }, []);
+  // useEffect(() => {
+  //   const savedForm = localStorage.getItem("formPemodalPerusahaan");
+  //   if (savedForm) {
+  //     const parsed = JSON.parse(savedForm);
+  //     Object.keys(parsed).forEach((key) => {
+  //       onChange({
+  //         target: { name: key, value: parsed[key] },
+  //       } as React.ChangeEvent<HTMLInputElement>);
+  //     });
+  //   }
+  // }, []);
 
   // Simpan ke localStorage setiap kali formData berubah
-  useEffect(() => {
-    localStorage.setItem("formPemodalPerusahaan", JSON.stringify(formData));
-  }, [formData]);
+  // useEffect(() => {
+  //   localStorage.setItem("formPemodalPerusahaan", JSON.stringify(formData));
+  // }, [formData]);
 
   // Fetch options bisnis
   useEffect(() => {
@@ -352,6 +358,65 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
       setUploadStatus((prev) => ({ ...prev, [keyName]: false }));
     }
   };
+
+  const customStyles = {
+    control: (provided: any, state: any) => ({
+      ...provided,
+      backgroundColor: "white", // background input
+      color: "black", // text input
+      borderColor: state.isFocused ? "#14b8a6" : "#d1d5db", // tailwind teal-500 / gray-300
+      boxShadow: state.isFocused ? "0 0 0 1px #14b8a6" : null,
+      "&:hover": {
+        borderColor: "#14b8a6",
+      },
+    }),
+    singleValue: (provided: any) => ({
+      ...provided,
+      color: "black", // text selected
+    }),
+    placeholder: (provided: any) => ({
+      ...provided,
+      color: "#9ca3af", // text-gray-400
+    }),
+    option: (provided: any, state: any) => ({
+      ...provided,
+      backgroundColor: state.isSelected
+        ? "#14b8a6"
+        : state.isFocused
+        ? "#ccfbf1" // teal-100
+        : "white",
+      color: state.isSelected ? "white" : "black",
+      cursor: "pointer",
+    }),
+  };
+
+  useEffect(() => {
+    if (
+      selectedProvincePemodalPerusahaan &&
+      selectedCityPemodalPerusahaan &&
+      selectedDistrictPemodalPerusahaan &&
+      selectedSubDistrictPemodalPerusahaan &&
+      posCode
+    ) {
+      onAlamatChange({
+        provincePemodalPerusahaan: selectedProvincePemodalPerusahaan,
+        cityPemodalPerusahaan: selectedCityPemodalPerusahaan,
+        districtPemodalPerusahaan: selectedDistrictPemodalPerusahaan,
+        subDistrictPemodalPerusahaan: selectedSubDistrictPemodalPerusahaan,
+        posCode: posCode,
+      });
+    }
+  }, [
+    selectedProvincePemodalPerusahaan,
+    selectedCityPemodalPerusahaan,
+    selectedDistrictPemodalPerusahaan,
+    selectedSubDistrictPemodalPerusahaan,
+    posCode,
+  ]);
+
+  useEffect(() => {
+    onBankChange(selectedBank);
+  }, [selectedBank]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 justify-center gap-6 p-6 max-w-6xl mx-auto">
@@ -551,7 +616,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           8. Alamat Tempat Usaha
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 items-center">
-          <div>
+          <div className="text-black">
             <Select
               className="mt-0"
               value={selectedProvincePemodalPerusahaan}
@@ -565,6 +630,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
                 setPosCode("");
               }}
               placeholder="Pilih Provinsi"
+              // styles={customStyles}
             />
 
             {errors?.provincePemodalPerusahaan && (
@@ -573,7 +639,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
               </p>
             )}
           </div>
-          <div>
+          <div className="text-black">
             <Select
               className="mt-0"
               value={selectedCityPemodalPerusahaan}
@@ -594,7 +660,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
               </p>
             )}
           </div>
-          <div>
+          <div className="text-black">
             <Select
               className="mt-0"
               value={selectedDistrictPemodalPerusahaan}
@@ -614,7 +680,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
               </p>
             )}
           </div>
-          <div>
+          <div className="text-black">
             <Select
               className="mt-0"
               value={selectedSubDistrictPemodalPerusahaan}
@@ -641,7 +707,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
             placeholder="Kode Pos"
             value={posCode || formData.posCode || ""}
             onChange={onChange}
-            className="border rounded p-2 w-full mb-2 placeholder:text-sm"
+            className="border rounded p-2 w-full mb-2 placeholder:text-sm text-black"
           />
           {errors?.posCode && (
             <p className="text-red-500 text-sm mt-1 mb-1">
@@ -655,7 +721,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           value={formData.addres}
           onChange={onChange}
           placeholder="Alamat Sesuai Tempat Usaha"
-          className="border p-2 w-full rounded resize-none placeholder:text-sm"
+          className="border p-2 w-full rounded resize-none placeholder:text-sm text-black"
           rows={4}
         ></textarea>
         {errors?.addres && (
@@ -721,19 +787,21 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           12. Informasi Rekening Bank
         </h3>
 
-        <Select
-          className="mt-0"
-          value={selectedBank}
-          options={customOptionsBank}
-          formatOptionLabel={formatOptionLabel}
-          onChange={(e) => {
-            setSelectedBank(e);
-          }}
-          placeholder="Pilih Nama Bank"
-        />
-        {errors?.namaBank && (
-          <p className="text-red-500 text-sm mt-1">{errors.namaBank[0]}</p>
-        )}
+        <div className="text-black">
+          <Select
+            className="mt-0"
+            value={selectedBank}
+            options={customOptionsBank}
+            formatOptionLabel={formatOptionLabel}
+            onChange={(e) => {
+              setSelectedBank(e);
+            }}
+            placeholder="Pilih Nama Bank"
+          />
+          {errors?.namaBank && (
+            <p className="text-red-500 text-sm mt-1">{errors.namaBank[0]}</p>
+          )}
+        </div>
 
         <div>
           <label className="text-sm font-medium mb-2 text-black">
@@ -770,25 +838,6 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
             {errors?.namaPemilik && (
               <p className="text-red-500 text-sm mt-1">
                 {errors.namaPemilik[0]}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="text-sm font-medium mb-2 text-black">
-              Cabang Bank
-            </label>
-            <input
-              type="text"
-              name="cabangBank"
-              placeholder="Masukkan Cabang Bank"
-              value={formData.cabangBank}
-              onChange={onChange}
-              className="border rounded p-2 w-full placeholder:text-sm"
-            />
-            {errors?.cabangBank && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.cabangBank[0]}
               </p>
             )}
           </div>

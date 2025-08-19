@@ -1,31 +1,72 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DataPemodalPerusahaanV1 from "./DataPemodalPerusahaanV1/DataPemodalPerusahaanV1";
 import DataPemodalPerusahaanV2 from "./DataPemodalPerusahaanV2/DataPemodalPerusahaanV2";
 import { no } from "zod/v4/locales";
 
 const FormDataPemodalPerusahaan: React.FC = () => {
+  type OptionType = { value: string; label: string } | null;
+
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    jenisPerusahaan: "",
-    nomorAktaPerubahanTerakhir: "",
-    nomorNpwpPerusahaan: "",
-    alamatTempatUsaha: "",
-    noTeleponPerusahaan: "",
+  const [formData, setFormData] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("formPemodal");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          jenisPerusahaan: parsed.jenisPerusahaan || "",
+          nomorAktaPerubahanTerakhir: parsed.nomorAktaPerubahanTerakhir || "",
+          nomorNpwpPerusahaan: parsed.nomorNpwpPerusahaan || "",
+          alamatTempatUsaha: parsed.alamatTempatUsaha || "",
+          noTeleponPerusahaan: parsed.noTeleponPerusahaan || "",
+          situsPerusahaan: parsed.situsPerusahaan || "",
+          emailPerusahaan: parsed.emailPerusahaan || "",
+          namaBank: parsed.namaBank ?? null,
+          nomorRekening: parsed.nomorRekening || "",
+          namaPemilik: parsed.namaPemilik || "",
 
-    aktaPendirianPerusahaanUrl: "",
-    skPendirianUrl: "",
-    skKumhamPerusahaanUrl: "",
-    npwpPerusahaanUrl: "",
+          aktaPendirianPerusahaanUrl: parsed.aktaPendirianPerusahaanUrl || "",
+          skPendirianUrl: parsed.skPendirianUrl || "",
+          skKumhamPerusahaanUrl: parsed.skKumhamPerusahaanUrl || "",
+          npwpPerusahaanUrl: parsed.npwpPerusahaanUrl || "",
 
-    provincePemodalPerusahaan: { value: "", label: "" },
-    cityPemodalPerusahaan: { value: "", label: "" },
-    districtPemodalPerusahaan: { value: "", label: "" },
-    subDistrictPemodalPerusahaan: { value: "", label: "" },
+          provincePemodalPerusahaan: parsed.provincePemodalPerusahaan ?? null,
+          cityPemodalPerusahaan: parsed.cityPemodalPerusahaan ?? null,
+          districtPemodalPerusahaan: parsed.districtPemodalPerusahaan ?? null,
+          subDistrictPemodalPerusahaan:
+            parsed.subDistrictPemodalPerusahaan ?? null,
 
-    posCode: "",
-    addres: "",
+          posCode: parsed.posCode || "",
+          addres: parsed.addres || "",
+        };
+      }
+    }
+    return {
+      jenisPerusahaan: "",
+      nomorAktaPerubahanTerakhir: "",
+      nomorNpwpPerusahaan: "",
+      alamatTempatUsaha: "",
+      noTeleponPerusahaan: "",
+      situsPerusahaan: "",
+      emailPerusahaan: "",
+      namaBank: "",
+      nomorRekening: "",
+      namaPemilik: "",
+
+      aktaPendirianPerusahaanUrl: "",
+      skPendirianUrl: "",
+      skKumhamPerusahaanUrl: "",
+      npwpPerusahaanUrl: "",
+
+      provincePemodalPerusahaan: { value: "", label: "" },
+      cityPemodalPerusahaan: { value: "", label: "" },
+      districtPemodalPerusahaan: { value: "", label: "" },
+      subDistrictPemodalPerusahaan: { value: "", label: "" },
+
+      posCode: "",
+      addres: "",
+    };
   });
 
   const handleChange = (
@@ -35,6 +76,73 @@ const FormDataPemodalPerusahaan: React.FC = () => {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleBank = (namaBank: OptionType) => {
+    setFormData((prev) => ({
+      ...prev,
+      namaBank: namaBank as NonNullable<OptionType>,
+    }));
+  };
+
+  // Ambil data dari localStorage saat mount
+  useEffect(() => {
+    const savedForm = localStorage.getItem("formPemodalPerusahaan");
+    if (savedForm) {
+      const parsed = JSON.parse(savedForm);
+      setFormData({
+        jenisPerusahaan: parsed.jenisPerusahaan || "",
+        nomorAktaPerubahanTerakhir: parsed.nomorAktaPerubahanTerakhir || "",
+        nomorNpwpPerusahaan: parsed.nomorNpwpPerusahaan || "",
+        alamatTempatUsaha: parsed.alamatTempatUsaha || "",
+        noTeleponPerusahaan: parsed.noTeleponPerusahaan || "",
+        situsPerusahaan: parsed.situsPerusahaan || "",
+        emailPerusahaan: parsed.emailPerusahaan || "",
+        namaBank: parsed.namaBank || "",
+        nomorRekening: parsed.nomorRekening || "",
+        namaPemilik: parsed.namaPemilik || "",
+
+        aktaPendirianPerusahaanUrl: parsed.aktaPendirianPerusahaanUrl || "",
+        skPendirianUrl: parsed.skPendirianUrl || "",
+        skKumhamPerusahaanUrl: parsed.skKumhamPerusahaanUrl || "",
+        npwpPerusahaanUrl: parsed.npwpPerusahaanUrl || "",
+
+        provincePemodalPerusahaan: parsed.provincePemodalPerusahaan ?? null,
+        cityPemodalPerusahaan: parsed.cityPemodalPerusahaan ?? null,
+        districtPemodalPerusahaan: parsed.districtPemodalPerusahaan ?? null,
+        subDistrictPemodalPerusahaan:
+          parsed.subDistrictPemodalPerusahaan ?? null,
+
+        posCode: parsed.posCode || "",
+        addres: parsed.addres || "",
+      });
+    }
+  }, []);
+
+  // Simpan ke localStorage setiap kali formData berubah
+  useEffect(() => {
+    const fullData = {
+      ...formData,
+    };
+
+    localStorage.setItem("formPemodalPerusahaan", JSON.stringify(fullData));
+  }, [formData]);
+
+  const handleAlamatChange = (alamat: {
+    provincePemodalPerusahaan: OptionType;
+    cityPemodalPerusahaan: OptionType;
+    districtPemodalPerusahaan: OptionType;
+    subDistrictPemodalPerusahaan: OptionType;
+    posCode: string;
+  }) => {
+    setFormData((prev) => ({
+      ...prev,
+      provincePemodalPerusahaan: alamat.provincePemodalPerusahaan,
+      cityPemodalPerusahaan: alamat.cityPemodalPerusahaan,
+      districtPemodalPerusahaan: alamat.districtPemodalPerusahaan,
+      subDistrictPemodalPerusahaan: alamat.subDistrictPemodalPerusahaan,
+      posCode: alamat.posCode,
+    }));
   };
 
   return (
@@ -56,6 +164,8 @@ const FormDataPemodalPerusahaan: React.FC = () => {
           onUploadNpwpPerusahaan={(url, key) => {
             setFormData((prev) => ({ ...prev, [key]: url }));
           }}
+          onBankChange={handleBank}
+          onAlamatChange={handleAlamatChange}
         />
       )}
 
