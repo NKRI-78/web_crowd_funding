@@ -1,7 +1,7 @@
 import React from "react";
 
 import type { Metadata } from "next";
-import CreateProjectPenerbit from "@/app/components/create-project-penerbit/CreateProjectPenerbit";
+import CreateProjectPenerbit from "@/app/components/createProjectPenerbit/CreateProjectPenerbit";
 
 export const metadata: Metadata = {
   title: "Create Project | CapBridge",

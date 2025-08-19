@@ -5,6 +5,7 @@ export const createProjectPenerbitSchema = z.object({
   deskripsiProyek: z.string().min(1, "Deskripsi Proyek tidak boleh kosong"),
   jenisProyek: z.string().min(1, "Jenis Proyek wajib dipilih"),
   tenor: z.string().min(1, "Tenor Pinjaman wajib dipilih"),
+  batasAkhirPengerjaan: z.string().min(1, "Tanggal Proyek wajib dipilih"),
   jaminanKolateral: z
     .array(z.string())
     .min(1, "Jaminan Kolateral wajib dipilih"),
@@ -38,6 +39,7 @@ export const defaultValues: CreateProjectFormSchema = {
   deskripsiProyek: "",
   jenisProyek: "",
   tenor: "",
+  batasAkhirPengerjaan: "",
   jaminanKolateral: [],
   persentaseKeuntungan: "",
   modalProyek: 0,
