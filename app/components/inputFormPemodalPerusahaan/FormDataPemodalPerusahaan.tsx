@@ -2,51 +2,24 @@
 
 import React, { useEffect, useState } from "react";
 import DataPemodalPerusahaanV1 from "./DataPemodalPerusahaanV1/DataPemodalPerusahaanV1";
-import DataPemodalPerusahaanV2 from "./DataPemodalPerusahaanV2/DataPemodalPerusahaanV2";
-import { no } from "zod/v4/locales";
+import { z } from "zod";
+import Swal from "sweetalert2";
+import axios from "axios";
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 const FormDataPemodalPerusahaan: React.FC = () => {
   type OptionType = { value: string; label: string } | null;
 
-  const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState(() => {
+  const [formData, setFormData] = useState<any>(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("formPemodal");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return {
-          jenisPerusahaan: parsed.jenisPerusahaan || "",
-          nomorAktaPerubahanTerakhir: parsed.nomorAktaPerubahanTerakhir || "",
-          nomorNpwpPerusahaan: parsed.nomorNpwpPerusahaan || "",
-          alamatTempatUsaha: parsed.alamatTempatUsaha || "",
-          noTeleponPerusahaan: parsed.noTeleponPerusahaan || "",
-          situsPerusahaan: parsed.situsPerusahaan || "",
-          emailPerusahaan: parsed.emailPerusahaan || "",
-          namaBank: parsed.namaBank ?? null,
-          nomorRekening: parsed.nomorRekening || "",
-          namaPemilik: parsed.namaPemilik || "",
-
-          aktaPendirianPerusahaanUrl: parsed.aktaPendirianPerusahaanUrl || "",
-          skPendirianUrl: parsed.skPendirianUrl || "",
-          skKumhamPerusahaanUrl: parsed.skKumhamPerusahaanUrl || "",
-          npwpPerusahaanUrl: parsed.npwpPerusahaanUrl || "",
-
-          provincePemodalPerusahaan: parsed.provincePemodalPerusahaan ?? null,
-          cityPemodalPerusahaan: parsed.cityPemodalPerusahaan ?? null,
-          districtPemodalPerusahaan: parsed.districtPemodalPerusahaan ?? null,
-          subDistrictPemodalPerusahaan:
-            parsed.subDistrictPemodalPerusahaan ?? null,
-
-          posCode: parsed.posCode || "",
-          addres: parsed.addres || "",
-        };
-      }
+      const saved = localStorage.getItem("formPemodalPerusahaan");
+      if (saved) return JSON.parse(saved);
     }
     return {
       jenisPerusahaan: "",
       nomorAktaPerubahanTerakhir: "",
       nomorNpwpPerusahaan: "",
-      alamatTempatUsaha: "",
       noTeleponPerusahaan: "",
       situsPerusahaan: "",
       emailPerusahaan: "",
@@ -59,15 +32,24 @@ const FormDataPemodalPerusahaan: React.FC = () => {
       skKumhamPerusahaanUrl: "",
       npwpPerusahaanUrl: "",
 
-      provincePemodalPerusahaan: "",
-      cityPemodalPerusahaan: "",
-      districtPemodalPerusahaan: "",
-      subDistrictPemodalPerusahaan: "",
+      provincePemodalPerusahaan: null,
+      cityPemodalPerusahaan: null,
+      districtPemodalPerusahaan: null,
+      subDistrictPemodalPerusahaan: null,
 
       posCode: "",
       addres: "",
+
+      setujuKebenaranData: false,
+      setujuRisikoInvestasi: false,
     };
   });
+
+  const router = useRouter();
+
+  const [errorsPemodalPerusahaan, setErrorsPemodalPerusahaan] = useState<
+    Record<string, string[]>
+  >({});
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -75,57 +57,15 @@ const FormDataPemodalPerusahaan: React.FC = () => {
     >
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev: any) => ({ ...prev, [name]: value }));
   };
 
   const handleBank = (namaBank: OptionType) => {
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       namaBank: namaBank as NonNullable<OptionType>,
     }));
   };
-
-  // Ambil data dari localStorage saat mount
-  useEffect(() => {
-    const savedForm = localStorage.getItem("formPemodalPerusahaan");
-    if (savedForm) {
-      const parsed = JSON.parse(savedForm);
-      setFormData({
-        jenisPerusahaan: parsed.jenisPerusahaan || "",
-        nomorAktaPerubahanTerakhir: parsed.nomorAktaPerubahanTerakhir || "",
-        nomorNpwpPerusahaan: parsed.nomorNpwpPerusahaan || "",
-        alamatTempatUsaha: parsed.alamatTempatUsaha || "",
-        noTeleponPerusahaan: parsed.noTeleponPerusahaan || "",
-        situsPerusahaan: parsed.situsPerusahaan || "",
-        emailPerusahaan: parsed.emailPerusahaan || "",
-        namaBank: parsed.namaBank || "",
-        nomorRekening: parsed.nomorRekening || "",
-        namaPemilik: parsed.namaPemilik || "",
-
-        aktaPendirianPerusahaanUrl: parsed.aktaPendirianPerusahaanUrl || "",
-        skPendirianUrl: parsed.skPendirianUrl || "",
-        skKumhamPerusahaanUrl: parsed.skKumhamPerusahaanUrl || "",
-        npwpPerusahaanUrl: parsed.npwpPerusahaanUrl || "",
-
-        provincePemodalPerusahaan: parsed.provincePemodalPerusahaan || "",
-        cityPemodalPerusahaan: parsed.cityPemodalPerusahaan || "",
-        districtPemodalPerusahaan: parsed.districtPemodalPerusahaan || "",
-        subDistrictPemodalPerusahaan: parsed.subDistrictPemodalPerusahaan || "",
-
-        posCode: parsed.posCode || "",
-        addres: parsed.addres || "",
-      });
-    }
-  }, []);
-
-  // Simpan ke localStorage setiap kali formData berubah
-  useEffect(() => {
-    const fullData = {
-      ...formData,
-    };
-
-    localStorage.setItem("formPemodalPerusahaan", JSON.stringify(fullData));
-  }, [formData]);
 
   const handleAlamatChange = (alamat: {
     provincePemodalPerusahaan: OptionType;
@@ -134,7 +74,7 @@ const FormDataPemodalPerusahaan: React.FC = () => {
     subDistrictPemodalPerusahaan: OptionType;
     posCode: string;
   }) => {
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       provincePemodalPerusahaan: alamat.provincePemodalPerusahaan,
       cityPemodalPerusahaan: alamat.cityPemodalPerusahaan,
@@ -144,41 +84,290 @@ const FormDataPemodalPerusahaan: React.FC = () => {
     }));
   };
 
-  return (
-    <div className="w-full py-10 px-6 md:px-20 lg:px-40 bg-white">
-      <h1 className="text-2xl font-bold mb-6">Form Pemodal Perusahaan V2</h1>
-      {step === 1 && (
-        <DataPemodalPerusahaanV1
-          formData={formData}
-          onChange={handleChange}
-          onUploadAktaPendirianPerusahaan={(url, key) => {
-            setFormData((prev) => ({ ...prev, [key]: url }));
-          }}
-          onUploadSkPendirian={(url, key) => {
-            setFormData((prev) => ({ ...prev, [key]: url }));
-          }}
-          onUploadSkKumhamPerusahaan={(url, key) => {
-            setFormData((prev) => ({ ...prev, [key]: url }));
-          }}
-          onUploadNpwpPerusahaan={(url, key) => {
-            setFormData((prev) => ({ ...prev, [key]: url }));
-          }}
-          onBankChange={handleBank}
-          onAlamatChange={handleAlamatChange}
-        />
-      )}
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setFormData((prev: any) => {
+      return { ...prev, [name]: checked };
+    });
+  };
 
-      {step === 2 && (
-        <DataPemodalPerusahaanV2
-          formData={formData}
-          onBack={function (): void {
-            throw new Error("Function not implemented.");
-          }}
-          onSubmit={function (): void {
-            throw new Error("Function not implemented.");
-          }}
-        />
-      )}
+  const schemaDataPemodalPerusahaan = z.object({
+    jenisPerusahaan: z.string().min(1, "Jenis perusahaan harus diisi"),
+    nomorAktaPerubahanTerakhir: z.string().min(1, "Nomor akta harus diisi"),
+    nomorNpwpPerusahaan: z.string().min(1, "Nomor NPWP harus diisi"),
+    // alamatTempatUsaha: z.string().min(1, "Alamat tempat usaha harus diisi"),
+    noTeleponPerusahaan: z.string().min(1, "No telepon perusahaan harus diisi"),
+    situsPerusahaan: z.string().url("Situs perusahaan tidak valid"),
+    emailPerusahaan: z.string().email("Email tidak valid"),
+    namaBank: z
+      .object({
+        value: z.string(),
+        label: z.string(),
+      })
+      .nullable()
+      .refine((val) => val !== null, {
+        message: "Nama bank wajib dipilih",
+      }),
+    nomorRekening: z.string().min(1, "Nomor rekening harus diisi"),
+    namaPemilik: z.string().min(1, "Nama pemilik harus diisi"),
+
+    aktaPendirianPerusahaanUrl: z.string().url("Akta harus diisi"),
+    skPendirianUrl: z.string().url("SK Pendirian "),
+    skKumhamPerusahaanUrl: z.string().url("SK Kumham tidak valid"),
+    npwpPerusahaanUrl: z.string().url("NPWP tidak valid"),
+
+    provincePemodalPerusahaan: z
+      .object({
+        value: z.string(),
+        label: z.string(),
+      })
+      .nullable()
+      .refine((val) => val !== null, {
+        message: "Provinsi wajib dipilih",
+      }),
+    cityPemodalPerusahaan: z
+      .object({
+        value: z.string(),
+        label: z.string(),
+      })
+      .nullable()
+      .refine((val) => val !== null, {
+        message: "Kota wajib dipilih",
+      }),
+    districtPemodalPerusahaan: z
+      .object({
+        value: z.string(),
+        label: z.string(),
+      })
+      .nullable()
+      .refine((val) => val !== null, {
+        message: "Kecamatan wajib dipilih",
+      }),
+    subDistrictPemodalPerusahaan: z
+      .object({
+        value: z.string(),
+        label: z.string(),
+      })
+      .nullable()
+      .refine((val) => val !== null, {
+        message: "Kelurahan wajib dipilih",
+      }),
+
+    posCode: z.string().min(1, "Kode pos wajib diisi"),
+    addres: z.string().min(1, "Alamat wajib diisi"),
+
+    setujuKebenaranData: z.literal(true),
+    setujuRisikoInvestasi: z.literal(true),
+  });
+
+  useEffect(() => {
+    localStorage.setItem("formPemodalPerusahaan", JSON.stringify(formData));
+  }, [formData]);
+
+  const validateStep = () => {
+    const result = schemaDataPemodalPerusahaan.safeParse(formData);
+    if (!result.success) {
+      const errors = result.error.flatten().fieldErrors;
+      setErrorsPemodalPerusahaan(errors);
+      return false;
+    }
+    setErrorsPemodalPerusahaan({});
+    return true;
+  };
+  const [token, setToken] = useState(null);
+  useEffect(() => {
+    const userCookie = Cookies.get("user");
+    if (!userCookie) return;
+
+    const user = JSON.parse(userCookie);
+    const token = user?.token;
+
+    if (!token) return;
+    setToken(token);
+  });
+
+  const handleSubmit = async () => {
+    const savedData = localStorage.getItem("formPemodalPerusahaan");
+
+    if (!savedData) {
+      Swal.fire({
+        title: "Gagal",
+        text: "Data tidak ditemukan. Silakan isi formulir terlebih dahulu.",
+        icon: "error",
+        timer: 3000,
+      });
+      return;
+    }
+    const isValid = await validateStep();
+    if (!isValid) return;
+    try {
+      const data = JSON.parse(savedData);
+      const payload = {
+        role: "9",
+        company_name: "-",
+        company_nib: "-",
+        company_nib_path: "-",
+        akta_pendirian: data.aktaPendirianPerusahaanUrl,
+        akta_perubahan_terahkir: data.nomorAktaPerubahanTerakhir,
+        sk_kumham: "-",
+        sk_kumham_terahkir: "-",
+        sk_kumham_path: data.skKumhamPerusahaanUrl,
+        npwp: data.nomorNpwpPerusahaan,
+        npwp_path: data.npwpPerusahaanUrl,
+        didirkan: "-",
+        site: data.situsPerusahaan,
+        email: data.emailPerusahaan,
+        phone: data.noTeleponPerusahaan,
+        bank_name: data.namaBank?.value || "-",
+
+        bank_account: data.nomorRekening,
+        bank_owner: data.namaPemilik,
+        siup: "-",
+        tdp: "-",
+        jenis_usaha: "-",
+        jenis_perusahaan: data.jenisPerusahaan,
+        status_kantor: "-",
+        total_employees: "-",
+        laporan_keuangan_path: "-",
+
+        address: [
+          {
+            name: "-",
+            detail: data.addres,
+            province_id: data.provincePemodalPerusahaan?.value || "-",
+            city_id: data.cityPemodalPerusahaan?.value || "-",
+            district_id: data.districtPemodalPerusahaan?.value || "-",
+            subdistrict_id: data.subDistrictPemodalPerusahaan?.value || "-",
+            postal_code: data.posCode,
+          },
+        ],
+
+        directors: [
+          {
+            title: "-",
+            name: "-",
+            position: "-",
+            ktp: "-",
+            ktp_path: "-",
+            npwp: "-",
+            npwp_path: "-",
+          },
+        ],
+
+        komisaris: [
+          {
+            title: "-",
+            name: "-",
+            position: "-",
+            ktp: "-",
+            ktp_path: "-",
+            npwp: "-",
+            npwp_path: "-",
+          },
+        ],
+
+        project: {
+          title: "-",
+          jenis_project: "-",
+          jumlah_minimal: "-",
+          jangka_waktu: "-",
+          tingkat_bunga: "-",
+          jaminan_kolateral: [{ name: "-" }],
+          penggunaan_dana: [{ name: "-" }],
+          company_profile: "-",
+          jadwal_pembayaran_bunga: "-",
+          jadwal_pembayaran_pokok: "-",
+          deskripsi_pekerjaan: "-",
+          project_media_path: [],
+          no_contract_path: "-",
+          no_contract_value: "-",
+          is_apbn: null,
+        },
+      };
+      console.log(payload, "payload");
+      console.log("buat");
+
+      const response = await axios.post(
+        `https://api-capbridge.langitdigital78.com/api/v1/auth/assign/role`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      Swal.fire({
+        title: "Berhasil",
+        text: "Data berhasil dikirim!",
+        icon: "success",
+        timer: 3000,
+      });
+
+      localStorage.removeItem("formPemodalPerusahaan");
+      Cookies.remove("formPemodalPerusahaan");
+
+      router.push("/dashboard");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error submitting form:", error.response?.data?.message);
+        Swal.fire({
+          title: "Gagal",
+          text:
+            error.response?.data?.message ||
+            "Terjadi kesalahan saat mengirim data.",
+          icon: "warning",
+          timer: 3000,
+        });
+      } else {
+        console.error("Error submitting form:", error);
+        Swal.fire({
+          title: "Gagal",
+          text: "Terjadi kesalahan yang tidak diketahui.",
+          icon: "warning",
+          timer: 3000,
+        });
+      }
+    }
+  };
+
+  return (
+    <div className="bg-white w-full mx-auto text-black px-10 md:px-24 py-20">
+      <DataPemodalPerusahaanV1
+        formData={formData}
+        onChange={handleChange}
+        onUploadAktaPendirianPerusahaan={(url, key) =>
+          setFormData((prev: any) => ({ ...prev, [key]: url }))
+        }
+        onUploadSkPendirian={(url, key) =>
+          setFormData((prev: any) => ({ ...prev, [key]: url }))
+        }
+        onUploadSkKumhamPerusahaan={(url, key) =>
+          setFormData((prev: any) => ({ ...prev, [key]: url }))
+        }
+        onUploadNpwpPerusahaan={(url, key) =>
+          setFormData((prev: any) => ({ ...prev, [key]: url }))
+        }
+        onBankChange={handleBank}
+        onAlamatChange={handleAlamatChange}
+        onCheckboxChange={handleCheckboxChange}
+        errors={errorsPemodalPerusahaan}
+      />
+
+      <div className="mt-2 flex justify-end">
+        <button
+          className={`px-6 py-2 rounded-lg text-white ${
+            formData.setujuKebenaranData && formData.setujuRisikoInvestasi
+              ? "bg-green-600 hover:bg-green-700"
+              : "bg-gray-400 cursor-not-allowed"
+          }`}
+          onClick={handleSubmit}
+          disabled={
+            !formData.setujuKebenaranData || !formData.setujuRisikoInvestasi
+          }
+        >
+          Kirim Data
+        </button>
+      </div>
     </div>
   );
 };

@@ -14,7 +14,7 @@ interface Props {
     jenisPerusahaan: string;
     nomorAktaPerubahanTerakhir: string;
     nomorNpwpPerusahaan: string;
-    alamatTempatUsaha: string;
+    // alamatTempatUsaha: string;
     noTeleponPerusahaan: string;
     situsPerusahaan: string;
     emailPerusahaan: string;
@@ -33,6 +33,9 @@ interface Props {
     subDistrictPemodalPerusahaan: { value: string; label: string };
     posCode: string;
     addres: string;
+
+    setujuRisikoInvestasi: boolean;
+    setujuKebenaranData: boolean;
   };
 
   errors?: Record<string, string[]>;
@@ -43,6 +46,7 @@ interface Props {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >
   ) => void;
+  onCheckboxChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 
   onUploadAktaPendirianPerusahaan: (url: string, keyName: string) => void;
   onUploadSkPendirian: (url: string, keyName: string) => void;
@@ -63,6 +67,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
   onUploadAktaPendirianPerusahaan,
   onBankChange,
   onAlamatChange,
+  onCheckboxChange,
   errors,
 }) => {
   const [optionsBussines, setOptionsBussines] = useState<TypeOption[]>([]);
@@ -100,6 +105,12 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
 
   const [selectedBank, setSelectedBank] = useState<OptionType>(null);
   const [bank, setBank] = useState<any[]>([]);
+
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     const fetchBank = async () => {
@@ -426,6 +437,11 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           }}
           isClearable
         />
+        {errors?.jenisPerusahaan && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.jenisPerusahaan[0]}
+          </p>
+        )}
 
         <h3 className="font-semibold text-black mt-4">
           2. Nomor Akta Perubahan Terakhir
@@ -438,6 +454,11 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           placeholder="Masukkan Nomor Akta Perubahan Terakhir"
           className="border p-2 w-full rounded mb-0 text-gray-700"
         />
+        {errors?.nomorAktaPerubahanTerakhir && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.nomorAktaPerubahanTerakhir[0]}
+          </p>
+        )}
 
         <h3 className="font-semibold text-black mt-4">
           3. Upload Dokumen Akta Pendirian Perusahaan
@@ -462,7 +483,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           </>
         </label>
 
-        {formData.aktaPendirianPerusahaanUrl && (
+        {isClient && formData.aktaPendirianPerusahaanUrl && (
           <button
             type="button"
             onClick={() =>
@@ -472,6 +493,12 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           >
             Lihat Dokumen Akta Pendirian Perusahaan
           </button>
+        )}
+
+        {errors?.aktaPendirianPerusahaanUrl && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.aktaPendirianPerusahaanUrl[0]}
+          </p>
         )}
 
         <h3 className="font-semibold text-black mt-4">
@@ -497,7 +524,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           </>
         </label>
 
-        {formData.skPendirianUrl && (
+        {isClient && formData.skPendirianUrl && (
           <button
             type="button"
             onClick={() => window.open(formData.skPendirianUrl, "_blank")}
@@ -505,6 +532,12 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           >
             Lihat Dokumen SK Pendirian Perusahaan
           </button>
+        )}
+
+        {errors?.skPendirianUrl && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.skPendirianUrl[0]}
+          </p>
         )}
 
         <h3 className="font-semibold text-black mt-4">
@@ -530,7 +563,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           </>
         </label>
 
-        {formData.skKumhamPerusahaanUrl && (
+        {isClient && formData.skKumhamPerusahaanUrl && (
           <button
             type="button"
             onClick={() =>
@@ -540,6 +573,11 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           >
             Lihat Dokumen SK Pendirian Perusahaan
           </button>
+        )}
+        {errors?.skKumhamPerusahaanUrl && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.skKumhamPerusahaanUrl[0]}
+          </p>
         )}
 
         <h3 className="font-semibold text-black mt-4">
@@ -565,7 +603,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           </>
         </label>
 
-        {formData.npwpPerusahaanUrl && (
+        {isClient && formData.npwpPerusahaanUrl && (
           <button
             type="button"
             onClick={() => window.open(formData.npwpPerusahaanUrl, "_blank")}
@@ -573,6 +611,11 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           >
             Lihat Dokumen SK Pendirian Perusahaan
           </button>
+        )}
+        {errors?.npwpPerusahaanUrl && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.npwpPerusahaanUrl[0]}
+          </p>
         )}
 
         <h3 className="font-semibold text-black mt-4">
@@ -586,6 +629,12 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           placeholder="Masukkan Nomor NPWP Perusahaan"
           className="border p-2 w-full rounded mb-0 text-gray-700"
         />
+
+        {errors?.nomorNpwpPerusahaan && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.nomorNpwpPerusahaan[0]}
+          </p>
+        )}
         <h3 className="font-semibold text-black mt-4">
           8. Alamat Tempat Usaha
         </h3>
@@ -593,7 +642,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           <div className="text-black">
             <Select
               className="mt-0"
-              value={selectedProvincePemodalPerusahaan}
+              value={selectedProvincePemodalPerusahaan || null}
               options={customOptions}
               formatOptionLabel={formatOptionLabel}
               onChange={(e) => {
@@ -604,7 +653,6 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
                 setPosCode("");
               }}
               placeholder="Pilih Provinsi"
-              // styles={customStyles}
             />
 
             {errors?.provincePemodalPerusahaan && (
@@ -616,7 +664,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           <div className="text-black">
             <Select
               className="mt-0"
-              value={selectedCityPemodalPerusahaan}
+              value={selectedCityPemodalPerusahaan || null}
               options={customOptionsCity}
               formatOptionLabel={formatOptionLabel}
               onChange={(e) => {
@@ -637,7 +685,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           <div className="text-black">
             <Select
               className="mt-0"
-              value={selectedDistrictPemodalPerusahaan}
+              value={selectedDistrictPemodalPerusahaan || null}
               options={customOptionsDistrict}
               formatOptionLabel={formatOptionLabel}
               onChange={(e) => {
@@ -657,7 +705,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           <div className="text-black">
             <Select
               className="mt-0"
-              value={selectedSubDistrictPemodalPerusahaan}
+              value={selectedSubDistrictPemodalPerusahaan || null}
               options={customOptionsSubDistrict}
               formatOptionLabel={formatOptionLabel}
               onChange={(e) => {
@@ -679,7 +727,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
             type="number"
             name="posCode"
             placeholder="Kode Pos"
-            value={posCode || formData.posCode || ""}
+            value={formData.posCode || ""}
             onChange={onChange}
             className="border rounded p-2 w-full mb-2 placeholder:text-sm text-black"
           />
@@ -790,7 +838,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
               placeholder="Masukkan Nomor Rekening"
               value={formData.nomorRekening}
               onChange={onChange}
-              className="border rounded p-2 w-full mb-0 placeholder:text-sm"
+              className="border rounded p-2 w-full mb-4 placeholder:text-sm"
             />
           </div>
           {errors?.nomorRekening && (
@@ -810,7 +858,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
                 placeholder="Masukkan Nama Pemilik Rekening"
                 value={formData.namaPemilik}
                 onChange={onChange}
-                className="border rounded p-2 w-full mb-0 placeholder:text-sm"
+                className="border rounded p-2 w-full mb-4 placeholder:text-sm"
               />
             </div>
             {errors?.namaPemilik && (
@@ -818,6 +866,54 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
                 {errors.namaPemilik[0]}
               </p>
             )}
+
+            <div className="mb-6">
+              <h3 className="font-semibold text-gray-900 mb-2">
+                Pernyataan Kebenaran Data Perusahaan
+              </h3>
+              <p className="text-sm text-gray-500 mb-3">
+                Dengan ini kami menyatakan bahwa seluruh data dan dokumen yang
+                diberikan terkait perusahaan adalah benar, akurat, dan sesuai
+                dengan kondisi saat ini. Pihak perusahaan bertanggung jawab
+                penuh atas data yang diinput serta memahami bahwa
+                ketidaksesuaian informasi dapat berdampak pada proses investasi.
+              </p>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="setujuKebenaranData"
+                  checked={formData.setujuKebenaranData}
+                  onChange={onCheckboxChange}
+                  className="form-checkbox text-[#4821C2]"
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  Ya, perusahaan setuju
+                </span>
+              </label>
+            </div>
+
+            <div className="mb-3">
+              <h3 className="font-semibold text-gray-900 mb-2">
+                Pernyataan Pemahaman Risiko Investasi
+              </h3>
+              <p className="text-sm text-gray-500 mb-3">
+                Kami memahami bahwa setiap investasi mengandung risiko, termasuk
+                kemungkinan kehilangan sebagian atau seluruh dana yang
+                diinvestasikan oleh perusahaan.
+              </p>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="setujuRisikoInvestasi"
+                  checked={formData.setujuRisikoInvestasi}
+                  onChange={onCheckboxChange}
+                  className="form-checkbox text-[#4821C2]"
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  Ya, perusahaan setuju
+                </span>
+              </label>
+            </div>
           </div>
         </div>
       </div>
