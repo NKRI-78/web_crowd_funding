@@ -31,6 +31,11 @@ const HomeV2: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [step, setStep] = useState<"register" | "otp" | "role" | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     const fetchTopVideos = async () => {
@@ -195,7 +200,7 @@ const HomeV2: React.FC = () => {
             yang percaya pada perubahan."
           </p>
 
-          {!getUserToken() && (
+          {isClient && !getUserToken() && (
             <button
               className="text-white text-lg bg-[#10565C] hover:bg-[#0c4246] focus:ring-1 focus:ring-white rounded-lg px-6 py-3 me-2 mb-2 dark:bg-[#10565C] dark:hover:bg-[#0c4246] focus:outline-none dark:focus:ring-white font-extrabold"
               onClick={() => {
