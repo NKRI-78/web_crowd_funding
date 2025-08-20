@@ -23,7 +23,7 @@ const FormDataPemodalPerusahaan: React.FC = () => {
       noTeleponPerusahaan: "",
       situsPerusahaan: "",
       emailPerusahaan: "",
-      namaBank: "",
+      namaBank: null,
       nomorRekening: "",
       namaPemilik: "",
 
@@ -95,7 +95,6 @@ const FormDataPemodalPerusahaan: React.FC = () => {
     jenisPerusahaan: z.string().min(1, "Jenis perusahaan harus diisi"),
     nomorAktaPerubahanTerakhir: z.string().min(1, "Nomor akta harus diisi"),
     nomorNpwpPerusahaan: z.string().min(1, "Nomor NPWP harus diisi"),
-    // alamatTempatUsaha: z.string().min(1, "Alamat tempat usaha harus diisi"),
     noTeleponPerusahaan: z.string().min(1, "No telepon perusahaan harus diisi"),
     situsPerusahaan: z.string().url("Situs perusahaan tidak valid"),
     emailPerusahaan: z.string().email("Email tidak valid"),
@@ -109,7 +108,7 @@ const FormDataPemodalPerusahaan: React.FC = () => {
         message: "Nama bank wajib dipilih",
       }),
     nomorRekening: z.string().min(1, "Nomor rekening harus diisi"),
-    namaPemilik: z.string().min(1, "Nama pemilik harus diisi"),
+    namaPemilik: z.string().min(1, "Nama rekening perusahaan harus diisi"),
 
     aktaPendirianPerusahaanUrl: z.string().url("Akta harus diisi"),
     skPendirianUrl: z.string().url("SK Pendirian "),
@@ -284,8 +283,6 @@ const FormDataPemodalPerusahaan: React.FC = () => {
           is_apbn: null,
         },
       };
-      console.log(payload, "payload");
-      console.log("buat");
 
       const response = await axios.post(
         `https://api-capbridge.langitdigital78.com/api/v1/auth/assign/role`,
