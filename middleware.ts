@@ -1,20 +1,22 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  // const token = request.cookies.get('token');
+  // const userCookie = request.cookies.get("user")?.value;
 
-  // if (token && request.nextUrl.pathname === '/auth/login') {
-  //   return NextResponse.redirect(new URL('/', request.url));
+  // const { pathname } = request.nextUrl;
+
+  // if (userCookie && pathname === "/") {
+  //   return NextResponse.redirect(new URL("/dashboard", request.url));
   // }
 
-  // if (!token && ['/users', '/'].includes(request.nextUrl.pathname)) {
-  //   return NextResponse.redirect(new URL('/auth/login', request.url));
+  // if (!userCookie && pathname.startsWith("/dashboard")) {
+  //   return NextResponse.redirect(new URL("/", request.url));
   // }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: [ '/', '/users', '/auth/login'],
+  matcher: ["/", "/users", "/dashboard/:path*", "/auth/login"],
 };

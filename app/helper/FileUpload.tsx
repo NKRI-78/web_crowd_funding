@@ -21,12 +21,12 @@ export default function FileUpload({
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
-    setIsUploading(true); // disable tombol
+    setIsUploading(true);
     try {
-      await onUpload(e); // kalau onUpload async, tunggu selesai
+      await onUpload(e);
     } finally {
-      setIsUploading(false); // aktifkan lagi
-      e.target.value = ""; // reset input supaya bisa pilih file yang sama lagi
+      setIsUploading(false);
+      e.target.value = "";
     }
   };
 
