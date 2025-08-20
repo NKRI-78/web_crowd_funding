@@ -1,60 +1,96 @@
-// utils/npwp-strict.ts
-const RX_LABEL_FUZZY = /N[\s:\-]*P[\s:\-]*W[\s:\-]*P/i;
+// utils/strict-npwp.ts
+export type NPWPResult = { isNPWP: boolean; npwp: string | null; reason?: any };
+
+const RX_LABEL_NPWP = /N[\s:\-]*P[\s:\-]*W[\s:\-]*P/i;
 const RX_TAXWORDS =
-  /(DIREKTORAT\s+JENDERAL\s+PAJAK|KEMENTERIAN\s+KEUANGAN|WAJIB\s+PAJAK|NOMOR\s+POKOK\s+WAJIB\s+PAJAK)/i;
+  /(DIREKTORAT\s+JENDERAL\s+PAJAK|KEMENTERIAN\s+KEUANGAN|WAJIB\s+PAJAK|DJP)/i;
+const RX_KTPWORDS =
+  /(KARTU\s+TANDA\s+PENDUDUK|NIK\b|PROVINSI|KABUPATEN|KECAMATAN|KELURAHAN|AGAMA|BERLAKU\s+HINGGA|RT\/RW)/i;
 
-// Terima titik/koma/space campur + strip kacau
-const RX_FLEX =
-  /(\d{2})[.,\s]?(?:\d{3})[.,\s]?(?:\d{3})[.,\s]?(?:\d)[-\s]?(?:\d{3})[.,\s]?(?:\d{2,3})/;
+const ANY_DASH = /[\u2010\u2011\u2012\u2013\u2014\u2212\-]/g; // semua dash
 
-// final strict tetap pakai titik & strip
-const RX_STRICT = /^\d{2}\.\d{3}\.\d{3}\.\d-\d{3}\.\d{3}$/;
-
-const NORM = (s: string) =>
-  s
+function normalize(s: string) {
+  return (s || "")
+    .replace(/\u00A0/g, " ") // NBSP → spasi
+    .replace(/[\u2000-\u200A\u202F\u205F\u3000]/g, " ")
+    .replace(/\s+/g, " ") // semua whitespace → 1 spasi
+    .replace(ANY_DASH, "-") // seragamkan dash
+    .replace(/[•·,]/g, ".") // bullet/comma → titik
     .replace(/[Oo]/g, "0")
     .replace(/[Il]/g, "1")
     .replace(/B/g, "8")
-    .replace(/[–—−]/g, "-")
-    .replace(/[•·•]/g, ".")
-    .replace(/,/g, ".") // <- koma jadi titik
-    .replace(/:+/g, ":") // rapikan colon
-    .toUpperCase();
-
-const fmt = (d: string) =>
-  `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}.${d.slice(
-    8,
-    9
-  )}-${d.slice(9, 12)}.${d.slice(12, 15)}`;
-
-function pickNearLabelText(allText: string) {
-  const T = NORM(allText || "");
-  const i = T.search(RX_LABEL_FUZZY);
-  const segs: string[] = [];
-  if (i >= 0) segs.push(T.slice(Math.max(0, i - 60), i + 340)); // jendela lebih lebar
-  segs.push(T);
-  for (const seg of segs) {
-    const m = seg.match(RX_FLEX) || seg.match(/\d{15}/);
-    if (m) {
-      const digits = m[0].replace(/\D/g, "");
-      if (digits.length >= 15) return fmt(digits.slice(0, 15));
-    }
-  }
-  return null;
+    .toUpperCase()
+    .trim();
 }
 
-export function classifyFromTesseractData(data: any) {
-  const allText = (data?.text ?? "") as string;
-  const hasLabel = RX_LABEL_FUZZY.test(NORM(allText));
-  const hasTax = RX_TAXWORDS.test(NORM(allText));
+function fmt15(d: string) {
+  const x = d.slice(0, 15);
+  return `${x.slice(0, 2)}.${x.slice(2, 5)}.${x.slice(5, 8)}.${x.slice(
+    8,
+    9
+  )}-${x.slice(9, 12)}.${x.slice(12, 15)}`;
+}
+function fmt16(d: string) {
+  const x = d.slice(0, 16);
+  return `${x.slice(0, 2)}.${x.slice(2, 5)}.${x.slice(5, 8)}.${x.slice(
+    8,
+    9
+  )}-${x.slice(9, 12)}.${x.slice(12, 16)}`;
+}
 
-  const candidate = pickNearLabelText(allText);
-  const isStrict = candidate ? RX_STRICT.test(candidate) : false;
-  const isNPWP = Boolean(candidate && (hasLabel || hasTax || isStrict));
+export function classifyFromTesseractText(text: string): NPWPResult {
+  const T = normalize(text);
 
+  const hasLabel = RX_LABEL_NPWP.test(T);
+  const hasTax = RX_TAXWORDS.test(T);
+  const ktpLike = RX_KTPWORDS.test(T);
+
+  // cari "run" yang terdiri dari digit + pemisah (. - spasi)
+  const RUN_RX = /[0-9](?:[0-9.\- ]){10,}[0-9]/g;
+  const cands: {
+    digits: string;
+    raw: string;
+    len: number;
+    hasSep: boolean;
+    score: number;
+  }[] = [];
+
+  let m: RegExpExecArray | null;
+  while ((m = RUN_RX.exec(T))) {
+    const raw = m[0];
+    const digits = raw.replace(/\D/g, "");
+    if (digits.length < 15 || digits.length > 16) continue;
+    const len = digits.length;
+    const hasSep = /[.\- ]/.test(raw);
+    // skoring: format lama (15 + ada separator) diutamakan
+    let score = 0;
+    if (len === 15) score += 5;
+    if (hasSep) score += 3;
+    if (hasLabel) score += 3;
+    if (hasTax) score += 2;
+    if (len === 16 && ktpLike) score -= 6; // penalti untuk pola mirip NIK saat konteks KTP
+    cands.push({ digits, raw, len, hasSep, score });
+  }
+
+  if (!cands.length)
+    return { isNPWP: false, npwp: null, reason: "no-candidate" };
+
+  cands.sort((a, b) => b.score - a.score);
+  const best = cands[0];
+
+  // hard reject: kalau konteks KTP kuat & tidak ada sinyal NPWP sama sekali
+  if (!hasLabel && !hasTax && ktpLike) {
+    return {
+      isNPWP: false,
+      npwp: null,
+      reason: { cause: "ktp-context", best },
+    };
+  }
+
+  const pretty = best.len === 16 ? fmt16(best.digits) : fmt15(best.digits);
   return {
-    isNPWP,
-    npwp: isNPWP ? candidate : null,
-    reason: { hasLabel, hasTax, candidate, isStrict },
+    isNPWP: true,
+    npwp: pretty,
+    reason: { best, hasLabel, hasTax, ktpLike },
   };
 }

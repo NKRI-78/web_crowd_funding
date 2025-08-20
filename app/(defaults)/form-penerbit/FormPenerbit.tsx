@@ -3,6 +3,7 @@
 import {
   Controller,
   FormProvider,
+  Path,
   Resolver,
   useFieldArray,
   useForm,
@@ -27,6 +28,12 @@ import RHFSelectGeneric from "./components/RHFSelectGeneric";
 import { fetchJenisUsaha, TypeOption } from "@/app/utils/fetchJenisUsaha";
 import { fetchJenisPerusahaan } from "@/app/utils/fetchJenisPerusahaan";
 import { fetchStatusCompany } from "@/app/utils/fetchStatusPerushaan";
+import {
+  formatNPWPFromDigits,
+  isValidNPWPDigits,
+  normalizeNPWP,
+  sanitizeNPWPOrThrow,
+} from "@/app/lib/npwp-formart";
 
 export const alamatSchema = z.object({
   name: z.string().optional(),
@@ -41,7 +48,35 @@ export const alamatSchema = z.object({
 export const schema = z
   .object({
     company_name: z.string().min(1, "Nama perusahaan wajib diisi"),
-    jenis_usaha: z.string().min(1, "Jenis usaha wajib dipilih"),
+    jenis_usaha: z
+      .string({ required_error: "Jenis usaha wajib dipilih" })
+      .min(1, "Jenis usaha wajib dipilih"),
+    // npwp: z
+    //   .string({ required_error: "NPWP wajib diisi" })
+    //   .trim()
+    //   .transform((val) => normalizeNPWP(val))
+    //   .refine(
+    //     (digits) => isValidNPWPDigits(digits),
+    //     "NPWP harus 15 atau 16 digit"
+    //   )
+    //   .transform((digits) => formatNPWPFromDigits(digits)),
+    // npwp_path: z.string(),
+    companyType: z
+      .string({ required_error: "Tipe Perusahaan wajib dipilih" })
+      .min(1, "Tipe Perusahaan wajib dipilih"),
+
+    statusCompanys: z
+      .string({ required_error: "Status Kantor/Tempat Usaha wajib dipilih" })
+      .min(1, "Status Kantor/Tempat Usaha wajib dipilih"),
+
+    establishedYear: z
+      .string({ required_error: "Tahun berdiri wajib dipilih" })
+      .min(1, "Tahun berdiri wajib dipilih")
+      .refine(
+        (v) =>
+          /^\d{4}$/.test(v) && +v >= 1950 && +v <= new Date().getFullYear(),
+        "Tahun tidak valid"
+      ),
     address: z
       .array(alamatSchema)
       .min(1, "Minimal 1 alamat harus diisi")
@@ -69,18 +104,6 @@ export const schema = z
       .trim()
       .min(1, "Email Perusahaan wajib diisi")
       .email("Format email tidak valid"),
-    companyType: z.string().min(1, "Tipe Perusahaan wajib dipilih"),
-    statusCompanys: z
-      .string()
-      .min(1, "Tipe Status Kantor/Tempat Usaha wajib dipilih"),
-    establishedYear: z
-      .string()
-      .min(1, "Tahun berdiri wajib dipilih")
-      .refine(
-        (v) =>
-          /^\d{4}$/.test(v) && +v >= 1950 && +v <= new Date().getFullYear(),
-        "Tahun tidak valid"
-      ),
   })
   .superRefine((data, ctx) => {
     if (data.namaPemilik !== data.company_name) {
@@ -394,6 +417,72 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
     return { value: String(y), label: String(y) };
   });
 
+  const handleUploadFile = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: Path<FormData>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const maxSizeInMB = 10;
+    const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+
+    if (file.size > maxSizeInBytes) {
+      Swal.fire({
+        title: "Ukuran File Terlalu Besar",
+        text: `Maksimal ukuran file adalah ${maxSizeInMB}MB.`,
+        icon: "error",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("folder", "web");
+    formData.append("subfolder", "capbridge");
+    formData.append("media", file);
+
+    try {
+      const res = await axios.post(
+        `${API_BACKEND_MEDIA}/api/v1/media/upload`,
+        formData
+      );
+
+      const fileUrl = res.data?.data?.path;
+
+      const uploadMessages = {
+        company_nib_path: "Upload NIB Perusahaan berhasil!",
+        akta_pendirian: "Upload Akta Pendirian berhasil!",
+        sk_kumham_path: "Upload SK KUMHAM berhasil!",
+        akta_perubahan_terahkir_path:
+          "Upload Akta Perubahan Terakhir berhasil!",
+        sk_kumham_terahkir: "Upload SK KUMHAM Terakhir berhasil!",
+        siup: "Upload Surat Izin Usaha Perdagangan berhasil!",
+        tdp: "Upload Tanda Daftar Perusahaan berhasil!",
+        fileNpwp: "Upload NPWP berhasil!",
+      } as const;
+
+      if (fileUrl) {
+        setValue(field, fileUrl, { shouldValidate: true });
+        if (field in uploadMessages) {
+          const message = uploadMessages[field as keyof typeof uploadMessages];
+          Swal.fire({
+            title: "Berhasil",
+            text: message,
+            icon: "success",
+            timer: 3000,
+            showConfirmButton: false,
+          });
+        }
+      } else {
+        alert(`Upload ${field} gagal!`);
+      }
+    } catch (error) {
+      alert(`Upload ${field} error!`);
+    }
+  };
+
   return (
     <section className="bg-white text-black items-center px-3 md:px-10 py-20 md:py-30">
       <form
@@ -523,7 +612,6 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
         </div>
 
         <div className="space-y-4">
-          {/* <NPWPUploader /> */}
           {fields.map((item, index) => (
             <FormAlamat
               key={item.id}
