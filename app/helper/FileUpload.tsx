@@ -1,6 +1,7 @@
 import { FaFileAlt } from "react-icons/fa";
 import React, { useRef, useState } from "react";
 import { useFileViewerModal } from "../hooks/useFileViewerModal";
+import SectionPoint from "../components/inputFormPenerbit/_component/SectionPoint";
 
 type FileUploadProps = {
   label: string;
@@ -33,8 +34,7 @@ export default function FileUpload({
   return (
     <div className="mb-4">
       <p className="text-sm mb-1">
-        {label}
-        <span className="text-red-500 ml-1">*</span>
+        <SectionPoint text={label} />
       </p>
 
       <button

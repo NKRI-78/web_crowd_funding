@@ -1,26 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useFormContext, Controller, useWatch } from "react-hook-form";
 import TextField from "./TextField";
 import FileInput from "./FileInput";
 import SectionPoint from "./SectionPoint";
 import SectionSubtitle from "./SectionSubtitle";
-import DropdownSelect from "./DropdownSelect";
 import UpdateRing from "./UpdateRing";
+import Select from "react-select";
 import { FormPenerbitValues } from "../formPenerbit.schema";
 
 type NamePrefix = "direktur" | "komisaris";
 
 interface JobStructureFormProps {
   label?: string;
-  namePrefix: NamePrefix; // "direktur" | "komisaris"
-  index: number; // index pada array
+  namePrefix: NamePrefix;
+  index: number;
   showDeleteButton?: boolean;
   onDelete?: () => void;
   isKomisaris?: boolean;
-  hasDirekturUtama?: boolean; // true jika sudah ada direktur-utama di baris lain
-  hasKomisarisUtama?: boolean; // true jika sudah ada komisaris-utama di baris lain
-  updateIdentity: string; // untuk UpdateRing
-  updateFormKey?: string; // untuk UpdateRing
+  hasDirekturUtama?: boolean;
+  hasKomisarisUtama?: boolean;
+  updateIdentity: string;
+  updateFormKey?: string;
 }
 
 const JobStructureForm: React.FC<JobStructureFormProps> = ({
@@ -35,9 +35,9 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
   updateIdentity,
   updateFormKey,
 }) => {
-  const { control } = useFormContext<FormPenerbitValues>();
+  const { control, setValue } = useFormContext<FormPenerbitValues>();
 
-  // pantau jabatan baris ini (agar opsi "*-utama" tetap tampil kalau baris ini yang sedang memegangnya)
+  // pantau jabatan baris ini
   const jabatanThisRow = useWatch({
     control,
     name: `${namePrefix}.${index}.jabatan` as const,
@@ -94,42 +94,47 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
                 jabatanThisRow ===
                 (isKomisaris ? "komisaris-utama" : "direktur-utama");
 
-              // jika sudah ada *-utama di baris lain, sembunyikan opsi itu
-              // tapi tetap tampilkan kalau baris ini yang memegangnya (agar user bisa mengganti)
+              // opsi jabatan
               const options = isKomisaris
                 ? [
                     ...(!hasKomisarisUtama || isUtama
-                      ? [
-                          {
-                            label: "Komisaris Utama",
-                            value: "komisaris-utama" as const,
-                          },
-                        ]
+                      ? [{ label: "Komisaris Utama", value: "komisaris-utama" }]
                       : []),
-                    { label: "Komisaris", value: "komisaris" as const },
+                    { label: "Komisaris", value: "komisaris" },
                   ]
                 : [
                     ...(!hasDirekturUtama || isUtama
-                      ? [
-                          {
-                            label: "Direktur Utama",
-                            value: "direktur-utama" as const,
-                          },
-                        ]
+                      ? [{ label: "Direktur Utama", value: "direktur-utama" }]
                       : []),
-                    { label: "Direktur", value: "direktur" as const },
+                    { label: "Direktur", value: "direktur" },
                   ];
 
+              // auto set default kalau kosong
+              useEffect(() => {
+                if (!field.value) {
+                  setValue(
+                    `${namePrefix}.${index}.jabatan` as const,
+                    isKomisaris ? "komisaris" : "direktur"
+                  );
+                }
+              }, []);
+
               return (
-                <DropdownSelect
+                <Select
                   options={options}
-                  value={field.value}
-                  // defaultValue biar awalnya langsung ke opsi "regular"
-                  defaultValue={isKomisaris ? "komisaris" : "direktur"}
-                  onChange={(val: string) => field.onChange(val)}
+                  value={
+                    options.find((opt) => opt.value === field.value) ?? null
+                  }
+                  onChange={(val) => field.onChange(val?.value)}
                   placeholder="Jabatan"
-                  maxHeightDropdown="180px"
-                  errorText={fieldState.error?.message}
+                  className="text-sm"
+                  styles={{
+                    control: (base) => ({
+                      ...base,
+                      minHeight: "36px",
+                      borderColor: fieldState.error ? "red" : base.borderColor,
+                    }),
+                  }}
                 />
               );
             }}
@@ -146,7 +151,6 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
           render={({ field, fieldState }) => (
             <TextField
               placeholder="No KTP"
-              // pakai string agar tidak hilang leading zero; batasi angka & 16 digit
               value={field.value ?? ""}
               type="text"
               maxLength={16}

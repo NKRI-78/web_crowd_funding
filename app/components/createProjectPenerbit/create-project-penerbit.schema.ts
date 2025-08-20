@@ -1,5 +1,15 @@
 import z from "zod";
 
+export const alamatSchema = z.object({
+  name: z.string().optional(),
+  province_name: z.string(),
+  city_name: z.string().min(1, "Kota wajib diisi"),
+  district_name: z.string().min(1, "Kecamatan wajib diisi"),
+  subdistrict_name: z.string().min(1, "Kelurahan wajib diisi"),
+  postal_code: z.string().min(1, "Kode pos wajib diisi"),
+  detail: z.string().min(1, "Detail alamat wajib diisi"),
+});
+
 export const createProjectPenerbitSchema = z.object({
   namaProyek: z.string().min(1, "Nama Proyek tidak boleh kosong"),
   deskripsiProyek: z.string().min(1, "Deskripsi Proyek tidak boleh kosong"),
@@ -32,6 +42,10 @@ export const createProjectPenerbitSchema = z.object({
   rekeningKoran: z.string().min(1, "Rekening Koran wajib diupload"),
   laporanKeuangan: z.string().min(1, "Laporan Keuangan wajib diupload"),
   prospektus: z.string().min(1, "Prospektus wajib diupload"),
+  address: z
+    .array(alamatSchema)
+    .min(1, "Minimal 1 alamat harus diisi")
+    .max(2, "Maksimal hanya 2 alamat"),
 });
 
 export const defaultValues: CreateProjectFormSchema = {
@@ -52,6 +66,26 @@ export const defaultValues: CreateProjectFormSchema = {
   rekeningKoran: "",
   laporanKeuangan: "",
   prospektus: "",
+  address: [
+    {
+      name: "Pemberi Proyek",
+      province_name: "",
+      city_name: "",
+      district_name: "",
+      subdistrict_name: "",
+      postal_code: "",
+      detail: "",
+    },
+    {
+      name: "Tempat Usaha",
+      province_name: "",
+      city_name: "",
+      district_name: "",
+      subdistrict_name: "",
+      postal_code: "",
+      detail: "",
+    },
+  ],
 };
 
 export type CreateProjectFormSchema = z.infer<

@@ -67,6 +67,7 @@ const emptyKomisaris = () => ({
 const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
   const router = useRouter();
   const [isReady, setIsReady] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const methods = useForm<FormPenerbitValues>({
     resolver: zodResolver(FormPenerbitSchema),
@@ -151,7 +152,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
     }
   }, [isUpdate, profile]);
 
-  const submitAdd = async (values: FormPenerbitValues) => {
+  const submitAdd = async () => {
     try {
       const draft = localStorage.getItem("publisherDraft");
       const userData = getUser();
@@ -173,7 +174,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
         sk_kumham_terahkir: draftParsed.sk_kumham_terahkir,
         npwp: "-",
         npwp_path: draftParsed.fileNpwp,
-        didirkan: draftParsed.establishedYear,
+        didirikan: draftParsed.establishedYear,
         site: draftParsed.webCompany,
         email: draftParsed.emailCompany,
         phone: draftParsed.noPhoneCompany,
@@ -186,11 +187,12 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
         jenis_perusahaan: draftParsed.companyType,
         status_kantor: draftParsed.statusCompanys,
         total_employees: String(draftParsed.total_employees),
-        laporan_keuangan_path: values.laporanKeuangan,
+        laporan_keuangan_path: draftParsed.laporanKeuangan,
         address: draftParsed.address,
+        rekening_koran_path: draftParsed.rekeningKoran,
         directors:
-          values.direktur.length === 1
-            ? values.direktur.map((dir) => ({
+          draftParsed.direktur.length === 1
+            ? draftParsed.direktur.map((dir) => ({
                 title: "Direktur",
                 name: dir.nama,
                 position: "Direktur",
@@ -199,7 +201,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
                 npwp: "-",
                 npwp_path: dir.fileNPWP,
               }))
-            : values.direktur.map((dir) => ({
+            : draftParsed.direktur.map((dir) => ({
                 title:
                   dir.jabatan === "direktur-utama"
                     ? "Direktur Utama"
@@ -214,7 +216,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
                 npwp: "-",
                 npwp_path: dir.fileNPWP,
               })),
-        komisaris: values.komisaris.map((kom) => ({
+        komisaris: draftParsed.komisaris.map((kom) => ({
           title:
             kom.jabatan === "komisaris-utama" ? "Komisaris Utama" : "Komisaris",
           name: kom.nama,
@@ -239,6 +241,8 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
       localStorage.removeItem("publisherDraft");
       localStorage.removeItem("penerbitFormIndex");
       localStorage.removeItem("utusanPenerbitCache");
+      localStorage.removeItem("penerbitFormIndex");
+      setSubmitted(true);
 
       await Swal.fire({
         title: "Berhasil",
@@ -368,6 +372,9 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
       );
 
       localStorage.removeItem("publisherDraft");
+      localStorage.removeItem("utusanPenerbitCache");
+      localStorage.removeItem("penerbitFormIndex");
+      setSubmitted(true);
 
       await Swal.fire({
         title: "Berhasil",
@@ -393,7 +400,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
 
   const onSubmit = handleSubmit(async (values) => {
     if (isUpdate) return submitUpdate(values);
-    return submitAdd(values);
+    return submitAdd();
   });
 
   useEffect(() => {
@@ -491,6 +498,8 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
     const numeric = raw.replace(/\D/g, "");
     setValue("total_employees", numeric);
   };
+
+  const agree = watch(`agree`);
 
   return (
     <FormProvider {...methods}>
@@ -606,46 +615,22 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
                 <SectionTitle text="2. Struktur Permodalan" />
                 <div className="my-1" />
                 <UpdateRing identity="laporan-keuangan" formKey={profile?.form}>
-                  <SectionPoint text="Laporan Keuangan" />
-                  <SectionSubtitle
-                    text="File maksimal berukuran 10mb"
-                    className="my-1"
-                  />
-                  <Controller
-                    control={control}
-                    name="laporanKeuangan"
-                    render={({ field }) => (
-                      <FileInput
-                        fileName="Laporan Keuangan"
-                        fileUrl={field.value}
-                        accept=".pdf,.xlsx,.xlsm,.xls,.xltx,.xltm,.xlsb"
-                        onChange={(url) => field.onChange(url)}
-                        errorText={errors.laporanKeuangan?.message}
-                      />
-                    )}
+                  <FileUpload
+                    label="Laporan Keuangan"
+                    fileUrl={watch("laporanKeuangan")}
+                    onUpload={(e) => handleUploadFile(e, "laporanKeuangan")}
+                    error={errors?.laporanKeuangan?.message}
                   />
                 </UpdateRing>
               </div>
 
               <div className="flex flex-col">
                 <UpdateRing identity="rekening-koran" formKey={profile?.form}>
-                  <SectionPoint text="Rekening Koran" />
-                  <SectionSubtitle
-                    text="File maksimal berukuran 10mb"
-                    className="my-1"
-                  />
-                  <Controller
-                    control={control}
-                    name="rekeningKoran"
-                    render={({ field }) => (
-                      <FileInput
-                        fileName="Rekening Koran"
-                        fileUrl={field.value}
-                        accept=".pdf,.xlsx,.xlsm,.xls,.xltx,.xltm,.xlsb"
-                        onChange={(url) => field.onChange(url)}
-                        errorText={errors.rekeningKoran?.message}
-                      />
-                    )}
+                  <FileUpload
+                    label="Rekening Koran"
+                    fileUrl={watch("rekeningKoran")}
+                    onUpload={(e) => handleUploadFile(e, "rekeningKoran")}
+                    error={errors?.rekeningKoran?.message}
                   />
                 </UpdateRing>
               </div>
@@ -751,8 +736,8 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
               </FormButton>
               <FormButton
                 onClick={onSubmit}
-                disabled={isSubmitting}
-                className={isSubmitting ? "cursor-not-allowed" : ""}
+                disabled={!agree}
+                className={!agree ? "cursor-not-allowed" : ""}
               >
                 {isUpdate ? "Update" : "Kirim"} Data
               </FormButton>
