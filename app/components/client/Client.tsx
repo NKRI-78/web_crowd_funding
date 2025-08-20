@@ -51,8 +51,10 @@ export default function ClientLayout({
             pathname === "/form-penerbit" ||
             pathname === "/terms-conditions" ||
             pathname === "/dashboard" ||
+            pathname === "/form-pemodal-perusahaan" ||
             pathname === "/dashboard/create-project" ||
             pathname === "/inbox" ||
+            pathname === "/form-data-pemodal-perusahaan" ||
             pathname === "/transaction"
               ? ""
               : !isViewer && <FooterV2 />}

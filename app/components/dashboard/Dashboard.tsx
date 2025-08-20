@@ -16,6 +16,7 @@ import StepStatus from "./StatusBar";
 import { API_BACKEND } from "@/app/utils/constant";
 import { IProjectData } from "@/app/interface/IProject";
 import { getAllProject } from "@/actions/GetAllProject";
+import { FileClock } from "lucide-react";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -144,6 +145,8 @@ const Dashboard: React.FC = () => {
     }
   }, [role, token]);
 
+  console.log(emitenProjects, "emiten project");
+
   const statusSteps: Record<string, number> = {
     PENDING: 0,
     APPROVED: 1,
@@ -153,49 +156,49 @@ const Dashboard: React.FC = () => {
     PUBLISH: 4,
   };
 
-  // const baseSteps = [
-  //   "Data Diproses",
-  //   "Review Project",
-  //   "Pembayaran Administrasi",
-  //   "Project Tayang",
-  // ];
+  const baseSteps = [
+    "Proyek Diproses",
+    "Review Proyek",
+    "Pembayaran Administrasi",
+    "Keputusan Proyek",
+  ];
 
-  const statusLabels: Record<string, string> = {
-    PENDING: "Data Diproses",
-    APPROVED: "Review Project",
-    REJECTED: "Ditolak",
-    UNPAID: "Belum Dibayar",
-    PAID: "Pembayaran Administrasi",
-    PUBLISH: "Project Tayang",
-  };
+  // const statusLabels: Record<string, string> = {
+  //   PENDING: "Data Diproses",
+  //   APPROVED: "Review Project",
+  //   REJECTED: "Ditolak",
+  //   UNPAID: "Belum Dibayar",
+  //   PAID: "Pembayaran Administrasi",
+  //   PUBLISH: "Project Tayang",
+  // };
 
   useEffect(() => {
-    // const statusProject = profile?.company?.projects?.[0]?.status;
-    const statusProject = "PUBLISH" as string; //default progres bar
+    const statusProject = profile?.company?.projects?.[0]?.status;
+    // const statusProject = "APPROVED" as string; //default progres bar
     setProjectStatus(statusProject as string);
 
-    const stepsArray = Object.entries(statusSteps)
-      .sort((a, b) => a[1] - b[1])
-      .map(([status]) => statusLabels[status] ?? status);
+    // const stepsArray = Object.entries(statusSteps)
+    //   .sort((a, b) => a[1] - b[1])
+    //   .map(([status]) => statusLabels[status] ?? status);
 
-    setSteps(stepsArray);
+    // setSteps(stepsArray);
 
     if (statusProject) {
-      // let updatedSteps = [...baseSteps];
+      let updatedSteps = [...baseSteps];
 
-      // if (statusProject === "REJECTED") {
-      //   updatedSteps[1] = "Ditolak";
-      // } else if (statusProject === "APPROVED") {
-      //   updatedSteps[1] = "Disetujui";
-      // }
+      if (statusProject === "REJECTED") {
+        updatedSteps[1] = "Ditolak";
+      } else if (statusProject === "APPROVED") {
+        updatedSteps[1] = "Disetujui";
+      }
 
-      // if (statusProject === "UNPAID") {
-      //   updatedSteps[2] = "Belum Dibayar";
-      // } else if (statusProject === "PAID" || statusProject === "PUBLISH") {
-      //   updatedSteps[2] = "Sudah Dibayar";
-      // }
+      if (statusProject === "UNPAID") {
+        updatedSteps[2] = "Belum Dibayar";
+      } else if (statusProject === "PAID" || statusProject === "PUBLISH") {
+        updatedSteps[2] = "Sudah Dibayar";
+      }
 
-      // setSteps(updatedSteps);
+      setSteps(updatedSteps);
       setCurrentStep(statusSteps[statusProject]);
     }
   }, [profile]);
@@ -230,10 +233,29 @@ const Dashboard: React.FC = () => {
             <h2 className="text-black text-2xl font-bold">Dashboard</h2>
           </div>
           <div className="flex flex-col gap-y-4 mt-4">
+            <div className="shadow-md rounded-2xl bg-white w-full p-10 md:py-12 flex flex-col items-center text-center">
+              <div className="flex flex-col items-center max-w-md">
+                <div className="text-teal-700 mb-4">
+                  <FileClock className="w-16 h-16" />
+                </div>
+                <h2 className="font-bold text-xl md:text-2xl text-black mb-2">
+                  Akun Anda Sedang Direview
+                </h2>
+                {/* <p className="text-gray-600 text-sm md:text-base leading-relaxed">
+                  Tim kami sedang memproses data akun Anda. Mohon tunggu hingga
+                  proses verifikasi selesai. Setelah itu baru anda dapat mengajukan proyek anda.
+                </p> */}
+                <p className="text-gray-600 text-sm md:text-base leading-relaxed">
+                  Tim kami sedang memproses data akun Anda. Mohon tunggu hingga
+                  selesai. Setelah itu, Anda dapat mulai mengajukan proyek.
+                </p>
+              </div>
+            </div>
+
             {user.role === "emiten" && (
               <div className="shadow-md rounded-2xl bg-white w-full p-10 md:py-12">
                 <h2 className="font-bold text-lg text-black mb-5 -mt-9 md:-mt-6 md:mb-14 text-start">
-                  Proyek Saya
+                  Status Proyek
                 </h2>
                 <div>
                   <StepStatus
@@ -245,7 +267,7 @@ const Dashboard: React.FC = () => {
               </div>
             )}
 
-            {/* {user.role === "emiten" && (
+            {user.role === "emiten" && (
               <>
                 <div className="my-2">
                   <h2 className="font-bold text-lg text-black">Proyek Saya</h2>
@@ -344,7 +366,7 @@ const Dashboard: React.FC = () => {
                   )}
                 </div>
               </>
-            )} */}
+            )}
 
             {user.role === "investor" && (
               <div>
