@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import FileViewerModal from "@/app/(defaults)/viewer/components/FilePriviewModal";
 
 const FormDataPemodalPerusahaan: React.FC = () => {
   type OptionType = { value: string; label: string } | null;
@@ -46,6 +47,11 @@ const FormDataPemodalPerusahaan: React.FC = () => {
   });
 
   const router = useRouter();
+
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewFileUrl, setPreviewFileUrl] = useState<string | undefined>(
+    undefined
+  );
 
   const [errorsPemodalPerusahaan, setErrorsPemodalPerusahaan] = useState<
     Record<string, string[]>
@@ -348,6 +354,30 @@ const FormDataPemodalPerusahaan: React.FC = () => {
         onAlamatChange={handleAlamatChange}
         onCheckboxChange={handleCheckboxChange}
         errors={errorsPemodalPerusahaan}
+        onLihatAktaPendirianPerusahaan={() => {
+          setPreviewFileUrl(formData.aktaPendirianPerusahaanUrl);
+          setPreviewOpen(true);
+        }}
+        onLihatNpwpPerusahaan={() => {
+          setPreviewFileUrl(formData.npwpPerusahaanUrl);
+          setPreviewOpen(true);
+        }}
+        onLihatSkKumhamPerusahaan={() => {
+          setPreviewFileUrl(formData.skKumhamPerusahaanUrl);
+          setPreviewOpen(true);
+        }}
+        onLihatSkPendirianPerusahaan={() => {
+          setPreviewFileUrl(formData.skPendirianUrl);
+          setPreviewOpen(true);
+        }}
+      />
+      <FileViewerModal
+        src={previewFileUrl ?? ""}
+        open={previewOpen}
+        onClose={() => {
+          setPreviewOpen(false);
+          setPreviewFileUrl(undefined);
+        }}
       />
 
       <div className="mt-2 flex justify-end">

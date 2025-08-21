@@ -37,6 +37,11 @@ interface Props {
     setujuKebenaranData: boolean;
   };
 
+  onLihatAktaPendirianPerusahaan?: () => void;
+  onLihatSkPendirianPerusahaan?: () => void;
+  onLihatSkKumhamPerusahaan?: () => void;
+  onLihatNpwpPerusahaan?: () => void;
+
   errors?: Record<string, string[]>;
   onBankChange: (bank: { value: string; label: string } | null) => void;
 
@@ -67,6 +72,11 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
   onBankChange,
   onAlamatChange,
   onCheckboxChange,
+  onLihatAktaPendirianPerusahaan,
+  onLihatSkPendirianPerusahaan,
+  onLihatSkKumhamPerusahaan,
+  onLihatNpwpPerusahaan,
+
   errors,
 }) => {
   const [optionsBussines, setOptionsBussines] = useState<TypeOption[]>([]);
@@ -488,9 +498,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           {isClient && formData.aktaPendirianPerusahaanUrl && (
             <button
               type="button"
-              onClick={() =>
-                window.open(formData.aktaPendirianPerusahaanUrl, "_blank")
-              }
+              onClick={onLihatAktaPendirianPerusahaan}
               className="text-blue-600 underline text-sm block mt-2"
             >
               Lihat Dokumen Akta Pendirian Perusahaan
@@ -531,7 +539,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           {isClient && formData.skPendirianUrl && (
             <button
               type="button"
-              onClick={() => window.open(formData.skPendirianUrl, "_blank")}
+              onClick={onLihatSkPendirianPerusahaan}
               className="text-blue-600 underline text-sm block mt-2"
             >
               Lihat Dokumen SK Pendirian Perusahaan
@@ -572,9 +580,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           {isClient && formData.skKumhamPerusahaanUrl && (
             <button
               type="button"
-              onClick={() =>
-                window.open(formData.skKumhamPerusahaanUrl, "_blank")
-              }
+              onClick={onLihatSkKumhamPerusahaan}
               className="text-blue-600 underline text-sm block mt-2"
             >
               Lihat Dokumen SK Pendirian Perusahaan
@@ -614,7 +620,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           {isClient && formData.npwpPerusahaanUrl && (
             <button
               type="button"
-              onClick={() => window.open(formData.npwpPerusahaanUrl, "_blank")}
+              onClick={onLihatNpwpPerusahaan}
               className="text-blue-600 underline text-sm block mt-2"
             >
               Lihat Dokumen SK Pendirian Perusahaan
@@ -764,7 +770,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
       {/* KANAN */}
       <div className="space-y-4">
         <div>
-          <h3 className="font-semibold text-black mt-4 mb-2">
+          <h3 className="font-semibold text-black mt-2 mb-2">
             9. Nomor Telepon Perusahaan <span className="text-red-500">*</span>
           </h3>
           <input
