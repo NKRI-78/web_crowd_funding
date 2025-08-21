@@ -1,129 +1,181 @@
-// app/npwp-ocr/page.tsx
 "use client";
 
-import { cropAroundLabel } from "@/app/utils/crop-around-label";
-import { classifyFromTesseractData } from "@/app/utils/strict-npwp";
-import { useState } from "react";
+import React, { useState } from "react";
+import Tesseract from "tesseract.js";
+import { classifyFromTesseractText } from "@/app/utils/strict-npwp";
 
-// Preprocess sederhana di browser: resize + grayscale + threshold
-async function preprocess(file: File): Promise<HTMLCanvasElement> {
-  const url = URL.createObjectURL(file);
-  const img = new Image();
-  img.src = url;
-  await new Promise<void>((res, rej) => {
-    img.onload = () => res();
-    img.onerror = () => rej(new Error("Image load error"));
-  });
+type NpwpProps = {
+  onUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void> | void;
+  onDetected?: (npwp: string) => void;
+};
 
-  // Resize biar tidak terlalu besar
-  const maxW = 1600;
-  const scale = Math.min(maxW / img.width, 1);
-  const w = Math.round(img.width * scale);
-  const h = Math.round(img.height * scale);
-
-  const canvas = document.createElement("canvas");
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext("2d")!;
-  ctx.drawImage(img, 0, 0, w, h);
-
-  // Grayscale + threshold
-  const imgData = ctx.getImageData(0, 0, w, h);
-  const d = imgData.data;
-  const thr = 165;
-  for (let i = 0; i < d.length; i += 4) {
-    const gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
-    const v = gray > thr ? 255 : 0;
-    d[i] = d[i + 1] = d[i + 2] = v;
-  }
-  ctx.putImageData(imgData, 0, 0);
-  URL.revokeObjectURL(url);
-  return canvas;
-}
-
-export default function NPWPOCR() {
+export default function NPWPOCR({ onUpload, onDetected }: NpwpProps) {
   const [progress, setProgress] = useState(0);
   const [npwp, setNpwp] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const [debugText, setDebugText] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+
     setProgress(0);
     setNpwp(null);
-    setErr(null);
-
-    const Tesseract = await import("tesseract.js");
-
-    let inputForOcr: HTMLCanvasElement | File = file;
-    try {
-      inputForOcr = await preprocess(file); // pakai canvas hasil preprocess
-    } catch {
-      inputForOcr = file; // fallback ke file asli kalau preprocess gagal
-    }
-
-    async function ocr(input: HTMLCanvasElement | File, psm: "6" | "7") {
-      const { data } = await Tesseract.recognize(input as any, "eng+ind", {
-        logger: (m: any) => {
-          if (m.status === "recognizing text" && m.progress)
-            setProgress(Math.round(m.progress * 100));
-        },
-        tessedit_pageseg_mode: psm, // 6: block, 7: single line
-        preserve_interword_spaces: "1",
-        user_defined_dpi: "300",
-        // minta data words+bbox lengkap
-        tessjs_create_tsv: "1",
-      } as any);
-      return data;
-    }
+    setDebugText("");
 
     try {
-      // PASS 1: global
-      const pass1 = await ocr(inputForOcr, "6");
+      await onUpload(e);
+    } finally {
+      setDebugText("");
+      e.target.value = "";
+    }
 
-      // CROP kanan label “NPWP”
-      const crop = await cropAroundLabel(
-        inputForOcr as HTMLCanvasElement,
-        pass1
+    // buat canvas dari gambar & upscale biar tajam
+    const img = await createImageBitmap(file);
+    const base = document.createElement("canvas");
+    const bctx = base.getContext("2d")!;
+    const maxW = 2000;
+    const scale = Math.min(maxW / img.width, 2);
+    base.width = Math.round(img.width * scale);
+    base.height = Math.round(img.height * scale);
+    bctx.drawImage(img, 0, 0, base.width, base.height);
+
+    // helper: rotate + invert
+    function makeVariant(
+      src: HTMLCanvasElement,
+      angleDeg: number,
+      invert = false
+    ) {
+      const rad = (angleDeg * Math.PI) / 180;
+      const w = src.width,
+        h = src.height;
+      const out = document.createElement("canvas");
+      out.width = w;
+      out.height = h;
+      const ctx = out.getContext("2d")!;
+      ctx.translate(w / 2, h / 2);
+      ctx.rotate(rad);
+      ctx.drawImage(src, -w / 2, -h / 2);
+      if (invert) {
+        const id = ctx.getImageData(0, 0, w, h);
+        const d = id.data;
+        for (let i = 0; i < d.length; i += 4) {
+          d[i] = 255 - d[i];
+          d[i + 1] = 255 - d[i + 1];
+          d[i + 2] = 255 - d[i + 2];
+        }
+        ctx.putImageData(id, 0, 0);
+      }
+      return out;
+    }
+
+    // coba beberapa sudut & mode
+    const angles = [-12, -6, 0, 6, 12];
+    const variants: { canvas: HTMLCanvasElement; label: string }[] = [];
+    for (const a of angles) {
+      variants.push({ canvas: makeVariant(base, a, false), label: `rot${a}` });
+      variants.push({
+        canvas: makeVariant(base, a, true),
+        label: `rot${a}-inv`,
+      });
+    }
+
+    async function ocrOnce(c: HTMLCanvasElement) {
+      const { data } = await Tesseract.recognize(
+        c as any,
+        "eng",
+        {
+          // ↓↓↓ CAST ke any agar TS tidak protes
+          ...({
+            tessedit_char_whitelist: "0123456789.-\u2013", // en dash pakai unicode
+            tessedit_pageseg_mode: "7", // single line
+            user_defined_dpi: "300",
+          } as any),
+          logger: (m: any) => {
+            if (
+              m.status === "recognizing text" &&
+              typeof m.progress === "number"
+            ) {
+              setProgress((p) =>
+                Math.min(99, Math.max(p, Math.round(m.progress * 100)))
+              );
+            }
+          },
+        } as any // <- cast keseluruhan options juga boleh
       );
+      return data.text || "";
+    }
 
-      // PASS 2: hanya area crop, fokus single-line
-      let mergedText = pass1.text || "";
-      if (crop) {
-        const pass2 = await ocr(crop, "7");
-        mergedText += "\n" + (pass2.text || "");
+    // jalankan OCR semua varian dan pilih teks “terbaik”
+    let bestText = "";
+    let bestScore = -1;
+    let logAll = "";
+    for (const v of variants) {
+      const txt = await ocrOnce(v.canvas);
+      logAll += `\n[${v.label}]\n${txt}\n`;
+      // skor = jumlah digit + jumlah pemisah (titik/strip)
+      const digits = (txt.match(/\d/g) || []).length;
+      const seps = (txt.match(/[.\-–]/g) || []).length;
+      const score = digits * 2 + seps;
+      if (score > bestScore) {
+        bestScore = score;
+        bestText = txt;
       }
+    }
 
-      // KLASIFIKASI
-      const check = classifyFromTesseractData({ text: mergedText });
-      if (!check.isNPWP) {
-        setErr("NPWP belum terdeteksi.");
-      } else {
-        setErr(null);
-        setNpwp(check.npwp!);
-      }
-    } catch (e: any) {
-      setErr(e?.message ?? "OCR gagal.");
+    setProgress(100);
+    setDebugText(logAll.trim());
+
+    // klasifikasi dari teks terbaik
+    const res = classifyFromTesseractText(bestText);
+    if (res.isNPWP) {
+      setNpwp(res.npwp!);
+      onDetected?.(res.npwp!);
+      setError(null); // bersihkan error
+    } else {
+      setNpwp(null);
+      setError("Hanya dokumen NPWP yang diterima / belum terbaca.");
     }
   }
 
   return (
-    <div className="space-y-4 max-w-xl">
-      <input type="file" accept="image/*" onChange={onFile} />
-      <div className="w-full h-2 bg-gray-200 rounded">
-        <div
-          className="h-2 rounded"
-          style={{ width: `${progress}%`, background: "#0ea5e9" }}
-        />
-      </div>
-      <div className="text-sm">Progress: {progress}%</div>
+    <div className="max-w-2xl space-y-4">
+      <h1 className="text-lg font-semibold">NPWP OCR Detector</h1>
+      <input type="file" accept="image/*" onChange={handleFileChange} />
 
-      <div className="border p-3 rounded text-sm">
+      {progress > 0 && progress < 100 && (
         <div>
-          <b>NPWP:</b> {npwp ?? "—"}
+          <div className="w-full h-2 bg-gray-200 rounded">
+            <div
+              className="h-2 rounded"
+              style={{ width: `${progress}%`, background: "#0ea5e9`" }}
+            />
+          </div>
+          <p className="text-sm mt-1">Progress: {progress}%</p>
         </div>
-        {err && <div className="text-red-600 mt-2">{err}</div>}
-      </div>
+      )}
+
+      {progress === 100 && (
+        <>
+          <div className="border p-3 rounded text-sm">
+            <b>NPWP:</b>{" "}
+            {npwp ? (
+              <span className="text-green-600">{npwp}</span>
+            ) : (
+              <span className="text-red-600">
+                {error && <p style={{ color: "red" }}>{error}</p>}
+              </span>
+            )}
+          </div>
+
+          <details className="border p-3 rounded text-xs whitespace-pre-wrap">
+            <summary className="cursor-pointer">
+              🔍 OCR Debug (semua varian)
+            </summary>
+            {debugText}
+          </details>
+        </>
+      )}
     </div>
   );
 }

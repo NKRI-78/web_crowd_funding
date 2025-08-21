@@ -11,7 +11,7 @@ import PhotoUploaderContainer from "../inputFormPenerbit/_component/PhotoUploade
 import FileInput from "../inputFormPenerbit/_component/FileInput";
 import SectionPoint from "../inputFormPenerbit/_component/SectionPoint";
 import Subtitle from "../inputFormPenerbit/_component/SectionSubtitle";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import {
   CreateProjectFormSchema,
   createProjectPenerbitSchema,
@@ -19,6 +19,12 @@ import {
 } from "./create-project-penerbit.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CurrencyField from "../inputFormPenerbit/_component/CurrencyField";
+import FormAlamat from "./FormAlamat";
+import { API_BACKEND } from "@/app/utils/constant";
+import axios from "axios";
+import { fetchProvinces } from "@/app/lib/fetchWilayah";
+
+type OptionType = { value: string; label: string; zip_code: string };
 
 const CreateProjectPenerbit: React.FC = () => {
   //* form state
@@ -27,6 +33,7 @@ const CreateProjectPenerbit: React.FC = () => {
     handleSubmit,
     watch,
     control,
+    setValue,
     formState: { errors },
     reset,
   } = useForm<CreateProjectFormSchema>({
@@ -63,6 +70,46 @@ const CreateProjectPenerbit: React.FC = () => {
 
     return () => subscription.unsubscribe();
   }, [watch]);
+
+  const { fields } = useFieldArray({ control, name: "address" });
+
+  const [provinsiList, setProvinsiList] = useState<OptionType[]>([]);
+  const [kotaList, setKotaList] = useState<Record<number, OptionType[]>>({});
+  const [kecamatanList, setKecamatanList] = useState<
+    Record<number, OptionType[]>
+  >({});
+  const [kelurahanList, setKelurahanList] = useState<
+    Record<number, OptionType[]>
+  >({});
+
+  useEffect(() => {
+    const loadProvinces = async () => {
+      const provinsiList = await fetchProvinces();
+      setProvinsiList(provinsiList);
+    };
+    loadProvinces();
+  }, []);
+
+  const fetchOptions = async (url: string, parentId?: string) => {
+    try {
+      const response = await axios.get(
+        `${API_BACKEND}/${url}${parentId ? `/${parentId}` : ""}`
+      );
+      console.log(
+        "URL",
+        `${API_BACKEND}/${url}${parentId ? `/${parentId}` : ""}`
+      );
+
+      return response.data?.data.map((item: any) => ({
+        value: item.name,
+        label: item.name,
+        zip_code: item.zip_code,
+      }));
+    } catch (error) {
+      console.error("Failed to fetch options:", error);
+      return [];
+    }
+  };
 
   return (
     <div className="w-full py-28 px-6 md:px-24 bg-white">
@@ -472,6 +519,25 @@ const CreateProjectPenerbit: React.FC = () => {
               />
             </div>
           </div>
+          {fields.map((item, index) => (
+            <FormAlamat
+              key={item.id}
+              index={index}
+              control={control}
+              setValue={setValue}
+              watch={watch}
+              register={register}
+              provinsiList={provinsiList}
+              kotaList={kotaList}
+              setKotaList={setKotaList}
+              kecamatanList={kecamatanList}
+              setKecamatanList={setKecamatanList}
+              kelurahanList={kelurahanList}
+              setKelurahanList={setKelurahanList}
+              fetchOptions={fetchOptions}
+              errors={errors}
+            />
+          ))}
         </div>
       </div>
     </div>

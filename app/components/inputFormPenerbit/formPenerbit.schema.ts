@@ -2,13 +2,22 @@ import { z } from "zod";
 
 const baseManajemenSchema = z.object({
   id: z.string().optional(),
-  nama: z.string().trim().min(1, "Nama wajib diisi"),
+  nama: z
+    .string({ required_error: "Nama wajib diisi" })
+    .trim()
+    .min(1, "Nama wajib diisi"),
   noKTP: z
-    .string()
+    .string({ required_error: "No KTP harus tepat 16 digit angka" })
     .trim()
     .regex(/^\d{16}$/, "No KTP harus tepat 16 digit angka"),
-  fileKTP: z.string().trim().min(1, "File KTP wajib diunggah"),
-  fileNPWP: z.string().trim().min(1, "File NPWP wajib diunggah"),
+  fileKTP: z
+    .string({ required_error: "File KTP wajib diunggah" })
+    .trim()
+    .min(1, "File KTP wajib diunggah"),
+  fileNPWP: z
+    .string({ required_error: "File NPWP wajib diunggah" })
+    .trim()
+    .min(1, "File NPWP wajib diunggah"),
 });
 
 const direkturItemSchema = baseManajemenSchema.extend({
@@ -24,27 +33,39 @@ const komisarisItemSchema = baseManajemenSchema.extend({
 });
 
 export const FormPenerbitSchema = z.object({
-  laporanKeuangan: z.string().trim().min(1, "Laporan Keuangan wajib diisi"),
-  rekeningKoran: z.string().trim().min(1, "Rekening Koran wajib diisi"),
+  laporanKeuangan: z
+    .string({ required_error: "Laporan Keuangan wajib diisi" })
+    .trim()
+    .min(1, "Laporan Keuangan wajib diisi"),
+  rekeningKoran: z
+    .string({ required_error: "Rekening Koran wajib diisi" })
+    .trim()
+    .min(1, "Rekening Koran wajib diisi"),
 
   company_nib_path: z
-    .string()
+    .string({ required_error: "Dokumen NIB wajib diunggah" })
     .min(1, { message: "Dokumen NIB wajib diunggah" }),
   akta_pendirian: z
-    .string()
+    .string({ required_error: "Akte pendirian wajib diunggah" })
     .min(1, { message: "Akte pendirian wajib diunggah" }),
-  sk_kumham_path: z.string().min(1, { message: "SK Kumham wajib diunggah" }),
+  sk_kumham_path: z
+    .string({ required_error: "SK Kumham wajib diunggah" })
+    .min(1, { message: "SK Kumham wajib diunggah" }),
   akta_perubahan_terahkir_path: z
-    .string()
+    .string({ required_error: "Akte perubahan terakhir wajib diunggah" })
     .min(1, { message: "Akte perubahan terakhir wajib diunggah" }),
   sk_kumham_terahkir: z
-    .string()
+    .string({ required_error: "SK Kumham terakhir wajib diunggah" })
     .min(1, { message: "SK Kumham terakhir wajib diunggah" }),
   siup: z
-    .string()
+    .string({ required_error: "Surat Izin Usaha Perdagangan wajib diunggah" })
     .min(1, { message: "Surat Izin Usaha Perdagangan wajib diunggah" }),
-  tdp: z.string().min(1, { message: "Tanda Daftar Perusahaan wajib diunggah" }),
-  fileNpwp: z.string().min(1, { message: "NPWP wajib diunggah" }),
+  tdp: z
+    .string({ required_error: "NPWP wajib diunggah" })
+    .min(1, { message: "Tanda Daftar Perusahaan wajib diunggah" }),
+  fileNpwp: z
+    .string({ required_error: "NPWP wajib diunggah" })
+    .min(1, { message: "NPWP wajib diunggah" }),
 
   direktur: z
     .array(direkturItemSchema)

@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
+import { getUser } from "@/app/lib/auth";
 
 interface FormSchema {
   photo: File | null;
@@ -29,6 +30,16 @@ interface ErrorSchema {
   suratKuasa?: string;
 }
 
+interface ProfileData {
+  fullname: string;
+  avatar: string;
+  last_education: string;
+  gender: string;
+  status_marital: string;
+  address_detail: string;
+  occupation: string;
+}
+
 interface FormUtusanPenerbitProps {
   onSubmit: () => void;
 }
@@ -44,12 +55,35 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
     noKtp: "",
     suratKuasa: "",
   });
+  const [profile, setProfile] = useState<ProfileData | null>(null);
 
   const [errors, setErrors] = useState<ErrorSchema>({});
+  const [fullnameEdited, setFullnameEdited] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   //* handle submit
   const handleSubmit = async () => {
+    setLoading(true);
+
+    // 🚨 langsung cek selfie
+    if (!formFields.photo) {
+      setErrors((prev) => ({ ...prev, photo: "Anda belum mengambil foto" }));
+      Swal.fire({
+        icon: "warning",
+        title: "Foto Selfie wajib diambil",
+        text: "Silakan ambil foto selfie sebelum melanjutkan.",
+        timer: 4000,
+        timerProgressBar: true,
+      });
+      setLoading(false);
+      return; // stop submit
+    }
+
     const isValid = validateForm();
+    if (!isValid) {
+      setLoading(false);
+      return;
+    }
     if (isValid) {
       try {
         const userData = localStorage.getItem("user");
@@ -77,7 +111,6 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
           );
 
           onSubmit();
-
           localStorage.removeItem("utusanPenerbitCache");
         }
       } catch (error: any) {
@@ -90,26 +123,76 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
           timer: 3000,
           timerProgressBar: true,
         });
+      } finally {
+        setLoading(false);
       }
+    } else {
+      setLoading(false);
     }
   };
 
-  //* load cache
+  const user = getUser();
+  useEffect(() => {
+    if (!user?.token) return;
+
+    axios
+      .get("https://api-capbridge.langitdigital78.com/api/v1/profile", {
+        headers: {
+          Authorization: `Bearer ${user?.token}`,
+        },
+      })
+      .then((res) => {
+        setProfile(res.data.data);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch profile", err);
+      });
+  }, [user?.token]);
+  console.log("Fullname : " + profile?.fullname);
+
+  // 🔹 Restore dari cache localStorage
   useEffect(() => {
     const formCache = localStorage.getItem("utusanPenerbitCache");
     if (formCache) {
-      const { photo, fullname, jabatan, noKtp, suratKuasa, fileKtp } =
-        JSON.parse(formCache) as FormSchema;
-      setFormFields({
-        photo: photo,
-        fullname: fullname,
-        jabatan: jabatan,
-        noKtp: noKtp,
-        suratKuasa: suratKuasa,
-        fileKtp: fileKtp,
-      });
+      const cacheData = JSON.parse(formCache) as FormSchema;
+      setFormFields(cacheData);
+
+      // kalau fullname di cache bukan "-" berarti sudah diisi user
+      if (cacheData.fullname && cacheData.fullname !== "-") {
+        setFullnameEdited(true);
+      }
     }
   }, []);
+
+  // 🔹 Inject fullname dari profile, hanya kalau user belum pernah edit
+  useEffect(() => {
+    if (profile?.fullname && !fullnameEdited) {
+      setFormFields((prev) => ({
+        ...prev,
+        fullname: profile.fullname,
+      }));
+    }
+  }, [profile, fullnameEdited]);
+
+  // 🔹 Simpan perubahan ke state + localStorage
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormFields((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    if (name === "fullname") {
+      setFullnameEdited(true); // tandai sudah edit fullname
+    }
+
+    localStorage.setItem(
+      "utusanPenerbitCache",
+      JSON.stringify({ ...formFields, [name]: value })
+    );
+  };
 
   //* set cache
   useEffect(() => {
@@ -120,9 +203,18 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
   const validateForm = (): boolean => {
     const newErrors: ErrorSchema = {};
 
+    // ✅ selfie wajib
     if (!formFields.photo) {
+      Swal.fire({
+        icon: "warning",
+        title: "Foto Selfie wajib diambil",
+        text: "Silakan ambil foto selfie sebelum melanjutkan.",
+        timer: 4000,
+        timerProgressBar: true,
+      });
       newErrors.photo = "Anda belum mengambil foto";
     }
+
     if (!formFields.fullname) {
       newErrors.fullname = "Nama Lengkap tidak boleh kosong";
     }
@@ -143,11 +235,10 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
 
     setErrors(newErrors);
 
-    console.log(newErrors);
-
     const isValid = Object.keys(newErrors).length === 0;
 
-    if (!isValid) {
+    // ✅ hanya munculkan alert umum kalau bukan selfie yang error
+    if (!isValid && formFields.photo) {
       Swal.fire({
         title: "Data Tidak Lengkap / Tidak Valid",
         text: "Beberapa kolom berisi data yang tidak valid atau belum diisi. Harap koreksi sebelum melanjutkan.",
@@ -199,10 +290,10 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
           photoResult={(photoSelfie) => {
             setFormFields({ ...formFields, photo: photoSelfie });
             if (photoSelfie) {
-              setErrors({ ...errors, photo: "" });
+              setErrors((prev) => ({ ...prev, photo: "" }));
             }
           }}
-          errorText={errors.photo}
+          errorText={errors.photo} // 🔑 ini penting
         />
 
         {/* input data */}
@@ -297,7 +388,9 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
           <div className="my-10"></div>
 
           <div className="w-full flex justify-end gap-4 mt-6">
-            <FormButton onClick={handleSubmit}>Lanjutkan</FormButton>
+            <FormButton disabled={loading} onClick={handleSubmit}>
+              {loading ? "Loading..." : "Lanjutkan"}
+            </FormButton>
           </div>
         </div>
       </div>

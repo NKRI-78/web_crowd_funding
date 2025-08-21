@@ -1,15 +1,5 @@
 export interface IFormPublisher {
   sameAsCompany: boolean;
-  total_employees: string;
-  jenis_usaha: string;
-  company_nib_path: string;
-  akta_pendirian: string;
-  sk_kumham_path: string;
-  akta_perubahan_terahkir_path: string;
-  sk_kumham_terahkir: string;
-  fileNpwp: string;
-  siup: string;
-  tdp: string;
   noPhoneCompany: string;
   webCompany: string;
   emailCompany: string;
@@ -19,8 +9,23 @@ export interface IFormPublisher {
   establishedYear: string;
   address: Address[];
   company_name: string;
+  jenis_usaha: string;
   companyType: string;
   statusCompanys: string;
+  sk_kumham_terahkir: string;
+  tdp: string;
+  siup: string;
+  fileNpwp: string;
+  akta_pendirian: string;
+  company_nib_path: string;
+  sk_kumham_path: string;
+  akta_perubahan_terahkir_path: string;
+  total_employees: string;
+  laporanKeuangan: string;
+  rekeningKoran: string;
+  direktur: Direktur[];
+  komisaris: Komisari[];
+  agree: boolean;
 }
 
 export interface Address {
@@ -31,4 +36,22 @@ export interface Address {
   subdistrict_name: string;
   postal_code: string;
   detail: string;
+}
+
+export interface Direktur {
+  id: string;
+  nama: string;
+  jabatan: string;
+  noKTP: string;
+  fileKTP: string;
+  fileNPWP: string;
+}
+
+export interface Komisari {
+  id: string;
+  nama: string;
+  jabatan: string;
+  noKTP: string;
+  fileKTP: string;
+  fileNPWP: string;
 }
