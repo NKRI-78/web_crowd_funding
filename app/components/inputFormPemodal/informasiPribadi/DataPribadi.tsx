@@ -10,6 +10,7 @@ import Select from "react-select";
 import { API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { compressImage } from "@/app/helper/CompressorImage";
 import UpdateRing from "../component/UpdateRing";
+import ContainerSelfie from "../component/ContainerSelfie";
 
 interface Props {
   formData: {
@@ -34,6 +35,9 @@ interface Props {
     districtPribadi: { value: string; label: string };
     subDistrictPribadi: { value: string; label: string };
     posCode: string;
+    name_heir: string;
+    phone_heir: string;
+    fotoPemodalUrlPribadi: string;
   };
   onLihatKTP?: () => void;
   onChange: (
@@ -101,6 +105,7 @@ interface Props {
     form: string;
   };
   isUpdate: boolean;
+  onUploadSelfie: (url: string) => void;
 }
 
 const ComponentDataPribadi: React.FC<Props> = ({
@@ -117,6 +122,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
   onLihatKTP,
   dataProfile,
   isUpdate,
+  onUploadSelfie,
 }) => {
   type OptionValue = {
     value: string;
@@ -216,6 +222,77 @@ const ComponentDataPribadi: React.FC<Props> = ({
         const labelMap: { [key: string]: string } = {
           ktpUrl: "KTP",
           npwpUrl: "NPWP Perusahaan",
+        };
+
+        const formattedKey = labelMap[keyName] || keyName;
+
+        Swal.fire({
+          title: "Berhasil",
+          text: `Upload ${formattedKey} berhasil!`,
+          icon: "success",
+          timer: 3000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+        });
+
+        onUploadKTP(fileUrl, keyName ?? "");
+      } else {
+        alert("Upload gagal, tidak ada URL yang diterima.");
+      }
+    } catch (error) {
+      console.error("Gagal upload KTP:", error);
+      Swal.fire({
+        title: "Gagal",
+        text: `Upload ${keyName} gagal. Silakan coba lagi.`,
+        icon: "warning",
+        timer: 3000,
+      });
+    } finally {
+      setUploadStatus((prev) => ({ ...prev, [keyName]: false }));
+    }
+  };
+
+  const handleFotoChange = async (file: File, keyName: string) => {
+    // const file = e.target.files?.[0];
+
+    // const keyName = e.target.getAttribute("data-keyname");
+    if (!file || !keyName) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      Swal.fire({
+        title: "Warning",
+        text: `Ukuran image maksimal 10MB!`,
+        icon: "warning",
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
+    const compressedFile = await compressImage(file);
+
+    const formData = new FormData();
+    formData.append("folder", "web");
+    formData.append("subfolder", keyName);
+    formData.append("media", compressedFile);
+
+    try {
+      const res = await axios.post(
+        `${API_BACKEND_MEDIA}/api/v1/media/upload`,
+        formData
+      );
+
+      const fileUrl = res.data?.data?.path;
+
+      onUploadSelfie(fileUrl);
+      console.log(fileUrl, "fileUrl");
+
+      if (fileUrl) {
+        const labelMap: { [key: string]: string } = {
+          ktpUrl: "KTP",
+          npwpUrl: "NPWP Perusahaan",
+          fotoPemodalUrl: "Foto",
         };
 
         const formattedKey = labelMap[keyName] || keyName;
@@ -480,6 +557,19 @@ const ComponentDataPribadi: React.FC<Props> = ({
           <h3 className="font-semibold text-black">1. Informasi Pribadi</h3>
 
           <div>
+            <ContainerSelfie
+              defaultPhoto={formData.fotoPemodalUrlPribadi}
+              photoResult={(file) => {
+                // console.log(file, "selfie");
+                if (file) {
+                  handleFotoChange(file, "fotoPemodalUrl");
+                }
+              }}
+              errorText={errors?.fotoPemodalUrlPribadi?.[0]}
+            />
+          </div>
+
+          <div>
             <label className="text-sm font-medium mb-2">
               Nama Lengkap <span className="text-red-500">*</span>
             </label>
@@ -574,148 +664,151 @@ const ComponentDataPribadi: React.FC<Props> = ({
               )}
             </div>
           </div>
-
-          <div className="mb-4">
-            <label className="text-md mb-2">
-              Jenis Kelamin <span className="text-red-500">*</span>
-            </label>
-            <div className="flex gap-6">
-              {optionsGender.map((gender) => (
-                <label
-                  key={gender}
-                  className="flex items-center gap-2 cursor-pointer text-sm"
-                >
-                  <input
-                    type="radio"
-                    name="jenisKelamin"
-                    value={gender}
-                    checked={formData.jenisKelamin === gender}
-                    onChange={() => onGenderChange(gender)}
-                    className="form-radio text-[#4821C2]"
-                  />
-                  <span className="text-gray-700">{gender}</span>
-                </label>
-              ))}
-            </div>
-            {errors?.jenisKelamin && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.jenisKelamin[0]}
-              </p>
-            )}
-          </div>
-
-          <div className="mb-4">
-            <label className="text-md mb-2">
-              Status Pernikahan <span className="text-red-500">*</span>
-            </label>
-            <div className="flex gap-6">
-              {optionsPernikahan.map((wedding) => (
-                <label
-                  key={wedding}
-                  className="flex text-sm items-center gap-2 cursor-pointer"
-                >
-                  <input
-                    type="radio"
-                    name="statusPernikahan"
-                    value={wedding}
-                    checked={formData.statusPernikahan === wedding}
-                    onChange={() => onWeddingChange(wedding)}
-                    className="form-radio text-[#4821C2]"
-                  />
-                  <span className="text-gray-700">{wedding}</span>
-                </label>
-              ))}
-            </div>
-            {errors?.statusPernikahan && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.statusPernikahan[0]}
-              </p>
-            )}
-          </div>
-
-          <div className="mb-4">
-            <label className="text-sm font-medium mb-2">
-              Upload KTP <span className="text-red-500">*</span>
-            </label>
-            <p className="text-xs text-gray-500 mb-2">
-              File maksimal berukuran 10mb
-            </p>
-
-            <UpdateRing
-              identity={`${dataProfile?.form}`}
-              // formKey={dataProfile?.form}
-              formKey="ktp"
-            >
-              {/* Input File yang disembunyikan */}
-              <input
-                type="file"
-                id="ktpUpload"
-                className="hidden"
-                onChange={handleFileChange}
-                disabled={uploadStatus["ktpUrl"] === true}
-                accept="image/*"
-                data-keyname="ktpUrl"
-              />
-
-              {/* Label sebagai tombol */}
+        </div>
+        <div className="mb-4">
+          <label className="text-md mb-2">
+            Jenis Kelamin <span className="text-red-500">*</span>
+          </label>
+          <div className="flex gap-6">
+            {optionsGender.map((gender) => (
               <label
-                htmlFor="ktpUpload"
-                className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
-                // className={`inline-flex items-center gap-2 px-4 py-2 ${
-                //   uploadStatus["ktpUrl"]
-                //     ? "bg-gray-400 cursor-not-allowed"
-                //     : "bg-[#505050] hover:bg-gray-800"
-                // } text-white rounded-md transition`}
+                key={gender}
+                className="flex items-center gap-2 cursor-pointer text-sm"
               >
-                <>
-                  <FaFileAlt />
-                  Upload Dokumen
-                </>
+                <input
+                  type="radio"
+                  name="jenisKelamin"
+                  value={gender}
+                  checked={formData.jenisKelamin === gender}
+                  onChange={() => onGenderChange(gender)}
+                  className="form-radio text-[#4821C2]"
+                />
+                <span className="text-gray-700">{gender}</span>
               </label>
+            ))}
+          </div>
+          {errors?.jenisKelamin && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.jenisKelamin[0]}
+            </p>
+          )}
+        </div>
+
+        <div className="mb-4">
+          <label className="text-md mb-2">
+            Status Pernikahan <span className="text-red-500">*</span>
+          </label>
+          <div className="flex gap-6">
+            {optionsPernikahan.map((wedding) => (
+              <label
+                key={wedding}
+                className="flex text-sm items-center gap-2 cursor-pointer"
+              >
+                <input
+                  type="radio"
+                  name="statusPernikahan"
+                  value={wedding}
+                  checked={formData.statusPernikahan === wedding}
+                  onChange={() => onWeddingChange(wedding)}
+                  className="form-radio text-[#4821C2]"
+                />
+                <span className="text-gray-700">{wedding}</span>
+              </label>
+            ))}
+          </div>
+          {errors?.statusPernikahan && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.statusPernikahan[0]}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* form bagian kanan */}
+      <div>
+        <div className="mb-4">
+          <label className="text-sm font-medium mb-2">
+            Upload KTP <span className="text-red-500">*</span>
+          </label>
+          <p className="text-xs text-gray-500 mb-2">
+            File maksimal berukuran 10mb
+          </p>
+
+          <UpdateRing
+            identity={`${dataProfile?.form}`}
+            // formKey={dataProfile?.form}
+            formKey="ktp"
+          >
+            {/* Input File yang disembunyikan */}
+            <input
+              type="file"
+              id="ktpUpload"
+              className="hidden"
+              onChange={handleFileChange}
+              disabled={uploadStatus["ktpUrl"] === true}
+              accept="image/*"
+              data-keyname="ktpUrl"
+            />
+
+            {/* Label sebagai tombol */}
+            <label
+              htmlFor="ktpUpload"
+              className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
+              // className={`inline-flex items-center gap-2 px-4 py-2 ${
+              //   uploadStatus["ktpUrl"]
+              //     ? "bg-gray-400 cursor-not-allowed"
+              //     : "bg-[#505050] hover:bg-gray-800"
+              // } text-white rounded-md transition`}
+            >
               <>
-                {isClient && formData.ktpUrl && (
-                  <button
-                    type="button"
-                    onClick={onLihatKTP}
-                    className="text-blue-600 underline text-sm block mt-2 mb-2"
-                  >
-                    Lihat KTP
-                  </button>
-                )}
+                <FaFileAlt />
+                Upload Dokumen
               </>
-              {errors?.ktpUrl && (
-                <p className="text-red-500 text-sm mt-1">{errors.ktpUrl[0]}</p>
-              )}
-            </UpdateRing>
-          </div>
-          <div className="mb-4">
-            <label className="text-md mb-2">
-              Pendidikan Terakhir <span className="text-red-500">*</span>
             </label>
-            <div className="grid grid-cols-3 gap-y-2 gap-x-4">
-              {optionsLastEducation.map((education) => (
-                <label
-                  key={education}
-                  className="flex text-sm items-center gap-2 cursor-pointer"
+            <>
+              {isClient && formData.ktpUrl && (
+                <button
+                  type="button"
+                  onClick={onLihatKTP}
+                  className="text-blue-600 underline text-sm block mt-2 mb-2"
                 >
-                  <input
-                    type="radio"
-                    name="pendidikanTerakhir"
-                    value={education}
-                    checked={formData.pendidikanTerakhir === education}
-                    onChange={() => onEducationChange(education)}
-                    className="form-radio text-[#4821C2]"
-                  />
-                  <span className="text-gray-700">{education}</span>
-                </label>
-              ))}
-            </div>
-            {errors?.pendidikanTerakhir && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.pendidikanTerakhir[0]}
-              </p>
+                  Lihat KTP
+                </button>
+              )}
+            </>
+            {errors?.ktpUrl && (
+              <p className="text-red-500 text-sm mt-1">{errors.ktpUrl[0]}</p>
             )}
+          </UpdateRing>
+        </div>
+
+        <div className="mb-4">
+          <label className="text-md mb-2">
+            Pendidikan Terakhir <span className="text-red-500">*</span>
+          </label>
+          <div className="grid grid-cols-3 gap-y-2 gap-x-4">
+            {optionsLastEducation.map((education) => (
+              <label
+                key={education}
+                className="flex text-sm items-center gap-2 cursor-pointer"
+              >
+                <input
+                  type="radio"
+                  name="pendidikanTerakhir"
+                  value={education}
+                  checked={formData.pendidikanTerakhir === education}
+                  onChange={() => onEducationChange(education)}
+                  className="form-radio text-[#4821C2]"
+                />
+                <span className="text-gray-700">{education}</span>
+              </label>
+            ))}
           </div>
+          {errors?.pendidikanTerakhir && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.pendidikanTerakhir[0]}
+            </p>
+          )}
         </div>
 
         <div className="mb-4 mt-2">
@@ -761,10 +854,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
             </p>
           )}
         </div>
-      </div>
 
-      {/* form bagian kanan */}
-      <div>
         <div className="mb-4">
           <label htmlFor="address" className="text-sm font-medium mb-2 mt-2">
             Alamat Lengkap <span className="text-red-500">*</span>
@@ -881,6 +971,42 @@ const ComponentDataPribadi: React.FC<Props> = ({
           {errors?.addres && (
             <p className="text-red-500 text-sm mt-1">{errors.addres[0]}</p>
           )}
+
+          <div>
+            <label className="text-sm font-medium mb-2">
+              Nama Ahli Waris <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="name_heir"
+              value={formData.name_heir}
+              onChange={onChange}
+              placeholder="Nama ahli waris"
+              className="border p-2 w-full rounded mb-0 placeholder:text-sm"
+            />
+            {errors?.name_heir && (
+              <p className="text-red-500 text-sm mt-1">{errors.name_heir[0]}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2">
+              Nomor Telepon Ahli Waris <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="phone_heir"
+              value={formData.phone_heir}
+              onChange={onChange}
+              placeholder="Nomor telepon ahli waris"
+              className="border p-2 w-full rounded mb-0 placeholder:text-sm"
+            />
+            {errors?.phone_heir && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.phone_heir[0]}
+              </p>
+            )}
+          </div>
         </div>
         <h2 className="font-semibold text-black">2. Informasi Rekening Bank</h2>
 
@@ -891,7 +1017,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
 
           <Select
             className="mt-0"
-            value={selectedBank}
+            value={selectedBank || null}
             options={customOptionsBank}
             formatOptionLabel={formatOptionLabel}
             onChange={(e) => {

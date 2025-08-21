@@ -69,7 +69,7 @@ const FormDataPemodalPerusahaan: React.FC = () => {
   const handleBank = (namaBank: OptionType) => {
     setFormData((prev: any) => ({
       ...prev,
-      namaBank: namaBank as NonNullable<OptionType>,
+      namaBank: namaBank,
     }));
   };
 

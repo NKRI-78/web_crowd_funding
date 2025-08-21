@@ -75,6 +75,7 @@ const FormPemodal: React.FC = () => {
   const form = searchParams.get("form");
   const [dataProfile, setDataProfile] = useState<DataProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     // const userCookie = Cookies.get("user");
@@ -154,6 +155,8 @@ const FormPemodal: React.FC = () => {
               ? { value: data.subdistrict_name, label: data.subdistrict_name }
               : null,
             posCode: data.postal_code || "",
+            name_heir: data.name_heir || "",
+            phone_heir: data.phone_heir || "",
           }));
 
           setDataPekerjaan((prev) => ({
@@ -305,6 +308,9 @@ const FormPemodal: React.FC = () => {
         }),
 
       posCode: z.string().min(1, "Kode pos wajib dipilih"),
+      name_heir: z.string().min(1, "Nama ahli waris wajib diisi"),
+      phone_heir: z.string().min(1, "Nomor telepon ahli waris wajib diisi"),
+      fotoPemodalUrlPribadi: z.string().min(1, "Upload Foto wajib"),
     })
     .refine((data) => data.nama === data.namaPemilik, {
       message: "Nama pemilik rekening harus sama dengan nama",
@@ -342,7 +348,7 @@ const FormPemodal: React.FC = () => {
       setujuRisikoInvestasi: z.literal(true),
       // signature: z.string().min(1, "Tanda tangan wajib"),
       npwpUrl: z.string().min(1, "Upload NPWP wajib"),
-      fotoPemodalUrl: z.string().min(1, "Upload Foto wajib"),
+      // fotoPemodalUrl: z.string().min(1, "Upload Foto wajib"),
       provincePekerjaan: z
         .object({
           value: z.string(),
@@ -429,6 +435,9 @@ const FormPemodal: React.FC = () => {
           districtPribadi: parsed.districtPribadi ?? null,
           subDistrictPribadi: parsed.subDistrictPribadi ?? null,
           posCode: parsed.posCode || "",
+          name_heir: parsed.name_heir || "",
+          phone_heir: parsed.phone_heir || "",
+          fotoPemodalUrlPribadi: parsed.fotoPemodalUrlPribadi || "",
         };
       }
     }
@@ -443,7 +452,8 @@ const FormPemodal: React.FC = () => {
       pekerjaan: "",
       pekerjaanLainnya: "",
       addres: "",
-      namaBank: { value: "", label: "" },
+      // namaBank: { value: "", label: "" },
+      namaBank: null,
 
       nomorRekening: "",
       namaPemilik: "",
@@ -455,6 +465,9 @@ const FormPemodal: React.FC = () => {
       districtPribadi: null,
       subDistrictPribadi: null,
       posCode: "",
+      name_heir: "",
+      phone_heir: "",
+      fotoPemodalUrlPribadi: "",
     };
   });
 
@@ -483,6 +496,10 @@ const FormPemodal: React.FC = () => {
           districtPekerjaan: parsed.districtPekerjaan ?? null,
           subDistrictPekerjaan: parsed.subDistrictPekerjaan ?? null,
           posCodePekerjaan: parsed.posCodePekerjaan || "",
+          namaBank_efek: parsed.namaBank_efek || "",
+          nomorRekening_efek: parsed.nomorRekening_efek || "",
+          namaPemilik_efek: parsed?.namaPemilik_efek || "",
+          slipGajiUrl: parsed.slipGajiUrl || "",
         };
       }
     }
@@ -506,6 +523,11 @@ const FormPemodal: React.FC = () => {
       districtPekerjaan: null,
       subDistrictPekerjaan: null,
       posCodePekerjaan: "",
+      // namaBank_efek: { value: "", label: "" },
+      namaBank_efek: null,
+      nomorRekening_efek: "",
+      namaPemilik_efek: "",
+      slipGajiUrl: "",
     };
   });
 
@@ -543,12 +565,24 @@ const FormPemodal: React.FC = () => {
       return;
     }
 
+    if (name === "phone_heir") {
+      const numericValue = value.replace(/\D/g, "");
+      if (numericValue.length > 13) return;
+
+      setDataPribadi((prev) => ({
+        ...prev,
+        [name]: numericValue,
+      }));
+      return;
+    }
+
     const capitalizeFields = [
       "nama",
       "tempatLahir",
       "namaBank",
       "namaPemilik",
       "cabangBank",
+      "name_heir",
     ];
 
     const formattedValue = capitalizeFields.includes(name)
@@ -587,6 +621,9 @@ const FormPemodal: React.FC = () => {
           districtPribadi: parsed.districtPribadi ?? null,
           subDistrictPribadi: parsed.subDistrictPribadi ?? null,
           posCode: parsed.posCode || "",
+          name_heir: parsed.name_heir || "",
+          phone_heir: parsed.phone_heir || "",
+          fotoPemodalUrlPribadi: parsed.fotoPemodalUrlPribadi || "",
         });
 
         setDataPekerjaan({
@@ -609,6 +646,10 @@ const FormPemodal: React.FC = () => {
           districtPekerjaan: parsed.districtPekerjaan ?? null,
           subDistrictPekerjaan: parsed.subDistrictPekerjaan ?? null,
           posCodePekerjaan: parsed.posCodePekerjaan || "",
+          namaBank_efek: parsed.namaBank_efek || "",
+          nomorRekening_efek: parsed.nomorRekening_efek || "",
+          namaPemilik_efek: parsed.namaPemilik_efek || "",
+          slipGajiUrl: parsed.slipGajiUrl || "",
         });
       }
     }
@@ -617,14 +658,16 @@ const FormPemodal: React.FC = () => {
   // Auto simpan ke localStorage setiap ada perubahan dataPribadi
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const fullData = {
-        ...dataPribadi,
-        ...dataPekerjaan,
-      };
+      if (!submitted) {
+        const fullData = {
+          ...dataPribadi,
+          ...dataPekerjaan,
+        };
 
-      localStorage.setItem("formPemodal", JSON.stringify(fullData));
+        localStorage.setItem("formPemodal", JSON.stringify(fullData));
+      }
     }
-  }, [dataPribadi, dataPekerjaan]);
+  }, [dataPribadi, dataPekerjaan, submitted]);
 
   const handleGenderChange = (gender: string) => {
     setDataPribadi((prev) => ({ ...prev, jenisKelamin: gender }));
@@ -636,9 +679,36 @@ const FormPemodal: React.FC = () => {
     >
   ) => {
     const { name, value } = e.target;
+
+    if (name === "nomorRekening_efek") {
+      const numericValue = value.replace(/\D/g, ""); // hapus non-angka
+
+      setDataPekerjaan((prev) => ({
+        ...prev,
+        [name]: numericValue,
+      }));
+      return;
+    }
+
+    if (name === "namaPemilik_efek") {
+      const onlyLetters = value.replace(/[^a-zA-Z\s]/g, "");
+
+      setDataPekerjaan((prev) => ({
+        ...prev,
+        [name]: onlyLetters,
+      }));
+      return;
+    }
+
+    const capitalizeFields = ["namaPemilik_efek"];
+
+    const formattedValue = capitalizeFields.includes(name)
+      ? capitalizeWords(value)
+      : value;
+
     setDataPekerjaan((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: formattedValue,
     }));
   };
 
@@ -750,6 +820,21 @@ const FormPemodal: React.FC = () => {
     }));
   };
 
+  const handleBankPekerjaan = (namaBank_efek: OptionType) => {
+    setDataPekerjaan((prev) => ({
+      ...prev,
+      namaBank_efek: namaBank_efek,
+    }));
+  };
+
+  const handleUploadSelfie = (url: string) => {
+    console.log(url, "parent");
+    setDataPribadi((prev) => ({
+      ...prev,
+      fotoPemodalUrlPribadi: url, // update hanya foto
+    }));
+  };
+
   const validateStep0 = () => {
     const result = schemaDataPribadi.safeParse(dataPribadi);
     if (!result.success) {
@@ -774,8 +859,10 @@ const FormPemodal: React.FC = () => {
   };
 
   const handleNext = () => {
+    console.log("next");
     if (selectedIndex === 0) {
       const isValid = validateStep0();
+      console.log(isValid, "isValid");
       if (!isValid) return;
     }
 
@@ -813,35 +900,42 @@ const FormPemodal: React.FC = () => {
           gender: data.jenisKelamin === "Laki-Laki" ? "L" : "P",
           status_marital: data.statusPernikahan,
           last_education: data.pendidikanTerakhir,
-          province_name: data.provincePribadi.label,
-          city_name: data.cityPribadi.label,
-          district_name: data.districtPribadi.label,
-          subdistrict_name: data.subDistrictPribadi.label,
+          province_name: data.provincePribadi?.label,
+          city_name: data.cityPribadi?.label,
+          district_name: data.districtPribadi?.label,
+          subdistrict_name: data.subDistrictPribadi?.label,
           postal_code: data.posCode,
           address_detail: data.addres,
-          avatar: data.fotoPemodalUrl,
+          avatar: data.fotoPemodalUrlPribadi,
           occupation:
             data.pekerjaan === "Lainnya"
               ? data.pekerjaanLainnya
               : data.pekerjaan,
           signature_path: data.signature,
-          location: {
-            name: "-",
-            url: "-",
-            lat: "-",
-            lng: "-",
-          },
-          doc: {
-            id: "-",
-            path: "-",
-          },
-          capital: "-",
-          roi: "-",
-          min_invest: "-",
-          unit_price: "-",
-          unit_total: "-",
-          number_of_unit: "-",
-          periode: "-",
+          // location: {
+          //   name: "-",
+          //   url: "-",
+          //   lat: "-",
+          //   lng: "-",
+          // },
+          // doc: {
+          //   id: "-",
+          //   path: "-",
+          // },
+          // capital: "-",
+          // roi: "-",
+          // min_invest: "-",
+          // unit_price: "-",
+          // unit_total: "-",
+          // number_of_unit: "-",
+          // periode: "-",
+          nama_ahli_waris: data.name_heir,
+          phone_ahli_waris: data.phone_heir,
+          slip_gaji: data.slipGajiUrl,
+          nama_rekening_efek: data.namaPemilik_efek || "-",
+          nomor_rekening_efek: data.nomorRekening_efek || "-",
+          nomor_sub_rekening_efek: "-",
+          bank_rekening_efek: data.namaBank_efek?.label || "-",
           bank: {
             name: data.namaBank.label,
             no: data.nomorRekening,
@@ -850,10 +944,10 @@ const FormPemodal: React.FC = () => {
             rek_koran_path: data.rekeningKoran || "-",
           },
           job: {
-            province_name: data.provincePekerjaan.label,
-            city_name: data.cityPekerjaan.label,
-            district_name: data.districtPekerjaan.label,
-            subdistrict_name: data.subDistrictPekerjaan.label,
+            province_name: data.provincePekerjaan?.label,
+            city_name: data.cityPekerjaan?.label,
+            district_name: data.districtPekerjaan?.label,
+            subdistrict_name: data.subDistrictPekerjaan?.label,
             postal_code: data.posCodePekerjaan,
             company: data.namaPerusahaan,
             address: data.alamatPerusahaan,
@@ -871,9 +965,6 @@ const FormPemodal: React.FC = () => {
             pengetahuan_pasar_modal: data.pengetahuanPasarModal,
           },
         };
-
-        console.log(payload, "payload");
-        console.log("buat");
 
         const response = await axios.post(
           `${API_BACKEND}/api/v1/auth/assign/role`,
@@ -914,22 +1005,23 @@ const FormPemodal: React.FC = () => {
         );
       }
 
-      const alertSwal = await Swal.fire({
+      localStorage.removeItem("formPemodal");
+      localStorage.removeItem("signature");
+      Cookies.remove("formPemodal");
+
+      setSubmitted(true);
+
+      Swal.fire({
         title: "Berhasil",
         text: "Data berhasil dikirim",
         icon: "success",
         timer: 3000,
         timerProgressBar: true,
         // showConfirmButton: false,
+      }).then(() => {
+        setSelectedIndex(0);
+        router.push("/dashboard");
       });
-
-      localStorage.removeItem("formPemodal");
-      localStorage.removeItem("signature");
-      Cookies.remove("formPemodal");
-
-      setSelectedIndex(0);
-
-      router.push("/dashboard");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error submitting form:", error.response?.data?.message);
@@ -955,15 +1047,11 @@ const FormPemodal: React.FC = () => {
 
   if (isLoading) {
     return (
-      // <div className="flex items-center justify-center h-[60vh]">
-      //   <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-solid"></div>
-      // </div>
-
       <div className="flex items-center justify-center h-[60vh] md:mt-52">
         <div role="status">
           <svg
             aria-hidden="true"
-            className="w-12 h-12 text-gray-200 animate-spin dark:text-gray-400 fill-[#4821c1]"
+            className="w-12 h-12 text-gray-200 animate-spin dark:text-gray-400 fill-[#10565C]"
             viewBox="0 0 100 101"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -1003,6 +1091,7 @@ const FormPemodal: React.FC = () => {
             onLihatKTP={() => setPreviewOpen(true)}
             isUpdate={isUpdate}
             dataProfile={dataProfile}
+            onUploadSelfie={handleUploadSelfie}
           />
           <FileViewerModal
             src={dataPribadi.ktpUrl}
@@ -1037,8 +1126,13 @@ const FormPemodal: React.FC = () => {
               setPreviewFileUrl(dataPekerjaan.fotoPemodalUrl);
               setPreviewOpen(true);
             }}
+            onLihatSlipGaji={() => {
+              setPreviewFileUrl(dataPekerjaan.slipGajiUrl);
+              setPreviewOpen(true);
+            }}
             isUpdate={isUpdate}
             dataProfile={dataProfile}
+            onBankChange={handleBankPekerjaan}
           />
           <FileViewerModal
             src={previewFileUrl ?? ""}
