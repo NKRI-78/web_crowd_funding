@@ -217,6 +217,7 @@ const FormDataPemodalPerusahaan: React.FC = () => {
         sk_kumham: "-",
         sk_kumham_terahkir: "-",
         sk_kumham_path: data.skKumhamPerusahaanUrl,
+        sk_pendirian_perusahaan: data.skPendirianUrl,
         npwp: data.nomorNpwpPerusahaan,
         npwp_path: data.npwpPerusahaanUrl,
         didirkan: "-",
@@ -224,14 +225,13 @@ const FormDataPemodalPerusahaan: React.FC = () => {
         email: data.emailPerusahaan,
         phone: data.noTeleponPerusahaan,
         bank_name: data.namaBank?.value || "-",
-
         bank_account: data.nomorRekening,
         bank_owner: data.namaPemilik,
         siup: "-",
         tdp: "-",
-        jenis_usaha: "-",
-        jenis_perusahaan: data.jenisPerusahaan,
-        status_kantor: "-",
+        jenis_usaha: "99",
+        jenis_perusahaan: String(data.jenisPerusahaan),
+        status_kantor: "99",
         total_employees: "-",
         laporan_keuangan_path: "-",
 
@@ -239,10 +239,10 @@ const FormDataPemodalPerusahaan: React.FC = () => {
           {
             name: "-",
             detail: data.addres,
-            province_id: data.provincePemodalPerusahaan?.value || "-",
-            city_id: data.cityPemodalPerusahaan?.value || "-",
-            district_id: data.districtPemodalPerusahaan?.value || "-",
-            subdistrict_id: data.subDistrictPemodalPerusahaan?.value || "-",
+            province_name: data.provincePemodalPerusahaan?.label || "-",
+            city_name: data.cityPemodalPerusahaan?.label || "-",
+            district_name: data.districtPemodalPerusahaan?.label || "-",
+            subdistrict_name: data.subDistrictPemodalPerusahaan?.label || "-",
             postal_code: data.posCode,
           },
         ],
@@ -289,6 +289,7 @@ const FormDataPemodalPerusahaan: React.FC = () => {
           is_apbn: null,
         },
       };
+      console.log(payload, "CEK PAYLOAD");
 
       const response = await axios.post(
         `https://api-capbridge.langitdigital78.com/api/v1/auth/assign/role`,

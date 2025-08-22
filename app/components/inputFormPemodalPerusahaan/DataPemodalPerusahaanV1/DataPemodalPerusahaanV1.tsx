@@ -8,6 +8,7 @@ import Swal from "sweetalert2";
 import { fetchJenisUsaha, TypeOption } from "@/app/utils/fetchJenisUsaha";
 import Select from "react-select";
 import { FaFileAlt } from "react-icons/fa";
+import { fetchJenisPerusahaan } from "@/app/utils/fetchJenisPerusahaan";
 
 interface Props {
   formData: {
@@ -286,7 +287,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
   );
 
   useEffect(() => {
-    fetchJenisUsaha()
+    fetchJenisPerusahaan()
       .then(setOptionsBussines)
       .catch((err) => console.error(err));
   }, []);
