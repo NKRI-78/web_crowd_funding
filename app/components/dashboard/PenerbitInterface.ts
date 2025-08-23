@@ -58,4 +58,8 @@ export interface EmitenProjectModel {
   company: Company;
   created_at: string;
   updated_at: string;
+  jenis_projek: string;
+  jumlah_minimal: string;
+  jangka_waktu: string;
+  tingkat_bunga: string;
 }

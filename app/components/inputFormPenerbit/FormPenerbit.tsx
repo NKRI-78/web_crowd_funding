@@ -239,9 +239,9 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
       console.log(res);
 
       localStorage.removeItem("publisherDraft");
+      localStorage.removeItem("formPenerbitDraft");
       localStorage.removeItem("penerbitFormIndex");
       localStorage.removeItem("utusanPenerbitCache");
-      localStorage.removeItem("penerbitFormIndex");
       setSubmitted(true);
 
       await Swal.fire({
@@ -372,6 +372,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
       );
 
       localStorage.removeItem("publisherDraft");
+      localStorage.removeItem("utusanPenerbitCache");
       localStorage.removeItem("utusanPenerbitCache");
       localStorage.removeItem("penerbitFormIndex");
       setSubmitted(true);

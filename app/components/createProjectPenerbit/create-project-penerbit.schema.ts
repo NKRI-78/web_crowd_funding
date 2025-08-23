@@ -10,28 +10,51 @@ export const alamatSchema = z.object({
   detail: z.string().min(1, "Detail alamat wajib diisi"),
 });
 
+export interface ProjectTypeInterface {
+  id: string;
+  name: string;
+}
+
+const mapsResultSchema = z.object({
+  lat: z.number(),
+  lng: z.number(),
+  url: z.string().url(),
+  address: z.string(),
+  components: z.record(z.string().optional()),
+});
+
 export const createProjectPenerbitSchema = z.object({
   namaProyek: z.string().min(1, "Nama Proyek tidak boleh kosong"),
   deskripsiProyek: z.string().min(1, "Deskripsi Proyek tidak boleh kosong"),
   jenisProyek: z.string().min(1, "Jenis Proyek wajib dipilih"),
   tenor: z.string().min(1, "Tenor Pinjaman wajib dipilih"),
-  batasAkhirPengerjaan: z.string().min(1, "Tanggal Proyek wajib dipilih"),
+  tanggalMulaiProyek: z.string().min(1, "Tanggal Mulai Proyek wajib dipilih"),
+  tanggalSelesaiProyek: z
+    .string()
+    .min(1, "Tanggal Selesai Proyek wajib dipilih"),
   jaminanKolateral: z
     .array(z.string())
     .min(1, "Jaminan Kolateral wajib dipilih"),
   persentaseKeuntungan: z
-    .string()
-    .min(1, "Persentase Keuntungan wajib dipilih"),
+    .number({
+      required_error: "Persentase Keuntungan wajib diisi",
+      invalid_type_error: "Persentase Keuntungan harus berupa angka",
+    })
+    .min(10, "Minimal 10%")
+    .max(100, "Maksimal 100%"),
   modalProyek: z
     .number({
       required_error: "Modal Proyek wajib diisi",
       invalid_type_error: "Modal Proyek harus berupa angka",
     })
-    .min(10_000_000, "Minimal Rp10.000.000")
+    .min(100_000_000, "Minimal Rp100.000.000")
     .max(10_000_000_000, "Maksimal Rp10.000.000.000"),
   fotoProyek: z
     .array(z.string().url())
     .min(1, "Foto Proyek wajib diupload minimal 1 foto"),
+  instansiProyek: z
+    .string()
+    .min(1, "Instansi Pemberi Proyek tidak boleh kosong"),
   jenisInstansiProyek: z
     .string()
     .min(1, "Jenis Instansi Proyek tidak boleh kosong"),
@@ -42,10 +65,7 @@ export const createProjectPenerbitSchema = z.object({
   rekeningKoran: z.string().min(1, "Rekening Koran wajib diupload"),
   laporanKeuangan: z.string().min(1, "Laporan Keuangan wajib diupload"),
   prospektus: z.string().min(1, "Prospektus wajib diupload"),
-  address: z
-    .array(alamatSchema)
-    .min(1, "Minimal 1 alamat harus diisi")
-    .max(2, "Maksimal hanya 2 alamat"),
+  lokasiProyek: mapsResultSchema.nullable(),
 });
 
 export const defaultValues: CreateProjectFormSchema = {
@@ -53,11 +73,13 @@ export const defaultValues: CreateProjectFormSchema = {
   deskripsiProyek: "",
   jenisProyek: "",
   tenor: "",
-  batasAkhirPengerjaan: "",
+  tanggalMulaiProyek: "",
+  tanggalSelesaiProyek: "",
   jaminanKolateral: [],
-  persentaseKeuntungan: "",
   modalProyek: 0,
+  persentaseKeuntungan: 0,
   fotoProyek: [],
+  instansiProyek: "",
   jenisInstansiProyek: "",
   websiteInstansiProyek: "",
   fileSPK: "",
@@ -66,26 +88,7 @@ export const defaultValues: CreateProjectFormSchema = {
   rekeningKoran: "",
   laporanKeuangan: "",
   prospektus: "",
-  address: [
-    {
-      name: "Pemberi Proyek",
-      province_name: "",
-      city_name: "",
-      district_name: "",
-      subdistrict_name: "",
-      postal_code: "",
-      detail: "",
-    },
-    {
-      name: "Tempat Usaha",
-      province_name: "",
-      city_name: "",
-      district_name: "",
-      subdistrict_name: "",
-      postal_code: "",
-      detail: "",
-    },
-  ],
+  lokasiProyek: null,
 };
 
 export type CreateProjectFormSchema = z.infer<

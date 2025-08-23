@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FolderUp, X } from "lucide-react";
+import { FolderUp, X, Image as ImageIcon } from "lucide-react";
 import axios from "axios";
+import Swal from "sweetalert2";
 import { compressImage } from "@/app/helper/CompressorImage";
 import SectionPoint from "./SectionPoint";
 
@@ -54,16 +55,24 @@ const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
       allowedTypes.includes(file.type)
     );
 
-    const remainingSlots = MAX_FILES - uploadedUrls.length;
-    const filesToUpload = validFiles.slice(0, remainingSlots);
+    if (uploadedUrls.length + validFiles.length > MAX_FILES) {
+      Swal.fire({
+        title: "Batas foto tercapai",
+        text: `Anda hanya bisa mengupload maksimal ${MAX_FILES} foto.`,
+        icon: "warning",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      return;
+    }
 
-    if (filesToUpload.length === 0) return;
+    if (validFiles.length === 0) return;
 
     setIsUploading(true);
 
     const uploaded: string[] = [];
 
-    for (const file of filesToUpload) {
+    for (const file of validFiles) {
       const url = await uploadFile(file);
       if (url) uploaded.push(url);
     }
@@ -78,7 +87,7 @@ const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       handleFiles(e.target.files);
-      e.target.value = ""; // reset
+      e.target.value = "";
     }
   };
 
@@ -100,16 +109,24 @@ const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
     fileOnChange(updated);
   };
 
+  const openPreview = (photoUrl: string) => {
+    Swal.fire({
+      imageUrl: photoUrl,
+      showConfirmButton: false,
+      background: "transparent",
+      backdrop: "rgba(0,0,0,0.8)",
+    });
+  };
+
   useEffect(() => {
     if (photoPaths && photoPaths.length > 0) {
       setUploadedUrls(photoPaths);
-      fileOnChange(photoPaths);
     }
   }, [photoPaths]);
 
   return (
-    <>
-      {label && <SectionPoint text={label} className="mb-1" />}
+    <div>
+      {label && <SectionPoint className="mb-1" text={label} />}
 
       <div
         className={`w-full flex flex-col items-center justify-center border-2 border-dashed rounded-md p-4 text-center cursor-pointer transition ${
@@ -125,6 +142,19 @@ const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
         onDragEnter={() => setIsDragging(true)}
         onDragLeave={() => setIsDragging(false)}
       >
+        {uploadedUrls.length > 0 && (
+          <div className="flex items-center gap-2 mb-3">
+            <ImageIcon className="w-5 h-5 text-blue-500" />
+            <span className="text-sm font-medium text-gray-700">
+              {uploadedUrls.length < MAX_FILES
+                ? `Masih bisa menambah ${
+                    MAX_FILES - uploadedUrls.length
+                  } foto lagi`
+                : "Hapus salah satu foto untuk mengubah"}
+            </span>
+          </div>
+        )}
+
         {uploadedUrls.length === 0 && (
           <>
             <FolderUp className="w-8 h-8 text-blue-400" />
@@ -152,25 +182,31 @@ const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
           </>
         )}
 
-        {/* List URL preview */}
         {uploadedUrls.length > 0 && (
-          <div className="flex flex-wrap gap-2 justify-center max-w-full py-1">
+          <div className="grid grid-cols-3 gap-2 w-full">
             {uploadedUrls.map((url, index) => (
               <div
                 key={index}
-                className="flex items-center bg-blue-100 text-blue-800 text-xs gap-x-2 px-3 py-1 rounded-md"
+                className="relative group border rounded-md overflow-hidden cursor-pointer"
               >
-                <a href={url} target="_blank" rel="noopener noreferrer">
-                  {url.split("/").pop()}
-                </a>
+                <img
+                  src={url}
+                  alt={`foto-${index}`}
+                  className="w-full h-24 object-cover"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openPreview(url);
+                  }}
+                />
+
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     removeFile(index);
                   }}
-                  className="hover:bg-amber-200"
+                  className="absolute top-1 right-1 bg-white rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-4 h-4 text-red-600" />
                 </button>
               </div>
             ))}
@@ -194,14 +230,14 @@ const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
       />
 
       {errorText ? (
-        <p className="text-red-500 text-xs mt-2">{errorText}</p>
+        <p className="text-red-500 text-xs mt-1">{errorText}</p>
       ) : (
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 mt-1">
           Hanya mendukung file .jpg dan .png.{" "}
           <span className="text-black">Maksimal 5 foto.</span>
         </p>
       )}
-    </>
+    </div>
   );
 };
 
