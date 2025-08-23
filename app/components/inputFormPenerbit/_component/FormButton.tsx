@@ -26,7 +26,6 @@ const FormButton: React.FC<FormButtonProps> = ({
 
   return (
     <button
-      type="button"
       onClick={onClick}
       disabled={disabled}
       className={`${baseStyles} ${

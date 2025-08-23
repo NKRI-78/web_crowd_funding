@@ -17,6 +17,8 @@ import { API_BACKEND } from "@/app/utils/constant";
 import { IProjectData } from "@/app/interface/IProject";
 import { getAllProject } from "@/actions/GetAllProject";
 import { FileClock } from "lucide-react";
+import FormButton from "../inputFormPenerbit/_component/FormButton";
+import { Stepper, Step } from "react-form-stepper";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -57,6 +59,7 @@ interface ProfileData {
   occupation: string;
   selfie: string;
   position: string;
+  verify_emiten: boolean;
   company: {
     projects: Project[];
   };
@@ -116,6 +119,14 @@ const Dashboard: React.FC = () => {
       })
       .then((res) => {
         setProfile(res.data.data);
+        console.log(
+          "res.data.data.company.projects ? " + res.data.data.company.projects
+        );
+        if (res.data.data.company.projects) {
+          setEmitenProjects(res.data["data"].company.projects);
+        } else {
+          setEmitenProjects([]);
+        }
       })
       .catch((err) => {
         console.error("Failed to fetch profile", err);
@@ -125,39 +136,41 @@ const Dashboard: React.FC = () => {
       });
   }, [token]);
 
-  useEffect(() => {
-    if (user.token) {
-      axios
-        .get(`${API_BACKEND}/api/v1/project-by-emiten/list`, {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        })
-        .then((res) => {
-          setEmitenProjects(res.data["data"]);
-        })
-        .catch((err) => {
-          console.error("Failed to fetch profile", err);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    }
-  }, [role, token]);
+  // useEffect(() => {
+  //   if (user.token) {
+  //     axios
+  //       .get(`${API_BACKEND}/api/v1/project-by-emiten/list`, {
+  //         headers: {
+  //           Authorization: `Bearer ${user.token}`,
+  //         },
+  //       })
+  //       .then((res) => {
+  //         setEmitenProjects(res.data["data"]);
+  //       })
+  //       .catch((err) => {
+  //         console.error("Failed to fetch profile", err);
+  //       })
+  //       .finally(() => {
+  //         setIsLoading(false);
+  //       });
+  //   }
+  // }, [role, token]);
 
   console.log(emitenProjects, "emiten project");
 
   const statusSteps: Record<string, number> = {
-    PENDING: 0,
-    APPROVED: 1,
-    REJECTED: 2,
-    // UNPAID: 3,
-    PAID: 3,
-    PUBLISH: 4,
+    UNVERIFIED: 0,
+    VERIFIED: 1,
+    PENDING: 1,
+    UNPAID: 2,
+    PAID: 2,
+    APPROVED: 2,
+    REJECTED: 3,
+    PUBLISH: 3,
   };
 
   const baseSteps = [
-    "Proyek Diproses",
+    "Data Diproses",
     "Review Proyek",
     "Pembayaran Administrasi",
     "Keputusan Proyek",
@@ -173,9 +186,13 @@ const Dashboard: React.FC = () => {
   // };
 
   useEffect(() => {
-    const statusProject = profile?.company?.projects?.[0]?.status;
+    const statusProject = profile?.company?.projects
+      ? profile?.company?.projects?.[0]?.status
+      : profile?.verify_emiten
+      ? "VERIFIED"
+      : "UNVERIFIED";
     // const statusProject = "APPROVED" as string; //default progres bar
-    setProjectStatus(statusProject as string);
+    setCurrentStep(statusSteps[statusProject]);
 
     // const stepsArray = Object.entries(statusSteps)
     //   .sort((a, b) => a[1] - b[1])
@@ -183,24 +200,24 @@ const Dashboard: React.FC = () => {
 
     // setSteps(stepsArray);
 
-    if (statusProject) {
-      let updatedSteps = [...baseSteps];
+    // if (statusProject) {
+    //   const updatedSteps = [...baseSteps];
 
-      if (statusProject === "REJECTED") {
-        updatedSteps[1] = "Ditolak";
-      } else if (statusProject === "APPROVED") {
-        updatedSteps[1] = "Disetujui";
-      }
+    //   if (statusProject === "REJECTED") {
+    //     updatedSteps[1] = "Ditolak";
+    //   } else if (statusProject === "APPROVED") {
+    //     updatedSteps[1] = "Disetujui";
+    //   }
 
-      if (statusProject === "UNPAID") {
-        updatedSteps[2] = "Belum Dibayar";
-      } else if (statusProject === "PAID" || statusProject === "PUBLISH") {
-        updatedSteps[2] = "Sudah Dibayar";
-      }
+    //   if (statusProject === "UNPAID") {
+    //     updatedSteps[2] = "Belum Dibayar";
+    //   } else if (statusProject === "PAID" || statusProject === "PUBLISH") {
+    //     updatedSteps[2] = "Sudah Dibayar";
+    //   }
 
-      setSteps(updatedSteps);
-      setCurrentStep(statusSteps[statusProject]);
-    }
+    //   setSteps(updatedSteps);
+    //   setCurrentStep(statusSteps[statusProject]);
+    // }
   }, [profile]);
 
   return (
@@ -233,139 +250,175 @@ const Dashboard: React.FC = () => {
             <h2 className="text-black text-2xl font-bold">Dashboard</h2>
           </div>
           <div className="flex flex-col gap-y-4 mt-4">
-            <div className="shadow-md rounded-2xl bg-white w-full p-10 md:py-12 flex flex-col items-center text-center">
-              <div className="flex flex-col items-center max-w-md">
-                <div className="text-teal-700 mb-4">
-                  <FileClock className="w-16 h-16" />
-                </div>
-                <h2 className="font-bold text-xl md:text-2xl text-black mb-2">
-                  Akun Anda Sedang Direview
-                </h2>
-                {/* <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-                  Tim kami sedang memproses data akun Anda. Mohon tunggu hingga
-                  proses verifikasi selesai. Setelah itu baru anda dapat mengajukan proyek anda.
-                </p> */}
-                <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-                  Tim kami sedang memproses data akun Anda. Mohon tunggu hingga
-                  selesai. Setelah itu, Anda dapat mulai mengajukan proyek.
-                </p>
+            {!profile?.company?.projects && (
+              <div className="shadow-md rounded-2xl bg-white w-full p-10 md:py-12 flex flex-col items-center text-center">
+                {!profile?.verify_emiten ? (
+                  <div className="flex flex-col items-center max-w-md">
+                    <div className="text-teal-700 mb-4">
+                      <FileClock className="w-16 h-16" />
+                    </div>
+                    <h2 className="font-bold text-xl md:text-2xl text-black mb-2">
+                      Akun Anda Sedang Direview
+                    </h2>
+                    <p className="text-gray-600 text-sm md:text-base leading-relaxed">
+                      Tim kami sedang memproses data akun Anda. Mohon tunggu
+                      hingga selesai. Setelah itu, Anda dapat mulai mengajukan
+                      proyek.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center max-w-md">
+                    <h2 className="font-bold text-xl md:text-2xl text-black mb-2">
+                      Akun Berhasil Diverifikasi
+                    </h2>
+                    <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-4">
+                      Selamat! Akun Anda telah berhasil diverifikasi. Sekarang
+                      Anda sudah bisa mulai membuat project pertama Anda.
+                    </p>
+
+                    <FormButton
+                      onClick={() => {
+                        router.push("dashboard/create-project");
+                      }}
+                    >
+                      {" "}
+                      Create Project{" "}
+                    </FormButton>
+                  </div>
+                )}
               </div>
-            </div>
+            )}
 
             {user.role === "emiten" && (
               <div className="shadow-md rounded-2xl bg-white w-full p-10 md:py-12">
-                <h2 className="font-bold text-lg text-black mb-5 -mt-9 md:-mt-6 md:mb-14 text-start">
+                <h2 className="font-bold text-lg text-black mb-5 -mt-9 md:-mt-6 md:mb-4 text-start">
                   Status Proyek
                 </h2>
-                <div>
-                  <StepStatus
-                    currentStep={currentStep}
-                    steps={steps}
-                    projectStatus={projectStatus}
+                <div className="text-black">
+                  <Stepper
+                    activeStep={currentStep}
+                    connectorStateColors
+                    styleConfig={{
+                      size: "40px", // diameter lingkaran step
+                      circleFontSize: "16px", // font angka di dalam lingkaran
+                      borderRadius: "50%", // bentuk lingkaran (bisa "0" buat kotak)
+                      fontWeight: 500, // ketebalan label
+
+                      activeBgColor: "#10B981",
+                      activeTextColor: "#fff",
+                      completedBgColor: "#10B981",
+                      completedTextColor: "#fff",
+                      inactiveBgColor: "#E5E7EB",
+                      inactiveTextColor: "#9CA3AF",
+                      labelFontSize: "14px",
+
+                      // label colors
+                      activeLabelColor: "#000",
+                      completedLabelColor: "#000",
+                      inactiveLabelColor: "#000",
+                    }}
+                    connectorStyleConfig={{
+                      size: 3,
+                      activeColor: "#10B981", // garis menuju step aktif
+                      completedColor: "#10B981", // garis completed → hijau
+                      disabledColor: "#E5E7EB", // garis belum jalan
+                      style: "",
+                    }}
+                    steps={[
+                      { label: "Data Diproses" },
+                      { label: "Review Proyek" },
+                      { label: "Pembayaran Administrasi" },
+                      { label: "Persetujuan Project" },
+                    ]}
                   />
                 </div>
               </div>
             )}
 
-            {user.role === "emiten" && (
-              <>
+            {user.role === "emiten" && emitenProjects.length > 0 && (
+              <div>
                 <div className="my-2">
                   <h2 className="font-bold text-lg text-black">Proyek Saya</h2>
                 </div>
 
                 <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {emitenProjects.length !== 0 ? (
-                    emitenProjects.map((project) => {
-                      return (
-                        <div
-                          key={project.id}
-                          onClick={() => {
-                            router.push(`/sukuk/${project.id}`);
-                          }}
-                          className="rounded-xl cursor-pointer overflow-hidden shadow border"
-                        >
-                          <div className="relative h-40">
-                            <img
-                              src={
-                                project.medias.length !== 0
-                                  ? project.medias[0].path
-                                  : "/images/img.jpg"
-                              }
-                              alt={project.title}
-                              className="object-cover w-full h-full"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.onerror = null; // mencegah infinite loop
-                                target.src = "/images/img.jpg";
-                              }}
-                            />
+                  {emitenProjects.map((project) => {
+                    return (
+                      <div
+                        key={project.id}
+                        onClick={() => {
+                          router.push(`/sukuk/${project.id}`);
+                        }}
+                        className="rounded-xl cursor-pointer overflow-hidden shadow border"
+                      >
+                        <div className="relative h-40">
+                          <img
+                            src={
+                              project.medias && project.medias.length !== 0
+                                ? project.medias[0].path
+                                : "/images/img.jpg"
+                            }
+                            alt={project.title}
+                            className="object-cover w-full h-full"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.onerror = null; // mencegah infinite loop
+                              target.src = "/images/img.jpg";
+                            }}
+                          />
 
-                            <div
-                              className={`absolute inset-0  bg-opacity-60`}
-                            />
-                          </div>
-                          <div className="p-4 bg-gray-100 h-full">
-                            <p className="font-semibold text-sm text-start mb-2">
-                              {project.title}
-                            </p>
-                            <ul className="text-xs my-4 space-y-1">
-                              <li className="flex justify-between font-bold">
-                                <span className="text-black">
-                                  Dana Terkumpul
-                                </span>
-                                <span className="text-black">
-                                  {project.goal}
-                                </span>
-                              </li>
-                              <li>
-                                <ProgressBar percentage={0} />
-                              </li>
-                              <li className="flex justify-between">
-                                <span className="text-black">
-                                  Jenis Obligasi
-                                </span>
-                                <span className="text-black capitalize">
-                                  {project.type_of_bond}
-                                </span>
-                              </li>
-                              <li className="flex justify-between">
-                                <span className="text-black">
-                                  Nilai Nominal
-                                </span>
-                                <span className="text-black">
-                                  {formatPriceOrEmpty(
-                                    project.nominal_value,
-                                    "id-ID",
-                                    "IDR"
-                                  )}
-                                </span>
-                              </li>
-                              <li className="flex justify-between">
-                                <span className="text-black">Jangka Waktu</span>
-                                <span className="text-black">
-                                  {project.time_periode}
-                                </span>
-                              </li>
-                              <li className="flex justify-between">
-                                <span className="text-black">
-                                  Tingkat Bunga
-                                </span>
-                                <span className="text-black">
-                                  {project.interest_rate}
-                                </span>
-                              </li>
-                            </ul>
-                          </div>
+                          <div className="absolute inset-0 bg-opacity-60" />
                         </div>
-                      );
-                    })
-                  ) : (
-                    <h6 className="text-black text-left w-full">
-                      Tidak ada data
-                    </h6>
-                  )}
+
+                        <div className="p-4 bg-gray-100 h-full">
+                          <p className="font-semibold text-sm text-start mb-2">
+                            {project.title}
+                          </p>
+                          <ul className="text-xs my-4 space-y-1">
+                            <li className="flex justify-between font-bold">
+                              <span className="text-black">Dana Terkumpul</span>
+                              <span className="text-black">{project.goal}</span>
+                            </li>
+                            <li>
+                              <ProgressBar percentage={0} />
+                            </li>
+                            <li className="flex justify-between">
+                              <span className="text-black">Jenis Obligasi</span>
+                              <span className="text-black capitalize">
+                                {project.jenis_projek}
+                              </span>
+                            </li>
+                            <li className="flex justify-between">
+                              <span className="text-black">Nilai Nominal</span>
+                              <span className="text-black">
+                                {project.jumlah_minimal
+                                  ? formatPriceOrEmpty(
+                                      project.jumlah_minimal,
+                                      "id-ID",
+                                      "IDR"
+                                    )
+                                  : project.jumlah_minimal}
+                              </span>
+                            </li>
+                            <li className="flex justify-between">
+                              <span className="text-black">Jangka Waktu</span>
+                              <span className="text-black">
+                                {project.jangka_waktu}
+                              </span>
+                            </li>
+                            <li className="flex justify-between">
+                              <span className="text-black">Tingkat Bunga</span>
+                              <span className="text-black">
+                                {project.tingkat_bunga}
+                              </span>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </>
+              </div>
             )}
 
             {user.role === "investor" && (
