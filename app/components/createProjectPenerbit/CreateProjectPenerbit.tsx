@@ -12,7 +12,7 @@ import PhotoUploaderContainer from "../inputFormPenerbit/_component/PhotoUploade
 import FileInput from "../inputFormPenerbit/_component/FileInput";
 import SectionPoint from "../inputFormPenerbit/_component/SectionPoint";
 import Subtitle from "../inputFormPenerbit/_component/SectionSubtitle";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import {
   CreateProjectFormSchema,
   createProjectPenerbitSchema,
@@ -31,6 +31,7 @@ import { useRouter } from "next/navigation";
 import FormButton from "../inputFormPenerbit/_component/FormButton";
 import MonthSelection from "../inputFormPenerbit/_component/MonthSelection";
 import GoogleMapPicker from "./GoogleMapsPicker";
+import FormAlamat from "./FormAlamat";
 
 const getUserToken = (): string => {
   const userCookie = Cookies.get("user");
@@ -297,6 +298,11 @@ const CreateProjectPenerbit: React.FC = () => {
     }
   };
 
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "address", // ini array
+  });
+
   return (
     <div className="w-full py-28 px-6 md:px-24 bg-white">
       <div className="text-black grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -532,10 +538,42 @@ const CreateProjectPenerbit: React.FC = () => {
               }}
             />
           </div>
+          <FormAlamat
+            index={0}
+            control={control}
+            setValue={setValue}
+            watch={watch}
+            register={register}
+            errors={errors}
+            provinsiList={provinsiList}
+            kotaList={kotaList}
+            setKotaList={setKotaList}
+            kecamatanList={kecamatanList}
+            setKecamatanList={setKecamatanList}
+            kelurahanList={kelurahanList}
+            setKelurahanList={setKelurahanList}
+            fetchOptions={fetchOptions}
+          />
         </div>
 
         {/* right section */}
         <div className="w-full space-y-4">
+          <FormAlamat
+            index={1}
+            control={control}
+            setValue={setValue}
+            watch={watch}
+            register={register}
+            errors={errors}
+            provinsiList={provinsiList}
+            kotaList={kotaList}
+            setKotaList={setKotaList}
+            kecamatanList={kecamatanList}
+            setKecamatanList={setKecamatanList}
+            kelurahanList={kelurahanList}
+            setKelurahanList={setKelurahanList}
+            fetchOptions={fetchOptions}
+          />
           <Controller
             name="instansiProyek"
             control={control}

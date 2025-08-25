@@ -67,6 +67,10 @@ export const createProjectPenerbitSchema = z
     laporanKeuangan: z.string().min(1, "Laporan Keuangan wajib diupload"),
     prospektus: z.string().min(1, "Prospektus wajib diupload"),
     lokasiProyek: mapsResultSchema.nullable(),
+    address: z
+      .array(alamatSchema)
+      .min(1, "Minimal 1 alamat harus diisi")
+      .max(2, "Maksimal hanya 2 alamat"),
   })
   .refine((data) => data.lokasiProyek !== null, {
     message: "Lokasi Proyek wajib diisi",
@@ -94,6 +98,26 @@ export const defaultValues: CreateProjectFormSchema = {
   laporanKeuangan: "",
   prospektus: "",
   lokasiProyek: null,
+  address: [
+    {
+      name: "Penerbit",
+      province_name: "",
+      city_name: "",
+      district_name: "",
+      subdistrict_name: "",
+      postal_code: "",
+      detail: "",
+    },
+    {
+      name: "Pemberi Proyek",
+      province_name: "",
+      city_name: "",
+      district_name: "",
+      subdistrict_name: "",
+      postal_code: "",
+      detail: "",
+    },
+  ],
 };
 
 export type CreateProjectFormSchema = z.infer<
