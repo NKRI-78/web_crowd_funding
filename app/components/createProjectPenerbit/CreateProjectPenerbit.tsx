@@ -110,9 +110,9 @@ const CreateProjectPenerbit: React.FC = () => {
   //* write cache
   useEffect(() => {
     const subscription = watch((values) => {
-      // if (!skipCacheWrite.current) {
-      // }
-      localStorage.setItem(FORM_CACHE_KEY, JSON.stringify(values));
+      if (!skipCacheWrite.current) {
+        localStorage.setItem(FORM_CACHE_KEY, JSON.stringify(values));
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -194,7 +194,7 @@ const CreateProjectPenerbit: React.FC = () => {
         jaminan_kolateral: data.jaminanKolateral.map((value) => ({
           name: value,
         })),
-        media: data.fotoProyek.map((value) => ({ name: value })),
+        media: data.fotoProyek.map((value) => ({ path: value })),
         penggunaan_dana: [
           {
             name: "-",
@@ -240,7 +240,7 @@ const CreateProjectPenerbit: React.FC = () => {
         showConfirmButton: false,
       });
 
-      // localStorage.removeItem(FORM_CACHE_KEY);
+      localStorage.removeItem(FORM_CACHE_KEY);
       skipCacheWrite.current = true;
       reset(defaultValues);
 
@@ -432,11 +432,19 @@ const CreateProjectPenerbit: React.FC = () => {
                 render={({ field }) => {
                   return (
                     <Flatpickr
-                      placeholder="Pilih tanggal batas akhir"
+                      placeholder="Pilih tanggal mulai proyek"
                       value={new Date(field.value) ?? ""}
                       options={{
                         dateFormat: "j F Y",
                         allowInput: false,
+                        minDate: "today", // ❌ disable tanggal masa lalu
+                        defaultDate: new Date(new Date().getFullYear(), 0, 1), // 👈 Januari tahun ini
+                        onReady: (selectedDates, dateStr, instance) => {
+                          // Set agar kalender terbuka di Januari tahun ini
+                          instance.jumpToDate(
+                            new Date(new Date().getFullYear(), 0, 1)
+                          );
+                        },
                       }}
                       className="border p-2 w-full rounded placeholder:text-sm focus:border-gray-400"
                       onChange={(dates) => {
@@ -462,11 +470,14 @@ const CreateProjectPenerbit: React.FC = () => {
                 render={({ field }) => {
                   return (
                     <Flatpickr
-                      placeholder="Pilih tanggal batas akhir"
-                      value={new Date(field.value) ?? undefined}
+                      placeholder="Pilih tanggal selesai proyek"
+                      value={field.value ? new Date(field.value) : undefined}
                       options={{
                         dateFormat: "j F Y",
                         allowInput: false,
+                        minDate: getValues().tanggalMulaiProyek
+                          ? new Date(getValues().tanggalMulaiProyek)
+                          : "today",
                       }}
                       className="border p-2 w-full rounded placeholder:text-sm focus:border-gray-400"
                       onChange={(dates) => {
@@ -666,6 +677,7 @@ const CreateProjectPenerbit: React.FC = () => {
                   return (
                     <FileInput
                       fileUrl={field.value}
+                      accept=".pdf,.word"
                       fileName="File SPK"
                       onChange={(e) => {
                         field.onChange(e);
@@ -688,6 +700,7 @@ const CreateProjectPenerbit: React.FC = () => {
                   return (
                     <FileInput
                       fileName="File LOA"
+                      accept=".pdf,.word"
                       fileUrl={field.value}
                       onChange={(e) => {
                         field.onChange(e);
@@ -711,6 +724,7 @@ const CreateProjectPenerbit: React.FC = () => {
                 render={({ field }) => {
                   return (
                     <FileInput
+                      accept=".pdf,.word"
                       fileName="Dokumen Kontrak"
                       fileUrl={field.value}
                       onChange={(e) => {
@@ -733,6 +747,7 @@ const CreateProjectPenerbit: React.FC = () => {
                 render={({ field }) => {
                   return (
                     <FileInput
+                      accept=".pdf,.word"
                       fileName="Rekening Koran"
                       fileUrl={field.value}
                       onChange={(e) => {
@@ -757,6 +772,7 @@ const CreateProjectPenerbit: React.FC = () => {
                 render={({ field }) => {
                   return (
                     <FileInput
+                      accept=".pdf,.word"
                       fileName="Laporan Keuangan"
                       fileUrl={field.value}
                       onChange={(e) => {
@@ -770,7 +786,7 @@ const CreateProjectPenerbit: React.FC = () => {
             </div>
 
             <div>
-              <SectionPoint text="Prospektus" />
+              <SectionPoint text="Prospektus" optional />
               <Subtitle text="File maksimal berukuran 10mb" className="my-1" />
 
               <Controller
@@ -779,6 +795,7 @@ const CreateProjectPenerbit: React.FC = () => {
                 render={({ field }) => {
                   return (
                     <FileInput
+                      accept=".pdf,.word"
                       fileName="Prospektus"
                       fileUrl={field.value}
                       onChange={(e) => {
