@@ -8,13 +8,13 @@ import Swal from "sweetalert2";
 import { fetchJenisUsaha, TypeOption } from "@/app/utils/fetchJenisUsaha";
 import Select from "react-select";
 import { FaFileAlt } from "react-icons/fa";
+import { fetchJenisPerusahaan } from "@/app/utils/fetchJenisPerusahaan";
 
 interface Props {
   formData: {
     jenisPerusahaan: string;
     nomorAktaPerubahanTerakhir: string;
     nomorNpwpPerusahaan: string;
-    // alamatTempatUsaha: string;
     noTeleponPerusahaan: string;
     situsPerusahaan: string;
     emailPerusahaan: string;
@@ -37,6 +37,11 @@ interface Props {
     setujuRisikoInvestasi: boolean;
     setujuKebenaranData: boolean;
   };
+
+  onLihatAktaPendirianPerusahaan?: () => void;
+  onLihatSkPendirianPerusahaan?: () => void;
+  onLihatSkKumhamPerusahaan?: () => void;
+  onLihatNpwpPerusahaan?: () => void;
 
   errors?: Record<string, string[]>;
   onBankChange: (bank: { value: string; label: string } | null) => void;
@@ -68,6 +73,11 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
   onBankChange,
   onAlamatChange,
   onCheckboxChange,
+  onLihatAktaPendirianPerusahaan,
+  onLihatSkPendirianPerusahaan,
+  onLihatSkKumhamPerusahaan,
+  onLihatNpwpPerusahaan,
+
   errors,
 }) => {
   const [optionsBussines, setOptionsBussines] = useState<TypeOption[]>([]);
@@ -145,7 +155,6 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
     if (formData.namaBank) setSelectedBank(formData.namaBank);
 
     if (formData?.posCode) {
-      console.log("Prefill posCode berhasil:", formData.posCode);
       setPosCode(formData.posCode);
     }
   }, [formData]);
@@ -228,7 +237,6 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           },
         });
         setPosCode(response?.data?.data?.postal_code || "");
-        console.log("CEK", response.data);
       } catch (error) {
         console.error("Gagal ambil kode pos:", error);
       }
@@ -278,9 +286,8 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
     </div>
   );
 
-  // Fetch options bisnis
   useEffect(() => {
-    fetchJenisUsaha()
+    fetchJenisPerusahaan()
       .then(setOptionsBussines)
       .catch((err) => console.error(err));
   }, []);
@@ -347,9 +354,9 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
   const customStyles = {
     control: (provided: any, state: any) => ({
       ...provided,
-      backgroundColor: "white", // background input
-      color: "black", // text input
-      borderColor: state.isFocused ? "#14b8a6" : "#d1d5db", // tailwind teal-500 / gray-300
+      backgroundColor: "white",
+      color: "black",
+      borderColor: state.isFocused ? "#14b8a6" : "#d1d5db",
       boxShadow: state.isFocused ? "0 0 0 1px #14b8a6" : null,
       "&:hover": {
         borderColor: "#14b8a6",
@@ -357,18 +364,18 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
     }),
     singleValue: (provided: any) => ({
       ...provided,
-      color: "black", // text selected
+      color: "black",
     }),
     placeholder: (provided: any) => ({
       ...provided,
-      color: "#9ca3af", // text-gray-400
+      color: "#9ca3af",
     }),
     option: (provided: any, state: any) => ({
       ...provided,
       backgroundColor: state.isSelected
         ? "#14b8a6"
         : state.isFocused
-        ? "#ccfbf1" // teal-100
+        ? "#ccfbf1"
         : "white",
       color: state.isSelected ? "white" : "black",
       cursor: "pointer",
@@ -414,229 +421,239 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
           optimal, kami mengajak Anda untuk melengkapi seluruh data secara
           jujur, benar, dan akurat.
         </p>
-
-        <h3 className="font-semibold text-black">1. Jenis Perusahaan</h3>
-        <Select
-          options={optionsBussines}
-          placeholder="Pilih Jenis Perusahaan"
-          value={optionsBussines.find(
-            (option) => option.value === formData.jenisPerusahaan
+        <div>
+          <h3 className="font-semibold text-black mb-2">
+            1. Jenis Perusahaan <span className="text-red-500">*</span>
+          </h3>
+          <Select
+            options={optionsBussines}
+            placeholder="Pilih Jenis Perusahaan"
+            value={optionsBussines.find(
+              (option) => option.value === formData.jenisPerusahaan
+            )}
+            className="text-gray-600"
+            classNamePrefix="react-select"
+            onChange={(selectedOption) => {
+              const syntheticEvent = {
+                target: {
+                  name: "jenisPerusahaan",
+                  value: selectedOption
+                    ? (selectedOption as TypeOption).value
+                    : "",
+                },
+              } as React.ChangeEvent<HTMLInputElement>;
+              onChange(syntheticEvent);
+            }}
+            isClearable
+          />
+          {errors?.jenisPerusahaan && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.jenisPerusahaan[0]}
+            </p>
           )}
-          className="text-gray-600"
-          classNamePrefix="react-select"
-          onChange={(selectedOption) => {
-            const syntheticEvent = {
-              target: {
-                name: "jenisPerusahaan",
-                value: selectedOption
-                  ? (selectedOption as TypeOption).value
-                  : "",
-              },
-            } as React.ChangeEvent<HTMLInputElement>;
-            onChange(syntheticEvent);
-          }}
-          isClearable
-        />
-        {errors?.jenisPerusahaan && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.jenisPerusahaan[0]}
-          </p>
-        )}
+        </div>
+        <div>
+          <h3 className="font-semibold text-black mt-4 mb-2">
+            2. Nomor Akta Perubahan Terakhir{" "}
+            <span className="text-red-500">*</span>
+          </h3>
+          <input
+            type="text"
+            name="nomorAktaPerubahanTerakhir"
+            value={formData.nomorAktaPerubahanTerakhir}
+            onChange={onChange}
+            placeholder="Masukkan Nomor Akta Perubahan Terakhir"
+            className="border p-2 w-full rounded mb-0 text-gray-700"
+          />
+          {errors?.nomorAktaPerubahanTerakhir && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.nomorAktaPerubahanTerakhir[0]}
+            </p>
+          )}
+        </div>
+        <div>
+          <h3 className="font-semibold text-black mt-4 mb-2">
+            3. Upload Dokumen Akta Pendirian Perusahaan{" "}
+            <span className="text-red-500">*</span>
+          </h3>
+          <input
+            type="file"
+            id="aktaPendirianPerusahaanUrl"
+            className="hidden"
+            onChange={handleFileChange}
+            disabled={uploadStatus["aktaPendirianPerusahaanUrl"] === true}
+            accept="application/pdf,image/*"
+            data-keyname="aktaPendirianPerusahaanUrl"
+          />
 
-        <h3 className="font-semibold text-black mt-4">
-          2. Nomor Akta Perubahan Terakhir
-        </h3>
-        <input
-          type="text"
-          name="nomorAktaPerubahanTerakhir"
-          value={formData.nomorAktaPerubahanTerakhir}
-          onChange={onChange}
-          placeholder="Masukkan Nomor Akta Perubahan Terakhir"
-          className="border p-2 w-full rounded mb-0 text-gray-700"
-        />
-        {errors?.nomorAktaPerubahanTerakhir && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.nomorAktaPerubahanTerakhir[0]}
-          </p>
-        )}
-
-        <h3 className="font-semibold text-black mt-4">
-          3. Upload Dokumen Akta Pendirian Perusahaan
-        </h3>
-        <input
-          type="file"
-          id="aktaPendirianPerusahaanUrl"
-          className="hidden"
-          onChange={handleFileChange}
-          disabled={uploadStatus["aktaPendirianPerusahaanUrl"] === true}
-          accept="application/pdf,image/*"
-          data-keyname="aktaPendirianPerusahaanUrl"
-        />
-
-        <label
-          htmlFor="aktaPendirianPerusahaanUrl"
-          className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
-        >
-          <>
-            <FaFileAlt />
-            Upload Dokumen
-          </>
-        </label>
-
-        {isClient && formData.aktaPendirianPerusahaanUrl && (
-          <button
-            type="button"
-            onClick={() =>
-              window.open(formData.aktaPendirianPerusahaanUrl, "_blank")
-            }
-            className="text-blue-600 underline text-sm block mt-2"
+          <label
+            htmlFor="aktaPendirianPerusahaanUrl"
+            className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
           >
-            Lihat Dokumen Akta Pendirian Perusahaan
-          </button>
-        )}
+            <>
+              <FaFileAlt />
+              Upload Dokumen
+            </>
+          </label>
 
-        {errors?.aktaPendirianPerusahaanUrl && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.aktaPendirianPerusahaanUrl[0]}
-          </p>
-        )}
+          {isClient && formData.aktaPendirianPerusahaanUrl && (
+            <button
+              type="button"
+              onClick={onLihatAktaPendirianPerusahaan}
+              className="text-blue-600 underline text-sm block mt-2"
+            >
+              Lihat Dokumen Akta Pendirian Perusahaan
+            </button>
+          )}
 
-        <h3 className="font-semibold text-black mt-4">
-          4. Upload Dokumen SK Pendirian Perusahaan
-        </h3>
-        <input
-          type="file"
-          id="skPendirianUrl"
-          className="hidden"
-          onChange={handleFileChange}
-          disabled={uploadStatus["skPendirianUrl"] === true}
-          accept="application/pdf,image/*"
-          data-keyname="skPendirianUrl"
-        />
+          {errors?.aktaPendirianPerusahaanUrl && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.aktaPendirianPerusahaanUrl[0]}
+            </p>
+          )}
+        </div>
+        <div>
+          <h3 className="font-semibold text-black mt-4 mb-2">
+            4. Upload Dokumen SK Pendirian Perusahaan{" "}
+            <span className="text-red-500">*</span>
+          </h3>
+          <input
+            type="file"
+            id="skPendirianUrl"
+            className="hidden"
+            onChange={handleFileChange}
+            disabled={uploadStatus["skPendirianUrl"] === true}
+            accept="application/pdf,image/*"
+            data-keyname="skPendirianUrl"
+          />
 
-        <label
-          htmlFor="skPendirianUrl"
-          className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
-        >
-          <>
-            <FaFileAlt />
-            Upload Dokumen
-          </>
-        </label>
-
-        {isClient && formData.skPendirianUrl && (
-          <button
-            type="button"
-            onClick={() => window.open(formData.skPendirianUrl, "_blank")}
-            className="text-blue-600 underline text-sm block mt-2"
+          <label
+            htmlFor="skPendirianUrl"
+            className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
           >
-            Lihat Dokumen SK Pendirian Perusahaan
-          </button>
-        )}
+            <>
+              <FaFileAlt />
+              Upload Dokumen
+            </>
+          </label>
 
-        {errors?.skPendirianUrl && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.skPendirianUrl[0]}
-          </p>
-        )}
+          {isClient && formData.skPendirianUrl && (
+            <button
+              type="button"
+              onClick={onLihatSkPendirianPerusahaan}
+              className="text-blue-600 underline text-sm block mt-2"
+            >
+              Lihat Dokumen SK Pendirian Perusahaan
+            </button>
+          )}
 
-        <h3 className="font-semibold text-black mt-4">
-          5. Upload Dokumen SK KUMHAM Perusahaan
-        </h3>
-        <input
-          type="file"
-          id="skKumhamPerusahaanUrl"
-          className="hidden"
-          onChange={handleFileChange}
-          disabled={uploadStatus["skKumhamPerusahaanUrl"] === true}
-          accept="application/pdf,image/*"
-          data-keyname="skKumhamPerusahaanUrl"
-        />
+          {errors?.skPendirianUrl && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.skPendirianUrl[0]}
+            </p>
+          )}
+        </div>
+        <div>
+          <h3 className="font-semibold text-black mt-4 mb-2">
+            5. Upload Dokumen SK KUMHAM Perusahaan{" "}
+            <span className="text-red-500">*</span>
+          </h3>
+          <input
+            type="file"
+            id="skKumhamPerusahaanUrl"
+            className="hidden"
+            onChange={handleFileChange}
+            disabled={uploadStatus["skKumhamPerusahaanUrl"] === true}
+            accept="application/pdf,image/*"
+            data-keyname="skKumhamPerusahaanUrl"
+          />
 
-        <label
-          htmlFor="skKumhamPerusahaanUrl"
-          className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
-        >
-          <>
-            <FaFileAlt />
-            Upload Dokumen
-          </>
-        </label>
-
-        {isClient && formData.skKumhamPerusahaanUrl && (
-          <button
-            type="button"
-            onClick={() =>
-              window.open(formData.skKumhamPerusahaanUrl, "_blank")
-            }
-            className="text-blue-600 underline text-sm block mt-2"
+          <label
+            htmlFor="skKumhamPerusahaanUrl"
+            className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
           >
-            Lihat Dokumen SK Pendirian Perusahaan
-          </button>
-        )}
-        {errors?.skKumhamPerusahaanUrl && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.skKumhamPerusahaanUrl[0]}
-          </p>
-        )}
+            <>
+              <FaFileAlt />
+              Upload Dokumen
+            </>
+          </label>
 
-        <h3 className="font-semibold text-black mt-4">
-          6. Upload Dokumen NPWP Perusahaan
-        </h3>
-        <input
-          type="file"
-          id="npwpPerusahaanUrl"
-          className="hidden"
-          onChange={handleFileChange}
-          disabled={uploadStatus["npwpPerusahaanUrl"] === true}
-          accept="application/pdf,image/*"
-          data-keyname="npwpPerusahaanUrl"
-        />
+          {isClient && formData.skKumhamPerusahaanUrl && (
+            <button
+              type="button"
+              onClick={onLihatSkKumhamPerusahaan}
+              className="text-blue-600 underline text-sm block mt-2"
+            >
+              Lihat Dokumen SK Pendirian Perusahaan
+            </button>
+          )}
+          {errors?.skKumhamPerusahaanUrl && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.skKumhamPerusahaanUrl[0]}
+            </p>
+          )}
+        </div>
+        <div>
+          <h3 className="font-semibold text-black mt-4 mb-2">
+            6. Upload Dokumen NPWP Perusahaan{" "}
+            <span className="text-red-500">*</span>
+          </h3>
+          <input
+            type="file"
+            id="npwpPerusahaanUrl"
+            className="hidden"
+            onChange={handleFileChange}
+            disabled={uploadStatus["npwpPerusahaanUrl"] === true}
+            accept="application/pdf,image/*"
+            data-keyname="npwpPerusahaanUrl"
+          />
 
-        <label
-          htmlFor="npwpPerusahaanUrl"
-          className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
-        >
-          <>
-            <FaFileAlt />
-            Upload Dokumen
-          </>
-        </label>
-
-        {isClient && formData.npwpPerusahaanUrl && (
-          <button
-            type="button"
-            onClick={() => window.open(formData.npwpPerusahaanUrl, "_blank")}
-            className="text-blue-600 underline text-sm block mt-2"
+          <label
+            htmlFor="npwpPerusahaanUrl"
+            className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
           >
-            Lihat Dokumen SK Pendirian Perusahaan
-          </button>
-        )}
-        {errors?.npwpPerusahaanUrl && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.npwpPerusahaanUrl[0]}
-          </p>
-        )}
+            <>
+              <FaFileAlt />
+              Upload Dokumen
+            </>
+          </label>
 
-        <h3 className="font-semibold text-black mt-4">
-          7. Nomor NPWP Perusahaan
-        </h3>
-        <input
-          type="text"
-          name="nomorNpwpPerusahaan"
-          value={formData.nomorNpwpPerusahaan}
-          onChange={onChange}
-          placeholder="Masukkan Nomor NPWP Perusahaan"
-          className="border p-2 w-full rounded mb-0 text-gray-700"
-        />
+          {isClient && formData.npwpPerusahaanUrl && (
+            <button
+              type="button"
+              onClick={onLihatNpwpPerusahaan}
+              className="text-blue-600 underline text-sm block mt-2"
+            >
+              Lihat Dokumen SK Pendirian Perusahaan
+            </button>
+          )}
+          {errors?.npwpPerusahaanUrl && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.npwpPerusahaanUrl[0]}
+            </p>
+          )}
+        </div>
+        <div>
+          <h3 className="font-semibold text-black mt-4 mb-2">
+            7. Nomor NPWP Perusahaan <span className="text-red-500">*</span>
+          </h3>
+          <input
+            type="text"
+            name="nomorNpwpPerusahaan"
+            value={formData.nomorNpwpPerusahaan}
+            onChange={onChange}
+            placeholder="Masukkan Nomor NPWP Perusahaan"
+            className="border p-2 w-full rounded mb-0 text-gray-700"
+          />
 
-        {errors?.nomorNpwpPerusahaan && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.nomorNpwpPerusahaan[0]}
-          </p>
-        )}
-        <h3 className="font-semibold text-black mt-4">
-          8. Alamat Tempat Usaha
+          {errors?.nomorNpwpPerusahaan && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.nomorNpwpPerusahaan[0]}
+            </p>
+          )}
+        </div>
+        <h3 className="font-semibold text-black mt-4 mb-2">
+          8. Alamat Tempat Usaha <span className="text-red-500">*</span>
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 items-center">
           <div className="text-black">
@@ -729,90 +746,97 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
             placeholder="Kode Pos"
             value={formData.posCode || ""}
             onChange={onChange}
-            className="border rounded p-2 w-full mb-2 placeholder:text-sm text-black"
+            className="border rounded p-2 w-full placeholder:text-sm text-black"
           />
           {errors?.posCode && (
-            <p className="text-red-500 text-sm mt-1 mb-1">
-              {errors.posCode[0]}
-            </p>
+            <p className="text-red-500 text-sm mt-1">{errors.posCode[0]}</p>
           )}
         </div>
-        <textarea
-          id="address"
-          name="addres"
-          value={formData.addres}
-          onChange={onChange}
-          placeholder="Alamat Sesuai Tempat Usaha"
-          className="border p-2 w-full rounded resize-none placeholder:text-sm text-black"
-          rows={4}
-        ></textarea>
-        {errors?.addres && (
-          <p className="text-red-500 text-sm mt-1">{errors.addres[0]}</p>
-        )}
+        <div>
+          <textarea
+            id="address"
+            name="addres"
+            value={formData.addres}
+            onChange={onChange}
+            placeholder="Alamat Sesuai Tempat Usaha"
+            className="border p-2 w-full rounded resize-none placeholder:text-sm text-black"
+            rows={4}
+          ></textarea>
+          {errors?.addres && (
+            <p className="text-red-500 text-sm mt-1">{errors.addres[0]}</p>
+          )}
+        </div>
       </div>
 
       {/* KANAN */}
       <div className="space-y-4">
-        <h3 className="font-semibold text-black mt-4">
-          9. Nomor Telepon Perusahaan
-        </h3>
-        <input
-          type="text"
-          name="noTeleponPerusahaan"
-          value={formData.noTeleponPerusahaan}
-          onChange={(e) => {
-            const onlyNums = e.target.value.replace(/[^0-9]/g, "");
-            onChange({
-              target: { name: "noTeleponPerusahaan", value: onlyNums },
-            } as React.ChangeEvent<HTMLInputElement>);
-          }}
-          placeholder="Masukkan Nomor Telepon Perusahaan"
-          className="border p-2 w-full rounded mb-0 text-gray-700"
-        />
-        {errors?.noTeleponPerusahaan && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.noTeleponPerusahaan[0]}
-          </p>
-        )}
-
-        <h3 className="font-semibold text-black mt-4">10. Situs Perusahaan</h3>
-        <input
-          type="text"
-          name="situsPerusahaan"
-          value={formData.situsPerusahaan}
-          onChange={onChange}
-          placeholder="Masukkan Situs Perusahaan"
-          className="border p-2 w-full rounded mb-0 text-gray-700"
-        />
-        {errors?.situsPerusahaan && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.situsPerusahaan[0]}
-          </p>
-        )}
-
-        <h3 className="font-semibold text-black mt-4">11. Email Perusahaan</h3>
-        <input
-          type="text"
-          name="emailPerusahaan"
-          value={formData.emailPerusahaan}
-          onChange={onChange}
-          placeholder="Masukkan Email Perusahaan"
-          className="border p-2 w-full rounded mb-0 text-gray-700"
-        />
-        {errors?.emailPerusahaan && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.emailPerusahaan[0]}
-          </p>
-        )}
-
+        <div>
+          <h3 className="font-semibold text-black mt-2 mb-2">
+            9. Nomor Telepon Perusahaan <span className="text-red-500">*</span>
+          </h3>
+          <input
+            type="text"
+            name="noTeleponPerusahaan"
+            value={formData.noTeleponPerusahaan}
+            onChange={(e) => {
+              const onlyNums = e.target.value.replace(/[^0-9]/g, "");
+              onChange({
+                target: { name: "noTeleponPerusahaan", value: onlyNums },
+              } as React.ChangeEvent<HTMLInputElement>);
+            }}
+            placeholder="Masukkan Nomor Telepon Perusahaan"
+            className="border p-2 w-full rounded mb-0 text-gray-700"
+          />
+          {errors?.noTeleponPerusahaan && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.noTeleponPerusahaan[0]}
+            </p>
+          )}
+        </div>
+        <div>
+          <h3 className="font-semibold text-black mt-4 mb-2">
+            10. Situs Perusahaan <span className="text-red-500">*</span>
+          </h3>
+          <input
+            type="text"
+            name="situsPerusahaan"
+            value={formData.situsPerusahaan}
+            onChange={onChange}
+            placeholder="Masukkan Situs Perusahaan"
+            className="border p-2 w-full rounded mb-0 text-gray-700"
+          />
+          {errors?.situsPerusahaan && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.situsPerusahaan[0]}
+            </p>
+          )}
+        </div>
+        <div>
+          <h3 className="font-semibold text-black mt-4 mb-2">
+            11. Email Perusahaan <span className="text-red-500">*</span>
+          </h3>
+          <input
+            type="text"
+            name="emailPerusahaan"
+            value={formData.emailPerusahaan}
+            onChange={onChange}
+            placeholder="Masukkan Email Perusahaan"
+            className="border p-2 w-full rounded mb-0 text-gray-700"
+          />
+          {errors?.emailPerusahaan && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.emailPerusahaan[0]}
+            </p>
+          )}
+        </div>
         <h3 className="font-semibold text-black">
-          12. Informasi Rekening Bank
+          12. Informasi Rekening Bank <span className="text-red-500">*</span>
         </h3>
 
         <div className="text-black">
           <Select
             className="mt-0"
-            value={selectedBank}
+            value={selectedBank || null}
             options={customOptionsBank}
             formatOptionLabel={formatOptionLabel}
             onChange={(e) => {
@@ -827,20 +851,20 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
 
         <div>
           <label className="text-sm font-medium mb-2 text-black">
-            Nomor Rekening
+            Nomor Rekening <span className="text-red-500">*</span>
           </label>
-          <div className="text-black">
-            <input
-              type="text"
-              name="nomorRekening"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              placeholder="Masukkan Nomor Rekening"
-              value={formData.nomorRekening}
-              onChange={onChange}
-              className="border rounded p-2 w-full mb-4 placeholder:text-sm"
-            />
-          </div>
+
+          <input
+            type="text"
+            name="nomorRekening"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            placeholder="Masukkan Nomor Rekening"
+            value={formData.nomorRekening}
+            onChange={onChange}
+            className="border rounded p-2 w-full mt-1 placeholder:text-sm"
+          />
+
           {errors?.nomorRekening && (
             <p className="text-red-500 text-sm mt-1">
               {errors.nomorRekening[0]}
@@ -849,16 +873,16 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
 
           <div>
             <label className="text-sm font-medium mb-2 text-black">
-              Nama Pemilik Rekening
+              Nama Rekening Perusahaan <span className="text-red-500">*</span>
             </label>
             <div className="text-black">
               <input
                 type="text"
                 name="namaPemilik"
-                placeholder="Masukkan Nama Pemilik Rekening"
+                placeholder="Masukkan Nama Rekening Perusahaan"
                 value={formData.namaPemilik}
                 onChange={onChange}
-                className="border rounded p-2 w-full mb-4 placeholder:text-sm"
+                className="border rounded p-2 w-full mt-1 placeholder:text-sm"
               />
             </div>
             {errors?.namaPemilik && (
@@ -867,8 +891,8 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
               </p>
             )}
 
-            <div className="mb-6">
-              <h3 className="font-semibold text-gray-900 mb-2">
+            <div className="mb-4">
+              <h3 className="font-semibold text-gray-900 mb-2 mt-2">
                 Pernyataan Kebenaran Data Perusahaan
               </h3>
               <p className="text-sm text-gray-500 mb-3">
@@ -892,7 +916,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
               </label>
             </div>
 
-            <div className="mb-3">
+            <div className="mb-4">
               <h3 className="font-semibold text-gray-900 mb-2">
                 Pernyataan Pemahaman Risiko Investasi
               </h3>

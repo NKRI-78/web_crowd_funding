@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { FaFileAlt } from "react-icons/fa";
@@ -28,9 +28,14 @@ interface Props {
     districtPekerjaan: { value: string; label: string };
     subDistrictPekerjaan: { value: string; label: string };
     posCodePekerjaan: string;
+    namaBank_efek: { value: string; label: string };
+    nomorRekening_efek: string;
+    namaPemilik_efek: string;
+    slipGajiUrl: string;
   };
   onLihatNPWP?: () => void;
   onLihatFotoPemodal?: () => void;
+  onLihatSlipGaji?: () => void;
   onChange: (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -100,6 +105,7 @@ interface Props {
     form: string;
   };
   isUpdate: boolean;
+  onBankChange: (bank: { value: string; label: string } | null) => void;
 }
 
 const ComponentDataPekerjaan: React.FC<Props> = ({
@@ -116,8 +122,10 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   errors,
   onLihatNPWP,
   onLihatFotoPemodal,
+  onLihatSlipGaji,
   dataProfile,
   isUpdate,
+  onBankChange,
 }) => {
   type OptionType = { value: string; label: string } | null;
 
@@ -151,6 +159,8 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   const [selectedSubDistrictPekerjaan, setSelectedSubDistrictPekerjaan] =
     useState<OptionType>(null);
   const [posCode, setPosCode] = useState("");
+  const [bank, setBank] = useState<any[]>([]);
+  const [selectedBank, setSelectedBank] = useState<OptionType>(null);
 
   const urlWilayah = "https://api.wilayah.site";
 
@@ -184,6 +194,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           rekeningKoran: "Rekening Koran",
           npwpUrl: "NPWP Perusahaan",
           fotoPemodalUrl: "Foto Pemodal",
+          slipGajiUrl: "Slip Gaji",
         };
 
         const formattedKey = labelMap[keyName] || keyName;
@@ -301,6 +312,21 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   }, [selectedSubDistrictPekerjaan]);
 
   useEffect(() => {
+    const fetchBank = async () => {
+      try {
+        const response = await axios.get(
+          `https://api.gateway.langitdigital78.com/v1/bank`
+        );
+        setBank(response.data.data.beneficiary_banks);
+      } catch (error) {
+        console.error("Gagal ambil bank:", error);
+      }
+    };
+
+    fetchBank();
+  }, []);
+
+  useEffect(() => {
     if (
       selectedProvincePekerjaan &&
       selectedCityPekerjaan &&
@@ -400,9 +426,11 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
       setSelectedSubDistrictPekerjaan(formData.subDistrictPekerjaan);
     }
     if (formData?.posCodePekerjaan) {
-      console.log("Prefill posCode berhasil:", formData.posCodePekerjaan);
+      // console.log("Prefill posCode berhasil:", formData.posCodePekerjaan);
       setPosCode(formData.posCodePekerjaan);
     }
+
+    if (formData.namaBank_efek) setSelectedBank(formData.namaBank_efek);
   }, [formData]);
 
   const customOptions = province.map(
@@ -438,6 +466,17 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
       <span>{label}</span>
     </div>
   );
+
+  const customOptionsBank = useMemo(() => {
+    return bank.map((b) => ({
+      value: b.code,
+      label: b.name,
+    }));
+  }, [bank]);
+
+  useEffect(() => {
+    onBankChange(selectedBank);
+  }, [selectedBank]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 max-w-6xl mx-auto">
@@ -490,7 +529,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
 
         <div className="mb-4">
           <label htmlFor="address" className="text-md mb-2">
-            Alamat Perusahaan
+            Alamat Perusahaan <span className="text-red-500">*</span>
           </label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 items-center">
             <div>
@@ -629,6 +668,58 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
               {errors.penghasilanBulanan[0]}
             </p>
           )}
+        </div>
+
+        <div className="mb-4 mt-4">
+          <label className="text-md mb-2">
+            Slip Gaji <span className="text-red-500">*</span>
+          </label>
+
+          <p className="text-sm text-gray-400 mb-2">
+            File maksimal berukuran 10mb
+          </p>
+          <UpdateRing
+            identity={`${dataProfile?.form}`}
+            // formKey={dataProfile?.form}
+            formKey="slipGaji"
+          >
+            {/* Input File yang disembunyikan */}
+            <input
+              type="file"
+              id="slipGajiUrlUpload"
+              className="hidden"
+              onChange={handleFileChange}
+              disabled={uploadStatus["slipGajiUrl"] === true}
+              accept="application/pdf"
+              data-keyname="slipGajiUrl"
+            />
+
+            {/* Label sebagai tombol */}
+            <label
+              htmlFor="slipGajiUrlUpload"
+              className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
+            >
+              <>
+                <FaFileAlt />
+                Upload Dokumen
+              </>
+            </label>
+            {typeof window !== "undefined" && formData.slipGajiUrl && (
+              <button
+                type="button"
+                onClick={onLihatSlipGaji}
+                className="text-blue-600 underline text-sm block mt-2 mb-2"
+              >
+                Lihat Slip Gaji
+              </button>
+            )}
+
+            {errors?.slipGajiUrl && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.slipGajiUrl[0]}
+              </p>
+            )}
+          </UpdateRing>
         </div>
 
         <h2 className="text-lg md:text-xl font-bold mb-4">4. Profil Resiko</h2>
@@ -773,6 +864,75 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
       {/* KANAN */}
       <div>
         <div className="mb-4 mt-4">
+          <h2 className="text-lg md:text-xl font-bold mb-4">
+            5. Rekening Efek (optional)
+          </h2>
+
+          <div>
+            <label className="text-sm font-medium mb-2">
+              Nama Bank
+              {/* <span className="text-red-500">*</span> */}
+            </label>
+
+            <Select
+              className="mt-0"
+              value={selectedBank || null}
+              options={customOptionsBank}
+              formatOptionLabel={formatOptionLabel}
+              onChange={(e) => {
+                setSelectedBank(e);
+              }}
+              placeholder="Pilih Nama Bank"
+            />
+            {/* {errors?.namaBank && (
+              <p className="text-red-500 text-sm mt-1">{errors.namaBank[0]}</p>
+            )} */}
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2">
+              Nomor Rekening
+              {/* <span className="text-red-500">*</span> */}
+            </label>
+            <input
+              type="text"
+              name="nomorRekening_efek"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="Masukkan Nomor Rekening"
+              value={formData.nomorRekening_efek}
+              onChange={onChange}
+              className="border rounded p-2 w-full mb-0 placeholder:text-sm"
+            />
+            {/* {errors?.nomorRekening && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.nomorRekening[0]}
+              </p>
+            )} */}
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2">
+              Nama Pemilik Rekening
+              {/* <span className="text-red-500">*</span> */}
+            </label>
+            <input
+              type="text"
+              name="namaPemilik_efek"
+              placeholder="Masukkan Nama Pemilik Rekening"
+              value={formData.namaPemilik_efek}
+              onChange={onChange}
+              className="border rounded p-2 w-full mb-0 placeholder:text-sm"
+            />
+            {/* {errors?.namaPemilik && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.namaPemilik[0]}
+              </p>
+            )} */}
+          </div>
+        </div>
+
+        <div className="mb-4 mt-4">
           <label className="text-md mb-2">
             NPWP Perusahaan <span className="text-red-500">*</span>
           </label>
@@ -822,7 +982,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           </UpdateRing>
         </div>
 
-        <div className="mb-4 mt-4">
+        {/* <div className="mb-4 mt-4">
           <label className="text-md mb-2">
             Foto Pemodal <span className="text-red-500">*</span>
           </label>
@@ -831,7 +991,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             File maksimal berukuran 10mb
           </p>
 
-          {/* Input File yang disembunyikan */}
+          Input File yang disembunyikan
           <input
             type="file"
             id="fotoPemodalUrlUpload"
@@ -842,7 +1002,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             data-keyname="fotoPemodalUrl"
           />
 
-          {/* Label sebagai tombol */}
+          Label sebagai tombol
           <label
             htmlFor="fotoPemodalUrlUpload"
             className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
@@ -851,7 +1011,6 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
               <FaFileAlt />
               Upload Dokumen
             </>
-            {/* )} */}
           </label>
         </div>
         {typeof window !== "undefined" && formData.fotoPemodalUrl && (
@@ -868,7 +1027,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           <p className="text-red-500 text-sm mt-1">
             {errors.fotoPemodalUrl[0]}
           </p>
-        )}
+        )} */}
 
         <div className="mb-6">
           <h3 className="font-semibold text-gray-900 mb-2">

@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import FileViewerModal from "@/app/(defaults)/viewer/components/FilePriviewModal";
 
 const FormDataPemodalPerusahaan: React.FC = () => {
   type OptionType = { value: string; label: string } | null;
@@ -23,7 +24,7 @@ const FormDataPemodalPerusahaan: React.FC = () => {
       noTeleponPerusahaan: "",
       situsPerusahaan: "",
       emailPerusahaan: "",
-      namaBank: "",
+      namaBank: null,
       nomorRekening: "",
       namaPemilik: "",
 
@@ -47,6 +48,11 @@ const FormDataPemodalPerusahaan: React.FC = () => {
 
   const router = useRouter();
 
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewFileUrl, setPreviewFileUrl] = useState<string | undefined>(
+    undefined
+  );
+
   const [errorsPemodalPerusahaan, setErrorsPemodalPerusahaan] = useState<
     Record<string, string[]>
   >({});
@@ -63,7 +69,7 @@ const FormDataPemodalPerusahaan: React.FC = () => {
   const handleBank = (namaBank: OptionType) => {
     setFormData((prev: any) => ({
       ...prev,
-      namaBank: namaBank as NonNullable<OptionType>,
+      namaBank: namaBank,
     }));
   };
 
@@ -95,7 +101,6 @@ const FormDataPemodalPerusahaan: React.FC = () => {
     jenisPerusahaan: z.string().min(1, "Jenis perusahaan harus diisi"),
     nomorAktaPerubahanTerakhir: z.string().min(1, "Nomor akta harus diisi"),
     nomorNpwpPerusahaan: z.string().min(1, "Nomor NPWP harus diisi"),
-    // alamatTempatUsaha: z.string().min(1, "Alamat tempat usaha harus diisi"),
     noTeleponPerusahaan: z.string().min(1, "No telepon perusahaan harus diisi"),
     situsPerusahaan: z.string().url("Situs perusahaan tidak valid"),
     emailPerusahaan: z.string().email("Email tidak valid"),
@@ -109,7 +114,7 @@ const FormDataPemodalPerusahaan: React.FC = () => {
         message: "Nama bank wajib dipilih",
       }),
     nomorRekening: z.string().min(1, "Nomor rekening harus diisi"),
-    namaPemilik: z.string().min(1, "Nama pemilik harus diisi"),
+    namaPemilik: z.string().min(1, "Nama rekening perusahaan harus diisi"),
 
     aktaPendirianPerusahaanUrl: z.string().url("Akta harus diisi"),
     skPendirianUrl: z.string().url("SK Pendirian "),
@@ -212,6 +217,7 @@ const FormDataPemodalPerusahaan: React.FC = () => {
         sk_kumham: "-",
         sk_kumham_terahkir: "-",
         sk_kumham_path: data.skKumhamPerusahaanUrl,
+        sk_pendirian_perusahaan: data.skPendirianUrl,
         npwp: data.nomorNpwpPerusahaan,
         npwp_path: data.npwpPerusahaanUrl,
         didirkan: "-",
@@ -219,14 +225,13 @@ const FormDataPemodalPerusahaan: React.FC = () => {
         email: data.emailPerusahaan,
         phone: data.noTeleponPerusahaan,
         bank_name: data.namaBank?.value || "-",
-
         bank_account: data.nomorRekening,
         bank_owner: data.namaPemilik,
         siup: "-",
         tdp: "-",
-        jenis_usaha: "-",
-        jenis_perusahaan: data.jenisPerusahaan,
-        status_kantor: "-",
+        jenis_usaha: "99",
+        jenis_perusahaan: String(data.jenisPerusahaan),
+        status_kantor: "99",
         total_employees: "-",
         laporan_keuangan_path: "-",
 
@@ -234,10 +239,10 @@ const FormDataPemodalPerusahaan: React.FC = () => {
           {
             name: "-",
             detail: data.addres,
-            province_id: data.provincePemodalPerusahaan?.value || "-",
-            city_id: data.cityPemodalPerusahaan?.value || "-",
-            district_id: data.districtPemodalPerusahaan?.value || "-",
-            subdistrict_id: data.subDistrictPemodalPerusahaan?.value || "-",
+            province_name: data.provincePemodalPerusahaan?.label || "-",
+            city_name: data.cityPemodalPerusahaan?.label || "-",
+            district_name: data.districtPemodalPerusahaan?.label || "-",
+            subdistrict_name: data.subDistrictPemodalPerusahaan?.label || "-",
             postal_code: data.posCode,
           },
         ],
@@ -284,8 +289,7 @@ const FormDataPemodalPerusahaan: React.FC = () => {
           is_apbn: null,
         },
       };
-      console.log(payload, "payload");
-      console.log("buat");
+      console.log(payload, "CEK PAYLOAD");
 
       const response = await axios.post(
         `https://api-capbridge.langitdigital78.com/api/v1/auth/assign/role`,
@@ -351,6 +355,30 @@ const FormDataPemodalPerusahaan: React.FC = () => {
         onAlamatChange={handleAlamatChange}
         onCheckboxChange={handleCheckboxChange}
         errors={errorsPemodalPerusahaan}
+        onLihatAktaPendirianPerusahaan={() => {
+          setPreviewFileUrl(formData.aktaPendirianPerusahaanUrl);
+          setPreviewOpen(true);
+        }}
+        onLihatNpwpPerusahaan={() => {
+          setPreviewFileUrl(formData.npwpPerusahaanUrl);
+          setPreviewOpen(true);
+        }}
+        onLihatSkKumhamPerusahaan={() => {
+          setPreviewFileUrl(formData.skKumhamPerusahaanUrl);
+          setPreviewOpen(true);
+        }}
+        onLihatSkPendirianPerusahaan={() => {
+          setPreviewFileUrl(formData.skPendirianUrl);
+          setPreviewOpen(true);
+        }}
+      />
+      <FileViewerModal
+        src={previewFileUrl ?? ""}
+        open={previewOpen}
+        onClose={() => {
+          setPreviewOpen(false);
+          setPreviewFileUrl(undefined);
+        }}
       />
 
       <div className="mt-2 flex justify-end">

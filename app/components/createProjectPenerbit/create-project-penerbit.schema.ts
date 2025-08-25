@@ -1,5 +1,15 @@
 import z from "zod";
 
+export const alamatSchema = z.object({
+  name: z.string().optional(),
+  province_name: z.string().min(1, "Provinsi wajib diisi"),
+  city_name: z.string().min(1, "Kota wajib diisi"),
+  district_name: z.string().min(1, "Kecamatan wajib diisi"),
+  subdistrict_name: z.string().min(1, "Kelurahan wajib diisi"),
+  postal_code: z.string().min(1, "Kode pos wajib diisi"),
+  detail: z.string().min(1, "Detail alamat wajib diisi"),
+});
+
 export interface ProjectTypeInterface {
   id: string;
   name: string;
@@ -57,6 +67,10 @@ export const createProjectPenerbitSchema = z
     laporanKeuangan: z.string().min(1, "Laporan Keuangan wajib diupload"),
     prospektus: z.string().optional(),
     lokasiProyek: mapsResultSchema.nullable(),
+    address: z
+      .array(alamatSchema)
+      .min(1, "Minimal 1 alamat harus diisi")
+      .max(2, "Maksimal hanya 2 alamat"),
   })
   .refine((data) => data.lokasiProyek !== null, {
     message: "Lokasi Proyek wajib diisi",
@@ -84,6 +98,26 @@ export const defaultValues: CreateProjectFormSchema = {
   laporanKeuangan: "",
   prospektus: "",
   lokasiProyek: null,
+  address: [
+    {
+      name: "Penerbit",
+      province_name: "",
+      city_name: "",
+      district_name: "",
+      subdistrict_name: "",
+      postal_code: "",
+      detail: "",
+    },
+    {
+      name: "Pemberi Proyek",
+      province_name: "",
+      city_name: "",
+      district_name: "",
+      subdistrict_name: "",
+      postal_code: "",
+      detail: "",
+    },
+  ],
 };
 
 export type CreateProjectFormSchema = z.infer<

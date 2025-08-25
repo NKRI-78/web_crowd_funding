@@ -23,6 +23,7 @@ import JobStructureForm from "./_component/JobStructureForm";
 import AddButton from "./_component/AddButton";
 import FormButton from "./_component/FormButton";
 import UpdateRing from "./_component/UpdateRing";
+import NPWPUploader from "@app/(defaults)/form-penerbit/components/UploadNPWP";
 
 import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { IFormPublisher } from "@/app/interface/IFormPublisher";
@@ -39,6 +40,7 @@ import {
   FormPenerbitValues,
 } from "./formPenerbit.schema";
 import FileUpload from "@/app/helper/FileUpload";
+import { sanitizeNPWPOrThrow } from "@/app/lib/npwp-formart";
 
 type Props = {
   onBack: () => void;
@@ -64,31 +66,45 @@ const emptyKomisaris = () => ({
   fileNPWP: "",
 });
 
+const defaultFormValues: FormPenerbitValues = {
+  company_nib_path: "",
+  akta_pendirian: "",
+  sk_kumham_path: "",
+  akta_perubahan_terahkir_path: "",
+  sk_kumham_terahkir: "",
+  fileNpwp: "",
+  siup: "",
+  tdp: "",
+  laporanKeuangan: "",
+  rekeningKoran: "",
+  // npwp: "",
+  direktur: [emptyDirektur()],
+  komisaris: [emptyKomisaris()],
+  total_employees: "",
+  agree: false,
+};
+
 const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
   const router = useRouter();
   const [isReady, setIsReady] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   const methods = useForm<FormPenerbitValues>({
     resolver: zodResolver(FormPenerbitSchema),
     mode: "onChange",
-    defaultValues: {
-      company_nib_path: "",
-      akta_pendirian: "",
-      sk_kumham_path: "",
-      akta_perubahan_terahkir_path: "",
-      sk_kumham_terahkir: "",
-      fileNpwp: "",
-      siup: "",
-      tdp: "",
-      laporanKeuangan: "",
-      rekeningKoran: "",
-      direktur: [emptyDirektur()],
-      komisaris: [emptyKomisaris()],
-      total_employees: "",
-      agree: false,
-    },
+    defaultValues: defaultFormValues,
   });
+
+  const clearDraft = () => {
+    localStorage.removeItem("publisherDraft");
+    localStorage.removeItem("penerbitFormIndex");
+    localStorage.removeItem("utusanPenerbitCache");
+    localStorage.removeItem("penerbitFormIndex");
+    setIsClearing(true);
+    reset(defaultFormValues);
+    setTimeout(() => setIsClearing(false), 500);
+  };
 
   const {
     control,
@@ -96,6 +112,8 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
     formState: { errors, isSubmitting },
     setValue,
     reset,
+    trigger,
+    resetField,
     watch,
   } = methods;
 
@@ -172,7 +190,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
         sk_kumham: draftParsed.sk_kumham_path,
         sk_kumham_path: draftParsed.sk_kumham_path,
         sk_kumham_terahkir: draftParsed.sk_kumham_terahkir,
-        npwp: "-",
+        // npwp: "-",
         npwp_path: draftParsed.fileNpwp,
         didirikan: draftParsed.establishedYear,
         site: draftParsed.webCompany,
@@ -238,10 +256,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
       );
       console.log(res);
 
-      localStorage.removeItem("publisherDraft");
-      localStorage.removeItem("formPenerbitDraft");
-      localStorage.removeItem("penerbitFormIndex");
-      localStorage.removeItem("utusanPenerbitCache");
+      clearDraft();
       setSubmitted(true);
 
       await Swal.fire({
@@ -414,14 +429,12 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
 
   const values = watch();
   useEffect(() => {
-    if (!isReady) return;
-
+    if (!isReady || isClearing) return; // 🚩 skip save kalau sedang clear
     const timeout = setTimeout(() => {
       localStorage.setItem("publisherDraft", JSON.stringify(values));
     }, 1000);
-
     return () => clearTimeout(timeout);
-  }, [values, isReady]);
+  }, [values, isReady, isClearing]);
 
   const canAddDirektur = direkturFA.fields.length < MAX_DIREKTUR;
   const canAddKomisaris = komisarisFA.fields.length < MAX_KOMISARIS;
@@ -462,30 +475,8 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
 
       const fileUrl = res.data?.data?.path;
 
-      const uploadMessages = {
-        company_nib_path: "Upload NIB Perusahaan berhasil!",
-        akta_pendirian: "Upload Akta Pendirian berhasil!",
-        sk_kumham_path: "Upload SK KUMHAM berhasil!",
-        akta_perubahan_terahkir_path:
-          "Upload Akta Perubahan Terakhir berhasil!",
-        sk_kumham_terahkir: "Upload SK KUMHAM Terakhir berhasil!",
-        siup: "Upload Surat Izin Usaha Perdagangan berhasil!",
-        tdp: "Upload Tanda Daftar Perusahaan berhasil!",
-        fileNpwp: "Upload NPWP berhasil!",
-      } as const;
-
       if (fileUrl) {
         setValue(field, fileUrl, { shouldValidate: true });
-        if (field in uploadMessages) {
-          const message = uploadMessages[field as keyof typeof uploadMessages];
-          Swal.fire({
-            title: "Berhasil",
-            text: message,
-            icon: "success",
-            timer: 3000,
-            showConfirmButton: false,
-          });
-        }
       } else {
         alert(`Upload ${field} gagal!`);
       }
@@ -611,6 +602,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
                 </p>
               )}
             </div>
+
             <div className="flex gap-x-4 items-end mt-3">
               <div className="flex flex-col">
                 <SectionTitle text="2. Struktur Permodalan" />
