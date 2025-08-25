@@ -12,7 +12,12 @@ import PhotoUploaderContainer from "../inputFormPenerbit/_component/PhotoUploade
 import FileInput from "../inputFormPenerbit/_component/FileInput";
 import SectionPoint from "../inputFormPenerbit/_component/SectionPoint";
 import Subtitle from "../inputFormPenerbit/_component/SectionSubtitle";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import {
+  Controller,
+  SubmitHandler,
+  useFieldArray,
+  useForm,
+} from "react-hook-form";
 import {
   CreateProjectFormSchema,
   createProjectPenerbitSchema,
@@ -41,6 +46,16 @@ const getUserToken = (): string => {
 
 const FORM_CACHE_KEY = "createProjectPenerbitCache";
 
+function formatDateToCustom(dateString: string): string {
+  const date = new Date(dateString);
+
+  const year = date.getFullYear();
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // bulan mulai dari 0
+
+  return `${year}-${month}-${day}`;
+}
+
 const CreateProjectPenerbit: React.FC = () => {
   const router = useRouter();
 
@@ -60,7 +75,7 @@ const CreateProjectPenerbit: React.FC = () => {
     watch,
     getValues,
     control,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     reset,
   } = useForm<CreateProjectFormSchema>({
     resolver: zodResolver(createProjectPenerbitSchema),
@@ -144,41 +159,42 @@ const CreateProjectPenerbit: React.FC = () => {
   };
 
   //* on submit
-  const onSubmit = async () => {
-    console.log("create project");
-    const field = getValues();
+  const onSubmit: SubmitHandler<CreateProjectFormSchema> = async (data) => {
+    console.log("create project", data);
+    const penyedia = data.address[0]; // alamat penyedia
+    const pemberi = data.address[1]; // alamat pemberi proyek
 
     try {
       if (!companyId) throw "ID Perusahaan tidak terdaftar";
 
       const payload = {
         company_id: companyId,
-        title: field.namaProyek,
-        deskripsi: field.deskripsiProyek,
-        modal: String(field.modalProyek),
-        persentase_keuntungan: String(field.persentaseKeuntungan),
-        spk: field.fileSPK,
-        loa: field.laporanKeuangan,
+        title: data.namaProyek,
+        deskripsi: data.deskripsiProyek,
+        modal: String(data.modalProyek),
+        persentase_keuntungan: String(data.persentaseKeuntungan),
+        spk: data.fileSPK,
+        loa: data.laporanKeuangan,
         jenis_project: String(
-          jenisProyek.find((type) => type.name === field.jenisProyek)?.id ?? 1
+          jenisProyek.find((type) => type.name === data.jenisProyek)?.id ?? 1
         ),
-        batas_akhir_pengerjaan: "-",
-        tenor_pinjaman: field.tenor,
-        website: field.websiteInstansiProyek,
-        doc_rekening_koran: field.rekeningKoran,
-        doc_laporan_keuangan: field.laporanKeuangan,
-        doc_contract: field.dokumenKontrak,
-        doc_prospect: field.prospektus,
-        instansi_pemberi_project: field.instansiProyek,
+        batas_akhir_pengerjaan: formatDateToCustom(data.tanggalSelesaiProyek),
+        tenor_pinjaman: data.tenor,
+        website: data.websiteInstansiProyek,
+        doc_rekening_koran: data.rekeningKoran,
+        doc_laporan_keuangan: data.laporanKeuangan,
+        doc_contract: data.dokumenKontrak,
+        doc_prospect: data.prospektus,
+        instansi_pemberi_project: data.instansiProyek,
         jenis_instansi_pemberi_project: String(
           jenisInstansiPemberiProyek.find(
-            (type) => type.name === field.jenisInstansiProyek
+            (type) => type.name === data.jenisInstansiProyek
           )?.id ?? 1
         ),
-        jaminan_kolateral: field.jaminanKolateral.map((value) => ({
+        jaminan_kolateral: data.jaminanKolateral.map((value) => ({
           name: value,
         })),
-        media: field.fotoProyek.map((value) => ({ name: value })),
+        media: data.fotoProyek.map((value) => ({ name: value })),
         penggunaan_dana: [
           {
             name: "-",
@@ -192,74 +208,26 @@ const CreateProjectPenerbit: React.FC = () => {
         jangka_waktu: "-",
         no_contract_path: "-",
         no_contract_value: "-",
-        location: {
-          name: "Gubak Hills",
-          url: "https://www.google.com/maps/place/GUBAK+HILLS+CAFE/@-5.4293658,105.3019602,17z/data=!3m1!4b1!4m6!3m5!1s0x2e40dba7f01489b1:0x8ff72aa55e67438c!8m2!3d-5.4293658!4d105.3045351!16s%2Fg%2F11jz_p_4r7?entry=ttu&g_ep=EgoyMDI1MDYxNi4wIKXMDSoASAFQAw%3D%3D",
-          lat: "-5.429098776940619",
-          lng: "105.30456728251235",
-        },
-      };
-
-      const payload2 = {
-        company_id: companyId,
-        title: field.namaProyek,
-        deskripsi: field.deskripsiProyek,
-        modal: field.modalProyek,
-        jumlah_minimal: "-",
-        jadwal_pembayaran_bunga: "-",
-        jadwal_pembayaran_pokok: "-",
-        persentase_keuntungan: field.persentaseKeuntungan,
-        tingkat_bunga: "-",
-        jangka_waktu: "-",
-        spk: field.fileSPK,
-        loa: field.fileLOA,
-        jenis_project: String(
-          jenisProyek.find((type) => type.name === field.jenisProyek)?.id ?? 1
-        ),
-        is_apbn: false,
-        no_contract_path: "-",
-        no_contract_value: "-",
-        batas_akhir_pengerjaan: "45 hari",
-        tenor_pinjaman: field.tenor,
-        website: field.websiteInstansiProyek,
-        doc_rekening_koran: field.rekeningKoran,
-        doc_laporan_keuangan: field.laporanKeuangan,
-        doc_contract: field.dokumenKontrak,
-        doc_prospect: field.prospektus,
-        instansi_pemberi_project: field.instansiProyek,
-        jenis_instansi_pemberi_project: String(
-          jenisInstansiPemberiProyek.find(
-            (type) => type.name === field.jenisInstansiProyek
-          )?.id ?? 1
-        ),
-        mulai_project: field.tanggalMulaiProyek,
-        selesai_project: field.tanggalSelesaiProyek,
-        alamat_penyedia_provinsi: "-",
-        alamat_penyedia_kota: "-",
-        alamat_penyedia_daerah: "-",
-        alamat_penyedia_wilayah: "-",
-        alamat_penyedia_kode_pos: "-",
-        jaminan_kolateral: field.jaminanKolateral.map((value) => ({
-          name: value,
-        })),
-        penggunaan_dana: [],
-        media: field.fotoProyek.map((value) => ({ name: value })),
-        provider_address: "-",
-        provider_province_name: "-",
-        provider_city_name: "-",
-        provider_district_name: "-",
-        provider_subdistrict_name: "-",
-        provider_postal_code: "-",
+        mulai_project: formatDateToCustom(data.tanggalMulaiProyek),
+        selesai_project: formatDateToCustom(data.tanggalSelesaiProyek),
+        alamat_penyedia_project: penyedia.detail,
+        alamat_penyedia_provinsi: penyedia.province_name,
+        alamat_penyedia_kota: penyedia.city_name,
+        alamat_penyedia_daerah: penyedia.district_name,
+        alamat_penyedia_wilayah: penyedia.subdistrict_name,
+        alamat_penyedia_kode_pos: penyedia.postal_code,
         location: {
           name: "-",
-          url: field.lokasiProyek?.url ?? "-",
-          lat: field.lokasiProyek?.lat ?? 0,
-          lng: field.lokasiProyek?.lng ?? 0,
+          url: data.lokasiProyek?.url.toString(),
+          lat: data.lokasiProyek?.lat.toString(),
+          lng: data.lokasiProyek?.lng.toString(),
         },
       };
 
+      console.log("Payload ", payload);
+
       const token = getUserToken();
-      await axios.post(`${API_BACKEND}/api/v1/project/store`, payload2, {
+      await axios.post(`${API_BACKEND}/api/v1/project/store`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -272,7 +240,7 @@ const CreateProjectPenerbit: React.FC = () => {
         showConfirmButton: false,
       });
 
-      localStorage.removeItem(FORM_CACHE_KEY);
+      // localStorage.removeItem(FORM_CACHE_KEY);
       skipCacheWrite.current = true;
       reset(defaultValues);
 
@@ -355,11 +323,6 @@ const CreateProjectPenerbit: React.FC = () => {
       setCompanyId(null);
     }
   };
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "address", // ini array
-  });
 
   return (
     <div className="w-full py-28 px-6 md:px-24 bg-white">
@@ -469,8 +432,8 @@ const CreateProjectPenerbit: React.FC = () => {
                 render={({ field }) => {
                   return (
                     <Flatpickr
-                      placeholder="Pilih tanggal mulai proyek"
-                      value={field.value ? new Date(field.value) : undefined}
+                      placeholder="Pilih tanggal batas akhir"
+                      value={new Date(field.value) ?? ""}
                       options={{
                         dateFormat: "j F Y",
                         allowInput: false,
@@ -499,8 +462,8 @@ const CreateProjectPenerbit: React.FC = () => {
                 render={({ field }) => {
                   return (
                     <Flatpickr
-                      placeholder="Pilih tanggal selesai proyek"
-                      value={field.value ? new Date(field.value) : undefined}
+                      placeholder="Pilih tanggal batas akhir"
+                      value={new Date(field.value) ?? undefined}
                       options={{
                         dateFormat: "j F Y",
                         allowInput: false,
@@ -704,7 +667,6 @@ const CreateProjectPenerbit: React.FC = () => {
                     <FileInput
                       fileUrl={field.value}
                       fileName="File SPK"
-                      accept=".pdf,.word"
                       onChange={(e) => {
                         field.onChange(e);
                       }}
@@ -726,7 +688,6 @@ const CreateProjectPenerbit: React.FC = () => {
                   return (
                     <FileInput
                       fileName="File LOA"
-                      accept=".pdf,.word"
                       fileUrl={field.value}
                       onChange={(e) => {
                         field.onChange(e);
@@ -751,7 +712,6 @@ const CreateProjectPenerbit: React.FC = () => {
                   return (
                     <FileInput
                       fileName="Dokumen Kontrak"
-                      accept=".pdf,.word"
                       fileUrl={field.value}
                       onChange={(e) => {
                         field.onChange(e);
@@ -774,7 +734,6 @@ const CreateProjectPenerbit: React.FC = () => {
                   return (
                     <FileInput
                       fileName="Rekening Koran"
-                      accept=".pdf,.word"
                       fileUrl={field.value}
                       onChange={(e) => {
                         field.onChange(e);
@@ -799,7 +758,6 @@ const CreateProjectPenerbit: React.FC = () => {
                   return (
                     <FileInput
                       fileName="Laporan Keuangan"
-                      accept=".pdf,.word"
                       fileUrl={field.value}
                       onChange={(e) => {
                         field.onChange(e);
@@ -812,7 +770,7 @@ const CreateProjectPenerbit: React.FC = () => {
             </div>
 
             <div>
-              <SectionPoint text="Prospektus" optional={true} />
+              <SectionPoint text="Prospektus" />
               <Subtitle text="File maksimal berukuran 10mb" className="my-1" />
 
               <Controller
@@ -822,7 +780,6 @@ const CreateProjectPenerbit: React.FC = () => {
                   return (
                     <FileInput
                       fileName="Prospektus"
-                      accept=".pdf,.word"
                       fileUrl={field.value}
                       onChange={(e) => {
                         field.onChange(e);
@@ -853,7 +810,6 @@ const CreateProjectPenerbit: React.FC = () => {
               );
             }}
           />
-
           <div className="w-full flex justify-end mt-8">
             <FormButton
               onClick={handleSubmit(onSubmit, (errors) => {
