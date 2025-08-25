@@ -1,3 +1,8 @@
+import {
+  formatNPWPFromDigits,
+  isValidNPWPDigits,
+  normalizeNPWP,
+} from "@/app/lib/npwp-formart";
 import { z } from "zod";
 
 const baseManajemenSchema = z.object({
@@ -66,6 +71,18 @@ export const FormPenerbitSchema = z.object({
   fileNpwp: z
     .string({ required_error: "NPWP wajib diunggah" })
     .min(1, { message: "NPWP wajib diunggah" }),
+  // npwp: z
+  //   .string({ required_error: "NPWP wajib diisi" })
+  //   .trim()
+  //   // transform 1: ambil hanya digit
+  //   .transform((val) => normalizeNPWP(val))
+  //   // cek jumlah digit 15/16
+  //   .refine(
+  //     (digits) => isValidNPWPDigits(digits),
+  //     "NPWP harus 15 atau 16 digit"
+  //   )
+  //   // transform 2: simpan ke bentuk terformat baku
+  //   .transform((digits) => formatNPWPFromDigits(digits)),
 
   direktur: z
     .array(direkturItemSchema)

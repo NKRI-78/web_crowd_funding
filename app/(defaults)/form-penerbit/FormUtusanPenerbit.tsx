@@ -99,6 +99,7 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
             photo_ktp: formFields.fileKtp,
             no_ktp: formFields.noKtp,
             surat_kuasa: formFields.suratKuasa,
+            no_npwp: "99",
           };
 
           await axios.post(
@@ -311,6 +312,7 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
           <TextField
             placeholder="Nama Lengkap"
             value={formFields.fullname}
+            disabled={true}
             onChange={(val) => {
               setFormFields({ ...formFields, fullname: val.target.value });
               if (val) {
