@@ -55,11 +55,11 @@ const CreateProjectPenerbit: React.FC = () => {
   //* form state
   const {
     register,
+    setValue,
     handleSubmit,
     watch,
     getValues,
     control,
-    setValue,
     formState: { errors },
     reset,
   } = useForm<CreateProjectFormSchema>({
@@ -200,8 +200,66 @@ const CreateProjectPenerbit: React.FC = () => {
         },
       };
 
+      const payload2 = {
+        company_id: companyId,
+        title: field.namaProyek,
+        deskripsi: field.deskripsiProyek,
+        modal: field.modalProyek,
+        jumlah_minimal: "-",
+        jadwal_pembayaran_bunga: "-",
+        jadwal_pembayaran_pokok: "-",
+        persentase_keuntungan: field.persentaseKeuntungan,
+        tingkat_bunga: "-",
+        jangka_waktu: "-",
+        spk: field.fileSPK,
+        loa: field.fileLOA,
+        jenis_project: String(
+          jenisProyek.find((type) => type.name === field.jenisProyek)?.id ?? 1
+        ),
+        is_apbn: false,
+        no_contract_path: "-",
+        no_contract_value: "-",
+        batas_akhir_pengerjaan: "45 hari",
+        tenor_pinjaman: field.tenor,
+        website: field.websiteInstansiProyek,
+        doc_rekening_koran: field.rekeningKoran,
+        doc_laporan_keuangan: field.laporanKeuangan,
+        doc_contract: field.dokumenKontrak,
+        doc_prospect: field.prospektus,
+        instansi_pemberi_project: field.instansiProyek,
+        jenis_instansi_pemberi_project: String(
+          jenisInstansiPemberiProyek.find(
+            (type) => type.name === field.jenisInstansiProyek
+          )?.id ?? 1
+        ),
+        mulai_project: field.tanggalMulaiProyek,
+        selesai_project: field.tanggalSelesaiProyek,
+        alamat_penyedia_provinsi: "-",
+        alamat_penyedia_kota: "-",
+        alamat_penyedia_daerah: "-",
+        alamat_penyedia_wilayah: "-",
+        alamat_penyedia_kode_pos: "-",
+        jaminan_kolateral: field.jaminanKolateral.map((value) => ({
+          name: value,
+        })),
+        penggunaan_dana: [],
+        media: field.fotoProyek.map((value) => ({ name: value })),
+        provider_address: "-",
+        provider_province_name: "-",
+        provider_city_name: "-",
+        provider_district_name: "-",
+        provider_subdistrict_name: "-",
+        provider_postal_code: "-",
+        location: {
+          name: "-",
+          url: field.lokasiProyek?.url ?? "-",
+          lat: field.lokasiProyek?.lat ?? 0,
+          lng: field.lokasiProyek?.lng ?? 0,
+        },
+      };
+
       const token = getUserToken();
-      await axios.post(`${API_BACKEND}/api/v1/project/store`, payload, {
+      await axios.post(`${API_BACKEND}/api/v1/project/store`, payload2, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -411,8 +469,8 @@ const CreateProjectPenerbit: React.FC = () => {
                 render={({ field }) => {
                   return (
                     <Flatpickr
-                      placeholder="Pilih tanggal batas akhir"
-                      value={new Date(field.value) ?? ""}
+                      placeholder="Pilih tanggal mulai proyek"
+                      value={field.value ? new Date(field.value) : undefined}
                       options={{
                         dateFormat: "j F Y",
                         allowInput: false,
@@ -441,8 +499,8 @@ const CreateProjectPenerbit: React.FC = () => {
                 render={({ field }) => {
                   return (
                     <Flatpickr
-                      placeholder="Pilih tanggal batas akhir"
-                      value={new Date(field.value) ?? undefined}
+                      placeholder="Pilih tanggal selesai proyek"
+                      value={field.value ? new Date(field.value) : undefined}
                       options={{
                         dateFormat: "j F Y",
                         allowInput: false,
@@ -646,6 +704,7 @@ const CreateProjectPenerbit: React.FC = () => {
                     <FileInput
                       fileUrl={field.value}
                       fileName="File SPK"
+                      accept=".pdf,.word"
                       onChange={(e) => {
                         field.onChange(e);
                       }}
@@ -667,6 +726,7 @@ const CreateProjectPenerbit: React.FC = () => {
                   return (
                     <FileInput
                       fileName="File LOA"
+                      accept=".pdf,.word"
                       fileUrl={field.value}
                       onChange={(e) => {
                         field.onChange(e);
@@ -691,6 +751,7 @@ const CreateProjectPenerbit: React.FC = () => {
                   return (
                     <FileInput
                       fileName="Dokumen Kontrak"
+                      accept=".pdf,.word"
                       fileUrl={field.value}
                       onChange={(e) => {
                         field.onChange(e);
@@ -713,6 +774,7 @@ const CreateProjectPenerbit: React.FC = () => {
                   return (
                     <FileInput
                       fileName="Rekening Koran"
+                      accept=".pdf,.word"
                       fileUrl={field.value}
                       onChange={(e) => {
                         field.onChange(e);
@@ -737,6 +799,7 @@ const CreateProjectPenerbit: React.FC = () => {
                   return (
                     <FileInput
                       fileName="Laporan Keuangan"
+                      accept=".pdf,.word"
                       fileUrl={field.value}
                       onChange={(e) => {
                         field.onChange(e);
@@ -749,7 +812,7 @@ const CreateProjectPenerbit: React.FC = () => {
             </div>
 
             <div>
-              <SectionPoint text="Prospektus" />
+              <SectionPoint text="Prospektus" optional={true} />
               <Subtitle text="File maksimal berukuran 10mb" className="my-1" />
 
               <Controller
@@ -759,6 +822,7 @@ const CreateProjectPenerbit: React.FC = () => {
                   return (
                     <FileInput
                       fileName="Prospektus"
+                      accept=".pdf,.word"
                       fileUrl={field.value}
                       onChange={(e) => {
                         field.onChange(e);
@@ -791,7 +855,13 @@ const CreateProjectPenerbit: React.FC = () => {
           />
 
           <div className="w-full flex justify-end mt-8">
-            <FormButton onClick={handleSubmit(onSubmit)}>Submit</FormButton>
+            <FormButton
+              onClick={handleSubmit(onSubmit, (errors) => {
+                console.error("VALIDATION ERRORS:", errors);
+              })}
+            >
+              Submit
+            </FormButton>
           </div>
         </div>
       </div>
