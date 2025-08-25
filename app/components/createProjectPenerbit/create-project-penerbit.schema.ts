@@ -2,12 +2,48 @@ import z from "zod";
 
 export const alamatSchema = z.object({
   name: z.string().optional(),
-  province_name: z.string().min(1, "Provinsi wajib diisi"),
-  city_name: z.string().min(1, "Kota wajib diisi"),
-  district_name: z.string().min(1, "Kecamatan wajib diisi"),
-  subdistrict_name: z.string().min(1, "Kelurahan wajib diisi"),
-  postal_code: z.string().min(1, "Kode pos wajib diisi"),
-  detail: z.string().min(1, "Detail alamat wajib diisi"),
+
+  province_name: z
+    .string({
+      required_error: "Provinsi wajib diisi",
+      invalid_type_error: "Provinsi harus berupa teks",
+    })
+    .min(1, "Provinsi wajib diisi"),
+
+  city_name: z
+    .string({
+      required_error: "Kota wajib diisi",
+      invalid_type_error: "Kota harus berupa teks",
+    })
+    .min(1, "Kota wajib diisi"),
+
+  district_name: z
+    .string({
+      required_error: "Kecamatan wajib diisi",
+      invalid_type_error: "Kecamatan harus berupa teks",
+    })
+    .min(1, "Kecamatan wajib diisi"),
+
+  subdistrict_name: z
+    .string({
+      required_error: "Kelurahan wajib diisi",
+      invalid_type_error: "Kelurahan harus berupa teks",
+    })
+    .min(1, "Kelurahan wajib diisi"),
+
+  postal_code: z
+    .string({
+      required_error: "Kode pos wajib diisi",
+      invalid_type_error: "Kode pos harus berupa teks",
+    })
+    .min(1, "Kode pos wajib diisi"),
+
+  detail: z
+    .string({
+      required_error: "Detail alamat wajib diisi",
+      invalid_type_error: "Detail alamat harus berupa teks",
+    })
+    .min(1, "Detail alamat wajib diisi"),
 });
 
 export interface ProjectTypeInterface {
@@ -15,11 +51,12 @@ export interface ProjectTypeInterface {
   name: string;
 }
 
+// ✅ perbaikan lat/lng supaya auto-convert dari string → number
 const mapsResultSchema = z.object({
   lat: z.coerce.number().min(-90, "Latitude wajib ada"),
   lng: z.coerce.number().min(-180, "Longitude wajib ada"),
-  url: z.string().url(),
-  address: z.string().min(1, "address wajib diisi"),
+  url: z.string().url("URL lokasi tidak valid"),
+  address: z.string().min(1, "Alamat wajib diisi"),
   components: z.record(z.string().optional()),
 });
 
@@ -29,44 +66,55 @@ export const createProjectPenerbitSchema = z
     deskripsiProyek: z.string().min(1, "Deskripsi Proyek tidak boleh kosong"),
     jenisProyek: z.string().min(1, "Jenis Proyek wajib dipilih"),
     tenor: z.string().min(1, "Tenor Pinjaman wajib dipilih"),
+
     tanggalMulaiProyek: z.string().min(1, "Tanggal Mulai Proyek wajib dipilih"),
     tanggalSelesaiProyek: z
       .string()
       .min(1, "Tanggal Selesai Proyek wajib dipilih"),
+
     jaminanKolateral: z
       .array(z.string())
       .min(1, "Jaminan Kolateral wajib dipilih"),
-    persentaseKeuntungan: z
+
+    // ✅ pakai coerce supaya bisa input string
+    persentaseKeuntungan: z.coerce
       .number({
         required_error: "Persentase Keuntungan wajib diisi",
         invalid_type_error: "Persentase Keuntungan harus berupa angka",
       })
       .min(10, "Minimal 10%")
       .max(100, "Maksimal 100%"),
-    modalProyek: z
+
+    modalProyek: z.coerce
       .number({
         required_error: "Modal Proyek wajib diisi",
         invalid_type_error: "Modal Proyek harus berupa angka",
       })
       .min(100_000_000, "Minimal Rp100.000.000")
       .max(10_000_000_000, "Maksimal Rp10.000.000.000"),
+
     fotoProyek: z
-      .array(z.string().url())
+      .array(z.string().url("Format URL foto tidak valid"))
       .min(1, "Foto Proyek wajib diupload minimal 1 foto"),
+
     instansiProyek: z
       .string()
       .min(1, "Instansi Pemberi Proyek tidak boleh kosong"),
     jenisInstansiProyek: z
       .string()
       .min(1, "Jenis Instansi Proyek tidak boleh kosong"),
-    websiteInstansiProyek: z.string().url("Url Website tidak valid"),
+
+    websiteInstansiProyek: z.string().url("Url Website instansi tidak valid"),
+
     fileSPK: z.string().min(1, "File SPK wajib diupload"),
     fileLOA: z.string().min(1, "File LOA wajib diupload"),
     dokumenKontrak: z.string().min(1, "Dokumen Kontrak wajib diupload"),
     rekeningKoran: z.string().min(1, "Rekening Koran wajib diupload"),
     laporanKeuangan: z.string().min(1, "Laporan Keuangan wajib diupload"),
-    prospektus: z.string().optional(),
+    prospektus: z.string().min(1, "Prospektus wajib diupload"),
+
     lokasiProyek: mapsResultSchema.nullable(),
+
     address: z
       .array(alamatSchema)
       .min(1, "Minimal 1 alamat harus diisi")
@@ -77,6 +125,7 @@ export const createProjectPenerbitSchema = z
     path: ["lokasiProyek"],
   });
 
+// ✅ defaultValues disesuaikan
 export const defaultValues: CreateProjectFormSchema = {
   namaProyek: "",
   deskripsiProyek: "",
