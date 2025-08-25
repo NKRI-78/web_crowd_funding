@@ -354,8 +354,8 @@ const Dashboard: React.FC = () => {
                         <div className="relative h-40">
                           <img
                             src={
-                              project.medias && project.medias.length !== 0
-                                ? project.medias[0].path
+                              project.media && project.media.length !== 0
+                                ? project.media[0].path
                                 : "/images/img.jpg"
                             }
                             alt={project.title}

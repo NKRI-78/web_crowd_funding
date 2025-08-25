@@ -34,7 +34,7 @@ export interface EmitenProjectModel {
   id: string;
   title: string;
   goal: string;
-  medias: Media[];
+  media: Media[];
   location: Location;
   doc: Document;
   capital: string;
