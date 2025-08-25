@@ -125,8 +125,13 @@ export default function RegisterForm({
                 placeholder="Nama Lengkap"
                 className="w-full border border-gray-300 px-4 py-2 rounded"
               />
-              {errors.name && (
+              {errors.name ? (
                 <p className="text-red-500 text-sm">{errors.name.message}</p>
+              ) : (
+                <p className="text-[11px] text-gray-500 mt-1">
+                  <span className="text-red-500">* </span> Nama harus sesuai
+                  dengan nama yang tertera di KTP
+                </p>
               )}
             </div>
 

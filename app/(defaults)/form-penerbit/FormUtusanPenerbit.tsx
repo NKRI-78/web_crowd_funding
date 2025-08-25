@@ -98,6 +98,7 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
             jabatan: formFields.jabatan,
             photo_ktp: formFields.fileKtp,
             no_ktp: formFields.noKtp,
+            no_npwp: "-",
             surat_kuasa: formFields.suratKuasa,
           };
 

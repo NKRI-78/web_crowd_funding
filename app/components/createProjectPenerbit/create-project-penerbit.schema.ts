@@ -1,23 +1,13 @@
 import z from "zod";
 
-export const alamatSchema = z.object({
-  name: z.string().optional(),
-  province_name: z.string(),
-  city_name: z.string().min(1, "Kota wajib diisi"),
-  district_name: z.string().min(1, "Kecamatan wajib diisi"),
-  subdistrict_name: z.string().min(1, "Kelurahan wajib diisi"),
-  postal_code: z.string().min(1, "Kode pos wajib diisi"),
-  detail: z.string().min(1, "Detail alamat wajib diisi"),
-});
-
 export interface ProjectTypeInterface {
   id: string;
   name: string;
 }
 
 const mapsResultSchema = z.object({
-  lat: z.number().min(1, "Latitude wajib ada"),
-  lng: z.number().min(1, "Longitude wajib ada"),
+  lat: z.coerce.number().min(-90, "Latitude wajib ada"),
+  lng: z.coerce.number().min(-180, "Longitude wajib ada"),
   url: z.string().url(),
   address: z.string().min(1, "address wajib diisi"),
   components: z.record(z.string().optional()),
@@ -65,7 +55,7 @@ export const createProjectPenerbitSchema = z
     dokumenKontrak: z.string().min(1, "Dokumen Kontrak wajib diupload"),
     rekeningKoran: z.string().min(1, "Rekening Koran wajib diupload"),
     laporanKeuangan: z.string().min(1, "Laporan Keuangan wajib diupload"),
-    prospektus: z.string().min(1, "Prospektus wajib diupload"),
+    prospektus: z.string().optional(),
     lokasiProyek: mapsResultSchema.nullable(),
   })
   .refine((data) => data.lokasiProyek !== null, {
