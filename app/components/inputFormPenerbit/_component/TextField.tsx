@@ -81,7 +81,7 @@ const TextField = forwardRef<
             placeholder={placeholder}
             rows={rows}
             readOnly={disabled}
-            className={`${inputStyle} resize-none`}
+            className={`${inputStyle} resize-none -mb-[6px]`}
           />
         ) : (
           <div className="relative">
@@ -104,7 +104,7 @@ const TextField = forwardRef<
           </div>
         )}
 
-        {errorText && <p className="text-red-500 text-xs my-1">{errorText}</p>}
+        {errorText && <p className="text-red-500 text-xs mt-1">{errorText}</p>}
       </div>
     );
   }

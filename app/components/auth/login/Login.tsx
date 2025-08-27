@@ -12,7 +12,7 @@ import { API_BACKEND } from "@/app/utils/constant";
 
 const errorMessages: Record<string, string> = {
   CREDENTIALS_IS_INCORRECT: "Password yang kamu masukkan salah.",
-  USER_NOT_FOUND: "Email tidak ditemukan atau belum terdaftar.",
+  USER_NOT_FOUND: "Email salah atau belum terdaftar, cek kembali email Anda.",
 };
 
 const Login: React.FC = () => {
