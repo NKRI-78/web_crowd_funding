@@ -51,7 +51,6 @@ export interface ProjectTypeInterface {
   name: string;
 }
 
-// ✅ perbaikan lat/lng supaya auto-convert dari string → number
 const mapsResultSchema = z.object({
   lat: z.coerce.number().min(-90, "Latitude wajib ada"),
   lng: z.coerce.number().min(-180, "Longitude wajib ada"),
@@ -76,7 +75,6 @@ export const createProjectPenerbitSchema = z
       .array(z.string())
       .min(1, "Jaminan Kolateral wajib dipilih"),
 
-    // ✅ pakai coerce supaya bisa input string
     persentaseKeuntungan: z.coerce
       .number({
         required_error: "Persentase Keuntungan wajib diisi",
@@ -85,13 +83,18 @@ export const createProjectPenerbitSchema = z
       .min(10, "Minimal 10%")
       .max(100, "Maksimal 100%"),
 
-    modalProyek: z.coerce
+    danaYangDibutuhkan: z.coerce
       .number({
         required_error: "Modal Proyek wajib diisi",
         invalid_type_error: "Modal Proyek harus berupa angka",
       })
       .min(100_000_000, "Minimal Rp100.000.000")
       .max(10_000_000_000, "Maksimal Rp10.000.000.000"),
+
+    modalProyek: z.coerce.number({
+      required_error: "Modal Proyek wajib diisi",
+      invalid_type_error: "Modal Proyek harus berupa angka",
+    }),
 
     fotoProyek: z
       .array(z.string().url("Format URL foto tidak valid"))
@@ -123,9 +126,19 @@ export const createProjectPenerbitSchema = z
   .refine((data) => data.lokasiProyek !== null, {
     message: "Lokasi Proyek wajib diisi",
     path: ["lokasiProyek"],
+  })
+  .superRefine((data, ctx) => {
+    if (data.modalProyek < data.danaYangDibutuhkan) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["modalProyek"],
+        message: `Modal Proyek minimal harus sebesar Dana yang Dibutuhkan (${data.danaYangDibutuhkan.toLocaleString(
+          "id-ID"
+        )})`,
+      });
+    }
   });
 
-// ✅ defaultValues disesuaikan
 export const defaultValues: CreateProjectFormSchema = {
   namaProyek: "",
   deskripsiProyek: "",
@@ -134,6 +147,7 @@ export const defaultValues: CreateProjectFormSchema = {
   tanggalMulaiProyek: "",
   tanggalSelesaiProyek: "",
   jaminanKolateral: [],
+  danaYangDibutuhkan: 0,
   modalProyek: 0,
   persentaseKeuntungan: 0,
   fotoProyek: [],
@@ -148,15 +162,6 @@ export const defaultValues: CreateProjectFormSchema = {
   prospektus: "",
   lokasiProyek: null,
   address: [
-    {
-      name: "Penerbit",
-      province_name: "",
-      city_name: "",
-      district_name: "",
-      subdistrict_name: "",
-      postal_code: "",
-      detail: "",
-    },
     {
       name: "Pemberi Proyek",
       province_name: "",

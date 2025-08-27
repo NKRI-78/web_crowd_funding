@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import Cookies from "js-cookie";
 import Flatpickr from "react-flatpickr";
+import { Indonesian } from "flatpickr/dist/l10n/id.js";
 import "flatpickr/dist/flatpickr.min.css";
 import TextField from "../inputFormPenerbit/_component/TextField";
 import DropdownSelect from "../inputFormPenerbit/_component/DropdownSelect";
@@ -75,7 +76,7 @@ const CreateProjectPenerbit: React.FC = () => {
     watch,
     getValues,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     reset,
   } = useForm<CreateProjectFormSchema>({
     resolver: zodResolver(createProjectPenerbitSchema),
@@ -117,8 +118,6 @@ const CreateProjectPenerbit: React.FC = () => {
 
     return () => subscription.unsubscribe();
   }, [watch]);
-
-  // const { fields } = useFieldArray({ control, name: "address" });
 
   const [provinsiList, setProvinsiList] = useState<OptionType[]>([]);
   const [kotaList, setKotaList] = useState<Record<number, OptionType[]>>({});
@@ -162,7 +161,6 @@ const CreateProjectPenerbit: React.FC = () => {
   const onSubmit: SubmitHandler<CreateProjectFormSchema> = async (data) => {
     console.log("create project", data);
     const penyedia = data.address[0]; // alamat penyedia
-    const pemberi = data.address[1]; // alamat pemberi proyek
 
     try {
       if (!companyId) throw "ID Perusahaan tidak terdaftar";
@@ -171,7 +169,8 @@ const CreateProjectPenerbit: React.FC = () => {
         company_id: companyId,
         title: data.namaProyek,
         deskripsi: data.deskripsiProyek,
-        modal: String(data.modalProyek),
+        // modal: String(data.danaYangDibutuhkan), //* harusnya dana yang dibutuhkan
+        // modal: String(data.danaYangDibutuhkan), //* harusnya modal proyek
         persentase_keuntungan: String(data.persentaseKeuntungan),
         spk: data.fileSPK,
         loa: data.laporanKeuangan,
@@ -195,19 +194,6 @@ const CreateProjectPenerbit: React.FC = () => {
           name: value,
         })),
         media: data.fotoProyek.map((value) => ({ path: value })),
-        penggunaan_dana: [
-          {
-            name: "-",
-          },
-        ],
-        is_apbn: true,
-        jumlah_minimal: "-",
-        jadwal_pembayaran_bunga: "-",
-        jadwal_pembayaran_pokok: "-",
-        tingkat_bunga: "-",
-        jangka_waktu: "-",
-        no_contract_path: "-",
-        no_contract_value: "-",
         mulai_project: formatDateToCustom(data.tanggalMulaiProyek),
         selesai_project: formatDateToCustom(data.tanggalSelesaiProyek),
         alamat_penyedia_project: penyedia.detail,
@@ -222,6 +208,17 @@ const CreateProjectPenerbit: React.FC = () => {
           lat: data.lokasiProyek?.lat.toString(),
           lng: data.lokasiProyek?.lng.toString(),
         },
+
+        // ini ga kepake
+        penggunaan_dana: [],
+        is_apbn: true,
+        jumlah_minimal: "-",
+        jadwal_pembayaran_bunga: "-",
+        jadwal_pembayaran_pokok: "-",
+        tingkat_bunga: "-",
+        jangka_waktu: "-",
+        no_contract_path: "-",
+        no_contract_value: "-",
       };
 
       console.log("Payload ", payload);
@@ -374,7 +371,6 @@ const CreateProjectPenerbit: React.FC = () => {
                   placeholder="Deskripsi Proyek"
                   type="textarea"
                   value={field.value}
-                  onBlur={() => {}}
                   onChange={(e) => {
                     field.onChange(e.target.value);
                   }}
@@ -437,10 +433,10 @@ const CreateProjectPenerbit: React.FC = () => {
                       options={{
                         dateFormat: "j F Y",
                         allowInput: false,
-                        minDate: "today", // ❌ disable tanggal masa lalu
-                        defaultDate: new Date(new Date().getFullYear(), 0, 1), // 👈 Januari tahun ini
+                        minDate: "today",
+                        locale: Indonesian,
+                        defaultDate: new Date(new Date().getFullYear(), 0, 1),
                         onReady: (selectedDates, dateStr, instance) => {
-                          // Set agar kalender terbuka di Januari tahun ini
                           instance.jumpToDate(
                             new Date(new Date().getFullYear(), 0, 1)
                           );
@@ -475,6 +471,7 @@ const CreateProjectPenerbit: React.FC = () => {
                       options={{
                         dateFormat: "j F Y",
                         allowInput: false,
+                        locale: Indonesian,
                         minDate: getValues().tanggalMulaiProyek
                           ? new Date(getValues().tanggalMulaiProyek)
                           : "today",
@@ -527,7 +524,7 @@ const CreateProjectPenerbit: React.FC = () => {
                 return (
                   <TextField
                     label="Persentase Keuntungan"
-                    placeholder="Minimal 10% Maksimal 100%"
+                    placeholder="Minimal 10%"
                     type="number"
                     value={`${field.value === 0 ? "" : field.value}`}
                     className="w-full"
@@ -550,62 +547,51 @@ const CreateProjectPenerbit: React.FC = () => {
             />
 
             <Controller
-              name="modalProyek"
+              name="danaYangDibutuhkan"
               control={control}
               render={({ field }) => {
                 return (
                   <CurrencyField
-                    label="Modal Proyek"
+                    label="Dana yang Dibutuhkan"
                     placeholder="Rp."
                     value={`${field.value === 0 ? "" : field.value}`}
-                    className="w-full mb-2"
+                    className="w-full"
                     onChange={(e) => {
                       const rawValue = e.target.value;
                       const numericValue = Number(rawValue);
                       field.onChange(numericValue);
                     }}
-                    errorText={errors.modalProyek?.message}
+                    errorText={errors.danaYangDibutuhkan?.message}
                   />
                 );
               }}
             />
           </div>
-          <FormAlamat
-            index={0}
+
+          <Controller
+            name="modalProyek"
             control={control}
-            setValue={setValue}
-            watch={watch}
-            register={register}
-            errors={errors}
-            provinsiList={provinsiList}
-            kotaList={kotaList}
-            setKotaList={setKotaList}
-            kecamatanList={kecamatanList}
-            setKecamatanList={setKecamatanList}
-            kelurahanList={kelurahanList}
-            setKelurahanList={setKelurahanList}
-            fetchOptions={fetchOptions}
+            render={({ field }) => {
+              return (
+                <CurrencyField
+                  label="Modal Proyek   "
+                  placeholder="Rp."
+                  value={`${field.value === 0 ? "" : field.value}`}
+                  className="w-full"
+                  onChange={(e) => {
+                    const rawValue = e.target.value;
+                    const numericValue = Number(rawValue);
+                    field.onChange(numericValue);
+                  }}
+                  errorText={errors.modalProyek?.message}
+                />
+              );
+            }}
           />
         </div>
 
         {/* right section */}
         <div className="w-full space-y-4">
-          <FormAlamat
-            index={1}
-            control={control}
-            setValue={setValue}
-            watch={watch}
-            register={register}
-            errors={errors}
-            provinsiList={provinsiList}
-            kotaList={kotaList}
-            setKotaList={setKotaList}
-            kecamatanList={kecamatanList}
-            setKecamatanList={setKecamatanList}
-            kelurahanList={kelurahanList}
-            setKelurahanList={setKelurahanList}
-            fetchOptions={fetchOptions}
-          />
           <Controller
             name="instansiProyek"
             control={control}
@@ -663,6 +649,23 @@ const CreateProjectPenerbit: React.FC = () => {
                 />
               );
             }}
+          />
+
+          <FormAlamat
+            index={1}
+            control={control}
+            setValue={setValue}
+            watch={watch}
+            register={register}
+            errors={errors}
+            provinsiList={provinsiList}
+            kotaList={kotaList}
+            setKotaList={setKotaList}
+            kecamatanList={kecamatanList}
+            setKecamatanList={setKecamatanList}
+            kelurahanList={kelurahanList}
+            setKelurahanList={setKelurahanList}
+            fetchOptions={fetchOptions}
           />
 
           <div className="w-full flex gap-x-4">
@@ -827,6 +830,7 @@ const CreateProjectPenerbit: React.FC = () => {
               );
             }}
           />
+
           <div className="w-full flex justify-end mt-8">
             <FormButton
               onClick={handleSubmit(onSubmit, (errors) => {
