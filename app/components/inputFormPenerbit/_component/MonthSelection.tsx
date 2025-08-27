@@ -28,7 +28,7 @@ const MonthSelection: React.FC<MonthSelectionProps> = ({
   return (
     <div className="w-full mb-6">
       <SectionPoint text={label} className="mb-2" />
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-y-4 gap-x-4">
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-y-2 gap-x-4">
         {options.map((option) => (
           <label
             key={option}

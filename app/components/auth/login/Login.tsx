@@ -10,6 +10,11 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { API_BACKEND } from "@/app/utils/constant";
 
+const errorMessages: Record<string, string> = {
+  CREDENTIALS_IS_INCORRECT: "Password yang kamu masukkan salah.",
+  USER_NOT_FOUND: "Email salah atau belum terdaftar, cek kembali email Anda.",
+};
+
 const Login: React.FC = () => {
   const router = useRouter();
 
@@ -84,10 +89,16 @@ const Login: React.FC = () => {
 
       router.push("/dashboard");
     } catch (error: any) {
+      const rawMessage = error.response?.data?.message;
+
+      const message =
+        errorMessages[rawMessage as keyof typeof errorMessages] ??
+        "Terjadi kesalahan saat login. Silakan coba lagi.";
+
       Swal.fire({
         icon: "error",
         title: "Login Gagal",
-        text: error.response?.data?.message || "Terjadi kesalahan saat login.",
+        text: message,
       });
     } finally {
       setLoading(false);

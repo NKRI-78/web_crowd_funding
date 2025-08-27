@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
+import Cookies from "js-cookie";
 import Flatpickr from "react-flatpickr";
+import { Indonesian } from "flatpickr/dist/l10n/id.js";
 import "flatpickr/dist/flatpickr.min.css";
 import TextField from "../inputFormPenerbit/_component/TextField";
 import DropdownSelect from "../inputFormPenerbit/_component/DropdownSelect";
@@ -11,29 +13,69 @@ import PhotoUploaderContainer from "../inputFormPenerbit/_component/PhotoUploade
 import FileInput from "../inputFormPenerbit/_component/FileInput";
 import SectionPoint from "../inputFormPenerbit/_component/SectionPoint";
 import Subtitle from "../inputFormPenerbit/_component/SectionSubtitle";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import {
+  Controller,
+  SubmitHandler,
+  useFieldArray,
+  useForm,
+} from "react-hook-form";
 import {
   CreateProjectFormSchema,
   createProjectPenerbitSchema,
   defaultValues,
+  ProjectTypeInterface,
 } from "./create-project-penerbit.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CurrencyField from "../inputFormPenerbit/_component/CurrencyField";
-import FormAlamat from "./FormAlamat";
 import { API_BACKEND } from "@/app/utils/constant";
 import axios from "axios";
 import { fetchProvinces } from "@/app/lib/fetchWilayah";
 
 type OptionType = { value: string; label: string; zip_code: string };
+import Swal from "sweetalert2";
+import { useRouter } from "next/navigation";
+import FormButton from "../inputFormPenerbit/_component/FormButton";
+import MonthSelection from "../inputFormPenerbit/_component/MonthSelection";
+import GoogleMapPicker from "./GoogleMapsPicker";
+import FormAlamat from "./FormAlamat";
+
+const getUserToken = (): string => {
+  const userCookie = Cookies.get("user");
+  if (!userCookie) throw "User tidak ditemukan";
+  return JSON.parse(userCookie).token;
+};
+
+const FORM_CACHE_KEY = "createProjectPenerbitCache";
+
+function formatDateToCustom(dateString: string): string {
+  const date = new Date(dateString);
+
+  const year = date.getFullYear();
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // bulan mulai dari 0
+
+  return `${year}-${month}-${day}`;
+}
 
 const CreateProjectPenerbit: React.FC = () => {
+  const router = useRouter();
+
+  const [jenisProyek, setJenisProyek] = useState<ProjectTypeInterface[]>([]);
+  const [jenisInstansiPemberiProyek, setJenisInstansiPemberiProyek] = useState<
+    ProjectTypeInterface[]
+  >([]);
+  const [companyId, setCompanyId] = useState<string | null>(null);
+
+  const skipCacheWrite = useRef(false);
+
   //* form state
   const {
     register,
+    setValue,
     handleSubmit,
     watch,
+    getValues,
     control,
-    setValue,
     formState: { errors },
     reset,
   } = useForm<CreateProjectFormSchema>({
@@ -42,9 +84,16 @@ const CreateProjectPenerbit: React.FC = () => {
     mode: "onChange",
   });
 
+  //* init state
+  useEffect(() => {
+    fetchJenisProyek();
+    fetchJenisInstansiPemberiProyek();
+    fetchCompanyId();
+  }, []);
+
   //* read cache
   useEffect(() => {
-    const formCache = localStorage.getItem("createProjectPenerbitCache");
+    const formCache = localStorage.getItem(FORM_CACHE_KEY);
     if (formCache) {
       try {
         const parsedCache: CreateProjectFormSchema = JSON.parse(formCache);
@@ -62,16 +111,13 @@ const CreateProjectPenerbit: React.FC = () => {
   //* write cache
   useEffect(() => {
     const subscription = watch((values) => {
-      localStorage.setItem(
-        "createProjectPenerbitCache",
-        JSON.stringify(values)
-      );
+      if (!skipCacheWrite.current) {
+        localStorage.setItem(FORM_CACHE_KEY, JSON.stringify(values));
+      }
     });
 
     return () => subscription.unsubscribe();
   }, [watch]);
-
-  const { fields } = useFieldArray({ control, name: "address" });
 
   const [provinsiList, setProvinsiList] = useState<OptionType[]>([]);
   const [kotaList, setKotaList] = useState<Record<number, OptionType[]>>({});
@@ -111,11 +157,175 @@ const CreateProjectPenerbit: React.FC = () => {
     }
   };
 
+  //* on submit
+  const onSubmit: SubmitHandler<CreateProjectFormSchema> = async (data) => {
+    console.log("create project", data);
+    const penyedia = data.address[0]; // alamat penyedia
+
+    try {
+      if (!companyId) throw "ID Perusahaan tidak terdaftar";
+
+      const payload = {
+        company_id: companyId,
+        title: data.namaProyek,
+        deskripsi: data.deskripsiProyek,
+        // modal: String(data.danaYangDibutuhkan), //* harusnya dana yang dibutuhkan
+        // modal: String(data.danaYangDibutuhkan), //* harusnya modal proyek
+        persentase_keuntungan: String(data.persentaseKeuntungan),
+        spk: data.fileSPK,
+        loa: data.laporanKeuangan,
+        jenis_project: String(
+          jenisProyek.find((type) => type.name === data.jenisProyek)?.id ?? 1
+        ),
+        batas_akhir_pengerjaan: formatDateToCustom(data.tanggalSelesaiProyek),
+        tenor_pinjaman: data.tenor,
+        website: data.websiteInstansiProyek,
+        doc_rekening_koran: data.rekeningKoran,
+        doc_laporan_keuangan: data.laporanKeuangan,
+        doc_contract: data.dokumenKontrak,
+        doc_prospect: data.prospektus,
+        instansi_pemberi_project: data.instansiProyek,
+        jenis_instansi_pemberi_project: String(
+          jenisInstansiPemberiProyek.find(
+            (type) => type.name === data.jenisInstansiProyek
+          )?.id ?? 1
+        ),
+        jaminan_kolateral: data.jaminanKolateral.map((value) => ({
+          name: value,
+        })),
+        media: data.fotoProyek.map((value) => ({ path: value })),
+        mulai_project: formatDateToCustom(data.tanggalMulaiProyek),
+        selesai_project: formatDateToCustom(data.tanggalSelesaiProyek),
+        alamat_penyedia_project: penyedia.detail,
+        alamat_penyedia_provinsi: penyedia.province_name,
+        alamat_penyedia_kota: penyedia.city_name,
+        alamat_penyedia_daerah: penyedia.district_name,
+        alamat_penyedia_wilayah: penyedia.subdistrict_name,
+        alamat_penyedia_kode_pos: penyedia.postal_code,
+        location: {
+          name: "-",
+          url: data.lokasiProyek?.url.toString(),
+          lat: data.lokasiProyek?.lat.toString(),
+          lng: data.lokasiProyek?.lng.toString(),
+        },
+
+        // ini ga kepake
+        penggunaan_dana: [],
+        is_apbn: true,
+        jumlah_minimal: "-",
+        jadwal_pembayaran_bunga: "-",
+        jadwal_pembayaran_pokok: "-",
+        tingkat_bunga: "-",
+        jangka_waktu: "-",
+        no_contract_path: "-",
+        no_contract_value: "-",
+      };
+
+      console.log("Payload ", payload);
+
+      const token = getUserToken();
+      await axios.post(`${API_BACKEND}/api/v1/project/store`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      await Swal.fire({
+        title: "Berhasil Membuat Proyek",
+        text: "Proyek berhasil dibuat akan divalidasi untuk proses lebih lanjut",
+        icon: "success",
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+      });
+
+      localStorage.removeItem(FORM_CACHE_KEY);
+      skipCacheWrite.current = true;
+      reset(defaultValues);
+
+      console.log("FORM_CACHE_KEY dihapus = " + FORM_CACHE_KEY);
+
+      router.back(); // back to dashboard
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Membuat Proyek",
+        text: `${error}`,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+    }
+  };
+
+  const fetchJenisProyek = async () => {
+    try {
+      const token = getUserToken();
+      const res = await axios.get(`${API_BACKEND}/api/v1/project/type/list`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const types = res.data["data"];
+      if (types) {
+        setJenisProyek(types);
+      } else {
+        console.log("!types " + !types);
+        setJenisProyek([]);
+      }
+    } catch (error) {
+      setJenisProyek([]);
+    }
+  };
+
+  const fetchJenisInstansiPemberiProyek = async () => {
+    try {
+      const token = getUserToken();
+      const res = await axios.get(
+        `${API_BACKEND}/api/v1/project/authority/type/list`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const types = res.data["data"];
+      if (types) {
+        setJenisInstansiPemberiProyek(types);
+      } else {
+        console.log("!types " + !types);
+        setJenisInstansiPemberiProyek([]);
+      }
+    } catch (error) {
+      setJenisInstansiPemberiProyek([]);
+    }
+  };
+
+  const fetchCompanyId = async () => {
+    try {
+      const token = getUserToken();
+      const res = await axios.get(`${API_BACKEND}/api/v1/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const user = res.data["data"];
+      if (user) {
+        const companyId = user.company.id ?? "";
+        console.log("company id? " + companyId);
+        setCompanyId(companyId);
+      } else {
+        console.log("!user " + !user);
+        setCompanyId(null);
+      }
+    } catch (error) {
+      setCompanyId(null);
+    }
+  };
+
   return (
     <div className="w-full py-28 px-6 md:px-24 bg-white">
       <div className="text-black grid grid-cols-1 md:grid-cols-2 gap-10">
         {/* left section */}
-        <div className="w-full space-y-3">
+        <div className="w-full space-y-4">
           <Controller
             name="namaProyek"
             control={control}
@@ -135,13 +345,29 @@ const CreateProjectPenerbit: React.FC = () => {
           />
 
           <Controller
+            name="fotoProyek"
+            control={control}
+            render={({ field }) => {
+              return (
+                <PhotoUploaderContainer
+                  label="Foto Proyek"
+                  photoPaths={field.value}
+                  fileOnChange={(urls) => {
+                    field.onChange(urls);
+                  }}
+                  errorText={errors.fotoProyek?.message}
+                />
+              );
+            }}
+          />
+
+          <Controller
             name="deskripsiProyek"
             control={control}
             render={({ field }) => {
               return (
                 <TextField
                   label="Deskripsi Proyek"
-                  {...register("deskripsiProyek")}
                   placeholder="Deskripsi Proyek"
                   type="textarea"
                   value={field.value}
@@ -162,20 +388,12 @@ const CreateProjectPenerbit: React.FC = () => {
                 <DropdownSelect
                   label="Jenis Proyek"
                   value={field.value}
-                  options={[
-                    {
-                      label: "Efek Hutang",
-                      value: "Efek Hutang",
-                    },
-                    {
-                      label: "Equitas/Saham",
-                      value: "Equitas/Saham",
-                    },
-                    {
-                      label: "Sukuk",
-                      value: "Sukuk",
-                    },
-                  ]}
+                  options={jenisProyek.map((type) => {
+                    return {
+                      label: type.name,
+                      value: type.name,
+                    };
+                  })}
                   onChange={(e) => {
                     field.onChange(e);
                   }}
@@ -190,73 +408,89 @@ const CreateProjectPenerbit: React.FC = () => {
             control={control}
             render={({ field }) => {
               return (
-                <DropdownSelect
+                <MonthSelection
                   label="Tenor Pinjaman"
-                  value={field.value}
-                  options={[
-                    {
-                      label: "3 Bulan",
-                      value: "3 Bulan",
-                    },
-                    {
-                      label: "6 Bulan",
-                      value: "6 Bulan",
-                    },
-                    {
-                      label: "9 Bulan",
-                      value: "9 Bulan",
-                    },
-                    {
-                      label: "12 Bulan",
-                      value: "12 Bulan",
-                    },
-                    {
-                      label: "18 Bulan",
-                      value: "18 Bulan",
-                    },
-                    {
-                      label: "24 Bulan",
-                      value: "24 Bulan",
-                    },
-                  ]}
                   onChange={(e) => {
                     field.onChange(e);
                   }}
-                  errorText={errors.tenor?.message}
+                  selected={field.value}
                 />
               );
             }}
           />
 
-          <div className="w-full">
-            <SectionPoint text="Batas Akhir Pengerjaan" className="mb-1" />
-            <Controller
-              name="batasAkhirPengerjaan"
-              control={control}
-              render={({ field }) => {
-                return (
-                  <Flatpickr
-                    placeholder="Pilih tanggal batas akhir"
-                    value={field.value ? new Date(field.value) : new Date()}
-                    options={{
-                      dateFormat: "j F Y",
-                      locale: "id",
-                      allowInput: false,
-                    }}
-                    className="border p-2 w-full rounded placeholder:text-sm focus:border-gray-400"
-                    onChange={(dates) => {
-                      const selected = dates[0] ? dates[0].toISOString() : "";
-                      field.onChange(selected);
-                    }}
-                  />
-                );
-              }}
-            />
-            {errors.batasAkhirPengerjaan && (
-              <p className="text-red-500 text-xs my-1">
-                {errors.batasAkhirPengerjaan?.message}
-              </p>
-            )}
+          <div className="w-full flex gap-x-4 mt-2">
+            <div className="w-full">
+              <SectionPoint text="Tanggal Mulai Proyek" className="mb-1" />
+              <Controller
+                name="tanggalMulaiProyek"
+                control={control}
+                render={({ field }) => {
+                  return (
+                    <Flatpickr
+                      placeholder="Pilih tanggal mulai proyek"
+                      value={new Date(field.value) ?? ""}
+                      options={{
+                        dateFormat: "j F Y",
+                        allowInput: false,
+                        minDate: "today",
+                        locale: Indonesian,
+                        defaultDate: new Date(new Date().getFullYear(), 0, 1),
+                        onReady: (selectedDates, dateStr, instance) => {
+                          instance.jumpToDate(
+                            new Date(new Date().getFullYear(), 0, 1)
+                          );
+                        },
+                      }}
+                      className="border p-2 w-full rounded placeholder:text-sm focus:border-gray-400"
+                      onChange={(dates) => {
+                        const selected = dates[0] ? dates[0].toISOString() : "";
+                        field.onChange(selected);
+                      }}
+                    />
+                  );
+                }}
+              />
+              {errors.tanggalMulaiProyek && (
+                <p className="text-red-500 text-xs my-1">
+                  {errors.tanggalMulaiProyek?.message}
+                </p>
+              )}
+            </div>
+
+            <div className="w-full">
+              <SectionPoint text="Tanggal Selesai Proyek" className="mb-1" />
+              <Controller
+                name="tanggalSelesaiProyek"
+                control={control}
+                render={({ field }) => {
+                  return (
+                    <Flatpickr
+                      placeholder="Pilih tanggal selesai proyek"
+                      value={field.value ? new Date(field.value) : undefined}
+                      options={{
+                        dateFormat: "j F Y",
+                        allowInput: false,
+                        locale: Indonesian,
+                        minDate: getValues().tanggalMulaiProyek
+                          ? new Date(getValues().tanggalMulaiProyek)
+                          : "today",
+                      }}
+                      className="border p-2 w-full rounded placeholder:text-sm focus:border-gray-400"
+                      onChange={(dates) => {
+                        const selected = dates[0] ? dates[0].toISOString() : "";
+                        field.onChange(selected);
+                      }}
+                    />
+                  );
+                }}
+              />
+              {errors.tanggalSelesaiProyek && (
+                <p className="text-red-500 text-xs my-1">
+                  {errors.tanggalSelesaiProyek?.message}
+                </p>
+              )}
+            </div>
           </div>
 
           <Controller
@@ -282,28 +516,57 @@ const CreateProjectPenerbit: React.FC = () => {
             }}
           />
 
-          <Controller
-            name="persentaseKeuntungan"
-            control={control}
-            render={({ field }) => {
-              return (
-                <DropdownSelect
-                  label="Persentase Keuntungan"
-                  value={field.value}
-                  options={[
-                    {
-                      label: "10%",
-                      value: "10%",
-                    },
-                  ]}
-                  onChange={(e) => {
-                    field.onChange(e);
-                  }}
-                  errorText={errors.persentaseKeuntungan?.message}
-                />
-              );
-            }}
-          />
+          <div className="w-full flex gap-x-4">
+            <Controller
+              name="persentaseKeuntungan"
+              control={control}
+              render={({ field }) => {
+                return (
+                  <TextField
+                    label="Persentase Keuntungan"
+                    placeholder="Minimal 10%"
+                    type="number"
+                    value={`${field.value === 0 ? "" : field.value}`}
+                    className="w-full"
+                    onChange={(e) => {
+                      field.onChange(Number(e.target.value));
+                    }}
+                    onBlur={() => {
+                      if (field.value) {
+                        let val = field.value;
+                        if (val < 10) val = 10;
+                        if (val > 100) val = 100;
+                        field.onChange(val);
+                      }
+                    }}
+                    errorText={errors.persentaseKeuntungan?.message}
+                    suffix={<p>%</p>}
+                  />
+                );
+              }}
+            />
+
+            <Controller
+              name="danaYangDibutuhkan"
+              control={control}
+              render={({ field }) => {
+                return (
+                  <CurrencyField
+                    label="Dana yang Dibutuhkan"
+                    placeholder="Rp."
+                    value={`${field.value === 0 ? "" : field.value}`}
+                    className="w-full"
+                    onChange={(e) => {
+                      const rawValue = e.target.value;
+                      const numericValue = Number(rawValue);
+                      field.onChange(numericValue);
+                    }}
+                    errorText={errors.danaYangDibutuhkan?.message}
+                  />
+                );
+              }}
+            />
+          </div>
 
           <Controller
             name="modalProyek"
@@ -311,10 +574,10 @@ const CreateProjectPenerbit: React.FC = () => {
             render={({ field }) => {
               return (
                 <CurrencyField
-                  label="Modal Proyek"
+                  label="Modal Proyek   "
                   placeholder="Rp."
-                  value={`${field.value}`}
-                  className="mb-2"
+                  value={`${field.value === 0 ? "" : field.value}`}
+                  className="w-full"
                   onChange={(e) => {
                     const rawValue = e.target.value;
                     const numericValue = Number(rawValue);
@@ -328,19 +591,20 @@ const CreateProjectPenerbit: React.FC = () => {
         </div>
 
         {/* right section */}
-        <div className="w-full space-y-3">
+        <div className="w-full space-y-4">
           <Controller
-            name="fotoProyek"
+            name="instansiProyek"
             control={control}
             render={({ field }) => {
               return (
-                <PhotoUploaderContainer
-                  label="Foto Proyek"
-                  photoPaths={field.value}
-                  fileOnChange={(urls) => {
-                    field.onChange(urls);
+                <TextField
+                  label="Instansi Pemberi Pemberi Proyek"
+                  placeholder="Instansi Pemberi Pemberi Proyek"
+                  value={field.value}
+                  onChange={(e) => {
+                    field.onChange(e.target.value);
                   }}
-                  errorText={errors.fotoProyek?.message}
+                  errorText={errors.instansiProyek?.message}
                 />
               );
             }}
@@ -351,12 +615,17 @@ const CreateProjectPenerbit: React.FC = () => {
             control={control}
             render={({ field }) => {
               return (
-                <TextField
-                  label="Jenis Instansi Pemberi Proyek"
-                  placeholder="Jenis Instansi Pemberi Proyek"
+                <DropdownSelect
+                  label="Jenis Instansi Pemberi Proyek Proyek"
                   value={field.value}
+                  options={jenisInstansiPemberiProyek.map((type) => {
+                    return {
+                      label: type.name,
+                      value: type.name,
+                    };
+                  })}
                   onChange={(e) => {
-                    field.onChange(e.target.value);
+                    field.onChange(e);
                   }}
                   errorText={errors.jenisInstansiProyek?.message}
                 />
@@ -382,6 +651,23 @@ const CreateProjectPenerbit: React.FC = () => {
             }}
           />
 
+          <FormAlamat
+            index={1}
+            control={control}
+            setValue={setValue}
+            watch={watch}
+            register={register}
+            errors={errors}
+            provinsiList={provinsiList}
+            kotaList={kotaList}
+            setKotaList={setKotaList}
+            kecamatanList={kecamatanList}
+            setKecamatanList={setKecamatanList}
+            kelurahanList={kelurahanList}
+            setKelurahanList={setKelurahanList}
+            fetchOptions={fetchOptions}
+          />
+
           <div className="w-full flex gap-x-4">
             <div>
               <SectionPoint text="File SPK" />
@@ -394,6 +680,7 @@ const CreateProjectPenerbit: React.FC = () => {
                   return (
                     <FileInput
                       fileUrl={field.value}
+                      accept=".pdf,.word"
                       fileName="File SPK"
                       onChange={(e) => {
                         field.onChange(e);
@@ -416,6 +703,7 @@ const CreateProjectPenerbit: React.FC = () => {
                   return (
                     <FileInput
                       fileName="File LOA"
+                      accept=".pdf,.word"
                       fileUrl={field.value}
                       onChange={(e) => {
                         field.onChange(e);
@@ -439,6 +727,7 @@ const CreateProjectPenerbit: React.FC = () => {
                 render={({ field }) => {
                   return (
                     <FileInput
+                      accept=".pdf,.word"
                       fileName="Dokumen Kontrak"
                       fileUrl={field.value}
                       onChange={(e) => {
@@ -461,6 +750,7 @@ const CreateProjectPenerbit: React.FC = () => {
                 render={({ field }) => {
                   return (
                     <FileInput
+                      accept=".pdf,.word"
                       fileName="Rekening Koran"
                       fileUrl={field.value}
                       onChange={(e) => {
@@ -485,6 +775,7 @@ const CreateProjectPenerbit: React.FC = () => {
                 render={({ field }) => {
                   return (
                     <FileInput
+                      accept=".pdf,.word"
                       fileName="Laporan Keuangan"
                       fileUrl={field.value}
                       onChange={(e) => {
@@ -498,7 +789,7 @@ const CreateProjectPenerbit: React.FC = () => {
             </div>
 
             <div>
-              <SectionPoint text="Prospektus" />
+              <SectionPoint text="Prospektus" optional />
               <Subtitle text="File maksimal berukuran 10mb" className="my-1" />
 
               <Controller
@@ -507,6 +798,7 @@ const CreateProjectPenerbit: React.FC = () => {
                 render={({ field }) => {
                   return (
                     <FileInput
+                      accept=".pdf,.word"
                       fileName="Prospektus"
                       fileUrl={field.value}
                       onChange={(e) => {
@@ -519,25 +811,35 @@ const CreateProjectPenerbit: React.FC = () => {
               />
             </div>
           </div>
-          {fields.map((item, index) => (
-            <FormAlamat
-              key={item.id}
-              index={index}
-              control={control}
-              setValue={setValue}
-              watch={watch}
-              register={register}
-              provinsiList={provinsiList}
-              kotaList={kotaList}
-              setKotaList={setKotaList}
-              kecamatanList={kecamatanList}
-              setKecamatanList={setKecamatanList}
-              kelurahanList={kelurahanList}
-              setKelurahanList={setKelurahanList}
-              fetchOptions={fetchOptions}
-              errors={errors}
-            />
-          ))}
+
+          <Controller
+            name="lokasiProyek"
+            control={control}
+            render={({ field }) => {
+              return (
+                <GoogleMapPicker
+                  className="w-full h-[210px] border border-gray-500"
+                  cacheMap={field.value}
+                  onAddressChange={(data) => {
+                    console.log("lokasi dipilih ");
+                    console.log(data);
+                    field.onChange(data);
+                  }}
+                  errorText={errors.lokasiProyek?.message}
+                />
+              );
+            }}
+          />
+
+          <div className="w-full flex justify-end mt-8">
+            <FormButton
+              onClick={handleSubmit(onSubmit, (errors) => {
+                console.error("VALIDATION ERRORS:", errors);
+              })}
+            >
+              Submit
+            </FormButton>
+          </div>
         </div>
       </div>
     </div>

@@ -48,6 +48,7 @@ export const alamatSchema = z.object({
 export const schema = z
   .object({
     company_name: z.string().min(1, "Nama perusahaan wajib diisi"),
+    namaBank: z.string().min(1, "Nama bank wajib dipilih"),
     jenis_usaha: z
       .string({ required_error: "Jenis usaha wajib dipilih" })
       .min(1, "Jenis usaha wajib dipilih"),
@@ -83,7 +84,6 @@ export const schema = z
       .max(2, "Maksimal hanya 2 alamat"),
     sameAsCompany: z.boolean().optional(),
     detailKorespondensi: z.string().optional(),
-    namaBank: z.string().min(1, "Nama bank wajib dipilih"),
     nomorRekening: z
       .string()
       .trim()
@@ -234,6 +234,14 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
   });
 
   const { fields } = useFieldArray({ control, name: "address" });
+
+  const companyName = watch("company_name");
+
+  useEffect(() => {
+    if (companyName) {
+      setValue("namaPemilik", companyName, { shouldValidate: true });
+    }
+  }, [companyName, setValue]);
 
   useEffect(() => {
     const loadProvinces = async () => {
@@ -672,8 +680,10 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
             </label>
             <input
               {...register("namaPemilik")}
+              disabled
               className="border rounded p-2 w-full placeholder:text-sm"
               placeholder="Masukkan Nama Pemilik Rekening"
+              readOnly
             />
             {errors.namaPemilik && (
               <p className="text-red-500 text-sm mt-1">

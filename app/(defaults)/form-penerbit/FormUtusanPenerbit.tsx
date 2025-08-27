@@ -11,6 +11,7 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { getUser } from "@/app/lib/auth";
+import Cookies from "js-cookie";
 
 interface FormSchema {
   photo: File | null;
@@ -86,7 +87,7 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
     }
     if (isValid) {
       try {
-        const userData = localStorage.getItem("user");
+        const userData = Cookies.get("user");
         if (userData) {
           const userParsed = JSON.parse(userData);
           const urlPhotoSelfie = await uploadFotoSelfie(formFields.photo!);
@@ -98,6 +99,7 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
             photo_ktp: formFields.fileKtp,
             no_ktp: formFields.noKtp,
             surat_kuasa: formFields.suratKuasa,
+            no_npwp: "99",
           };
 
           await axios.post(
@@ -109,6 +111,14 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
               },
             }
           );
+
+          await Swal.fire({
+            icon: "success",
+            title: "Berhasil",
+            text: "Data berhasil disimpan.",
+            timer: 950,
+            timerProgressBar: true,
+          });
 
           onSubmit();
           localStorage.removeItem("utusanPenerbitCache");
@@ -302,6 +312,7 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
           <TextField
             placeholder="Nama Lengkap"
             value={formFields.fullname}
+            disabled={true}
             onChange={(val) => {
               setFormFields({ ...formFields, fullname: val.target.value });
               if (val) {

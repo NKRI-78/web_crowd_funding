@@ -120,7 +120,7 @@ export default function StepStatus({
     <div className="relative max-w-full mb-2 md:mt-8 lg:mt-0">
       <div className="md:px-9 md:p-0">
         <motion.div
-          key={projectStatus} // supaya animasi rerun saat status berubah
+          key={projectStatus}
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, ease: "easeInOut" }}

@@ -184,6 +184,8 @@ const HomeV2: React.FC = () => {
     setStep(null);
   };
 
+  const userToken = getUserToken();
+
   return (
     <div>
       {/* Hero Section */}
