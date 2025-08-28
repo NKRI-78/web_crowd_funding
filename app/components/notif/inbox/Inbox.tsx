@@ -57,9 +57,8 @@ const Inbox = () => {
     }
   }
 
-  // admin mengirim project id melalui field_2
-  const projectId = selectedInbox?.field_2;
-  const inboxId = selectedInbox?.id;
+  // is update document ketika field_3 berisi key "reupload-document" dari admin
+  const isUpdateDocument = selectedInbox?.field_3 === "reupload-document";
   // update formKey liat: "app\(defaults)\form-penerbit\UpdateProfileInterface.ts" untuk detail key nya
   // admin mengirim key melalui field_4 yang nanti dicocokan dengan formKey
   const updateKey = selectedInbox?.field_4;
@@ -146,77 +145,32 @@ const Inbox = () => {
     setInboxes(updatedInboxes);
   };
 
-  //* aprove project
-  const approveProject = (administrationFee: string | undefined) => {
-    if (inboxId) {
+  //* navigate to billing info
+  const navigateToBillingInfo = (inbox: InboxResponse) => {
+    // raw payment detail dari api masih berupa data json dalam bentuk string
+    // perlu dikonversi dulu ke json
+    const rawPaymentDetail = inbox.data;
+    const inboxId = inbox.id;
+
+    if (inboxId && rawPaymentDetail) {
+      const paymentDetail = JSON.parse(rawPaymentDetail);
+      const administrationFee = paymentDetail.total_amount;
       router.push(
         `/payment-manual?inboxId=${inboxId}&price=${administrationFee}`
       );
     }
   };
 
-  //* reject project
-  const rejectProject = async () => {
-    if (projectId) {
-      const result = await Swal.fire({
-        title: "Apakah Anda yakin?",
-        text: "Jika iya maka project Anda akan ditolak",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#e3342f",
-        cancelButtonColor: "#6c757d",
-        confirmButtonText: "Ya, Setuju",
-        cancelButtonText: "Batal",
-      });
-
-      if (result.isConfirmed) {
-        try {
-          if (!user?.token) throw new Error("Unauthorized");
-
-          await axios.put(
-            `${API_BACKEND}/api/v1/admin/verify/project`,
-            {
-              id: projectId,
-              status: "3", // REJECTED
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${user?.token}`,
-                "Content-Type": "application/json",
-              },
-            }
-          );
-
-          setOpenDialog(false);
-          deleteInbox();
-        } catch (error) {
-          console.error("Gagal menolak proyek:", error);
-          Swal.fire({
-            title: "Gagal",
-            text: "Terjadi kesalahan saat menolak proyek.",
-            icon: "error",
-          });
-        }
-      }
-    }
-  };
-
-  //* delete inbox by id
-  const deleteInbox = () => {
-    const inboxId = selectedInbox?.id;
-    if (inboxId) {
-      const updatedInboxes = inboxes.filter((inbox) => inbox.id !== inboxId);
-      setInboxes(updatedInboxes);
-    }
-  };
-
   //* handle inbox on click
   const handleInboxOnClick = (inbox: InboxResponse) => {
-    setSelectedInbox(inbox);
     markAsRead(inbox.id);
-    setOpenDialog(true);
 
-    console.log("is update document?" + inbox.field_3 === "reupload-document");
+    if (isUpdateDocument) {
+      setSelectedInbox(inbox);
+      setOpenDialog(true);
+    } else {
+      navigateToBillingInfo(inbox);
+    }
   };
 
   return (
@@ -247,23 +201,17 @@ const Inbox = () => {
       {dialogIsOpen && user?.token && (
         <InboxModalDialog
           inbox={selectedInbox}
-          onApprove={(isUpdateDocument, administrationFee) => {
-            if (isUpdateDocument && updateKey) {
+          onAccept={() => {
+            if (updateKey) {
               if (roleUser !== "investor") {
                 router.push(`/form-penerbit?update=true&form=${updateKey}`);
               } else {
                 router.push(`/form-pemodal?update=true&form=${updateKey}`);
               }
-            } else {
-              approveProject(administrationFee);
             }
           }}
-          onReject={(isUpdateDocument) => {
-            if (isUpdateDocument) {
-              setOpenDialog(false);
-            } else {
-              rejectProject();
-            }
+          onReject={() => {
+            setOpenDialog(false);
           }}
           barrierAction={() => {
             setOpenDialog(false);

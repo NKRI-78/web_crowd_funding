@@ -5,15 +5,10 @@ import { API_BACKEND } from "@/app/utils/constant";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { InboxResponse } from "../inbox-interface";
-import Link from "next/link";
 import EmptyTransaction from "../InboxEmpty";
-import moment from "moment";
-import Cookies from "js-cookie";
-
-interface TransactionState {
-  loading?: boolean;
-  errorMessage?: string | null;
-}
+import InboxCard from "../InboxCard";
+import Swal from "sweetalert2";
+import { getUser } from "@/app/lib/auth";
 
 const Transaction = () => {
   // data hook
@@ -21,35 +16,18 @@ const Transaction = () => {
 
   // state hook
   const isOnline = useOnlineStatus();
-  const [inboxState, setTransactionState] = useState<TransactionState>({
-    loading: true,
-    errorMessage: null,
-  });
-
-  function getUserToken(): string | null {
-    const userCookie = Cookies.get("user");
-    if (!userCookie) return null; // ✅ tambahkan return
-
-    const userJson = JSON.parse(userCookie);
-    return userJson.token;
-  }
 
   //* use effect
   useEffect(() => {
     if (isOnline) {
       fetchTransaction();
-    } else {
-      setTransactionState({
-        loading: false,
-        errorMessage: "Tidak ada koneksi internet",
-      });
     }
   }, [isOnline]);
 
   //* fetch inbox
   const fetchTransaction = async () => {
     try {
-      const token = getUserToken();
+      const token = getUser()?.token;
       console.log("hastoken ", token);
       if (token) {
         const res = await axios(`${API_BACKEND}/api/v1/inbox/list`, {
@@ -61,21 +39,44 @@ const Transaction = () => {
           setTransactions([]);
           return;
         }
-        const filteredTransactionTransactiones = res.data["data"]
+        const filteredTransactions = res.data["data"]
           .filter((inbox: InboxResponse) => inbox.type === "transaction")
           .reverse();
-        console.log("Fil ", filteredTransactionTransactiones);
-        setTransactions(filteredTransactionTransactiones);
-        setTransactionState({
-          loading: false,
-        });
+        setTransactions(filteredTransactions);
       }
     } catch (error) {
-      setTransactionState({
-        loading: false,
-        errorMessage: "Terjadi Kesalahan",
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Mendapatkan Data Transaksi",
+        text: `Maaf saat ini tidak bisa mendapatkan data transaksi ${error}`,
+        showConfirmButton: false,
+        timer: 3000,
       });
     }
+  };
+
+  //* mark as read
+  const markAsRead = (transactionId: number) => {
+    const updatedTransactions = transactions.map((transaction) => {
+      if (transaction.id === transactionId) {
+        return {
+          ...transaction,
+          is_read: true,
+        };
+      }
+      return transaction;
+    });
+    setTransactions(updatedTransactions);
+  };
+
+  //* handle card on click
+  const handleCardOnClick = (transaction: InboxResponse) => {
+    markAsRead(transaction.id);
+    Swal.fire({
+      icon: "info",
+      title: "Bukti Transfer Telah Diterima",
+      text: "Terima kasih, bukti transfer Anda telah kami terima. Mohon menunggu hingga 2x24 jam untuk mendapatkan informasi selanjutnya melalui Inbox.",
+    });
   };
 
   return (
@@ -85,33 +86,13 @@ const Transaction = () => {
           <div className="flex flex-col gap-y-3">
             {transactions?.map((transaction) => {
               return (
-                <div
-                  className="relative w-full p-4 rounded-lg bg-white shadow-sm border border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer"
-                  onClick={() => {}}
-                >
-                  <div className="flex items-start justify-between">
-                    <p className="text-sm font-semibold">{transaction.title}</p>
-
-                    {transaction.is_read === false && (
-                      <span className="text-xs text-blue-600 font-medium bg-blue-100 px-2 py-0.5 rounded-full">
-                        Baru
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="absolute top-2 right-2">
-                    <span className="text-xs font-medium bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                      {transaction.status}
-                    </span>
-                  </div>
-
-                  <p className="text-sm text-gray-400 mt-2">
-                    {moment(transaction.created_at)
-                      .utc()
-                      .locale("id")
-                      .format("DD MMMM YYYY, HH:mm")}
-                  </p>
-                </div>
+                <InboxCard
+                  key={transaction.id}
+                  inbox={transaction}
+                  onClick={() => {
+                    handleCardOnClick(transaction);
+                  }}
+                />
               );
             })}
           </div>

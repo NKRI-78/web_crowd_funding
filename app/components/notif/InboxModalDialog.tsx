@@ -3,48 +3,17 @@ import { InboxResponse } from "./inbox-interface";
 
 interface Props {
   inbox?: InboxResponse | null;
-  onApprove: (isUpdateDocument?: boolean, administrationFee?: string) => void;
-  onReject: (isUpdateDocument?: boolean) => void;
+  onAccept: () => void;
+  onReject: () => void;
   barrierAction?: () => void;
-}
-
-function formatRupiah(value: number | null): string {
-  if (value === undefined || value === null || isNaN(value)) {
-    return "-";
-  }
-
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-  }).format(value);
 }
 
 const InboxModalDialog: React.FC<Props> = ({
   inbox,
-  onApprove,
+  onAccept,
   barrierAction,
   onReject,
 }) => {
-  // isUpdateDocument ketika field_3 berisi reupload-document
-  const isUpdateDocument = inbox?.field_3 === "reupload-document";
-
-  const paymentDetailStr = inbox?.data ?? "{}";
-  const paymentDetail = JSON.parse(paymentDetailStr);
-
-  // administration detail fee
-  const totalPayment = paymentDetail.total_amount;
-  const administrationFee = formatRupiah(Number(totalPayment));
-  const registrationFee = formatRupiah(
-    Number(paymentDetail.info[0].calculated_amount)
-  );
-  const depositNotaris = formatRupiah(
-    Number(paymentDetail.info[1].calculated_amount)
-  );
-  const platformFee = formatRupiah(
-    Number(paymentDetail.info[2].calculated_amount)
-  );
-
   return (
     <Dialog open onOpenChange={barrierAction}>
       <DialogContent>
@@ -54,44 +23,14 @@ const InboxModalDialog: React.FC<Props> = ({
         </DialogHeader>
 
         {/* content */}
-        {isUpdateDocument ? (
-          <div className="space-y-2 text-black">{inbox.content}</div>
-        ) : (
-          <div className="w-full text-black space-y-2">
-            <div className="w-full flex">
-              <p className="text-gray-500 flex-[1]">Registration Fee</p>
-              <p className="font-medium flex-[1]">{registrationFee}</p>
-            </div>
-
-            <div className="w-full flex">
-              <p className="text-gray-500 flex-[1]">Deposit Notaris</p>
-              <p className="font-medium flex-[1]">{depositNotaris}</p>
-            </div>
-            <div className="w-full flex">
-              <p className="text-gray-500 flex-[1]">Platform Fee</p>
-              <p className="font-medium flex-[1]">{platformFee}</p>
-            </div>
-            <p>{`Total pembayaran sebesar ${administrationFee}`}</p>
-          </div>
-        )}
+        {<div className="space-y-2 text-black">{inbox?.content}</div>}
 
         {/* footer */}
         <DialogFooter>
-          <Button
-            variant="rejected"
-            onClick={() => {
-              onReject(isUpdateDocument);
-            }}
-          >
-            {isUpdateDocument ? "Batal" : "Tidak Setuju"}
+          <Button variant="rejected" onClick={onReject}>
+            Batal
           </Button>
-          <Button
-            onClick={() => {
-              onApprove(isUpdateDocument, totalPayment);
-            }}
-          >
-            {isUpdateDocument ? "Update" : "Setuju"}
-          </Button>
+          <Button onClick={onAccept}>Update</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
