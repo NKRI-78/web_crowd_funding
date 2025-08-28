@@ -1,9 +1,9 @@
-interface EmptyInboxProps {
+interface Props {
   title: string;
   message: string;
 }
 
-const EmptyInbox = ({ title, message }: EmptyInboxProps) => {
+const InboxEmpty = ({ title, message }: Props) => {
   return (
     <div className="h-[560px] flex flex-col justify-center items-center text-center text-gray-500">
       <svg
@@ -26,4 +26,4 @@ const EmptyInbox = ({ title, message }: EmptyInboxProps) => {
   );
 };
 
-export default EmptyInbox;
+export default InboxEmpty;

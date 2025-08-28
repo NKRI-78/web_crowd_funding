@@ -10,6 +10,7 @@ interface PhotoUploaderContainerProps {
   photoPaths?: string[];
   errorText?: string;
   label?: string;
+  maxUpload?: number;
 }
 
 const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
@@ -17,6 +18,7 @@ const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
   errorText,
   photoPaths,
   label,
+  maxUpload = 5,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -24,9 +26,8 @@ const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
   const [isUploading, setIsUploading] = useState(false);
 
   const allowedTypes: string[] = ["image/jpeg", "image/png"];
-  const MAX_FILES = 5;
 
-  const disabled = uploadedUrls.length >= MAX_FILES || isUploading;
+  const disabled = uploadedUrls.length >= maxUpload || isUploading;
 
   const uploadFile = async (file: File): Promise<string | null> => {
     try {
@@ -55,10 +56,10 @@ const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
       allowedTypes.includes(file.type)
     );
 
-    if (uploadedUrls.length + validFiles.length > MAX_FILES) {
+    if (uploadedUrls.length + validFiles.length > maxUpload) {
       Swal.fire({
         title: "Batas foto tercapai",
-        text: `Anda hanya bisa mengupload maksimal ${MAX_FILES} foto.`,
+        text: `Anda hanya bisa mengupload maksimal ${maxUpload} foto.`,
         icon: "warning",
         timer: 1500,
         showConfirmButton: false,
@@ -146,9 +147,9 @@ const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
           <div className="flex items-center gap-2 mb-3">
             <ImageIcon className="w-5 h-5 text-blue-500" />
             <span className="text-sm font-medium text-gray-700">
-              {uploadedUrls.length < MAX_FILES
+              {uploadedUrls.length < maxUpload
                 ? `Masih bisa menambah ${
-                    MAX_FILES - uploadedUrls.length
+                    maxUpload - uploadedUrls.length
                   } foto lagi`
                 : "Hapus salah satu foto untuk mengubah"}
             </span>
@@ -234,7 +235,7 @@ const PhotoUploaderContainer: React.FC<PhotoUploaderContainerProps> = ({
       ) : (
         <p className="text-xs text-gray-500 mt-1">
           Hanya mendukung file .jpg dan .png.{" "}
-          <span className="text-black">Maksimal 5 foto.</span>
+          <span className="text-black">Maksimal {maxUpload} foto.</span>
         </p>
       )}
     </div>

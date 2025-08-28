@@ -118,10 +118,7 @@ export const createProjectPenerbitSchema = z
 
     lokasiProyek: mapsResultSchema.nullable(),
 
-    address: z
-      .array(alamatSchema)
-      .min(1, "Minimal 1 alamat harus diisi")
-      .max(2, "Maksimal hanya 2 alamat"),
+    address: z.array(alamatSchema).min(1, "Minimal 1 alamat harus diisi"),
   })
   .refine((data) => data.lokasiProyek !== null, {
     message: "Lokasi Proyek wajib diisi",

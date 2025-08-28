@@ -4,26 +4,24 @@ import useOnlineStatus from "@/app/hooks/useOnlineStatus";
 import { API_BACKEND } from "@/app/utils/constant";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import InboxDialogMessage from "../InboxDialogMessage";
+import InboxModalDialog from "../InboxModalDialog";
 import Swal from "sweetalert2";
-import { InboxModel } from "../InboxModel";
-import EmptyInbox from "../EmptyInbox";
+import { InboxResponse } from "../inbox-interface";
+import InboxEmpty from "../InboxEmpty";
 import { useRouter } from "next/navigation";
-import moment from "moment";
 import Cookies from "js-cookie";
 import { createSocket } from "@/app/utils/sockets";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setBadge } from "@/redux/slices/badgeSlice";
 import { getUser } from "@/app/lib/auth";
-
-interface InboxState {
-  loading?: boolean;
-  errorMessage?: string | null;
-}
+import InboxCard from "../InboxCard";
 
 const Inbox = () => {
   // data hook
-  const [inboxes, setInboxes] = useState<InboxModel[]>([]);
+  const [inboxes, setInboxes] = useState<InboxResponse[]>([]);
+  const [selectedInbox, setSelectedInbox] = useState<InboxResponse | null>(
+    null
+  );
 
   // badge
   const dispatch = useDispatch();
@@ -31,15 +29,6 @@ const Inbox = () => {
   // state hook
   const isOnline = useOnlineStatus();
   const [dialogIsOpen, setOpenDialog] = useState<boolean>(false);
-  const [inboxId, setInboxId] = useState<number>(0);
-  const [selectedProject, setSelectedProject] = useState<{
-    projectId: string;
-    price: string;
-  }>({ projectId: "", price: "" });
-  const [inboxState, setInboxState] = useState<InboxState>({
-    loading: true,
-    errorMessage: null,
-  });
 
   const router = useRouter();
   const user = getUser();
@@ -68,18 +57,40 @@ const Inbox = () => {
     }
   }
 
-  //* use effect
+  // administration fee yang dikirimkan admin melalui field_1
+  const administrationFee = selectedInbox?.field_1;
+  // admin mengirim project id melalui field_2
+  const projectId = selectedInbox?.field_2;
+  // update formKey liat: "app\(defaults)\form-penerbit\UpdateProfileInterface.ts" untuk detail key nya
+  // admin mengirim key melalui field_4 yang nanti dicocokan dengan formKey
+  const updateKey = selectedInbox?.field_4;
+
+  //* initstate
   useEffect(() => {
     if (isOnline) {
       console.log("isOnline" + isOnline);
       fetchInbox();
-    } else {
-      setInboxState({
-        loading: false,
-        errorMessage: "Tidak ada koneksi internet",
-      });
     }
   }, [isOnline]);
+
+  //* socket
+  useEffect(() => {
+    const socket = createSocket(user?.id ?? "-");
+
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+      console.log("Socket connected user id :", user?.id ?? "-");
+    });
+
+    socket.on("inbox-update", (data) => {
+      console.log("Update");
+      fetchInbox();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   //* set badge to reducer
   useEffect(() => {
@@ -103,21 +114,21 @@ const Inbox = () => {
           setInboxes([]);
           return;
         }
-        const filteredBillingInboxes = res.data["data"]
+        const filteredInboxes = res.data["data"]
           .filter(
-            (inbox: InboxModel) =>
+            (inbox: InboxResponse) =>
               inbox.type === "billing" && inbox.status !== "REJECTED"
           )
           .reverse();
-        setInboxes(filteredBillingInboxes);
-        setInboxState({
-          loading: false,
-        });
+        setInboxes(filteredInboxes);
       }
     } catch (error) {
-      setInboxState({
-        loading: false,
-        errorMessage: "Terjadi Kesalahan",
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Mendapatkan Data Inbox",
+        text: `Maaf saat ini tidak bisa mendapatkan data inbox ${error}`,
+        showConfirmButton: false,
+        timer: 3000,
       });
     }
   };
@@ -136,81 +147,78 @@ const Inbox = () => {
     setInboxes(updatedInboxes);
   };
 
+  //* aprove project
+  const approveProject = () => {
+    // if (projectId && administrationFee) {
+    //   router.push(
+    //     `/payment-method?projectId=${projectId}&price=${administrationFee}`
+    //   );
+    // }
+  };
+
   //* reject project
-  const rejectProject = async (projectId: string) => {
-    const result = await Swal.fire({
-      title: "Apakah Anda yakin?",
-      text: "Jika iya maka project Anda akan ditolak",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#e3342f",
-      cancelButtonColor: "#6c757d",
-      confirmButtonText: "Ya, Setuju",
-      cancelButtonText: "Batal",
-    });
+  const rejectProject = async () => {
+    if (projectId) {
+      const result = await Swal.fire({
+        title: "Apakah Anda yakin?",
+        text: "Jika iya maka project Anda akan ditolak",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#e3342f",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Ya, Setuju",
+        cancelButtonText: "Batal",
+      });
 
-    if (result.isConfirmed) {
-      try {
-        if (!user?.token) throw new Error("Unauthorized");
+      if (result.isConfirmed) {
+        try {
+          if (!user?.token) throw new Error("Unauthorized");
 
-        await axios.put(
-          `${API_BACKEND}/api/v1/admin/verify/project`,
-          {
-            id: projectId,
-            status: "3", // REJECTED
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${user?.token}`,
-              "Content-Type": "application/json",
+          await axios.put(
+            `${API_BACKEND}/api/v1/admin/verify/project`,
+            {
+              id: projectId,
+              status: "3", // REJECTED
             },
-          }
-        );
+            {
+              headers: {
+                Authorization: `Bearer ${user?.token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
 
-        setOpenDialog(false);
-        deleteInboxById(inboxId);
-      } catch (error) {
-        console.error("Gagal menolak proyek:", error);
-        Swal.fire({
-          title: "Gagal",
-          text: "Terjadi kesalahan saat menolak proyek.",
-          icon: "error",
-        });
+          setOpenDialog(false);
+          deleteInbox();
+        } catch (error) {
+          console.error("Gagal menolak proyek:", error);
+          Swal.fire({
+            title: "Gagal",
+            text: "Terjadi kesalahan saat menolak proyek.",
+            icon: "error",
+          });
+        }
       }
     }
   };
 
-  const approveProject = (projectId: string, price: string) => {
-    return router.push(`/payment-method?projectId=${projectId}&price=${price}`);
-  };
-
   //* delete inbox by id
-  const deleteInboxById = (inboxId: number) => {
-    const updatedInboxes = inboxes.filter((inbox) => inbox.id !== inboxId);
-    setInboxes(updatedInboxes);
+  const deleteInbox = () => {
+    const inboxId = selectedInbox?.id;
+    if (inboxId) {
+      const updatedInboxes = inboxes.filter((inbox) => inbox.id !== inboxId);
+      setInboxes(updatedInboxes);
+    }
   };
 
-  useEffect(() => {
-    const user = getUser();
-    console.log("user token");
-    console.log(user?.id);
+  //* handle inbox on click
+  const handleInboxOnClick = (inbox: InboxResponse) => {
+    setSelectedInbox(inbox);
+    markAsRead(inbox.id);
+    setOpenDialog(true);
 
-    const socket = createSocket(user?.id ?? "-");
-
-    socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
-      console.log("Socket connected user id :", user?.id ?? "-");
-    });
-
-    socket.on("inbox-update", (data) => {
-      console.log("Update");
-      fetchInbox();
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
+    console.log("is update document?" + inbox.field_3 === "reupload-document");
+  };
 
   return (
     <>
@@ -219,45 +227,18 @@ const Inbox = () => {
           <div className="flex flex-col gap-y-3">
             {inboxes?.map((inbox) => {
               return (
-                <div
+                <InboxCard
                   key={inbox.id}
-                  className="w-full p-4 rounded-lg bg-white shadow-sm border border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer"
+                  inbox={inbox}
                   onClick={() => {
-                    setInboxId(inbox.id);
-                    setSelectedProject({
-                      projectId: inbox.field_2,
-                      price: inbox.field_1,
-                    });
-                    markAsRead(inbox.id);
-
-                    console.log(
-                      "is update document?" + inbox.field_3 ===
-                        "reupload-document"
-                    );
-
-                    setOpenDialog(true);
+                    handleInboxOnClick(inbox);
                   }}
-                >
-                  <div className="flex items-start justify-between">
-                    <p className="text-sm font-semibold">{inbox.title}</p>
-                    {inbox.is_read === false && (
-                      <span className="text-xs text-blue-600 font-medium bg-blue-100 px-2 py-0.5 rounded-full">
-                        Baru
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-400 mt-2">
-                    {moment(inbox.created_at)
-                      .utc()
-                      .locale("id")
-                      .format("DD MMMM YYYY, HH:mm")}
-                  </p>
-                </div>
+                />
               );
             })}
           </div>
         ) : (
-          <EmptyInbox
+          <InboxEmpty
             title="Belum ada inbox"
             message="Kamu belum menerima pesan apa pun saat ini."
           />
@@ -265,27 +246,24 @@ const Inbox = () => {
       </div>
 
       {dialogIsOpen && user?.token && (
-        <InboxDialogMessage
-          userToken={user?.token!}
-          inboxId={inboxId}
-          onReject={(id, isUpdateDocument) => {
+        <InboxModalDialog
+          inbox={selectedInbox}
+          onApprove={(isUpdateDocument) => {
+            if (isUpdateDocument && updateKey) {
+              if (roleUser !== "investor") {
+                router.push(`/form-penerbit?update=true&form=${updateKey}`);
+              } else {
+                router.push(`/form-pemodal?update=true&form=${updateKey}`);
+              }
+            } else {
+              approveProject();
+            }
+          }}
+          onReject={(isUpdateDocument) => {
             if (isUpdateDocument) {
               setOpenDialog(false);
             } else {
-              rejectProject(id);
-            }
-          }}
-          onAccept={(isUpdateDocument, form) => {
-            if (isUpdateDocument) {
-              if (roleUser !== "investor") {
-                console.log("update dokumen");
-                console.log(form);
-                router.push(`/form-penerbit?update=true&form=${form}`);
-              } else {
-                router.push(`/form-pemodal?update=true&form=${form}`);
-              }
-            } else {
-              approveProject(selectedProject.projectId, selectedProject.price);
+              rejectProject();
             }
           }}
           barrierAction={() => {
