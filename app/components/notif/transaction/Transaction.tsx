@@ -4,9 +4,9 @@ import useOnlineStatus from "@/app/hooks/useOnlineStatus";
 import { API_BACKEND } from "@/app/utils/constant";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { InboxModel } from "../InboxModel";
+import { InboxResponse } from "../inbox-interface";
 import Link from "next/link";
-import EmptyTransaction from "../EmptyInbox";
+import EmptyTransaction from "../InboxEmpty";
 import moment from "moment";
 import Cookies from "js-cookie";
 
@@ -17,7 +17,7 @@ interface TransactionState {
 
 const Transaction = () => {
   // data hook
-  const [transactions, setTransactions] = useState<InboxModel[]>([]);
+  const [transactions, setTransactions] = useState<InboxResponse[]>([]);
 
   // state hook
   const isOnline = useOnlineStatus();
@@ -62,7 +62,7 @@ const Transaction = () => {
           return;
         }
         const filteredTransactionTransactiones = res.data["data"]
-          .filter((inbox: InboxModel) => inbox.type === "transaction")
+          .filter((inbox: InboxResponse) => inbox.type === "transaction")
           .reverse();
         console.log("Fil ", filteredTransactionTransactiones);
         setTransactions(filteredTransactionTransactiones);
@@ -105,7 +105,6 @@ const Transaction = () => {
                       )}
                     </div>
 
-                    {/* STATUS POJOK KANAN ATAS */}
                     <div className="absolute top-2 right-2">
                       <span className="text-xs font-medium bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
                         {transaction.status}

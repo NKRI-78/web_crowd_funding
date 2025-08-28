@@ -24,7 +24,7 @@ import {
   createProjectPenerbitSchema,
   defaultValues,
   ProjectTypeInterface,
-} from "./create-project-penerbit.schema";
+} from "./form-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CurrencyField from "../inputFormPenerbit/_component/CurrencyField";
 import { API_BACKEND } from "@/app/utils/constant";
@@ -169,8 +169,8 @@ const CreateProjectPenerbit: React.FC = () => {
         company_id: companyId,
         title: data.namaProyek,
         deskripsi: data.deskripsiProyek,
-        // modal: String(data.danaYangDibutuhkan), //* harusnya dana yang dibutuhkan
-        // modal: String(data.danaYangDibutuhkan), //* harusnya modal proyek
+        dana_yang_dibutuhkan: String(data.danaYangDibutuhkan),
+        modal: String(data.modalProyek),
         persentase_keuntungan: String(data.persentaseKeuntungan),
         spk: data.fileSPK,
         loa: data.laporanKeuangan,
@@ -652,7 +652,7 @@ const CreateProjectPenerbit: React.FC = () => {
           />
 
           <FormAlamat
-            index={1}
+            index={0}
             control={control}
             setValue={setValue}
             watch={watch}
