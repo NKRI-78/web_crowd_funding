@@ -85,40 +85,33 @@ const Transaction = () => {
           <div className="flex flex-col gap-y-3">
             {transactions?.map((transaction) => {
               return (
-                <Link
-                  key={transaction.id}
-                  href={`/waiting-payment?orderId=${transaction.id}`}
+                <div
+                  className="relative w-full p-4 rounded-lg bg-white shadow-sm border border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer"
+                  onClick={() => {}}
                 >
-                  <div
-                    className="relative w-full p-4 rounded-lg bg-white shadow-sm border border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer"
-                    onClick={() => {}}
-                  >
-                    <div className="flex items-start justify-between">
-                      <p className="text-sm font-semibold">
-                        {transaction.title}
-                      </p>
+                  <div className="flex items-start justify-between">
+                    <p className="text-sm font-semibold">{transaction.title}</p>
 
-                      {transaction.is_read === false && (
-                        <span className="text-xs text-blue-600 font-medium bg-blue-100 px-2 py-0.5 rounded-full">
-                          Baru
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="absolute top-2 right-2">
-                      <span className="text-xs font-medium bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                        {transaction.status}
+                    {transaction.is_read === false && (
+                      <span className="text-xs text-blue-600 font-medium bg-blue-100 px-2 py-0.5 rounded-full">
+                        Baru
                       </span>
-                    </div>
-
-                    <p className="text-sm text-gray-400 mt-2">
-                      {moment(transaction.created_at)
-                        .utc()
-                        .locale("id")
-                        .format("DD MMMM YYYY, HH:mm")}
-                    </p>
+                    )}
                   </div>
-                </Link>
+
+                  <div className="absolute top-2 right-2">
+                    <span className="text-xs font-medium bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                      {transaction.status}
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-gray-400 mt-2">
+                    {moment(transaction.created_at)
+                      .utc()
+                      .locale("id")
+                      .format("DD MMMM YYYY, HH:mm")}
+                  </p>
+                </div>
               );
             })}
           </div>

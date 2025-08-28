@@ -3,7 +3,7 @@ import { InboxResponse } from "./inbox-interface";
 
 interface Props {
   inbox?: InboxResponse | null;
-  onApprove: (isUpdateDocument?: boolean) => void;
+  onApprove: (isUpdateDocument?: boolean, administrationFee?: string) => void;
   onReject: (isUpdateDocument?: boolean) => void;
   barrierAction?: () => void;
 }
@@ -33,6 +33,8 @@ const InboxModalDialog: React.FC<Props> = ({
   const paymentDetail = JSON.parse(paymentDetailStr);
 
   // administration detail fee
+  const totalPayment = paymentDetail.total_amount;
+  const administrationFee = formatRupiah(Number(totalPayment));
   const registrationFee = formatRupiah(
     Number(paymentDetail.info[0].calculated_amount)
   );
@@ -69,9 +71,7 @@ const InboxModalDialog: React.FC<Props> = ({
               <p className="text-gray-500 flex-[1]">Platform Fee</p>
               <p className="font-medium flex-[1]">{platformFee}</p>
             </div>
-            <p>{`Total pembayaran sebesar ${formatRupiah(
-              Number(paymentDetail.total_amount)
-            )}`}</p>
+            <p>{`Total pembayaran sebesar ${administrationFee}`}</p>
           </div>
         )}
 
@@ -87,7 +87,7 @@ const InboxModalDialog: React.FC<Props> = ({
           </Button>
           <Button
             onClick={() => {
-              onApprove(isUpdateDocument);
+              onApprove(isUpdateDocument, totalPayment);
             }}
           >
             {isUpdateDocument ? "Update" : "Setuju"}

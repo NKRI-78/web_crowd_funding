@@ -1,8 +1,3 @@
-import {
-  formatNPWPFromDigits,
-  isValidNPWPDigits,
-  normalizeNPWP,
-} from "@/app/lib/npwp-formart";
 import { z } from "zod";
 
 const baseManajemenSchema = z.object({
@@ -49,43 +44,45 @@ export const FormPenerbitSchema = z.object({
 
   company_nib_path: z
     .string({ required_error: "Dokumen NIB wajib diunggah" })
+    .trim()
     .min(1, { message: "Dokumen NIB wajib diunggah" }),
   akta_pendirian: z
     .string({ required_error: "Akte pendirian wajib diunggah" })
+    .trim()
     .min(1, { message: "Akte pendirian wajib diunggah" }),
   sk_kumham_path: z
     .string({ required_error: "SK Kumham wajib diunggah" })
+    .trim()
     .min(1, { message: "SK Kumham wajib diunggah" }),
   akta_perubahan_terahkir_path: z
     .string({ required_error: "Akte perubahan terakhir wajib diunggah" })
+    .trim()
     .min(1, { message: "Akte perubahan terakhir wajib diunggah" }),
   sk_kumham_terahkir: z
     .string({ required_error: "SK Kumham terakhir wajib diunggah" })
+    .trim()
     .min(1, { message: "SK Kumham terakhir wajib diunggah" }),
   siup: z
-    .string({ required_error: "Surat Izin Usaha Perdagangan wajib diunggah" })
+    .string({
+      required_error: "Surat Izin Usaha Perdagangan wajib diunggah",
+    })
+    .trim()
     .min(1, { message: "Surat Izin Usaha Perdagangan wajib diunggah" }),
   tdp: z
-    .string({ required_error: "NPWP wajib diunggah" })
+    .string({
+      required_error: "Tanda Daftar Perusahaan wajib diunggah",
+    })
+    .trim()
     .min(1, { message: "Tanda Daftar Perusahaan wajib diunggah" }),
   fileNpwp: z
     .string({ required_error: "NPWP wajib diunggah" })
+    .trim()
     .min(1, { message: "NPWP wajib diunggah" }),
-  // npwp: z
-  //   .string({ required_error: "NPWP wajib diisi" })
-  //   .trim()
-  //   // transform 1: ambil hanya digit
-  //   .transform((val) => normalizeNPWP(val))
-  //   // cek jumlah digit 15/16
-  //   .refine(
-  //     (digits) => isValidNPWPDigits(digits),
-  //     "NPWP harus 15 atau 16 digit"
-  //   )
-  //   // transform 2: simpan ke bentuk terformat baku
-  //   .transform((digits) => formatNPWPFromDigits(digits)),
 
   direktur: z
-    .array(direkturItemSchema)
+    .array(direkturItemSchema, {
+      required_error: "Direktur wajib ditambahkan",
+    })
     .min(1, "Direktur wajib ditambahkan")
     .max(3, "Maksimal 3 Direktur")
     .refine(
@@ -94,7 +91,9 @@ export const FormPenerbitSchema = z.object({
     ),
 
   komisaris: z
-    .array(komisarisItemSchema)
+    .array(komisarisItemSchema, {
+      required_error: "Komisaris wajib ditambahkan",
+    })
     .min(1, "Komisaris wajib ditambahkan")
     .max(3, "Maksimal 3 Komisaris")
     .refine(
@@ -103,13 +102,18 @@ export const FormPenerbitSchema = z.object({
     ),
 
   total_employees: z
-    .string()
+    .string({ required_error: "Jumlah karyawan wajib diisi" })
+    .trim()
     .min(1, "Jumlah karyawan wajib diisi")
+    .refine((val) => /^\d+$/.test(val), {
+      message: "Jumlah karyawan harus berupa angka",
+    })
     .refine((val) => Number(val) >= 1, {
       message: "Jumlah karyawan minimal 1 orang",
     }),
+
   agree: z
-    .boolean()
+    .boolean({ required_error: "Persetujuan wajib dicentang" })
     .refine((v) => v, { message: "Silakan centang persetujuan untuk lanjut." }),
 });
 
