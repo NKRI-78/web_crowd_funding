@@ -11,12 +11,16 @@ import DocumentRow from "./DocumentRow";
 import { zodResolver } from "@hookform/resolvers/zod";
 import FormSection from "./FormSection";
 import FormButton from "../inputFormPemodalPerusahaan/component/FormButton";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import {
   defaultValues,
   formDokumenPelengkapPenerbitSchema,
   FormDokumenPelengkapPenerbitSchema,
 } from "./form-schema";
+import Swal from "sweetalert2";
+import axios from "axios";
+import { API_BACKEND } from "@/app/utils/constant";
+import { useRouter } from "next/navigation";
 
 const getUserToken = (): string => {
   const userCookie = Cookies.get("user");
@@ -27,6 +31,8 @@ const getUserToken = (): string => {
 const FORM_CACHE_KEY = "formDokumenPelengkapPenerbitCache";
 
 const FormDokumenTambahanPage: React.FC = () => {
+  const router = useRouter();
+
   const skipCacheWrite = useRef(false);
 
   //* form state
@@ -44,9 +50,6 @@ const FormDokumenTambahanPage: React.FC = () => {
     defaultValues: defaultValues,
     mode: "onChange",
   });
-
-  //* init state
-  useEffect(() => {}, []);
 
   //* read cache
   useEffect(() => {
@@ -77,9 +80,95 @@ const FormDokumenTambahanPage: React.FC = () => {
     return () => subscription.unsubscribe();
   }, [watch]);
 
+  //* on submit (send data)
+  const onSubmit: SubmitHandler<FormDokumenPelengkapPenerbitSchema> = async (
+    data
+  ) => {
+    try {
+      const payload = {
+        project_id: "3dae18d8-114d-448c-8a7d-26227142a29f",
+        skd: data.suratKeteranganDomisili,
+        rab: data.rab,
+        cv: data.shortCvManajemen,
+        dokumen_perizinan_lainnya: data.dokumenPerizinanLainnya,
+        video_profil_perusahaan: data.videoProfilPerusahaan,
+        project_summary: data.projectSummary,
+        project_pendapatan: data.proyeksiPendapatan,
+        timeline_pekerjaan: data.timelinePekerjaan,
+        laporan_pajak_tahunan: data.laporanPajakTahunan,
+        daftar_pekerjaan: data.listPekerjaan2TahunTerakhir,
+        daftar_supplier: data.listDataSupplier,
+        daftar_piutang: data.daftarPiutang,
+        foto_karyawan_kantor: data.fotoKantorKaryawan.map((url) => ({
+          path: url,
+        })),
+        foto_kegiatan_usaha: data.fotoKegiatanUsaha.map((url) => ({
+          path: url,
+        })),
+      };
+
+      const token = getUserToken();
+      await axios.post(
+        `${API_BACKEND}/api/v1/document/verify/project`,
+        payload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const modalResult = await Swal.fire({
+        title: "Dokumen Berhasil Diupload",
+        text: "Dokumen tambahan Anda telah kami terima. Mohon menunggu hingga 2x24 jam untuk mendapatkan informasi selanjutnya.",
+        icon: "success",
+      });
+
+      if (
+        modalResult.isDismissed ||
+        modalResult.isConfirmed ||
+        modalResult.isDenied
+      ) {
+        localStorage.removeItem(FORM_CACHE_KEY);
+        skipCacheWrite.current = true;
+        reset(defaultValues);
+        console.log("FORM_CACHE_KEY dihapus = " + FORM_CACHE_KEY);
+
+        router.back();
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Membuat Proyek",
+        text: `${error}`,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+    }
+  };
+
   return (
     <div className="w-full py-28 px-6 md:px-24 bg-white">
-      <div className="text-black grid grid-cols-1 md:grid-cols-2 gap-10">
+      <div className="text-black">
+        <h1 className="text-2xl font-bold">Form Dokumen Pelengkap</h1>
+
+        <p className="text-gray-500 text-sm pt-3">
+          Silakan lengkapi{" "}
+          <span className="text-black font-medium">dokumen pelengkap </span>
+          sebagai syarat untuk{" "}
+          <span className="text-black font-medium">
+            melanjutkan proses penerbitan proyek
+          </span>
+        </p>
+        <p className="text-gray-500 text-sm">
+          Anda juga dapat meninggalkan form ini kapan saja, karena
+          <span className="text-black font-medium">
+            {" "}
+            data yang telah diinput akan tersimpan otomatis di cache
+          </span>
+          .
+        </p>
+      </div>
+
+      <div className="text-black grid grid-cols-1 md:grid-cols-2 gap-10 mt-8">
         {/* right section */}
         <div className="w-full space-y-4">
           <Controller
@@ -418,7 +507,13 @@ const FormDokumenTambahanPage: React.FC = () => {
           </DocumentRow>
 
           <div className="w-full flex justify-end pr-16 pt-4">
-            <FormButton onClick={() => {}}>Submit</FormButton>
+            <FormButton
+              onClick={handleSubmit(onSubmit, (errors) => {
+                console.error("VALIDATION ERRORS:", errors);
+              })}
+            >
+              Submit
+            </FormButton>
           </div>
         </FormSection>
       </div>
