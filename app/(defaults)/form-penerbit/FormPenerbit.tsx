@@ -28,79 +28,104 @@ import RHFSelectGeneric from "./components/RHFSelectGeneric";
 import { fetchJenisUsaha, TypeOption } from "@/app/utils/fetchJenisUsaha";
 import { fetchJenisPerusahaan } from "@/app/utils/fetchJenisPerusahaan";
 import { fetchStatusCompany } from "@/app/utils/fetchStatusPerushaan";
-import {
-  formatNPWPFromDigits,
-  isValidNPWPDigits,
-  normalizeNPWP,
-  sanitizeNPWPOrThrow,
-} from "@/app/lib/npwp-formart";
 
 export const alamatSchema = z.object({
   name: z.string().optional(),
-  province_name: z.string(),
-  city_name: z.string().min(1, "Kota wajib diisi"),
-  district_name: z.string().min(1, "Kecamatan wajib diisi"),
-  subdistrict_name: z.string().min(1, "Kelurahan wajib diisi"),
-  postal_code: z.string().min(1, "Kode pos wajib diisi"),
-  detail: z.string().min(1, "Detail alamat wajib diisi"),
+  province_name: z
+    .string({ required_error: "Provinsi wajib diisi" })
+    .trim()
+    .min(1, "Provinsi wajib diisi"),
+  city_name: z
+    .string({ required_error: "Kota wajib diisi" })
+    .trim()
+    .min(1, "Kota wajib diisi"),
+  district_name: z
+    .string({ required_error: "Kecamatan wajib diisi" })
+    .trim()
+    .min(1, "Kecamatan wajib diisi"),
+  subdistrict_name: z
+    .string({ required_error: "Kelurahan wajib diisi" })
+    .trim()
+    .min(1, "Kelurahan wajib diisi"),
+  postal_code: z
+    .string({ required_error: "Kode pos wajib diisi" })
+    .trim()
+    .min(1, "Kode pos wajib diisi")
+    .regex(/^\d{5}$/, "Kode pos harus 5 digit angka"),
+  detail: z
+    .string({ required_error: "Detail alamat wajib diisi" })
+    .trim()
+    .min(1, "Detail alamat wajib diisi"),
 });
 
 export const schema = z
   .object({
-    company_name: z.string().min(1, "Nama perusahaan wajib diisi"),
-    namaBank: z.string().min(1, "Nama bank wajib dipilih"),
+    company_name: z
+      .string({ required_error: "Nama perusahaan wajib diisi" })
+      .trim()
+      .min(1, "Nama perusahaan wajib diisi"),
+
+    namaBank: z
+      .string({ required_error: "Nama bank wajib dipilih" })
+      .trim()
+      .min(1, "Nama bank wajib dipilih"),
+
     jenis_usaha: z
       .string({ required_error: "Jenis usaha wajib dipilih" })
+      .trim()
       .min(1, "Jenis usaha wajib dipilih"),
-    // npwp: z
-    //   .string({ required_error: "NPWP wajib diisi" })
-    //   .trim()
-    //   .transform((val) => normalizeNPWP(val))
-    //   .refine(
-    //     (digits) => isValidNPWPDigits(digits),
-    //     "NPWP harus 15 atau 16 digit"
-    //   )
-    //   .transform((digits) => formatNPWPFromDigits(digits)),
-    // npwp_path: z.string(),
     companyType: z
       .string({ required_error: "Tipe Perusahaan wajib dipilih" })
+      .trim()
       .min(1, "Tipe Perusahaan wajib dipilih"),
 
     statusCompanys: z
       .string({ required_error: "Status Kantor/Tempat Usaha wajib dipilih" })
+      .trim()
       .min(1, "Status Kantor/Tempat Usaha wajib dipilih"),
 
     establishedYear: z
       .string({ required_error: "Tahun berdiri wajib dipilih" })
+      .trim()
       .min(1, "Tahun berdiri wajib dipilih")
       .refine(
         (v) =>
           /^\d{4}$/.test(v) && +v >= 1950 && +v <= new Date().getFullYear(),
         "Tahun tidak valid"
       ),
+
     address: z
-      .array(alamatSchema)
+      .array(alamatSchema, { required_error: "Alamat wajib diisi" })
       .min(1, "Minimal 1 alamat harus diisi")
       .max(2, "Maksimal hanya 2 alamat"),
+
     sameAsCompany: z.boolean().optional(),
     detailKorespondensi: z.string().optional(),
+
     nomorRekening: z
-      .string()
+      .string({ required_error: "Nomor rekening wajib diisi" })
       .trim()
       .min(1, "Nomor rekening wajib diisi")
       .regex(/^\d+$/, "Hanya angka"),
-    namaPemilik: z.string().trim().min(1, "Nama pemilik wajib diisi"),
+
+    namaPemilik: z
+      .string({ required_error: "Nama pemilik wajib diisi" })
+      .trim()
+      .min(1, "Nama pemilik wajib diisi"),
+
     noPhoneCompany: z
-      .string()
+      .string({ required_error: "Nomor Telepon Perusahaan wajib diisi" })
       .trim()
       .min(1, "Nomor Telepon Perusahaan wajib diisi"),
+
     webCompany: z
-      .string()
+      .string({ required_error: "Situs Perusahaan wajib diisi" })
       .trim()
       .min(1, "Situs Perusahaan wajib diisi")
       .url("Format URL tidak valid (contoh: https://example.com)"),
+
     emailCompany: z
-      .string()
+      .string({ required_error: "Email Perusahaan wajib diisi" })
       .trim()
       .min(1, "Email Perusahaan wajib diisi")
       .email("Format email tidak valid"),

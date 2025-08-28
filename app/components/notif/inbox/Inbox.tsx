@@ -57,10 +57,9 @@ const Inbox = () => {
     }
   }
 
-  // administration fee yang dikirimkan admin melalui field_1
-  const administrationFee = selectedInbox?.field_1;
   // admin mengirim project id melalui field_2
   const projectId = selectedInbox?.field_2;
+  const inboxId = selectedInbox?.id;
   // update formKey liat: "app\(defaults)\form-penerbit\UpdateProfileInterface.ts" untuk detail key nya
   // admin mengirim key melalui field_4 yang nanti dicocokan dengan formKey
   const updateKey = selectedInbox?.field_4;
@@ -148,12 +147,12 @@ const Inbox = () => {
   };
 
   //* aprove project
-  const approveProject = () => {
-    // if (projectId && administrationFee) {
-    //   router.push(
-    //     `/payment-method?projectId=${projectId}&price=${administrationFee}`
-    //   );
-    // }
+  const approveProject = (administrationFee: string | undefined) => {
+    if (inboxId) {
+      router.push(
+        `/payment-manual?inboxId=${inboxId}&price=${administrationFee}`
+      );
+    }
   };
 
   //* reject project
@@ -248,7 +247,7 @@ const Inbox = () => {
       {dialogIsOpen && user?.token && (
         <InboxModalDialog
           inbox={selectedInbox}
-          onApprove={(isUpdateDocument) => {
+          onApprove={(isUpdateDocument, administrationFee) => {
             if (isUpdateDocument && updateKey) {
               if (roleUser !== "investor") {
                 router.push(`/form-penerbit?update=true&form=${updateKey}`);
@@ -256,7 +255,7 @@ const Inbox = () => {
                 router.push(`/form-pemodal?update=true&form=${updateKey}`);
               }
             } else {
-              approveProject();
+              approveProject(administrationFee);
             }
           }}
           onReject={(isUpdateDocument) => {

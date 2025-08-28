@@ -89,12 +89,12 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
           <Controller
             control={control}
             name={`${namePrefix}.${index}.jabatan` as const}
+            defaultValue={isKomisaris ? "komisaris" : "direktur"}
             render={({ field, fieldState }) => {
               const isUtama =
-                jabatanThisRow ===
+                (field.value ?? "") ===
                 (isKomisaris ? "komisaris-utama" : "direktur-utama");
 
-              // opsi jabatan
               const options = isKomisaris
                 ? [
                     ...(!hasKomisarisUtama || isUtama
@@ -108,16 +108,6 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
                       : []),
                     { label: "Direktur", value: "direktur" },
                   ];
-
-              // auto set default kalau kosong
-              useEffect(() => {
-                if (!field.value) {
-                  setValue(
-                    `${namePrefix}.${index}.jabatan` as const,
-                    isKomisaris ? "komisaris" : "direktur"
-                  );
-                }
-              }, []);
 
               return (
                 <Select
@@ -135,6 +125,7 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
                       borderColor: fieldState.error ? "red" : base.borderColor,
                     }),
                   }}
+                  isClearable={false}
                 />
               );
             }}
