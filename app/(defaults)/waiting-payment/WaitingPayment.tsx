@@ -21,7 +21,7 @@ interface Bank {
   fee: number;
 }
 
-interface PaymentData {
+export interface PaymentData {
   id: number;
   title: string;
   content: string;
