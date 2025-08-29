@@ -24,71 +24,119 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { formatRupiah } from "@/app/utils/formatRupiah";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
 import Swal from "sweetalert2";
 import { getUser } from "@/app/lib/auth";
-import DetailPembayaran from "./components/DetailPembayaran";
+import DetailPembayaran from "../components/DetailPembayaran";
 
 /* =========================
- *  VALIDASI FILE (Zod) — hanya file
- * ========================= */
-const ACCEPT_TYPES = ["image/jpeg", "image/png"] as const;
-type AcceptType = (typeof ACCEPT_TYPES)[number];
-const isAcceptType = (t: string): t is AcceptType =>
-  (ACCEPT_TYPES as readonly string[]).includes(t);
-
-const MAX_SIZE_MB = 5;
-
-const proofSchema = z
-  .custom<File>((v) => v instanceof File, {
-    message: "File bukti wajib diunggah.",
-  })
-  .refine((file) => isAcceptType(file.type), {
-    message: "Tipe file tidak didukung (JPG/PNG).",
-  })
-  .refine((file) => file.size <= MAX_SIZE_MB * 1024 * 1024, {
-    message: `Ukuran file maksimal ${MAX_SIZE_MB}MB.`,
-  });
-
-const schema = z.object({ proof: proofSchema });
-type FormValues = z.infer<typeof schema>;
-
-/* =========================
- *  TIPE DETAIL PEMBAYARAN
+ *  TYPES
  * ========================= */
 type PaymentItem = {
   id: number;
   template_name: string;
   calculated_amount: number;
   template_description?: string;
+  percentage?: number;
+  fixed_amount?: number;
+  project_id?: string;
+  template_id?: number;
 };
 type PaymentDetail = {
   info: PaymentItem[];
-  total_amount: number;
+  total_amount?: number;
 };
+type InboxDetail = {
+  inboxId: string;
+  title: string;
+  status: string;
+  createdAt: string;
+  projectId: string;
+  detail: PaymentDetail | null;
+};
+
+/* =========================
+ *  PARSER: tangani string/object & double-encoded
+ * ========================= */
+function parseDetail(raw: unknown): PaymentDetail | null {
+  const tryJson = (x: unknown) => {
+    if (typeof x !== "string") return x;
+    const s = x.trim();
+    if (!s) return null;
+    try {
+      return JSON.parse(s);
+    } catch {
+      return null;
+    }
+  };
+
+  // object langsung
+  if (raw && typeof raw === "object") return finalize(raw as any);
+
+  // parse 1x
+  const once = tryJson(raw);
+  if (once && typeof once === "object") return finalize(once as any);
+
+  // parse 2x (double-encoded)
+  const twice = tryJson(once);
+  if (twice && typeof twice === "object") return finalize(twice as any);
+
+  return null;
+
+  function finalize(d: any): PaymentDetail {
+    const info = Array.isArray(d?.info) ? d.info : [];
+    const total =
+      typeof d?.total_amount === "number"
+        ? d.total_amount
+        : info.reduce(
+            (s: number, it: any) => s + (Number(it?.calculated_amount) || 0),
+            0
+          );
+    return { info, total_amount: total };
+  }
+}
+
+/* =========================
+ *  VALIDASI FILE (Zod)
+ * ========================= */
+const ACCEPT_TYPES = ["image/jpeg", "image/png"] as const;
+const MAX_SIZE_MB = 5;
+
+const proofSchema = z
+  .custom<File>((v) => v instanceof File, {
+    message: "File bukti wajib diunggah.",
+  })
+  .refine(
+    (file) => ACCEPT_TYPES.includes(file.type as (typeof ACCEPT_TYPES)[number]),
+    {
+      message: "Tipe file tidak didukung (JPG/PNG).",
+    }
+  )
+  .refine((file) => file.size <= MAX_SIZE_MB * 1024 * 1024, {
+    message: `Ukuran file maksimal ${MAX_SIZE_MB}MB.`,
+  });
+
+const schema = z.object({ proof: z.union([proofSchema, z.any()]) as any }); // agar RHF init tidak error
+type FormValues = z.infer<typeof schema>;
 
 /* =========================
  *  PROPS
  * ========================= */
 type Props = {
+  inboxId: string;
   bankName?: string;
   accountNumber?: string;
   accountOwner?: string;
   logoSrc?: string;
-  /** opsional: string dari API berformat seperti contohmu:
-   * { "data": "{\"info\":[...],\"total_amount\":20000000}" }
-   * pass aja `paymentDetailString = that.data`
-   */
-  paymentDetailString?: string | null;
 };
 
 export default function PembayaranBCAWithDetail({
+  inboxId,
   bankName = "Bank BCA",
   accountNumber = "2443 24234 2343",
   accountOwner = "PT Fulusme",
   logoSrc = "/images/bank/bca-logo.png",
-  paymentDetailString = '{"info": [{"id": 190, "percentage": 1, "project_id": "3dae18d8-114d-448c-8a7d-26227142a29f", "template_id": 8, "fixed_amount": 0, "template_name": "Registrasi Fee", "calculated_amount": 10000000, "template_description": "1% Subject to minimum 10 Juta"}, {"id": 191, "percentage": 0, "project_id": "3dae18d8-114d-448c-8a7d-26227142a29f", "template_id": 9, "fixed_amount": 10000000, "template_name": "Deposit Notaris", "calculated_amount": 10000000, "template_description": "Uang kembali jika proyek Anda tidak tervalidasi"}, {"id": 192, "percentage": 0, "project_id": "3dae18d8-114d-448c-8a7d-26227142a29f", "template_id": 10, "fixed_amount": 0, "template_name": "Platform Fee", "calculated_amount": 0, "template_description": "Platform fee dapat didiskusikan dengan team Fulusme"}], "total_amount": 20000000}',
 }: Props) {
   /* ----------------- state umum ----------------- */
   const [copied, setCopied] = useState(false);
@@ -98,39 +146,53 @@ export default function PembayaranBCAWithDetail({
   const [isUploaded, setIsUploaded] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
 
-  const searchParams = useSearchParams();
-  const inboxId = searchParams.get("inboxId");
-  const priceParam = Number(searchParams.get("price") || "0") || 0;
-
-  /* ----------------- parse detail pembayaran ----------------- */
-  // Bisa juga dikirim via query ?detail=<encodeURIComponent(JSON-string)>
-  const detailParam = searchParams.get("detail");
+  const [loading, setLoading] = useState(true);
+  const [headerTitle, setHeaderTitle] = useState(
+    "Pembayaran Administrasi Proyek"
+  );
+  const [headerStatus, setHeaderStatus] = useState<string>("");
   const [detail, setDetail] = useState<PaymentDetail | null>(null);
 
+  const router = useRouter();
+
+  /* ----------------- fetch detail by id (axios + Bearer) ----------------- */
   useEffect(() => {
-    const tryParse = (raw: string | null | undefined): PaymentDetail | null => {
-      if (!raw) return null;
+    (async () => {
       try {
-        return JSON.parse(raw) as PaymentDetail;
-      } catch {
-        return null;
-      }
-    };
+        const user = getUser();
+        if (!user?.token) {
+          setLoading(false);
+          return;
+        }
+        const res = await axios.get(
+          `${API_BACKEND}/api/v1/inbox/detail/${inboxId}`,
+          {
+            headers: { Authorization: `Bearer ${user.token}` },
+          }
+        );
 
-    // 1) Prioritaskan props paymentDetailString (sudah berupa JSON string isi-nya)
-    let parsed = tryParse(paymentDetailString || "");
-    // 2) Jika tidak ada, coba ambil dari query ?detail= (URL-encoded)
-    if (!parsed && detailParam) {
-      try {
-        parsed = JSON.parse(decodeURIComponent(detailParam)) as PaymentDetail;
-      } catch {
-        parsed = null;
-      }
-    }
-    setDetail(parsed);
-  }, [paymentDetailString, detailParam]);
+        // Sesuaikan dengan envelope respons yang kamu kirim
+        const json = res.data;
+        setHeaderTitle(json?.data?.title ?? "Pembayaran Administrasi Proyek");
+        setHeaderStatus(json?.data?.status ?? "");
 
-  const totalPrice = detail?.total_amount ?? priceParam;
+        const parsed = parseDetail(json?.data?.data);
+        setDetail(parsed);
+      } catch (e) {
+        // opsi: tampilkan toast / swal
+        // console.error("Gagal fetch inbox detail:", e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [inboxId]);
+
+  const totalPrice =
+    detail?.total_amount ??
+    (detail?.info || []).reduce(
+      (s, it) => s + (Number(it.calculated_amount) || 0),
+      0
+    );
 
   /* ----------------- RHF ----------------- */
   const {
@@ -150,15 +212,13 @@ export default function PembayaranBCAWithDetail({
   const isPDF = useMemo(() => file && file.type === "application/pdf", [file]);
 
   useEffect(() => {
-    if (file && file.type.startsWith("image/")) {
+    if (file && file.type?.startsWith?.("image/")) {
       const url = URL.createObjectURL(file);
       setPreviewURL(url);
       return () => URL.revokeObjectURL(url);
     }
     setPreviewURL(null);
   }, [file]);
-
-  const router = useRouter();
 
   /* ----------------- helpers ----------------- */
   const copyRekening = () => {
@@ -188,64 +248,87 @@ export default function PembayaranBCAWithDetail({
 
   /* ----------------- submit ----------------- */
   const onSubmit = async ({ proof }: FormValues) => {
-    // 1) upload media
-    const form = new FormData();
-    form.append("folder", "web");
-    form.append("subfolder", "capbridge");
-    form.append("media", proof);
+    try {
+      const user = getUser();
+      if (!user?.token) return;
 
-    const resMedia = await axios.post(
-      `${API_BACKEND_MEDIA}/api/v1/media/upload`,
-      form,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
-    );
-    const fileUrl = resMedia.data?.data?.path;
+      // 1) upload media
+      const form = new FormData();
+      form.append("folder", "web");
+      form.append("subfolder", "capbridge");
+      form.append("media", proof);
 
-    // 2) simpan dokumen transaksi
-    const payload = {
-      path: fileUrl,
-      type: "transaction-payment",
-      inbox_id: inboxId,
-      total: totalPrice,
-      bank: bankName,
-      account_number: accountNumber.replace(/\s+/g, ""),
-      account_owner: accountOwner,
-      detail: detail ?? undefined, // kalau mau ikut kirim breakdown
-    };
+      const resMedia = await axios.post(
+        `${API_BACKEND_MEDIA}/api/v1/media/upload`,
+        form,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
 
-    const user = getUser();
-    const res = await axios.post(
-      `${API_BACKEND}/api/v1/document/transaction/payment`,
-      payload,
-      {
-        headers: { Authorization: `Bearer ${user?.token}` },
-      }
-    );
-    if (res.status !== 200)
-      throw new Error(res.statusText || "Gagal mengirim bukti pembayaran.");
+      const fileUrl = resMedia.data?.data?.path;
 
-    clearFile();
-    reset();
-    setIsUploaded(true);
+      // 2) simpan dokumen transaksi
+      const payload = {
+        path: fileUrl,
+        type: "transaction-payment",
+        inbox_id: inboxId,
+        total: totalPrice,
+        bank: bankName,
+        project_id: detail?.info[0].project_id,
+        account_number: accountNumber.replace(/\s+/g, ""),
+        account_owner: accountOwner,
+        detail: detail ?? undefined, // kirim breakdown agar backend punya salinannya
+      };
 
-    await Swal.fire({
-      icon: "success",
-      title: "Berhasil",
-      text: "Bukti pembayaran terkirim. Terima kasih!",
-      timer: 950,
-      timerProgressBar: true,
-    });
+      const res = await axios.post(
+        `${API_BACKEND}/api/v1/document/transaction/payment`,
+        payload,
+        { headers: { Authorization: `Bearer ${user.token}` } }
+      );
 
-    router.push("/transaction");
+      if (res.status !== 200)
+        throw new Error(res.statusText || "Gagal mengirim bukti pembayaran.");
+
+      clearFile();
+      reset();
+      setIsUploaded(true);
+
+      await Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Bukti pembayaran terkirim. Terima kasih!",
+        timer: 950,
+        timerProgressBar: true,
+      });
+
+      router.push("/transaction");
+    } catch (e: any) {
+      const msg =
+        e?.response?.data?.message ||
+        e?.message ||
+        "Gagal mengirim bukti pembayaran.";
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: msg,
+      });
+    }
   };
 
   /* ----------------- render ----------------- */
+  if (loading) {
+    return (
+      <div className="py-28 px-4 md:py-36 flex items-center justify-center">
+        <div className="rounded-xl border px-4 py-3 text-gray-600">
+          Memuat rincian pembayaran...
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="py-28 px-4 md:py-36 flex items-center justify-center bg-gray-100 p-4 md:p-8">
       <div className="bg-white shadow-lg rounded-2xl w-full max-w-3xl p-5 md:p-8">
-        {/* Header bank */}
+        {/* Header bank + meta */}
         <div className="flex items-center gap-3">
           <Image src={logoSrc} alt={bankName} width={56} height={56} />
           <div>
@@ -253,7 +336,12 @@ export default function PembayaranBCAWithDetail({
               {bankName}
             </h1>
             <p className="text-gray-500 text-sm md:text-base">
-              Pembayaran manual
+              {headerTitle}
+              {headerStatus ? (
+                <span className="ml-2 inline-flex items-center rounded-full border px-2 py-0.5 text-xs">
+                  {headerStatus}
+                </span>
+              ) : null}
             </p>
           </div>
         </div>
@@ -272,11 +360,17 @@ export default function PembayaranBCAWithDetail({
           />
         </div>
 
-        {/* STEP 1 — Info rekening + DETAIL PEMBAYARAN */}
+        {/* STEP 1 */}
         {step === 1 && (
           <div className="mt-6 space-y-6">
-            {/* DETAIL PEMBAYARAN (breakdown) */}
-            {detail && <DetailPembayaran detail={detail} />}
+            {/* DETAIL PEMBAYARAN */}
+            {detail ? (
+              <DetailPembayaran detail={detail} />
+            ) : (
+              <div className="rounded-xl border p-4 text-sm text-gray-600">
+                Rincian pembayaran belum tersedia.
+              </div>
+            )}
 
             {/* Kartu rekening */}
             <div className="bg-gray-50 border border-[#10565C] rounded-2xl p-5 space-y-3">
@@ -326,7 +420,6 @@ export default function PembayaranBCAWithDetail({
               </div>
             </div>
 
-            {/* NAVIGATION */}
             <div className="flex justify-end">
               <button
                 type="button"
@@ -340,13 +433,12 @@ export default function PembayaranBCAWithDetail({
           </div>
         )}
 
-        {/* STEP 2 — Upload bukti + ringkasan total */}
+        {/* STEP 2 */}
         {step === 2 && (
           <form
             onSubmit={handleSubmit(onSubmit)}
             className="mt-6 bg-gray-50 border border-[#10565C] rounded-2xl p-5 space-y-4"
           >
-            {/* Ringkasan total */}
             <div className="rounded-xl border border-[#10565C] bg-[#10565C]/5 px-4 py-3">
               <p className="text-xs text-gray-600">Total pembayaran</p>
               <p className="text-xl font-bold text-[#10565C]">
@@ -460,7 +552,7 @@ export default function PembayaranBCAWithDetail({
                     ref={inputRef}
                     type="file"
                     className="absolute inset-0 opacity-0 cursor-pointer"
-                    accept={(ACCEPT_TYPES as readonly string[]).join(",")}
+                    accept={ACCEPT_TYPES.join(",")}
                     onChange={(e) => {
                       const f = e.target.files?.[0];
                       if (f) field.onChange(f);
@@ -473,11 +565,10 @@ export default function PembayaranBCAWithDetail({
 
             {errors.proof && (
               <div className="text-sm text-red-600 bg-red-50 border border-red-100 px-3 py-2 rounded-lg">
-                {errors.proof.message as string}
+                {String(errors.proof.message || "")}
               </div>
             )}
 
-            {/* NAVIGATION */}
             <div className="mt-2 flex items-center justify-between gap-3">
               <button
                 type="button"

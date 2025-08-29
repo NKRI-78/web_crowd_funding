@@ -155,9 +155,7 @@ const Inbox = () => {
     if (inboxId && rawPaymentDetail) {
       const paymentDetail = JSON.parse(rawPaymentDetail);
       const administrationFee = paymentDetail.total_amount;
-      router.push(
-        `/payment-manual?inboxId=${inboxId}&price=${administrationFee}`
-      );
+      router.push(`/payment-manual/${inboxId}`);
     }
   };
 
