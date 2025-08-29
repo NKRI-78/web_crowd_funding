@@ -1,14 +1,14 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { kodeArea } from "../KodeWilayah";
 
-type PhoneValue = {
-  kode: string;
-  nomor: string;
+export type PhoneValue = {
+  kode: string; // misal "021"
+  nomor: string; // misal "12345678"
 };
 
 type PhoneInputProps = {
-  value: PhoneValue;
-  onChange: (val: PhoneValue) => void;
+  value?: PhoneValue;
+  onChange?: (val: PhoneValue) => void;
 };
 
 const flattenKodeArea = Object.entries(kodeArea).flatMap(
@@ -55,9 +55,6 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({ value, onChange }) => {
 
   return (
     <div className="w-full">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        Phone number
-      </label>
       <div className="flex border rounded-lg">
         {/* Dropdown kode area */}
         <div className="relative" ref={dropdownRef}>
