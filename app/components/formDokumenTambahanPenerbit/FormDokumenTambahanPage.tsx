@@ -20,7 +20,7 @@ import {
 import Swal from "sweetalert2";
 import axios from "axios";
 import { API_BACKEND } from "@/app/utils/constant";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const getUserToken = (): string => {
   const userCookie = Cookies.get("user");
@@ -32,6 +32,8 @@ const FORM_CACHE_KEY = "formDokumenPelengkapPenerbitCache";
 
 const FormDokumenTambahanPage: React.FC = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get("projectId");
 
   const skipCacheWrite = useRef(false);
 
@@ -84,64 +86,66 @@ const FormDokumenTambahanPage: React.FC = () => {
   const onSubmit: SubmitHandler<FormDokumenPelengkapPenerbitSchema> = async (
     data
   ) => {
-    try {
-      const payload = {
-        project_id: "3dae18d8-114d-448c-8a7d-26227142a29f",
-        skd: data.suratKeteranganDomisili,
-        rab: data.rab,
-        cv: data.shortCvManajemen,
-        dokumen_perizinan_lainnya: data.dokumenPerizinanLainnya,
-        video_profil_perusahaan: data.videoProfilPerusahaan,
-        project_summary: data.projectSummary,
-        project_pendapatan: data.proyeksiPendapatan,
-        timeline_pekerjaan: data.timelinePekerjaan,
-        laporan_pajak_tahunan: data.laporanPajakTahunan,
-        daftar_pekerjaan: data.listPekerjaan2TahunTerakhir,
-        daftar_supplier: data.listDataSupplier,
-        daftar_piutang: data.daftarPiutang,
-        foto_karyawan_kantor: data.fotoKantorKaryawan.map((url) => ({
-          path: url,
-        })),
-        foto_kegiatan_usaha: data.fotoKegiatanUsaha.map((url) => ({
-          path: url,
-        })),
-      };
+    if (projectId) {
+      try {
+        const payload = {
+          project_id: projectId,
+          skd: data.suratKeteranganDomisili,
+          rab: data.rab,
+          cv: data.shortCvManajemen,
+          dokumen_perizinan_lainnya: data.dokumenPerizinanLainnya,
+          video_profil_perusahaan: data.videoProfilPerusahaan,
+          project_summary: data.projectSummary,
+          project_pendapatan: data.proyeksiPendapatan,
+          timeline_pekerjaan: data.timelinePekerjaan,
+          laporan_pajak_tahunan: data.laporanPajakTahunan,
+          daftar_pekerjaan: data.listPekerjaan2TahunTerakhir,
+          daftar_supplier: data.listDataSupplier,
+          daftar_piutang: data.daftarPiutang,
+          foto_karyawan_kantor: data.fotoKantorKaryawan.map((url) => ({
+            path: url,
+          })),
+          foto_kegiatan_usaha: data.fotoKegiatanUsaha.map((url) => ({
+            path: url,
+          })),
+        };
 
-      const token = getUserToken();
-      await axios.post(
-        `${API_BACKEND}/api/v1/document/verify/project`,
-        payload,
-        {
-          headers: { Authorization: `Bearer ${token}` },
+        const token = getUserToken();
+        await axios.post(
+          `${API_BACKEND}/api/v1/document/verify/project`,
+          payload,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const modalResult = await Swal.fire({
+          title: "Dokumen Berhasil Diupload",
+          text: "Dokumen tambahan Anda telah kami terima. Mohon menunggu hingga 2x24 jam untuk mendapatkan informasi selanjutnya.",
+          icon: "success",
+        });
+
+        if (
+          modalResult.isDismissed ||
+          modalResult.isConfirmed ||
+          modalResult.isDenied
+        ) {
+          localStorage.removeItem(FORM_CACHE_KEY);
+          skipCacheWrite.current = true;
+          reset(defaultValues);
+          console.log("FORM_CACHE_KEY dihapus = " + FORM_CACHE_KEY);
+
+          router.back();
         }
-      );
-
-      const modalResult = await Swal.fire({
-        title: "Dokumen Berhasil Diupload",
-        text: "Dokumen tambahan Anda telah kami terima. Mohon menunggu hingga 2x24 jam untuk mendapatkan informasi selanjutnya.",
-        icon: "success",
-      });
-
-      if (
-        modalResult.isDismissed ||
-        modalResult.isConfirmed ||
-        modalResult.isDenied
-      ) {
-        localStorage.removeItem(FORM_CACHE_KEY);
-        skipCacheWrite.current = true;
-        reset(defaultValues);
-        console.log("FORM_CACHE_KEY dihapus = " + FORM_CACHE_KEY);
-
-        router.back();
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Gagal Membuat Proyek",
+          text: `${error}`,
+          timer: 3000,
+          timerProgressBar: true,
+        });
       }
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Gagal Membuat Proyek",
-        text: `${error}`,
-        timer: 3000,
-        timerProgressBar: true,
-      });
     }
   };
 

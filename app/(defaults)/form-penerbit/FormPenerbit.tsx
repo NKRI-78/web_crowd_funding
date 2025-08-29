@@ -2,7 +2,6 @@
 
 import {
   Controller,
-  FormProvider,
   Path,
   Resolver,
   useFieldArray,
@@ -13,21 +12,17 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import FileUpload from "@/app/helper/FileUpload";
 import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { fetchProvinces } from "@/app/lib/fetchWilayah";
 import FormAlamat from "./FormAlamat";
 import Swal from "sweetalert2";
-import Select from "react-select";
 import { ProfileUpdate } from "./UpdateProfileInterface";
-import UpdateRing from "@/app/components/inputFormPenerbit/_component/UpdateRing";
-import NPWPUploader from "./components/UploadNPWP";
-import { JENIS_USAHA_OPTIONS } from "@/app/utils/jenisUsaha";
 import RHFSelect from "./components/TypeBussiness";
 import RHFSelectGeneric from "./components/RHFSelectGeneric";
 import { fetchJenisUsaha, TypeOption } from "@/app/utils/fetchJenisUsaha";
 import { fetchJenisPerusahaan } from "@/app/utils/fetchJenisPerusahaan";
 import { fetchStatusCompany } from "@/app/utils/fetchStatusPerushaan";
+import { PhoneInput } from "./components/PhoneInput";
 
 export const alamatSchema = z.object({
   name: z.string().optional(),
@@ -604,6 +599,24 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
               className="border rounded p-2 w-full placeholder:text-sm"
               placeholder="Masukkan Nomor Telepon Perusahaan"
             />
+            {/* <Controller
+              control={control}
+              name="noPhoneCompany"
+              render={({ field }) => {
+                return (
+                  <PhoneInput
+                    value={{
+                      kode: field.,
+                      nomor: field.value.,
+                    }}
+                    onChange={(val) => {
+                      field.onChange(val);
+                    }}
+                  />
+                );
+              }}
+            /> */}
+
             {errors.noPhoneCompany && (
               <p className="text-red-500 text-sm mt-1">
                 {errors.noPhoneCompany.message}

@@ -472,10 +472,6 @@ const SukukClient = ({ id }: Props) => {
                 <p className="text-xs"> {formatRupiah(project?.unit_total)} </p>
               </div>
               <div className="flex flex-wrap my-2 justify-between">
-                <p className="text-xs text-[#677AB9]">Periode Pengembalian:</p>
-                <p className="text-xs">{project?.interest_payment_schedule}</p>
-              </div>
-              <div className="flex flex-wrap my-2 justify-between">
                 <p className="text-xs text-[#677AB9]">Tenor:</p>
                 <p className="text-xs">{project?.time_periode}</p>
               </div>
@@ -486,12 +482,6 @@ const SukukClient = ({ id }: Props) => {
             </div>
 
             <div className="flex flex-wrap justify-evenly gap-4 mt-4 text-sm">
-              <button
-                onClick={() => setShowModal(true)}
-                className="bg-white text-xs text-black border px-4 py-2 rounded-md"
-              >
-                Simulasi
-              </button>
               <button
                 className="bg-white text-xs text-black border px-4 py-2 rounded-md"
                 onClick={() => {
@@ -512,9 +502,9 @@ const SukukClient = ({ id }: Props) => {
               </button>
               <button
                 className="bg-white text-xs text-black border px-4 py-2 rounded-md"
-                onClick={() => window.open(project?.doc.path, "_blank")}
+                onClick={() => {}}
               >
-                Proposal
+                Prospektus
               </button>
               <button
                 onClick={() => setShowLocationModal(true)}

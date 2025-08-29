@@ -120,7 +120,14 @@ export default function RegisterForm({
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <input
-                {...register("name")}
+                {...register("name", {
+                  onChange: (e) => {
+                    const value = e.target.value
+                      .toLowerCase()
+                      .replace(/\b\w/g, (char: string) => char.toUpperCase());
+                    e.target.value = value;
+                  },
+                })}
                 type="text"
                 placeholder="Nama Lengkap"
                 className="w-full border border-gray-300 px-4 py-2 rounded"

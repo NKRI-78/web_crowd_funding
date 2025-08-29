@@ -125,6 +125,7 @@ export const createProjectPenerbitSchema = z
     path: ["lokasiProyek"],
   })
   .superRefine((data, ctx) => {
+    // validasi modal proyek < dana
     if (data.modalProyek < data.danaYangDibutuhkan) {
       ctx.addIssue({
         code: "custom",
@@ -133,6 +134,21 @@ export const createProjectPenerbitSchema = z
           "id-ID"
         )})`,
       });
+    }
+
+    // validasi tanggal selesai >= tanggal mulai
+    if (data.tanggalMulaiProyek && data.tanggalSelesaiProyek) {
+      const start = new Date(data.tanggalMulaiProyek);
+      const end = new Date(data.tanggalSelesaiProyek);
+
+      if (end < start) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["tanggalSelesaiProyek"],
+          message:
+            "Tanggal Selesai Proyek tidak boleh lebih awal dari Tanggal Mulai Proyek",
+        });
+      }
     }
   });
 
