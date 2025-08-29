@@ -195,7 +195,8 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
         didirikan: draftParsed.establishedYear,
         site: draftParsed.webCompany,
         email: draftParsed.emailCompany,
-        phone: draftParsed.noPhoneCompany,
+        phone:
+          draftParsed.noPhoneCompany.kode + draftParsed.noPhoneCompany.nomor,
         bank_name: draftParsed.namaBank,
         bank_account: draftParsed.nomorRekening,
         bank_owner: draftParsed.namaPemilik,

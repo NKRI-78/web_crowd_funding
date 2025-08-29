@@ -108,10 +108,18 @@ export const schema = z
       .trim()
       .min(1, "Nama pemilik wajib diisi"),
 
-    noPhoneCompany: z
-      .string({ required_error: "Nomor Telepon Perusahaan wajib diisi" })
-      .trim()
-      .min(1, "Nomor Telepon Perusahaan wajib diisi"),
+    noPhoneCompany: z.object({
+      kode: z
+        .string()
+        .min(1, "Kode wilayah wajib dipilih")
+        .regex(/^\+\d+$/, "Format kode wilayah tidak valid"), // contoh: +62
+
+      nomor: z
+        .string({ required_error: "Nomor Telepon Perusahaan wajib diisi" })
+        .trim()
+        .min(6, "Nomor Telepon minimal 6 digit")
+        .regex(/^\d+$/, "Nomor Telepon hanya boleh berisi angka"),
+    }),
 
     webCompany: z
       .string({ required_error: "Situs Perusahaan wajib diisi" })
@@ -221,7 +229,7 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
     mode: "onBlur",
     defaultValues: {
       sameAsCompany: false,
-      noPhoneCompany: "",
+      noPhoneCompany: undefined,
       webCompany: "",
       emailCompany: "",
       namaBank: "",
@@ -433,11 +441,6 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
       shouldValidate: true,
     });
   };
-  const phoneNumber: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    setValue("noPhoneCompany", e.target.value.replace(/\D/g, "").slice(0, 13), {
-      shouldValidate: true,
-    });
-  };
 
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: currentYear - 1950 + 1 }, (_, i) => {
@@ -590,7 +593,7 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
               Nomor Telepon Perusahaan{" "}
               <span className="text-red-500 ml-1">*</span>
             </label>
-            <input
+            {/* <input
               {...register("noPhoneCompany")}
               type="text"
               inputMode="numeric"
@@ -598,24 +601,21 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
               onChange={phoneNumber}
               className="border rounded p-2 w-full placeholder:text-sm"
               placeholder="Masukkan Nomor Telepon Perusahaan"
-            />
-            {/* <Controller
+            /> */}
+            <Controller
               control={control}
               name="noPhoneCompany"
               render={({ field }) => {
                 return (
                   <PhoneInput
-                    value={{
-                      kode: field.,
-                      nomor: field.value.,
-                    }}
+                    value={field.value}
                     onChange={(val) => {
                       field.onChange(val);
                     }}
                   />
                 );
               }}
-            /> */}
+            />
 
             {errors.noPhoneCompany && (
               <p className="text-red-500 text-sm mt-1">
