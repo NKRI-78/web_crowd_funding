@@ -57,8 +57,6 @@ const Inbox = () => {
     }
   }
 
-  // is update document ketika field_3 berisi key "reupload-document" dari admin
-  const isUpdateDocument = selectedInbox?.field_3 === "reupload-document";
   // update formKey liat: "app\(defaults)\form-penerbit\UpdateProfileInterface.ts" untuk detail key nya
   // admin mengirim key melalui field_4 yang nanti dicocokan dengan formKey
   const updateKey = selectedInbox?.field_4;
@@ -151,6 +149,7 @@ const Inbox = () => {
     // perlu dikonversi dulu ke json
     const rawPaymentDetail = inbox.data;
     const inboxId = inbox.id;
+    const projectId = inbox.field_2;
 
     if (inboxId && rawPaymentDetail) {
       const paymentDetail = JSON.parse(rawPaymentDetail);
@@ -159,15 +158,30 @@ const Inbox = () => {
     }
   };
 
+  //* navigate to additional document
+  const navigateToAddAditionalDocument = (projectId: string | undefined) => {
+    if (projectId) {
+      router.push(`/dashboard/dokumen-pelengkap?projectId=${projectId}`);
+    }
+  };
+
   //* handle inbox on click
   const handleInboxOnClick = (inbox: InboxResponse) => {
     markAsRead(inbox.id);
 
+    // is update document ketika field_3 berisi key "reupload-document" dari admin
+    const isUpdateDocument = inbox.field_3 === "reupload-document";
+    console.log(inbox.field_3);
     if (isUpdateDocument) {
       setSelectedInbox(inbox);
       setOpenDialog(true);
     } else {
-      navigateToBillingInfo(inbox);
+      console.log(inbox.field_3 === "additional-document");
+      if (inbox.field_3 === "additional-document") {
+        navigateToAddAditionalDocument(inbox.field_2);
+      } else {
+        navigateToBillingInfo(inbox);
+      }
     }
   };
 

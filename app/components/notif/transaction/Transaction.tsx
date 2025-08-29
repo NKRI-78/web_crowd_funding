@@ -72,11 +72,20 @@ const Transaction = () => {
   //* handle card on click
   const handleCardOnClick = (transaction: InboxResponse) => {
     markAsRead(transaction.id);
-    Swal.fire({
-      icon: "info",
-      title: "Bukti Transfer Telah Diterima",
-      text: "Terima kasih, bukti transfer Anda telah kami terima. Mohon menunggu hingga 2x24 jam untuk mendapatkan informasi selanjutnya melalui Inbox.",
-    });
+
+    if (transaction.status === "PAID") {
+      Swal.fire({
+        icon: "success",
+        title: "Pembayaran Berhasil Diverifikasi",
+        text: "Terima kasih, pembayaran Anda sudah berhasil diverifikasi. Silakan cek Inbox untuk informasi selanjutnya.",
+      });
+    } else {
+      Swal.fire({
+        icon: "info",
+        title: "Bukti Transfer Telah Diterima",
+        text: "Terima kasih, bukti transfer Anda telah kami terima. Mohon menunggu hingga 2x24 jam untuk mendapatkan informasi selanjutnya melalui Inbox.",
+      });
+    }
   };
 
   return (

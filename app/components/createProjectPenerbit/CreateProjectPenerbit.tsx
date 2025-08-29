@@ -433,14 +433,7 @@ const CreateProjectPenerbit: React.FC = () => {
                       options={{
                         dateFormat: "j F Y",
                         allowInput: false,
-                        minDate: "today",
                         locale: Indonesian,
-                        defaultDate: new Date(new Date().getFullYear(), 0, 1),
-                        onReady: (selectedDates, dateStr, instance) => {
-                          instance.jumpToDate(
-                            new Date(new Date().getFullYear(), 0, 1)
-                          );
-                        },
                       }}
                       className="border p-2 w-full rounded placeholder:text-sm focus:border-gray-400"
                       onChange={(dates) => {
@@ -472,9 +465,6 @@ const CreateProjectPenerbit: React.FC = () => {
                         dateFormat: "j F Y",
                         allowInput: false,
                         locale: Indonesian,
-                        minDate: getValues().tanggalMulaiProyek
-                          ? new Date(getValues().tanggalMulaiProyek)
-                          : "today",
                       }}
                       className="border p-2 w-full rounded placeholder:text-sm focus:border-gray-400"
                       onChange={(dates) => {

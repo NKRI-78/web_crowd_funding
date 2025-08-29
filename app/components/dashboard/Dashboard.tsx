@@ -2,52 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import CardStats from "../card-stats/CardStats";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { Doughnut } from "react-chartjs-2";
-import Cookies from "js-cookie";
-import useRole from "@/app/hooks/useRole";
-import { EmitenProjectModel } from "./PenerbitInterface";
+import { ProyekPenerbitResponse } from "./PenerbitInterface";
 import { ProjectCard } from "../project/Project";
-import ProgressBar from "@/app/(defaults)/sukuk/components/ProgressBar";
-import { formatPriceOrEmpty } from "@/app/lib/price";
 import { useRouter } from "next/navigation";
-import StepStatus from "./StatusBar";
 import { API_BACKEND } from "@/app/utils/constant";
 import { IProjectData } from "@/app/interface/IProject";
-import { getAllProject } from "@/actions/GetAllProject";
 import { FileClock } from "lucide-react";
 import FormButton from "../inputFormPenerbit/_component/FormButton";
-import { Stepper, Step } from "react-form-stepper";
-
-ChartJS.register(ArcElement, Tooltip, Legend);
-
-const data = {
-  labels: ["Saham", "Obligasi"],
-  datasets: [
-    {
-      data: [0, 100],
-      backgroundColor: ["#2cd4d9", "#ffac33"],
-      borderWidth: 0,
-    },
-  ],
-};
-
-const options = {
-  cutout: "70%",
-  plugins: {
-    legend: {
-      display: false,
-    },
-    tooltip: {
-      callbacks: {
-        label: (context: any) => {
-          return `${context.label}: ${context.parsed}%`;
-        },
-      },
-    },
-  },
-};
+import { Stepper } from "react-form-stepper";
+import { getUser } from "@/app/lib/auth";
+import Swal from "sweetalert2";
 
 interface ProfileData {
   fullname: string;
@@ -61,102 +25,22 @@ interface ProfileData {
   position: string;
   verify_emiten: boolean;
   company: {
-    projects: Project[];
+    projects: ProyekPenerbitResponse[];
   };
-}
-
-interface Project {
-  id: number;
-  name: string;
-  status: string;
 }
 
 const Dashboard: React.FC = () => {
   const router = useRouter();
+  const user = getUser();
+
   const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [emitenProjects, setEmitenProjects] = useState<EmitenProjectModel[]>(
-    []
-  );
-  const role = useRole();
-  const userCookie = Cookies.get("user");
-  const user = userCookie ? JSON.parse(userCookie) : null;
-  const [currentStep, setCurrentStep] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [steps, setSteps] = useState<string[]>([]);
-  const [projectStatus, setProjectStatus] = useState<string>("");
   const [project, seProject] = useState<IProjectData[]>([]);
 
-  useEffect(() => {
-    const fetchTopVideos = async () => {
-      setIsLoading(true);
-      const res = await getAllProject();
-      seProject(res?.data ?? []);
-      setIsLoading(false);
-    };
+  // untuk step timeline project
+  const [currentStep, setCurrentStep] = useState(0);
 
-    fetchTopVideos();
-  }, []);
-
-  useEffect(() => {
-    try {
-      if (user.token) {
-        setToken(user.token);
-      }
-    } catch (err) {
-      console.error("Failed to parse user cookie", err);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!token) return;
-
-    axios
-      .get(`${API_BACKEND}/api/v1/profile`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((res) => {
-        setProfile(res.data.data);
-        console.log(
-          "res.data.data.company.projects ? " + res.data.data.company.projects
-        );
-        if (res.data.data.company.projects) {
-          setEmitenProjects(res.data["data"].company.projects);
-        } else {
-          setEmitenProjects([]);
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to fetch profile", err);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, [token]);
-
-  // useEffect(() => {
-  //   if (user.token) {
-  //     axios
-  //       .get(`${API_BACKEND}/api/v1/project-by-emiten/list`, {
-  //         headers: {
-  //           Authorization: `Bearer ${user.token}`,
-  //         },
-  //       })
-  //       .then((res) => {
-  //         setEmitenProjects(res.data["data"]);
-  //       })
-  //       .catch((err) => {
-  //         console.error("Failed to fetch profile", err);
-  //       })
-  //       .finally(() => {
-  //         setIsLoading(false);
-  //       });
-  //   }
-  // }, [role, token]);
-
-  console.log(emitenProjects, "emiten project");
+  // untuk loading state
+  const [isLoading, setIsLoading] = useState(true);
 
   const statusSteps: Record<string, number> = {
     UNVERIFIED: 0,
@@ -169,56 +53,51 @@ const Dashboard: React.FC = () => {
     PUBLISH: 3,
   };
 
-  const baseSteps = [
-    "Data Diproses",
-    "Review Proyek",
-    "Pembayaran Administrasi",
-    "Keputusan Proyek",
-  ];
+  //* initstate
+  useEffect(() => {
+    const token = user?.token;
+    if (token) {
+      fetchProfile(token);
+    }
+  }, []);
 
-  // const statusLabels: Record<string, string> = {
-  //   PENDING: "Data Diproses",
-  //   APPROVED: "Review Project",
-  //   REJECTED: "Ditolak",
-  //   UNPAID: "Belum Dibayar",
-  //   PAID: "Pembayaran Administrasi",
-  //   PUBLISH: "Project Tayang",
-  // };
-
+  //* set timeline project by status
   useEffect(() => {
     const statusProject = profile?.company?.projects
       ? profile?.company?.projects?.[0]?.status
       : profile?.verify_emiten
       ? "VERIFIED"
       : "UNVERIFIED";
-    // const statusProject = "APPROVED" as string; //default progres bar
+
     setCurrentStep(statusSteps[statusProject]);
-
-    // const stepsArray = Object.entries(statusSteps)
-    //   .sort((a, b) => a[1] - b[1])
-    //   .map(([status]) => statusLabels[status] ?? status);
-
-    // setSteps(stepsArray);
-
-    // if (statusProject) {
-    //   const updatedSteps = [...baseSteps];
-
-    //   if (statusProject === "REJECTED") {
-    //     updatedSteps[1] = "Ditolak";
-    //   } else if (statusProject === "APPROVED") {
-    //     updatedSteps[1] = "Disetujui";
-    //   }
-
-    //   if (statusProject === "UNPAID") {
-    //     updatedSteps[2] = "Belum Dibayar";
-    //   } else if (statusProject === "PAID" || statusProject === "PUBLISH") {
-    //     updatedSteps[2] = "Sudah Dibayar";
-    //   }
-
-    //   setSteps(updatedSteps);
-    //   setCurrentStep(statusSteps[statusProject]);
-    // }
   }, [profile]);
+
+  //* get profile
+  const fetchProfile = async (token: string) => {
+    try {
+      const res = await axios.get(`${API_BACKEND}/api/v1/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const profileData = res.data.data;
+      setProfile(profileData);
+      setIsLoading(false);
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Mendapatkan Profil",
+        text: "Terjadi kesalahan saat mengambil data profil Anda. Silakan coba lagi.",
+        confirmButtonText: "Coba Lagi 🔄",
+        allowOutsideClick: false,
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetchProfile(token);
+        }
+      });
+    }
+  };
 
   return (
     <section className="py-28 px-4 md:px-12">
@@ -289,7 +168,7 @@ const Dashboard: React.FC = () => {
               </div>
             )}
 
-            {user.role === "emiten" && (
+            {user?.role === "emiten" && (
               <div className="shadow-md rounded-2xl bg-white w-full p-10 md:py-12">
                 <h2 className="font-bold text-lg text-black mb-5 -mt-9 md:-mt-6 md:mb-4 text-start">
                   Status Proyek
@@ -335,93 +214,65 @@ const Dashboard: React.FC = () => {
               </div>
             )}
 
-            {user.role === "emiten" && emitenProjects.length > 0 && (
-              <div>
-                <div className="my-2">
-                  <h2 className="font-bold text-lg text-black">Proyek Saya</h2>
-                </div>
+            {user?.role === "emiten" &&
+              profile!.company.projects?.length > 0 && (
+                <div>
+                  <div className="my-3">
+                    <h2 className="font-bold text-lg text-black">
+                      Proyek Saya
+                    </h2>
+                  </div>
 
-                <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {emitenProjects.map((project) => {
-                    return (
-                      <div
-                        key={project.id}
-                        onClick={() => {
-                          router.push(`/sukuk/${project.id}`);
-                        }}
-                        className="rounded-xl cursor-pointer overflow-hidden shadow border"
-                      >
-                        <div className="relative h-40">
-                          <img
-                            src={
-                              project.media && project.media.length !== 0
-                                ? project.media[0].path
-                                : "/images/img.jpg"
-                            }
-                            alt={project.title}
-                            className="object-cover w-full h-full"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.onerror = null; // mencegah infinite loop
-                              target.src = "/images/img.jpg";
-                            }}
-                          />
+                  <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {profile?.company.projects.map((project) => {
+                      return (
+                        <div
+                          key={project.id}
+                          className="rounded-xl overflow-hidden shadow border"
+                        >
+                          <div className="relative h-40">
+                            <img
+                              src={
+                                project.media && project.media.length !== 0
+                                  ? project.media[0].path
+                                  : "/images/img.jpg"
+                              }
+                              alt={project.title}
+                              className="object-cover w-full h-full"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.onerror = null; // mencegah infinite loop
+                                target.src = "/images/img.jpg";
+                              }}
+                            />
 
-                          <div className="absolute inset-0 bg-opacity-60" />
+                            <div className="absolute inset-0 bg-[#10565C]/40" />
+
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="w-20 h-20 bg-white/35 rounded-full flex items-center justify-center">
+                                <span className="text-white text-sm font-semibold">
+                                  Draft
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="p-4 bg-[#10565C]  h-full">
+                            <p className="font-semibold text-white text-sm text-start mb-2">
+                              {project.title}
+                            </p>
+                            <p className="text-white text-xs text-start line-clamp-5">
+                              {project.deskripsi}
+                            </p>
+                          </div>
                         </div>
-
-                        <div className="p-4 bg-gray-100 h-full">
-                          <p className="font-semibold text-sm text-start mb-2">
-                            {project.title}
-                          </p>
-                          <ul className="text-xs my-4 space-y-1">
-                            <li className="flex justify-between font-bold">
-                              <span className="text-black">Dana Terkumpul</span>
-                              <span className="text-black">{project.goal}</span>
-                            </li>
-                            <li>
-                              <ProgressBar percentage={0} />
-                            </li>
-                            <li className="flex justify-between">
-                              <span className="text-black">Jenis Obligasi</span>
-                              <span className="text-black capitalize">
-                                {project.jenis_projek}
-                              </span>
-                            </li>
-                            <li className="flex justify-between">
-                              <span className="text-black">Nilai Nominal</span>
-                              <span className="text-black">
-                                {project.jumlah_minimal
-                                  ? formatPriceOrEmpty(
-                                      project.jumlah_minimal,
-                                      "id-ID",
-                                      "IDR"
-                                    )
-                                  : project.jumlah_minimal}
-                              </span>
-                            </li>
-                            <li className="flex justify-between">
-                              <span className="text-black">Jangka Waktu</span>
-                              <span className="text-black">
-                                {project.jangka_waktu}
-                              </span>
-                            </li>
-                            <li className="flex justify-between">
-                              <span className="text-black">Tingkat Bunga</span>
-                              <span className="text-black">
-                                {project.tingkat_bunga}
-                              </span>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {user.role === "investor" && (
+            {user?.role === "investor" && (
               <div>
                 <h3 className="text-start text-black text-2xl mb-4 mt-1 font-bold">
                   Proyek Sedang Berjalan
