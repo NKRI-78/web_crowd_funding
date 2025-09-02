@@ -55,6 +55,36 @@ const FormPemodalPerusahaan: React.FC<FormPemodalPerusahaanProps> = ({
   const [errors, setErrors] = useState<ErrorSchema>({});
   const router = useRouter();
 
+  //* load profile
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const userData = localStorage.getItem("user");
+        if (!userData) return;
+
+        const userParsed = JSON.parse(userData);
+
+        const res = await axios.get(`${API_BACKEND}/api/v1/profile`, {
+          headers: {
+            Authorization: `Bearer ${userParsed.token}`,
+          },
+        });
+
+        const profile = res.data?.data;
+        if (profile?.fullname) {
+          setFormFields((prev) => ({
+            ...prev,
+            fullname: profile.fullname,
+          }));
+        }
+      } catch (error: any) {
+        console.error("Gagal fetch profile:", error.response?.data || error);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
   //* handle submit
   const handleSubmit = async () => {
     console.log("Form data saat klik Lanjutkan:", formFields);
@@ -92,7 +122,7 @@ const FormPemodalPerusahaan: React.FC<FormPemodalPerusahaanProps> = ({
           await Swal.fire({
             icon: "success",
             title: "Data berhasil dikirim",
-            text: "Data Anda telah berhasil dikirim.",
+            text: "Data Anda telah tersimpan. Silakan lanjutkan untuk mengisi form berikutnya.",
             timer: 3000,
             timerProgressBar: true,
           });
@@ -249,12 +279,8 @@ const FormPemodalPerusahaan: React.FC<FormPemodalPerusahaanProps> = ({
           <TextField
             placeholder="Nama Lengkap"
             value={formFields.fullname}
-            onChange={(val) => {
-              setFormFields({ ...formFields, fullname: val.target.value });
-              if (val) {
-                setErrors({ ...errors, fullname: "" });
-              }
-            }}
+            onChange={() => {}}
+            disabled
             errorText={errors.fullname}
           />
 

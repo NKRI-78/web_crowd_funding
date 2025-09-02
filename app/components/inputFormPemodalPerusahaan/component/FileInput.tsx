@@ -91,7 +91,7 @@ const FileInput: React.FC<FileInputProps> = ({
         className={`inline-flex items-center gap-2 px-2 md:px-6 py-2 rounded-lg cursor-pointer font-semibold text-[12px] text-white bg-gray-700 hover:bg-gray-800`}
       >
         <FileText size={13} />
-        {placeholder ?? "Upload Dokumen"}
+        {fileUrl ? "Update Dokumen" : placeholder ?? "Upload Dokumen"}
         <input
           type="file"
           className="hidden"
