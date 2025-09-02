@@ -11,10 +11,11 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { getUser } from "@/app/lib/auth";
-import Cookies from "js-cookie";
+import { useSearchParams } from "next/navigation";
+import UpdateRing from "@/app/components/inputFormPemodal/component/UpdateRing";
 
 interface FormSchema {
-  photo: File | null;
+  photo: string;
   fullname: string;
   jabatan: string;
   fileKtp: string;
@@ -31,15 +32,16 @@ interface ErrorSchema {
   suratKuasa?: string;
 }
 
-interface ProfileData {
-  fullname: string;
-  avatar: string;
-  last_education: string;
-  gender: string;
-  status_marital: string;
-  address_detail: string;
-  occupation: string;
-}
+const CACHE_KEY = "utusanPenerbitCache";
+
+const getFormCache = (): FormSchema | null => {
+  const cache = localStorage.getItem(CACHE_KEY);
+  if (cache) {
+    return JSON.parse(cache) as FormSchema;
+  } else {
+    return null;
+  }
+};
 
 interface FormUtusanPenerbitProps {
   onSubmit: () => void;
@@ -48,81 +50,63 @@ interface FormUtusanPenerbitProps {
 const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
   onSubmit,
 }) => {
+  const searchParams = useSearchParams();
+  const isUpdate = searchParams.get("update");
+  const form = searchParams.get("form");
+
   const [formFields, setFormFields] = useState<FormSchema>({
-    photo: null,
+    photo: "",
     fullname: "",
     jabatan: "",
     fileKtp: "",
     noKtp: "",
     suratKuasa: "",
   });
-  const [profile, setProfile] = useState<ProfileData | null>(null);
 
   const [errors, setErrors] = useState<ErrorSchema>({});
-  const [fullnameEdited, setFullnameEdited] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const user = getUser();
 
   //* handle submit
   const handleSubmit = async () => {
     setLoading(true);
 
-    // 🚨 langsung cek selfie
-    if (!formFields.photo) {
-      setErrors((prev) => ({ ...prev, photo: "Anda belum mengambil foto" }));
-      Swal.fire({
-        icon: "warning",
-        title: "Foto Selfie wajib diambil",
-        text: "Silakan ambil foto selfie sebelum melanjutkan.",
-        timer: 4000,
-        timerProgressBar: true,
-      });
-      setLoading(false);
-      return; // stop submit
-    }
-
     const isValid = validateForm();
-    if (!isValid) {
-      setLoading(false);
-      return;
-    }
-    if (isValid) {
+    if (isValid && user) {
       try {
-        const userData = Cookies.get("user");
-        if (userData) {
-          const userParsed = JSON.parse(userData);
-          const urlPhotoSelfie = await uploadFotoSelfie(formFields.photo!);
+        const urlPhotoSelfie = await uploadFotoSelfie(formFields.photo!);
 
-          const payload = {
-            fullname: formFields.fullname,
-            photo_selfie: urlPhotoSelfie,
-            jabatan: formFields.jabatan,
-            photo_ktp: formFields.fileKtp,
-            no_ktp: formFields.noKtp,
-            surat_kuasa: formFields.suratKuasa,
-            no_npwp: "99",
-          };
+        const payload = {
+          fullname: formFields.fullname,
+          photo_selfie: urlPhotoSelfie,
+          jabatan: formFields.jabatan,
+          photo_ktp: formFields.fileKtp,
+          no_ktp: formFields.noKtp,
+          surat_kuasa: formFields.suratKuasa,
+          no_npwp: "99",
+        };
 
-          await axios.post(
-            `${API_BACKEND}/api/v1/auth/register-as-emiten`,
-            payload,
-            {
-              headers: {
-                Authorization: `Bearer ${userParsed.token}`,
-              },
-            }
-          );
+        await axios.post(
+          `${API_BACKEND}/api/v1/auth/register-as-emiten`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+            },
+          }
+        );
 
-          await Swal.fire({
-            icon: "success",
-            title: "Berhasil",
-            text: "Data berhasil disimpan.",
-            timer: 950,
-            timerProgressBar: true,
-          });
+        await Swal.fire({
+          icon: "success",
+          title: "Berhasil",
+          text: "Data berhasil disimpan.",
+          timer: 950,
+          timerProgressBar: true,
+        });
 
-          onSubmit();
-          localStorage.removeItem("utusanPenerbitCache");
-        }
+        onSubmit();
+        localStorage.removeItem("utusanPenerbitCache");
       } catch (error: any) {
         Swal.fire({
           icon: "error",
@@ -141,87 +125,68 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
     }
   };
 
-  const user = getUser();
+  //* inject fullname to field
+  // mendapatkan data user untuk didambil value fullname-nya kemudian di-inject kedalam localstorage
   useEffect(() => {
-    if (!user?.token) return;
+    if (user) {
+      const fetchAndSetUser = async () => {
+        const res = await axios.get(`${API_BACKEND}/api/v1/profile`, {
+          headers: {
+            Authorization: `Bearer ${user?.token}`,
+          },
+        });
 
-    axios
-      .get("https://api-capbridge.langitdigital78.com/api/v1/profile", {
-        headers: {
-          Authorization: `Bearer ${user?.token}`,
-        },
-      })
-      .then((res) => {
-        setProfile(res.data.data);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch profile", err);
-      });
-  }, [user?.token]);
-  console.log("Fullname : " + profile?.fullname);
+        const userData = res.data.data;
 
-  // 🔹 Restore dari cache localStorage
-  useEffect(() => {
-    const formCache = localStorage.getItem("utusanPenerbitCache");
-    if (formCache) {
-      const cacheData = JSON.parse(formCache) as FormSchema;
-      setFormFields(cacheData);
+        if (userData) {
+          // jika update data maka set semua nilai
+          if (isUpdate) {
+            console.log("set semua data dijalankan karena ia ISUPDATE");
+            setFormFields({
+              fullname: userData.fullname,
+              fileKtp: userData.photo_ktp,
+              noKtp: userData.no_ktp,
+              suratKuasa: userData.doc.path,
+              jabatan: userData.position,
+              photo: userData.selfie,
+            });
+          } else {
+            // hanya inject nama ketika cache belum ada
+            const formCache = getFormCache();
+            // inject fullname hanya ketika datanya kosong
+            // jangan hapus kondisi ini karena bisa menyebabkan bug, form akan mereset semua field yang telah terisi
+            if (!formCache?.fullname) {
+              const fullname = userData.fullname;
+              if (fullname) {
+                setFormFields({ ...formFields, fullname: fullname });
+              }
+            }
+          }
+        }
+      };
 
-      // kalau fullname di cache bukan "-" berarti sudah diisi user
-      if (cacheData.fullname && cacheData.fullname !== "-") {
-        setFullnameEdited(true);
-      }
+      fetchAndSetUser();
     }
   }, []);
 
-  // 🔹 Inject fullname dari profile, hanya kalau user belum pernah edit
+  //* load cache
   useEffect(() => {
-    if (profile?.fullname && !fullnameEdited) {
-      setFormFields((prev) => ({
-        ...prev,
-        fullname: profile.fullname,
-      }));
+    const formCache = getFormCache();
+    if (formCache) {
+      setFormFields(formCache);
     }
-  }, [profile, fullnameEdited]);
+  }, []);
 
-  // 🔹 Simpan perubahan ke state + localStorage
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormFields((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    if (name === "fullname") {
-      setFullnameEdited(true); // tandai sudah edit fullname
-    }
-
-    localStorage.setItem(
-      "utusanPenerbitCache",
-      JSON.stringify({ ...formFields, [name]: value })
-    );
-  };
-
-  //* set cache
+  //* write cache
   useEffect(() => {
-    localStorage.setItem("utusanPenerbitCache", JSON.stringify(formFields));
+    localStorage.setItem(CACHE_KEY, JSON.stringify(formFields));
   }, [formFields]);
 
   //* validate form
   const validateForm = (): boolean => {
     const newErrors: ErrorSchema = {};
 
-    // ✅ selfie wajib
     if (!formFields.photo) {
-      Swal.fire({
-        icon: "warning",
-        title: "Foto Selfie wajib diambil",
-        text: "Silakan ambil foto selfie sebelum melanjutkan.",
-        timer: 4000,
-        timerProgressBar: true,
-      });
       newErrors.photo = "Anda belum mengambil foto";
     }
 
@@ -247,8 +212,7 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
 
     const isValid = Object.keys(newErrors).length === 0;
 
-    // ✅ hanya munculkan alert umum kalau bukan selfie yang error
-    if (!isValid && formFields.photo) {
+    if (!isValid) {
       Swal.fire({
         title: "Data Tidak Lengkap / Tidak Valid",
         text: "Beberapa kolom berisi data yang tidak valid atau belum diisi. Harap koreksi sebelum melanjutkan.",
@@ -262,11 +226,22 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
   };
 
   //* upload foto selfie
-  const uploadFotoSelfie = async (photo: File): Promise<string> => {
+  const uploadFotoSelfie = async (photoPath: string): Promise<string> => {
+    const arr = photoPath.split(",");
+    const mime = arr[0].match(/:(.*?);/)?.[1] || "image/png";
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+
+    const photoFile = new File([u8arr], "Foto Selfie", { type: mime });
+
     const formData = new FormData();
     formData.append("folder", "web");
     formData.append("subfolder", "Foto Selfie");
-    formData.append("media", photo!);
+    formData.append("media", photoFile);
 
     try {
       const res = await axios.post(
@@ -297,13 +272,14 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
       <div className="w-full grid grid-cols-1 md:grid-cols-[1fr_1.3fr] gap-6">
         {/* conteiner foto selfie */}
         <ContainerSelfie
+          photoUrl={formFields.photo}
           photoResult={(photoSelfie) => {
-            setFormFields({ ...formFields, photo: photoSelfie });
             if (photoSelfie) {
+              setFormFields({ ...formFields, photo: photoSelfie });
               setErrors((prev) => ({ ...prev, photo: "" }));
             }
           }}
-          errorText={errors.photo} // 🔑 ini penting
+          errorText={errors.photo}
         />
 
         {/* input data */}
@@ -361,39 +337,49 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
           <div className="my-6"></div>
 
           <div className="w-full flex gap-6 ">
-            <div>
-              <SectionPoint text="Surat Kuasa" />
-              <Subtitle text="File maksimal berukuran 10mb" className="mb-1" />
-              <FileInput
-                fileName="Surat Kuasa"
-                accept=".pdf,.word"
-                fileUrl={formFields.suratKuasa}
-                onChange={(fileUrl) => {
-                  setFormFields({ ...formFields, suratKuasa: fileUrl });
-                  if (fileUrl) {
-                    setErrors({ ...errors, suratKuasa: "" });
-                  }
-                }}
-                errorText={errors.suratKuasa}
-              />
-            </div>
+            <UpdateRing formKey={form} identity="surat-kuasa">
+              <div>
+                <SectionPoint text="Surat Kuasa" />
+                <Subtitle
+                  text="File maksimal berukuran 10mb"
+                  className="mb-1"
+                />
+                <FileInput
+                  fileName="Surat Kuasa"
+                  accept=".pdf,.word"
+                  fileUrl={formFields.suratKuasa}
+                  onChange={(fileUrl) => {
+                    setFormFields({ ...formFields, suratKuasa: fileUrl });
+                    if (fileUrl) {
+                      setErrors({ ...errors, suratKuasa: "" });
+                    }
+                  }}
+                  errorText={errors.suratKuasa}
+                />
+              </div>
+            </UpdateRing>
 
-            <div>
-              <SectionPoint text="File KTP" />
-              <Subtitle text="File maksimal berukuran 10mb" className="mb-1" />
-              <FileInput
-                fileName="File KTP"
-                accept=".pdf,.jpg,.jpeg,.png"
-                fileUrl={formFields.fileKtp}
-                onChange={(fileUrl) => {
-                  setFormFields({ ...formFields, fileKtp: fileUrl });
-                  if (fileUrl) {
-                    setErrors({ ...errors, fileKtp: "" });
-                  }
-                }}
-                errorText={errors.fileKtp}
-              />
-            </div>
+            <UpdateRing formKey={form} identity="ktp">
+              <div>
+                <SectionPoint text="File KTP" />
+                <Subtitle
+                  text="File maksimal berukuran 10mb"
+                  className="mb-1"
+                />
+                <FileInput
+                  fileName="File KTP"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  fileUrl={formFields.fileKtp}
+                  onChange={(fileUrl) => {
+                    setFormFields({ ...formFields, fileKtp: fileUrl });
+                    if (fileUrl) {
+                      setErrors({ ...errors, fileKtp: "" });
+                    }
+                  }}
+                  errorText={errors.fileKtp}
+                />
+              </div>
+            </UpdateRing>
           </div>
 
           <div className="my-10"></div>

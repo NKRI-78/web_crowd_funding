@@ -250,8 +250,11 @@ const Dashboard: React.FC = () => {
 
                             <div className="absolute inset-0 flex items-center justify-center">
                               <div className="w-20 h-20 bg-white/35 rounded-full flex items-center justify-center">
-                                <span className="text-white text-sm font-semibold">
-                                  Draft
+                                <span className="text-white text-sm font-semibold text-center">
+                                  {profile?.company.projects[0].status ===
+                                  "PUBLISH"
+                                    ? "Sudah Tayang"
+                                    : "Sedang Direview"}
                                 </span>
                               </div>
                             </div>

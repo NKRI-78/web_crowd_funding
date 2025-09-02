@@ -1,20 +1,27 @@
-import React from "react";
-
 interface ProgressBarProps {
   percentage: number;
+  maxWidth?: string; // contoh: "500px" atau "80%"
+  bgColor?: string; // contoh: "#f0f0f0" atau "red"
 }
 
-const ProgressBar: React.FC<ProgressBarProps> = ({ percentage }) => {
+const ProgressBar: React.FC<ProgressBarProps> = ({
+  percentage,
+  maxWidth = "32rem", // default = 512px (max-w-lg)
+  bgColor = "white", // default = putih
+}) => {
   const safePercentage = Math.max(0, Math.min(percentage, 100));
 
-  // Ukuran label (dalam rem, perlu menyesuaikan dengan padding px-2)
-  const labelWidthRem = 3; // Kurang lebih 3rem lebar label hijau
-
-  // Hitung posisi left (agar tidak kelewat kiri/kanan)
+  const labelWidthRem = 3;
   const labelLeft = `calc(${safePercentage}% - ${labelWidthRem / 2}rem)`;
 
   return (
-    <div className="relative w-full max-w-md h-4 bg-white rounded-full my-4 mx-auto">
+    <div
+      className="relative w-full h-4 rounded-full my-4 mx-auto"
+      style={{
+        maxWidth: maxWidth,
+        backgroundColor: bgColor,
+      }}
+    >
       {/* Bar Isi */}
       <div
         className="absolute top-0 left-0 h-4 bg-gradient-to-r from-[#039BA9] to-[#37F9D2] rounded-full transition-all duration-300"

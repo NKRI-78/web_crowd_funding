@@ -15,7 +15,7 @@ export const formDokumenPelengkapPenerbitSchema = z.object({
     .string()
     .url()
     .min(1, "Surat Keterangan Domisili wajib diupload."),
-  dokumenPerizinanLainnya: z.string().url().optional(),
+  dokumenPerizinanLainnya: z.string().optional(),
   shortCvManajemen: z
     .string()
     .url()

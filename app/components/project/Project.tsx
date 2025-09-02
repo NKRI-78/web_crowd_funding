@@ -1,6 +1,7 @@
 import ProgressBar from "@/app/(defaults)/sukuk/components/ProgressBar";
 import { IProjectData } from "@/app/interface/IProject";
 import { formatPriceOrEmpty } from "@/app/lib/price";
+import { formatRupiah } from "@/app/lib/utils";
 import { useRouter } from "next/navigation";
 
 export const ProjectCard: React.FC<{ project: IProjectData }> = ({
@@ -41,7 +42,9 @@ export const ProjectCard: React.FC<{ project: IProjectData }> = ({
         </p>
         <p className="text-white/40 text-xs w-full flex">Nilai Penawaran</p>
         <div className="w-full flex justify-between">
-          <p className="text-white text-sm font-semibold">Rp 1.000.000.000</p>
+          <p className="text-white text-sm font-semibold">
+            {formatRupiah(project?.capital)}
+          </p>
           <p className="text-white/40 text-xs">10 Investor</p>
         </div>
         <ProgressBar percentage={50} />

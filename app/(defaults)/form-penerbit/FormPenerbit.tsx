@@ -16,7 +16,7 @@ import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { fetchProvinces } from "@/app/lib/fetchWilayah";
 import FormAlamat from "./FormAlamat";
 import Swal from "sweetalert2";
-import { ProfileUpdate } from "./UpdateProfileInterface";
+import { ProfileUpdate } from "./IUpdateRegistrationKey";
 import RHFSelect from "./components/TypeBussiness";
 import RHFSelectGeneric from "./components/RHFSelectGeneric";
 import { fetchJenisUsaha, TypeOption } from "@/app/utils/fetchJenisUsaha";
@@ -109,16 +109,11 @@ export const schema = z
       .min(1, "Nama pemilik wajib diisi"),
 
     noPhoneCompany: z.object({
-      kode: z
-        .string()
-        .min(1, "Kode wilayah wajib dipilih")
-        .regex(/^\+\d+$/, "Format kode wilayah tidak valid"), // contoh: +62
+      kode: z.string().min(1, "Kode wilayah wajib dipilih"),
 
       nomor: z
         .string({ required_error: "Nomor Telepon Perusahaan wajib diisi" })
-        .trim()
-        .min(6, "Nomor Telepon minimal 6 digit")
-        .regex(/^\d+$/, "Nomor Telepon hanya boleh berisi angka"),
+        .trim(),
     }),
 
     webCompany: z
@@ -517,7 +512,9 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
   return (
     <section className="bg-white text-black items-center px-3 md:px-10 py-20 md:py-30">
       <form
-        onSubmit={handleSubmit(onSubmit, showErrorToasts)}
+        onSubmit={handleSubmit(onSubmit, (errors) => {
+          console.error("VALIDATION ERRORS:", errors);
+        })}
         className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 max-w-6xl mx-auto"
       >
         <div className="space-y-4">
