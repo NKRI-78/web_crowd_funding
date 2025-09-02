@@ -93,7 +93,7 @@ const FormDokumenTambahanPage: React.FC = () => {
           skd: data.suratKeteranganDomisili,
           rab: data.rab,
           cv: data.shortCvManajemen,
-          dokumen_perizinan_lainnya: data.dokumenPerizinanLainnya,
+          dokumen_perizinan_lainnya: data.dokumenPerizinanLainnya ?? "-",
           video_profil_perusahaan: data.videoProfilPerusahaan,
           project_summary: data.projectSummary,
           project_pendapatan: data.proyeksiPendapatan,
@@ -102,6 +102,7 @@ const FormDokumenTambahanPage: React.FC = () => {
           daftar_pekerjaan: data.listPekerjaan2TahunTerakhir,
           daftar_supplier: data.listDataSupplier,
           daftar_piutang: data.daftarPiutang,
+          cashflow_project: data.cashflowProject,
           foto_karyawan_kantor: data.fotoKantorKaryawan.map((url) => ({
             path: url,
           })),
@@ -251,7 +252,7 @@ const FormDokumenTambahanPage: React.FC = () => {
               />
             </div>
             <div>
-              <SectionPoint text="Dokumen Perizinan Lainya" optional />
+              <SectionPoint text="Surat Pernyataan APU-PPT" />
               <Subtitle text="File maksimal berukuran 10mb" className="my-1" />
 
               <Controller

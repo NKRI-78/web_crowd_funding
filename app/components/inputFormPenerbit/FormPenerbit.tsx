@@ -28,10 +28,7 @@ import NPWPUploader from "@app/(defaults)/form-penerbit/components/UploadNPWP";
 import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { IFormPublisher } from "@/app/interface/IFormPublisher";
 import { getUser } from "@/app/lib/auth";
-import {
-  ProfileUpdate,
-  publisherUpdateKeys,
-} from "@/app/(defaults)/form-penerbit/UpdateProfileInterface";
+import { ProfileUpdate } from "@/app/(defaults)/form-penerbit/IUpdateRegistrationKey";
 
 import {
   MAX_DIREKTUR,
@@ -289,48 +286,30 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
     if (!profile?.form) return "-";
 
     let val = "-";
-    const isUdins = publisherUpdateKeys.includes(profile.form);
 
     try {
-      if (isUdins) {
-        const publisherCache = localStorage.getItem("publisherDraft");
-        if (publisherCache) {
-          const pub = JSON.parse(publisherCache);
-          switch (profile.form) {
-            case "nib":
-              val = pub.company_nib_path;
-              break;
-            case "akta-pendirian-perusahaan":
-              val = pub.akta_pendirian;
-              break;
-            case "sk-kumham-path":
-              val = pub.sk_kumham_path;
-              break;
-            case "akta-perubahan-terakhir":
-              val = pub.akta_perubahan_terahkir_path;
-              break;
-            case "sk-kumham-terakhir":
-              val = pub.sk_kumham_terahkir;
-              break;
-            case "jumlah-karyawan":
-              val = pub.total_employees;
-              break;
-            default:
-              val = "-";
-          }
-        }
-      } else {
-        switch (profile.form) {
-          case "laporan-keuangan":
-            val = values.laporanKeuangan;
-            break;
-          case "rekening-koran":
-            val = values.rekeningKoran;
-            break;
-          default:
-            val = "-";
-        }
-      }
+      // switch (profile.form) {
+      //   case "sk-kumham-terakhir":
+      //     val = values.sk_kumham_terahkir;
+      //     break;
+      //   case "siup":
+      //     val = values.siup;
+      //     break;
+      //   case "tdp":
+      //     val = values.tdp;
+      //     break;
+      //   case "nib":
+      //     val = values.;
+      //     break;
+      //   case "sk-kumham-terakhir":
+      //     val = pub.sk_kumham_terahkir;
+      //     break;
+      //   case "jumlah-karyawan":
+      //     val = pub.total_employees;
+      //     break;
+      //   default:
+      //     val = "-";
+      // }
     } catch {
       val = "-";
     }
@@ -527,7 +506,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
                   error={errors?.tdp?.message}
                 />
               </UpdateRing>
-              <UpdateRing identity={"fileNpwp"} formKey={profile?.form}>
+              <UpdateRing identity={"npwp"} formKey={profile?.form}>
                 <FileUpload
                   label="NPWP"
                   fileUrl={watch("fileNpwp")}
@@ -557,7 +536,10 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
                 />
               </UpdateRing>
 
-              <UpdateRing identity={"sk-kumham-path"} formKey={profile?.form}>
+              <UpdateRing
+                identity={"sk-kumham-pendirian"}
+                formKey={profile?.form}
+              >
                 <FileUpload
                   label="SK Kumham Pendirian"
                   fileUrl={watch("sk_kumham_path")}

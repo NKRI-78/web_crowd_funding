@@ -33,9 +33,7 @@ export default function FileUpload({
 
   return (
     <div className="mb-4">
-      <p className="text-sm mb-1">
-        <SectionPoint text={label} />
-      </p>
+      <SectionPoint text={label} className="mb-1" />
 
       <button
         type="button"
