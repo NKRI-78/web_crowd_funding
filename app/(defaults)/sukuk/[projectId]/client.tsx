@@ -9,13 +9,14 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Thumbs } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import { useParams } from "next/navigation";
 import Cookies from "js-cookie";
 import axios from "axios";
 import defaultImage from "/public/images/default-image.png";
 import { API_BACKEND } from "@/app/utils/constant";
 import Custom404 from "@/app/not-found";
 import ProgressBar from "../components/ProgressBar";
+import { formatRupiah } from "@/app/lib/utils";
+import { getUser } from "@/app/lib/auth";
 
 type Project = {
   id: string;
@@ -38,6 +39,8 @@ type Project = {
   };
   capital: string;
   roi: string;
+  loan_term: string;
+  kode_efek: string;
   min_invest: string;
   unit_price: string;
   unit_total: string;
@@ -47,6 +50,8 @@ type Project = {
   nominal_value: string;
   time_periode: string;
   interest_rate: string;
+  jumlah_unit: string;
+  type_of_project: string;
   interest_payment_schedule: string;
   principal_payment_schedule: string;
   use_of_funds: string;
@@ -56,6 +61,7 @@ type Project = {
   is_approved: boolean;
   company: {
     name: string;
+    jenis_usaha: string;
   };
   created_at: string;
   updated_at: string;
@@ -66,23 +72,10 @@ type Props = {
 };
 
 const SukukClient = ({ id }: Props) => {
-  const [showModal, setShowModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
-
-  const [mode, setMode] = useState<"unit" | "nominal">("unit");
-  const [unit, setUnit] = useState(1);
-  const [nominalInput, setNominalInput] = useState("");
 
   const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null);
 
-  const hargaUnit = 100000;
-  const nominal = unit * hargaUnit;
-  const roi = 0.095;
-  const keuntungan = nominal * roi;
-
-  const params = useParams();
-  // const id = params.id;
-  // const id = "fe973f69-6ff4-4157-a3bc-0e04054cf101";
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<any>(null);
@@ -91,84 +84,46 @@ const SukukClient = ({ id }: Props) => {
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
-    const userCookie = Cookies.get("user");
-    if (!userCookie) return;
-
-    try {
-      const user = JSON.parse(userCookie);
-      if (user?.token) {
-        console.log(user.role);
-        setRole(user.role);
+    const userCookie = getUser();
+    if (userCookie) {
+      try {
+        setRole(userCookie.role);
+      } catch (err) {
+        console.error("Failed to parse user cookie", err);
       }
-    } catch (err) {
-      console.error("Failed to parse user cookie", err);
     }
   }, []);
 
-  const handleInputChange = (value: string) => {
-    const numeric = value.replace(/[^\d]/g, "");
-    if (mode === "unit") {
-      setUnit(parseInt(numeric) || 0);
-    } else {
-      setNominalInput(numeric);
-      setUnit(Math.floor((parseInt(numeric) || 0) / hargaUnit));
-    }
-  };
-
-  const formattedKeuntungan = new Intl.NumberFormat("id-ID").format(keuntungan);
-
+  //* fetch project detail by id
   useEffect(() => {
-    if (!id) return;
+    if (id) {
+      const fetchProject = async () => {
+        try {
+          const response = await axios.get(
+            `${API_BACKEND}/api/v1/project/detail/${id}`
+          );
+          setProject(response.data.data);
+        } catch (error: any) {
+          console.error("Gagal ambil data project:", error);
 
-    const fetchProject = async () => {
-      try {
-        const response = await axios.get(
-          `${API_BACKEND}/api/v1/project/detail/${id}`
-        );
-        setProject(response.data.data);
-      } catch (error: any) {
-        console.error("Gagal ambil data project:", error);
-
-        // Cek jika error 404
-        if (error.response?.status === 400) {
-          setIsNotFound(true);
+          // Cek jika error 404
+          if (error.response?.status === 400) {
+            setIsNotFound(true);
+          }
+        } finally {
+          setLoading(false);
         }
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
 
-    fetchProject();
-  }, [id]);
-
-  const formatRupiah = (value?: string | number): string => {
-    if (value === undefined || value === null) return "-";
-
-    const number = typeof value === "string" ? parseInt(value) : value;
-
-    if (isNaN(number)) return "-";
-
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(number);
-  };
+      fetchProject();
+    }
+  }, []);
 
   useEffect(() => {
     setHydrated(true);
-    // const storedUser = localStorage.getItem("user");
     const userCookie = Cookies.get("user");
     const user = userCookie ? JSON.parse(userCookie) : null;
     setUserData(user);
-    // if (storedUser) {
-    //   try {
-    //     const parsedUser = JSON.parse(storedUser);
-    //     setUserData(parsedUser);
-    //   } catch (err) {
-    //     console.error("Gagal parsing user dari localStorage", err);
-    //   }
-    // }
   }, []);
 
   return isNotFound ? (
@@ -177,94 +132,14 @@ const SukukClient = ({ id }: Props) => {
     </>
   ) : (
     <section className="py-28 px-4 md:px-12">
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-          <div className="bg-white w-full max-w-md rounded-xl p-6 relative shadow-xl">
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute right-4 top-4 text-gray-400 hover:text-gray-700"
-            >
-              <X />
-            </button>
-
-            <h2 className="text-lg font-semibold mb-4 flex text-black items-center gap-2">
-              📊 Simulasi
-            </h2>
-
-            <div className="space-y-4 text-sm">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setMode("unit")}
-                  className={`px-3 py-1 rounded-full border text-sm ${
-                    mode === "unit"
-                      ? "bg-[#3E268D] text-white"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  Unit
-                </button>
-                <button
-                  onClick={() => setMode("nominal")}
-                  className={`px-3 py-1 rounded-full border text-sm ${
-                    mode === "nominal"
-                      ? "bg-[#3E268D] text-white"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  Nominal (Rp)
-                </button>
-              </div>
-
-              <div className="flex items-center justify-between gap-2">
-                <label className="text-black font-medium">
-                  Masukkan {mode === "unit" ? "Unit" : "Nominal"}
-                </label>
-                <input
-                  type="text"
-                  value={
-                    mode === "unit"
-                      ? unit.toString()
-                      : new Intl.NumberFormat("id-ID").format(
-                          parseInt(nominalInput || "0")
-                        )
-                  }
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  className="border px-2 py-1 rounded-md w-40 text-black text-right"
-                />
-              </div>
-
-              <div className="border-t pt-2">
-                <p className="text-xs text-[#677AB9] font-medium">
-                  Estimasi ROI (Berdasarkan Proyeksi)
-                </p>
-                <p className="font-bold text-black">9.5%</p>
-              </div>
-
-              <div>
-                <p className="text-xs text-[#677AB9] font-medium">Tenor</p>
-                <p className="font-bold text-black">{project?.time_periode}</p>
-              </div>
-
-              <div className="bg-gray-100 p-3 rounded-lg">
-                <p className="text-xs text-[#677AB9] font-medium mb-1">
-                  Estimasi Keuntungan (Berdasarkan Proyeksi)
-                </p>
-                <p className="text-black font-bold text-xl">
-                  Rp {formattedKeuntungan}
-                </p>
-              </div>
-
-              <p className="text-[10px] text-gray-500 mt-1">
-                * Kinerja Masa lalu tidak menjamin Kinerja Masa depan
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {showLocationModal && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-          <div className="bg-white w-full max-w-lg rounded-xl p-6 relative shadow-xl">
+        <div
+          className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center"
+          onClick={() => {
+            setShowLocationModal(false);
+          }}
+        >
+          <div className="bg-white w-full max-w-xl rounded-xl p-6 relative shadow-xl">
             <button
               onClick={() => setShowLocationModal(false)}
               className="absolute right-4 top-4 text-gray-400 hover:text-gray-700"
@@ -276,34 +151,29 @@ const SukukClient = ({ id }: Props) => {
               📍 Lokasi
             </h2>
 
-            <p className="text-sm text-black mb-4">
-              Blok, Jl. Komp. BSD Blok Rp No.90, Lengkong Wetan, Serpong
-              Sub-District, South Tangerang City, Banten 15310
-            </p>
+            <p className="text-sm text-black mb-4">{project?.location.url}</p>
 
             <div className="bg-gray-100 rounded-lg px-4 py-2 flex justify-between items-center text-sm mb-4">
               <input
                 type="text"
-                value="https://maps.app.goo.gl/Zcm3fjeKTwzKN9Qs9"
+                value={`${project?.location.url}`}
                 readOnly
                 className="bg-transparent w-full outline-none text-black"
               />
               <button
                 onClick={() =>
-                  navigator.clipboard.writeText(
-                    "https://maps.app.goo.gl/Zcm3fjeKTwzKN9Qs9"
-                  )
+                  navigator.clipboard.writeText(`${project?.location.url}`)
                 }
-                className="ml-2 px-2 py-1 text-sm bg-[#677AB9] hover:bg-[#2a1a6a] text-white rounded"
+                className="ml-2 px-2 py-1 text-sm bg-[#13733b] hover:bg-[#2a1a6a] text-white rounded"
               >
                 Salin
               </button>
             </div>
             <a
-              href="https://maps.app.goo.gl/Zcm3fjeKTwzKN9Qs9"
+              href={`${project?.location.url}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="block text-center text-sm w-full bg-[#677AB9] hover:bg-[#2a1a6a] text-white py-2 rounded-lg font-semibold"
+              className="block text-center text-sm w-full bg-[#13733b] hover:bg-[#2a1a6a] text-white py-2 rounded-lg font-semibold"
             >
               Go To Maps
             </a>
@@ -334,18 +204,6 @@ const SukukClient = ({ id }: Props) => {
                       alt={`Slide ${idx + 1}`}
                       className="w-full h-64 object-cover"
                     />
-                    {/* <div className="absolute top-2 left-2 flex gap-2 flex-wrap">
-                      {item.tags.map((tag, i) => (
-                                        <span
-                                        key={i}
-                                        className={`text-white text-xs font-bold px-3 py-1 rounded-full ${
-                                            i === 0 ? 'bg-red-600' : 'bg-indigo-800'
-                                        }`}
-                                        >
-                                        {tag}
-                                        </span>
-                                    ))}
-                    </div> */}
                   </div>
                 </SwiperSlide>
               ))}
@@ -389,7 +247,7 @@ const SukukClient = ({ id }: Props) => {
           </div>
         </div>
         <div className="w-full lg:w-1/2 lg:mx-2">
-          <div className="bg-gray-100 rounded-xl p-3 shadow-md space-y-2">
+          <div className="bg-gray-100 rounded-xl p-3 shadow-md">
             <div className="bg-white rounded-lg p-2">
               <h3 className="text-xl text-black font-bold">{project?.title}</h3>
               <div className="my-2">
@@ -399,17 +257,17 @@ const SukukClient = ({ id }: Props) => {
                 </div>
                 <div className="flex flex-wrap justify-between">
                   <p className="text-xs text-[#677AB9]">Kode Efek</p>
-                  <p className="text-sm">PPJA1</p>
+                  <p className="text-sm">{project?.kode_efek}</p>
                 </div>
                 <div className="flex flex-wrap justify-between">
                   <p className="text-xs text-[#677AB9]">Jenis Akad</p>
-                  <p className="text-sm">Efek Bersifat Utang</p>
+                  <p className="text-sm">{project?.type_of_project}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white p-2 rounded-lg space-y-1">
-              <ProgressBar percentage={0} />
+            <div className="bg-white p-2 rounded-lg space-y-1 mt-3">
+              <ProgressBar percentage={50} bgColor="#f3f4f6" />
 
               <div className="flex flex-wrap justify-between">
                 <p className="text-xs font-bold text-[#677AB9]">
@@ -419,37 +277,10 @@ const SukukClient = ({ id }: Props) => {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg p-2 flex justify-evenly">
-              <div className="flex gap-1 flex-col items-center">
-                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#10565c] text-white"></div>
-                <div className="text-xs text-center font-medium text-gray-900">
-                  Prelisting
-                </div>
-              </div>
-              <div className="flex gap-1 flex-col items-center">
-                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#10565c] text-white"></div>
-                <div className="text-xs text-center font-medium text-gray-900">
-                  Listing
-                </div>
-              </div>
-              <div className="flex gap-1 flex-col items-center">
-                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#10565c] text-white"></div>
-                <div className="text-xs text-center font-medium text-gray-900">
-                  Pendanaan Terpenuhi
-                </div>
-              </div>
-              <div className="flex gap-1 flex-col items-center">
-                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#10565c] text-white"></div>
-                <div className="text-xs text-center font-medium text-gray-900">
-                  Berjalan
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-2 rounded-lg">
+            <div className="bg-white p-2 rounded-lg mt-3">
               <div className="flex flex-wrap my-2 justify-between">
                 <p className="text-xs text-[#677AB9]"> Kategori Bisnis</p>
-                <p className="text-xs">KONTRAKTOR</p>
+                <p className="text-xs">{project?.company?.jenis_usaha}</p>
               </div>
               <div className="flex flex-wrap my-2 justify-between">
                 <p className="text-xs text-[#677AB9]">Minimal Investasi:</p>
@@ -457,41 +288,27 @@ const SukukClient = ({ id }: Props) => {
               </div>
               <div className="flex flex-wrap my-2 justify-between">
                 <p className="text-xs text-[#677AB9]">Harga Unit:</p>
-                <p className="text-xs">
-                  {formatRupiah(project?.nominal_value)}
-                </p>
+                <p className="text-xs">{formatRupiah(project?.unit_price)}</p>
               </div>
               <div className="flex flex-wrap my-2 justify-between">
                 <p className="text-xs text-[#677AB9]"> Jumlah Unit </p>
-                <p className="text-xs">
-                  {formatRupiah(project?.number_of_unit)}
-                </p>
+                <p className="text-xs">{formatRupiah(project?.jumlah_unit)}</p>
               </div>
               <div className="flex flex-wrap my-2 justify-between">
                 <p className="text-xs text-[#677AB9]"> Total Unit (Rp) </p>
-                <p className="text-xs"> {formatRupiah(project?.unit_total)} </p>
-              </div>
-              <div className="flex flex-wrap my-2 justify-between">
-                <p className="text-xs text-[#677AB9]">Periode Pengembalian:</p>
-                <p className="text-xs">{project?.interest_payment_schedule}</p>
+                <p className="text-xs"> {formatRupiah(project?.capital)} </p>
               </div>
               <div className="flex flex-wrap my-2 justify-between">
                 <p className="text-xs text-[#677AB9]">Tenor:</p>
-                <p className="text-xs">{project?.time_periode}</p>
+                <p className="text-xs">{project?.loan_term}</p>
               </div>
               <div className="flex flex-wrap my-2 justify-between">
                 <p className="text-xs text-[#677AB9]">ROI (Proyeksi):</p>
-                {/* <p className="text-xs">{project.proyeksiROI}</p> */}
+                <p className="text-xs">{project?.roi}%</p>
               </div>
             </div>
 
-            <div className="flex flex-wrap justify-evenly gap-4 mt-4 text-sm">
-              <button
-                onClick={() => setShowModal(true)}
-                className="bg-white text-xs text-black border px-4 py-2 rounded-md"
-              >
-                Simulasi
-              </button>
+            <div className="flex flex-wrap justify-evenly gap-4 mt-3 text-sm">
               <button
                 className="bg-white text-xs text-black border px-4 py-2 rounded-md"
                 onClick={() => {
@@ -512,9 +329,9 @@ const SukukClient = ({ id }: Props) => {
               </button>
               <button
                 className="bg-white text-xs text-black border px-4 py-2 rounded-md"
-                onClick={() => window.open(project?.doc.path, "_blank")}
+                onClick={() => {}}
               >
-                Proposal
+                Prospektus
               </button>
               <button
                 onClick={() => setShowLocationModal(true)}
@@ -538,7 +355,7 @@ const SukukClient = ({ id }: Props) => {
               <></>
             )}
 
-            <p className="text-xs text-center mt-2">
+            <p className="text-xs text-center mt-4">
               Butuh Pertanyaan?{" "}
               <a href="#" className="text-blue-600 font-semibold">
                 Hubungi Kami

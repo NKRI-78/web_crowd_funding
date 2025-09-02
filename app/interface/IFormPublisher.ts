@@ -1,6 +1,8 @@
+import { PhoneValue } from "../(defaults)/form-penerbit/components/PhoneInput";
+
 export interface IFormPublisher {
   sameAsCompany: boolean;
-  noPhoneCompany: string;
+  noPhoneCompany: PhoneValue;
   webCompany: string;
   emailCompany: string;
   namaBank: string;

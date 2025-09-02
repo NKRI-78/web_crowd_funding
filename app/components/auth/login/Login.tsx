@@ -41,7 +41,7 @@ const Login: React.FC = () => {
         password,
       });
       const userData = response.data.data;
-      Cookies.set("user", JSON.stringify(response.data.data));
+      Cookies.set("user", JSON.stringify(response.data.data), { expires: 7 });
 
       if (!userData.enabled) {
         await Swal.fire({

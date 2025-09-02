@@ -6,17 +6,20 @@ import FormPenerbit from "@/app/components/inputFormPenerbit/FormPenerbit";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import { API_BACKEND } from "@/app/utils/constant";
-import { ProfileUpdate, publisherUpdateKeys } from "./UpdateProfileInterface";
+import { penerbitUpdateKeys, ProfileUpdate } from "./IUpdateRegistrationKey";
 import Cookies from "js-cookie";
 import FormUtusanPenerbit from "./FormUtusanPenerbit";
 
 function getFormIndex(form: string | null): number {
   console.log("get form index, form= " + form);
-  if (!form) return 1;
-  if (publisherUpdateKeys.includes(form)) {
-    return 1;
-  } else {
+  if (!form) return 0;
+
+  // jika formKey memuat form update penerbit maka navigate to index form penerbit yaitu index-2
+  // jika tidak itu artinya update berada di form PIC/Form utusan penerbit yaitu index-0
+  if (penerbitUpdateKeys.includes(form)) {
     return 2;
+  } else {
+    return 0;
   }
 }
 
@@ -38,13 +41,16 @@ export default function MultiStepFormWrapper() {
   }, [isUpdate]);
 
   useEffect(() => {
-    const formIndexCache = localStorage.getItem("penerbitFormIndex");
-    if (formIndexCache) {
-      setSelectedIndex(Number(formIndexCache));
-    } else {
-      setSelectedIndex(0);
+    // hanya load cache form index ketika ia tidak sedang dalam mode update
+    if (!isUpdate) {
+      const formIndexCache = localStorage.getItem("penerbitFormIndex");
+      if (formIndexCache) {
+        setSelectedIndex(Number(formIndexCache));
+      } else {
+        setSelectedIndex(0);
+      }
     }
-  }, []);
+  }, [isUpdate]);
 
   useEffect(() => {
     localStorage.setItem("penerbitFormIndex", `${selectedIndex}`);

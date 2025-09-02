@@ -1,23 +1,30 @@
-import React from "react";
-
 interface ProgressBarProps {
   percentage: number;
+  maxWidth?: string; // contoh: "500px" atau "80%"
+  bgColor?: string; // contoh: "#f0f0f0" atau "red"
 }
 
-const ProgressBar: React.FC<ProgressBarProps> = ({ percentage }) => {
+const ProgressBar: React.FC<ProgressBarProps> = ({
+  percentage,
+  maxWidth = "32rem", // default = 512px (max-w-lg)
+  bgColor = "white", // default = putih
+}) => {
   const safePercentage = Math.max(0, Math.min(percentage, 100));
 
-  // Ukuran label (dalam rem, perlu menyesuaikan dengan padding px-2)
-  const labelWidthRem = 3; // Kurang lebih 3rem lebar label hijau
-
-  // Hitung posisi left (agar tidak kelewat kiri/kanan)
+  const labelWidthRem = 3;
   const labelLeft = `calc(${safePercentage}% - ${labelWidthRem / 2}rem)`;
 
   return (
-    <div className="relative w-full max-w-md h-4 bg-purple-200 rounded-full my-4 mx-auto">
+    <div
+      className="relative w-full h-4 rounded-full my-4 mx-auto"
+      style={{
+        maxWidth: maxWidth,
+        backgroundColor: bgColor,
+      }}
+    >
       {/* Bar Isi */}
       <div
-        className="absolute top-0 left-0 h-4 bg-[#3E268D] rounded-full transition-all duration-300"
+        className="absolute top-0 left-0 h-4 bg-gradient-to-r from-[#039BA9] to-[#37F9D2] rounded-full transition-all duration-300"
         style={{
           width: `${safePercentage}%`,
           borderTopRightRadius: safePercentage === 100 ? "0.5rem" : "9999px",
@@ -27,7 +34,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ percentage }) => {
 
       {/* Label Hijau */}
       <div
-        className="absolute top-1/2 -translate-y-1/2 transform bg-green-500 text-white text-xs font-bold px-2 py-[1px] rounded-full shadow transition-all duration-300 whitespace-nowrap"
+        className="absolute top-1/2 -translate-y-1/2 transform bg-gradient-to-r from-[#039BA9] to-[#2abc9f] text-white text-xs border border-white font-bold px-2 py-[1px] rounded-full shadow transition-all duration-300 whitespace-nowrap"
         style={{
           left: `min(max(${labelLeft}, 0rem), calc(100% - ${labelWidthRem}rem))`,
         }}
@@ -37,6 +44,5 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ percentage }) => {
     </div>
   );
 };
-
 
 export default ProgressBar;

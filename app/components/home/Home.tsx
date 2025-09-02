@@ -11,7 +11,7 @@ import RegisterOtp from "../auth/register/RegisterOtp";
 import RegisterSelectRole from "../auth/register/RegisterSelectRole";
 import axios from "axios";
 import { API_BACKEND } from "@/app/utils/constant";
-import { InboxModel } from "../notif/InboxModel";
+import { InboxModel } from "../notif/inbox-interface";
 import { useDispatch } from "react-redux";
 import { setBadge } from "@/redux/slices/badgeSlice";
 import { createSocket } from "@/app/utils/sockets";

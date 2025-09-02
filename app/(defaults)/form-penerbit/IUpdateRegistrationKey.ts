@@ -81,45 +81,35 @@ export interface NamedItem {
   name: string;
 }
 
-export const publisherUpdateKeys: string[] = [
-  "nama-perusahaan",
-  "nib",
-  "akta-pendirian-perusahaan",
-  "sk-kumham-path",
-  "akta-perubahan-terakhir",
-  "sk-kumham-terakhir",
-  "alamat-perusahaan",
-  "alamat-korespondensi",
-  "jumlah-karyawan",
-];
+export const penerbitPICUpdateKeys: string[] = ["surat-kuasa", "ktp"];
 
 export const penerbitUpdateKeys: string[] = [
+  "sk-kumham-terakhir",
+  "siup",
+  "tdp",
+  "npwp",
+  "nib",
+  "akta-pendirian-perusahaan",
+  "sk-kumham-pendirian",
+  "akta-perubahan-terakhir",
   "laporan-keuangan",
   "rekening-koran",
-  "susunan-manajemen",
-  "{index}-direktur-nama",
-  "{index}-direktur-jabatan",
-  "{index}-direktur-no-ktp",
-  "{index}-direktur-upload-ktp",
-  "{index}-direktur-upload-npwp",
-  "{index}-komisaris-nama",
-  "{index}-komisaris-jabatan",
-  "{index}-komisaris-no-ktp",
-  "{index}-komisaris-upload-ktp",
-  "{index}-komisaris-upload-npwp",
-  "foto-proyek",
-  "title-proyek",
-  "jenis-obligasi",
-  "nilai-nominal",
-  "jangka-waktu",
-  "tingkat-bunga",
-  "jadwal-pembayaran-bunga",
-  "jadwal-pembayaran-pokok",
-  "penggunaan-dana",
-  "jaminan-kolateral",
-  "deskripsi-pekerjaan",
-  "biaya-apbn-apbd",
-  "no-kontrak",
-  "doc-kontrak",
-  "company-profile",
+
+  "0-direktur-upload-ktp",
+  "0-direktur-upload-npwp",
+
+  "1-direktur-upload-ktp",
+  "1-direktur-upload-npwp",
+
+  "2-direktur-upload-ktp",
+  "2-direktur-upload-npwp",
+
+  "0-komisaris-upload-ktp",
+  "0-komisaris-upload-npwp",
+
+  "1-komisaris-upload-ktp",
+  "1-komisaris-upload-ktp",
+
+  "2-komisaris-upload-npwp",
+  "2-komisaris-upload-npwp",
 ];

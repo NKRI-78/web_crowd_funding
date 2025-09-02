@@ -2,7 +2,6 @@
 
 import {
   Controller,
-  FormProvider,
   Path,
   Resolver,
   useFieldArray,
@@ -13,94 +12,118 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import FileUpload from "@/app/helper/FileUpload";
 import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { fetchProvinces } from "@/app/lib/fetchWilayah";
 import FormAlamat from "./FormAlamat";
 import Swal from "sweetalert2";
-import Select from "react-select";
-import { ProfileUpdate } from "./UpdateProfileInterface";
-import UpdateRing from "@/app/components/inputFormPenerbit/_component/UpdateRing";
-import NPWPUploader from "./components/UploadNPWP";
-import { JENIS_USAHA_OPTIONS } from "@/app/utils/jenisUsaha";
+import { ProfileUpdate } from "./IUpdateRegistrationKey";
 import RHFSelect from "./components/TypeBussiness";
 import RHFSelectGeneric from "./components/RHFSelectGeneric";
 import { fetchJenisUsaha, TypeOption } from "@/app/utils/fetchJenisUsaha";
 import { fetchJenisPerusahaan } from "@/app/utils/fetchJenisPerusahaan";
 import { fetchStatusCompany } from "@/app/utils/fetchStatusPerushaan";
-import {
-  formatNPWPFromDigits,
-  isValidNPWPDigits,
-  normalizeNPWP,
-  sanitizeNPWPOrThrow,
-} from "@/app/lib/npwp-formart";
+import { PhoneInput } from "./components/PhoneInput";
 
 export const alamatSchema = z.object({
   name: z.string().optional(),
-  province_name: z.string(),
-  city_name: z.string().min(1, "Kota wajib diisi"),
-  district_name: z.string().min(1, "Kecamatan wajib diisi"),
-  subdistrict_name: z.string().min(1, "Kelurahan wajib diisi"),
-  postal_code: z.string().min(1, "Kode pos wajib diisi"),
-  detail: z.string().min(1, "Detail alamat wajib diisi"),
+  province_name: z
+    .string({ required_error: "Provinsi wajib diisi" })
+    .trim()
+    .min(1, "Provinsi wajib diisi"),
+  city_name: z
+    .string({ required_error: "Kota wajib diisi" })
+    .trim()
+    .min(1, "Kota wajib diisi"),
+  district_name: z
+    .string({ required_error: "Kecamatan wajib diisi" })
+    .trim()
+    .min(1, "Kecamatan wajib diisi"),
+  subdistrict_name: z
+    .string({ required_error: "Kelurahan wajib diisi" })
+    .trim()
+    .min(1, "Kelurahan wajib diisi"),
+  postal_code: z
+    .string({ required_error: "Kode pos wajib diisi" })
+    .trim()
+    .min(1, "Kode pos wajib diisi")
+    .regex(/^\d{5}$/, "Kode pos harus 5 digit angka"),
+  detail: z
+    .string({ required_error: "Detail alamat wajib diisi" })
+    .trim()
+    .min(1, "Detail alamat wajib diisi"),
 });
 
 export const schema = z
   .object({
-    company_name: z.string().min(1, "Nama perusahaan wajib diisi"),
-    namaBank: z.string().min(1, "Nama bank wajib dipilih"),
+    company_name: z
+      .string({ required_error: "Nama perusahaan wajib diisi" })
+      .trim()
+      .min(1, "Nama perusahaan wajib diisi"),
+
+    namaBank: z
+      .string({ required_error: "Nama bank wajib dipilih" })
+      .trim()
+      .min(1, "Nama bank wajib dipilih"),
+
     jenis_usaha: z
       .string({ required_error: "Jenis usaha wajib dipilih" })
+      .trim()
       .min(1, "Jenis usaha wajib dipilih"),
-    // npwp: z
-    //   .string({ required_error: "NPWP wajib diisi" })
-    //   .trim()
-    //   .transform((val) => normalizeNPWP(val))
-    //   .refine(
-    //     (digits) => isValidNPWPDigits(digits),
-    //     "NPWP harus 15 atau 16 digit"
-    //   )
-    //   .transform((digits) => formatNPWPFromDigits(digits)),
-    // npwp_path: z.string(),
     companyType: z
       .string({ required_error: "Tipe Perusahaan wajib dipilih" })
+      .trim()
       .min(1, "Tipe Perusahaan wajib dipilih"),
 
     statusCompanys: z
       .string({ required_error: "Status Kantor/Tempat Usaha wajib dipilih" })
+      .trim()
       .min(1, "Status Kantor/Tempat Usaha wajib dipilih"),
 
     establishedYear: z
       .string({ required_error: "Tahun berdiri wajib dipilih" })
+      .trim()
       .min(1, "Tahun berdiri wajib dipilih")
       .refine(
         (v) =>
           /^\d{4}$/.test(v) && +v >= 1950 && +v <= new Date().getFullYear(),
         "Tahun tidak valid"
       ),
+
     address: z
-      .array(alamatSchema)
+      .array(alamatSchema, { required_error: "Alamat wajib diisi" })
       .min(1, "Minimal 1 alamat harus diisi")
       .max(2, "Maksimal hanya 2 alamat"),
+
     sameAsCompany: z.boolean().optional(),
     detailKorespondensi: z.string().optional(),
+
     nomorRekening: z
-      .string()
+      .string({ required_error: "Nomor rekening wajib diisi" })
       .trim()
       .min(1, "Nomor rekening wajib diisi")
       .regex(/^\d+$/, "Hanya angka"),
-    namaPemilik: z.string().trim().min(1, "Nama pemilik wajib diisi"),
-    noPhoneCompany: z
-      .string()
+
+    namaPemilik: z
+      .string({ required_error: "Nama pemilik wajib diisi" })
       .trim()
-      .min(1, "Nomor Telepon Perusahaan wajib diisi"),
+      .min(1, "Nama pemilik wajib diisi"),
+
+    noPhoneCompany: z.object({
+      kode: z.string().min(1, "Kode wilayah wajib dipilih"),
+
+      nomor: z
+        .string({ required_error: "Nomor Telepon Perusahaan wajib diisi" })
+        .trim(),
+    }),
+
     webCompany: z
-      .string()
+      .string({ required_error: "Situs Perusahaan wajib diisi" })
       .trim()
       .min(1, "Situs Perusahaan wajib diisi")
       .url("Format URL tidak valid (contoh: https://example.com)"),
+
     emailCompany: z
-      .string()
+      .string({ required_error: "Email Perusahaan wajib diisi" })
       .trim()
       .min(1, "Email Perusahaan wajib diisi")
       .email("Format email tidak valid"),
@@ -201,7 +224,7 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
     mode: "onBlur",
     defaultValues: {
       sameAsCompany: false,
-      noPhoneCompany: "",
+      noPhoneCompany: undefined,
       webCompany: "",
       emailCompany: "",
       namaBank: "",
@@ -413,11 +436,6 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
       shouldValidate: true,
     });
   };
-  const phoneNumber: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    setValue("noPhoneCompany", e.target.value.replace(/\D/g, "").slice(0, 13), {
-      shouldValidate: true,
-    });
-  };
 
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: currentYear - 1950 + 1 }, (_, i) => {
@@ -494,7 +512,9 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
   return (
     <section className="bg-white text-black items-center px-3 md:px-10 py-20 md:py-30">
       <form
-        onSubmit={handleSubmit(onSubmit, showErrorToasts)}
+        onSubmit={handleSubmit(onSubmit, (errors) => {
+          console.error("VALIDATION ERRORS:", errors);
+        })}
         className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 max-w-6xl mx-auto"
       >
         <div className="space-y-4">
@@ -570,7 +590,7 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
               Nomor Telepon Perusahaan{" "}
               <span className="text-red-500 ml-1">*</span>
             </label>
-            <input
+            {/* <input
               {...register("noPhoneCompany")}
               type="text"
               inputMode="numeric"
@@ -578,7 +598,22 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
               onChange={phoneNumber}
               className="border rounded p-2 w-full placeholder:text-sm"
               placeholder="Masukkan Nomor Telepon Perusahaan"
+            /> */}
+            <Controller
+              control={control}
+              name="noPhoneCompany"
+              render={({ field }) => {
+                return (
+                  <PhoneInput
+                    value={field.value}
+                    onChange={(val) => {
+                      field.onChange(val);
+                    }}
+                  />
+                );
+              }}
             />
+
             {errors.noPhoneCompany && (
               <p className="text-red-500 text-sm mt-1">
                 {errors.noPhoneCompany.message}

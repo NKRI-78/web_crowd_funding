@@ -24,7 +24,7 @@ import {
   createProjectPenerbitSchema,
   defaultValues,
   ProjectTypeInterface,
-} from "./create-project-penerbit.schema";
+} from "./form-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CurrencyField from "../inputFormPenerbit/_component/CurrencyField";
 import { API_BACKEND } from "@/app/utils/constant";
@@ -169,8 +169,8 @@ const CreateProjectPenerbit: React.FC = () => {
         company_id: companyId,
         title: data.namaProyek,
         deskripsi: data.deskripsiProyek,
-        // modal: String(data.danaYangDibutuhkan), //* harusnya dana yang dibutuhkan
-        // modal: String(data.danaYangDibutuhkan), //* harusnya modal proyek
+        dana_yang_dibutuhkan: String(data.danaYangDibutuhkan),
+        modal: String(data.modalProyek),
         persentase_keuntungan: String(data.persentaseKeuntungan),
         spk: data.fileSPK,
         loa: data.laporanKeuangan,
@@ -433,14 +433,7 @@ const CreateProjectPenerbit: React.FC = () => {
                       options={{
                         dateFormat: "j F Y",
                         allowInput: false,
-                        minDate: "today",
                         locale: Indonesian,
-                        defaultDate: new Date(new Date().getFullYear(), 0, 1),
-                        onReady: (selectedDates, dateStr, instance) => {
-                          instance.jumpToDate(
-                            new Date(new Date().getFullYear(), 0, 1)
-                          );
-                        },
                       }}
                       className="border p-2 w-full rounded placeholder:text-sm focus:border-gray-400"
                       onChange={(dates) => {
@@ -472,9 +465,6 @@ const CreateProjectPenerbit: React.FC = () => {
                         dateFormat: "j F Y",
                         allowInput: false,
                         locale: Indonesian,
-                        minDate: getValues().tanggalMulaiProyek
-                          ? new Date(getValues().tanggalMulaiProyek)
-                          : "today",
                       }}
                       className="border p-2 w-full rounded placeholder:text-sm focus:border-gray-400"
                       onChange={(dates) => {
@@ -652,7 +642,7 @@ const CreateProjectPenerbit: React.FC = () => {
           />
 
           <FormAlamat
-            index={1}
+            index={0}
             control={control}
             setValue={setValue}
             watch={watch}
