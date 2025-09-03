@@ -16,6 +16,7 @@ interface Props {
   formData: {
     nama: string;
     nik: string;
+    npwp: string;
     tempatLahir: string;
     tanggalLahir: string;
     jenisKelamin: string;
@@ -98,8 +99,10 @@ interface Props {
         company_name: string;
         company_address: string;
         monthly_income: string;
+        annual_income: string;
         npwp_path: string;
         position: string;
+        npwp: string;
       };
     };
     form: string;
@@ -600,6 +603,23 @@ const ComponentDataPribadi: React.FC<Props> = ({
             />
             {errors?.nik && (
               <p className="text-red-500 text-sm mt-1">{errors.nik[0]}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2">
+              Nomor NPWP <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="npwp"
+              value={formData.npwp}
+              onChange={onChange}
+              placeholder="Nomor NPWP"
+              className="border p-2 w-full rounded mb-0 placeholder:text-sm"
+            />
+            {errors?.npwp && (
+              <p className="text-red-500 text-sm mt-1">{errors.npwp[0]}</p>
             )}
           </div>
 
