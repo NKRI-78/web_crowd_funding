@@ -3,14 +3,33 @@
 import { useEffect, useState } from "react";
 import PublisherForm from "./FormPenerbit";
 import FormPenerbit from "@/app/components/inputFormPenerbit/FormPenerbit";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { API_BACKEND } from "@/app/utils/constant";
-import { penerbitUpdateKeys, ProfileUpdate } from "./IUpdateRegistrationKey";
-import Cookies from "js-cookie";
+import { penerbitUpdateKeys } from "./IUpdateRegistrationKey";
 import FormUtusanPenerbit from "./FormUtusanPenerbit";
+import { getUser } from "@/app/lib/auth";
+import { ProfileUpdate } from "./IProfileUpdate";
+import {
+  FORM_INDEX_CACHE_KEY,
+  FORM_PENERBIT_1_CACHE_KEY,
+  FORM_PENERBIT_2_CACHE_KEY,
+  FORM_PIC_CACHE_KEY,
+} from "./form-cache-key";
+import Swal from "sweetalert2";
 
-function getFormIndex(form: string | null): number {
+export interface UpdateFieldValueManajemen {
+  id: string;
+  val: string;
+  type: string;
+}
+
+export interface UpdateFieldValue {
+  val: string;
+  val_array: UpdateFieldValueManajemen[];
+}
+
+const getFormIndexBasedFormKey = (form: string | null): number => {
   console.log("get form index, form= " + form);
   if (!form) return 0;
 
@@ -21,80 +40,169 @@ function getFormIndex(form: string | null): number {
   } else {
     return 0;
   }
-}
+};
 
 export default function MultiStepFormWrapper() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const isUpdate = searchParams.get("update");
-  const form = searchParams.get("form");
+  const formKey = searchParams.get("form");
+
   const [userProfile, setUserProfile] = useState<ProfileUpdate | null>(null);
 
-  const [selectedIndex, setSelectedIndex] = useState<number>(
-    isUpdate ? getFormIndex(form) : 0
+  const [loadingGetFormIndex, setLoadingGetFormIndex] = useState<boolean>(true);
+  const [formIndex, setFormIndex] = useState<number>(
+    isUpdate ? getFormIndexBasedFormKey(formKey) : 0
   );
 
-  const next = () => setSelectedIndex((prev) => prev + 1);
-  const prev = () => setSelectedIndex((prev) => prev - 1);
+  const userCookie = getUser();
 
-  useEffect(() => {
-    if (isUpdate) getUser();
-  }, [isUpdate]);
-
+  //* load cache form index
+  // jadi halaman penerbit terdiri dari 3 view: register pic, form penerbit 1, dan form penerbit 2
+  // tiap view ada index tersendiri sebagai key untuk halaman penerbit bisa mengkondisikan state sekarang harus menampilkan view apa
+  // nah, useEffect ini untuk me-load data form index, tapi hanya diload ketika form tidak dalam mode isUpdate
   useEffect(() => {
     // hanya load cache form index ketika ia tidak sedang dalam mode update
+    setLoadingGetFormIndex(true);
+
     if (!isUpdate) {
-      const formIndexCache = localStorage.getItem("penerbitFormIndex");
-      if (formIndexCache) {
-        setSelectedIndex(Number(formIndexCache));
-      } else {
-        setSelectedIndex(0);
-      }
+      const formIndexCache = localStorage.getItem(FORM_INDEX_CACHE_KEY);
+      setFormIndex(formIndexCache ? Number(formIndexCache) : 0);
+    }
+
+    setLoadingGetFormIndex(false);
+  }, [isUpdate]);
+
+  //* set item form index
+  useEffect(() => {
+    localStorage.setItem(FORM_INDEX_CACHE_KEY, `${formIndex}`);
+  }, [formIndex]);
+
+  //* get data user ketika isUpdate
+  // get data user ketika dalam mode isUpdate, data user akan di-inject kedalam masing2 form
+  useEffect(() => {
+    if (isUpdate) {
+      const fetchUser = async () => {
+        try {
+          if (userCookie) {
+            const res = await axios(`${API_BACKEND}/api/v1/profile`, {
+              headers: {
+                Authorization: `Bearer ${userCookie.token}`,
+              },
+            });
+
+            console.log("update profile? " + isUpdate);
+            console.log("profile = ");
+            console.log(res.data["data"]);
+
+            setUserProfile({ ...res.data["data"], form_key: formKey });
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      };
+      fetchUser();
     }
   }, [isUpdate]);
 
-  useEffect(() => {
-    localStorage.setItem("penerbitFormIndex", `${selectedIndex}`);
-  }, [selectedIndex]);
+  const next = () => setFormIndex((prev) => prev + 1);
+  const prev = () => setFormIndex((prev) => prev - 1);
 
-  const getUser = async () => {
+  //* update data register
+  const onUpdateDataRegister = async (updateFieldValue: UpdateFieldValue) => {
+    const isKTP = formKey?.endsWith("upload-ktp") ?? false;
+    const isNPWP = formKey?.endsWith("upload-npwp") ?? false;
+    const isSusunanManajemen = isKTP || isNPWP;
+
+    const payload = {
+      user_id: userProfile?.id,
+      // ...(formKey === "company-profile"
+      //   ? { company_id: userProfile?.company.id }
+      //   : { project_id: userProfile?.company.projects?.[0]?.id }),
+      project_id: userProfile?.company.projects?.[0]?.id,
+      val: updateFieldValue.val,
+      val_array: isSusunanManajemen ? updateFieldValue.val_array : [],
+    };
+
     try {
-      const userCookie = Cookies.get("user");
-      if (!userCookie) return null;
+      if (userCookie) {
+        await axios.put(
+          `${API_BACKEND}/api/v1/document/update/${formKey}`,
+          payload,
+          {
+            headers: { Authorization: `Bearer ${userCookie.token}` },
+          }
+        );
 
-      const userJson = JSON.parse(userCookie);
+        localStorage.removeItem(FORM_INDEX_CACHE_KEY);
+        localStorage.removeItem(FORM_PIC_CACHE_KEY);
+        localStorage.removeItem(FORM_PENERBIT_1_CACHE_KEY);
+        localStorage.removeItem(FORM_PENERBIT_2_CACHE_KEY);
 
-      const res = await axios(`${API_BACKEND}/api/v1/profile`, {
-        headers: {
-          Authorization: `Bearer ${userJson.token}`,
-        },
-      });
+        await Swal.fire({
+          title: "Berhasil",
+          text: "Data berhasil diupdate",
+          icon: "success",
+          timer: 3000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+        });
 
-      console.log("update profile? " + isUpdate);
-      console.log("profile = ");
-      console.log(res.data["data"]);
-
-      setUserProfile({ ...res.data["data"], form: form });
+        router.back();
+      }
     } catch (error) {
-      console.log(error);
+      Swal.fire({
+        icon: "error",
+        title: "Update Gagal",
+        text: `${error}`,
+        timer: 3000,
+        timerProgressBar: true,
+      });
     }
   };
 
   return (
-    <div>
-      {selectedIndex === 0 && <FormUtusanPenerbit onSubmit={next} />}
-      {selectedIndex === 1 && (
-        <PublisherForm
-          onNext={next}
-          profile={userProfile}
-          isUpdate={isUpdate !== null}
-        />
-      )}
-      {selectedIndex === 2 && (
-        <FormPenerbit
-          onBack={prev}
-          profile={userProfile}
-          isUpdate={isUpdate !== null}
-        />
+    <div className="py-28 bg-white">
+      {loadingGetFormIndex ? (
+        <div className="w-full h-[calc(100vh-28px)] flex flex-col items-center justify-center gap-4">
+          <div className="w-10 h-10 border-4 border-[#13733b] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-600">Memuat halaman...</p>
+        </div>
+      ) : (
+        <>
+          {formIndex === 0 && (
+            <FormUtusanPenerbit
+              profile={userProfile}
+              isUpdate={isUpdate !== null}
+              onUpdateCallback={(val) => {
+                onUpdateDataRegister(val);
+              }}
+              onSubmitCallback={next}
+            />
+          )}
+
+          {formIndex === 1 && (
+            <PublisherForm
+              onNext={next}
+              profile={userProfile}
+              isUpdate={isUpdate !== null}
+            />
+          )}
+
+          {formIndex === 2 && (
+            <FormPenerbit
+              profile={userProfile}
+              isUpdate={isUpdate !== null}
+              onBack={prev}
+              onUpdateCallback={(val) => {
+                onUpdateDataRegister(val);
+              }}
+              onSubmidCallback={() => {
+                router.back();
+              }}
+            />
+          )}
+        </>
       )}
     </div>
   );

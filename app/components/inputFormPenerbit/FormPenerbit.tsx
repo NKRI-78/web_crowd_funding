@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   useForm,
-  Controller,
   FormProvider,
   useFieldArray,
   useWatch,
@@ -12,23 +11,17 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import Swal from "sweetalert2";
 import axios from "axios";
-import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
 
 import SectionTitle from "./_component/SectionTitle";
 import SectionPoint from "./_component/SectionPoint";
-import SectionSubtitle from "./_component/SectionSubtitle";
-import FileInput from "./_component/FileInput";
 import JobStructureForm from "./_component/JobStructureForm";
 import AddButton from "./_component/AddButton";
 import FormButton from "./_component/FormButton";
 import UpdateRing from "./_component/UpdateRing";
-import NPWPUploader from "@app/(defaults)/form-penerbit/components/UploadNPWP";
 
 import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { IFormPublisher } from "@/app/interface/IFormPublisher";
 import { getUser } from "@/app/lib/auth";
-import { ProfileUpdate } from "@/app/(defaults)/form-penerbit/IUpdateRegistrationKey";
 
 import {
   MAX_DIREKTUR,
@@ -37,12 +30,21 @@ import {
   FormPenerbitValues,
 } from "./formPenerbit.schema";
 import FileUpload from "@/app/helper/FileUpload";
-import { sanitizeNPWPOrThrow } from "@/app/lib/npwp-formart";
+import { ProfileUpdate } from "@/app/(defaults)/form-penerbit/IProfileUpdate";
+import {
+  FORM_INDEX_CACHE_KEY,
+  FORM_PENERBIT_1_CACHE_KEY,
+  FORM_PENERBIT_2_CACHE_KEY,
+  FORM_PIC_CACHE_KEY,
+} from "@/app/(defaults)/form-penerbit/form-cache-key";
+import { UpdateFieldValue } from "@/app/(defaults)/form-penerbit/PenerbitParent";
 
 type Props = {
-  onBack: () => void;
   profile: ProfileUpdate | null;
   isUpdate: boolean;
+  onBack: () => void;
+  onSubmidCallback: () => void;
+  onUpdateCallback: (val: UpdateFieldValue) => void;
 };
 
 const emptyDirektur = () => ({
@@ -74,17 +76,20 @@ const defaultFormValues: FormPenerbitValues = {
   tdp: "",
   laporanKeuangan: "",
   rekeningKoran: "",
-  // npwp: "",
   direktur: [emptyDirektur()],
   komisaris: [emptyKomisaris()],
   total_employees: "",
   agree: false,
 };
 
-const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
-  const router = useRouter();
+const FormPenerbit: React.FC<Props> = ({
+  onBack,
+  profile,
+  isUpdate,
+  onSubmidCallback,
+  onUpdateCallback,
+}) => {
   const [isReady, setIsReady] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
 
   const methods = useForm<FormPenerbitValues>({
@@ -93,11 +98,13 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
     defaultValues: defaultFormValues,
   });
 
+  const formKey = profile?.form_key;
+
   const clearDraft = () => {
-    localStorage.removeItem("publisherDraft");
-    localStorage.removeItem("penerbitFormIndex");
-    localStorage.removeItem("utusanPenerbitCache");
-    localStorage.removeItem("penerbitFormIndex");
+    localStorage.removeItem(FORM_INDEX_CACHE_KEY);
+    localStorage.removeItem(FORM_PIC_CACHE_KEY);
+    localStorage.removeItem(FORM_PENERBIT_1_CACHE_KEY);
+    localStorage.removeItem(FORM_PENERBIT_2_CACHE_KEY);
     setIsClearing(true);
     reset(defaultFormValues);
     setTimeout(() => setIsClearing(false), 500);
@@ -106,11 +113,9 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     setValue,
     reset,
-    trigger,
-    resetField,
     watch,
   } = methods;
 
@@ -141,6 +146,19 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
     if (isUpdate && profile?.company) {
       const c = profile.company;
       reset({
+        sk_kumham_terahkir: c.sk_kumham_terahkir,
+
+        // siup
+        siup: c.sk_kumham_terahkir,
+        // tdp
+        tdp: c.sk_kumham_terahkir,
+
+        fileNpwp: c.npwp_path,
+        company_nib_path: c.nib_path,
+        akta_pendirian: c.akta_pendirian,
+        sk_kumham_path: c.sk_kumham_path,
+        akta_perubahan_terahkir_path: c.akta_perubahan_terahkir,
+        total_employees: `${c.total_employees}`,
         laporanKeuangan: c.laporan_keuangan_path ?? "",
         rekeningKoran: c.rekening_koran ?? "",
         direktur: c.directors?.map((d) => ({
@@ -167,9 +185,9 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
     }
   }, [isUpdate, profile]);
 
-  const submitAdd = async () => {
+  const handleRegisterCompany = async () => {
     try {
-      const draft = localStorage.getItem("publisherDraft");
+      const draft = localStorage.getItem(FORM_PENERBIT_2_CACHE_KEY);
       const userData = getUser();
       if (!draft || !userData) return;
 
@@ -255,7 +273,6 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
       console.log(res);
 
       clearDraft();
-      setSubmitted(true);
 
       await Swal.fire({
         title: "Berhasil",
@@ -266,7 +283,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
         showConfirmButton: false,
       });
 
-      router.push("/dashboard");
+      onSubmidCallback();
     } catch (error: any) {
       Swal.fire({
         icon: "error",
@@ -280,61 +297,25 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
     }
   };
 
-  const getUpdateDocumentValueBasedFormKey = (
-    values: FormPenerbitValues
-  ): string => {
-    if (!profile?.form) return "-";
-
-    let val = "-";
-
-    try {
-      // switch (profile.form) {
-      //   case "sk-kumham-terakhir":
-      //     val = values.sk_kumham_terahkir;
-      //     break;
-      //   case "siup":
-      //     val = values.siup;
-      //     break;
-      //   case "tdp":
-      //     val = values.tdp;
-      //     break;
-      //   case "nib":
-      //     val = values.;
-      //     break;
-      //   case "sk-kumham-terakhir":
-      //     val = pub.sk_kumham_terahkir;
-      //     break;
-      //   case "jumlah-karyawan":
-      //     val = pub.total_employees;
-      //     break;
-      //   default:
-      //     val = "-";
-      // }
-    } catch {
-      val = "-";
-    }
-    return val;
-  };
-
-  const submitUpdate = async (values: FormPenerbitValues) => {
-    const isKTP = profile?.form?.endsWith("upload-ktp") ?? false;
-    const isNPWP = profile?.form?.endsWith("upload-npwp") ?? false;
+  const handleUpdateRegister = async (values: FormPenerbitValues) => {
+    const isKTP = profile?.form_key?.endsWith("upload-ktp") ?? false;
+    const isNPWP = profile?.form_key?.endsWith("upload-npwp") ?? false;
     const isSusunanManajemen = isKTP || isNPWP;
-    const isDirekturForm = profile?.form?.includes("direktur") ?? false;
+    const isDirekturForm = profile?.form_key?.includes("direktur") ?? false;
 
     let idManajemen = "-";
     let valManajemen = "-";
 
     if (isSusunanManajemen) {
       if (isDirekturForm) {
-        const idx = Number(profile?.form?.[0] ?? 0);
+        const idx = Number(profile?.form_key?.[0] ?? 0);
         const row = values.direktur[idx];
         if (row) {
           idManajemen = row.id ?? String(idx);
           valManajemen = isKTP ? row.fileKTP : row.fileNPWP;
         }
       } else {
-        const idx = Number(profile?.form?.[0] ?? 0);
+        const idx = Number(profile?.form_key?.[0] ?? 0);
         const row = values.komisaris[idx];
         if (row) {
           idManajemen = row.id ?? String(idx);
@@ -343,64 +324,21 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
       }
     }
 
-    const payload = {
-      ...(profile?.form === "company-profile"
-        ? { company_id: profile?.company.id }
-        : { project_id: profile?.company.projects?.[0]?.id }),
-      val: getUpdateDocumentValueBasedFormKey(values),
+    onUpdateCallback({
+      val: getUpdateFieldValueBasedFormKey(values),
       val_array: isSusunanManajemen
         ? [{ id: idManajemen, val: valManajemen, type: isKTP ? "ktp" : "npwp" }]
         : [],
-    };
-
-    try {
-      const userCookie = Cookies.get("user");
-      if (!userCookie) return;
-      const userJson = JSON.parse(userCookie);
-
-      await axios.put(
-        `${API_BACKEND}/api/v1/document/update/${profile?.form}`,
-        payload,
-        {
-          headers: { Authorization: `Bearer ${userJson.token}` },
-        }
-      );
-
-      localStorage.removeItem("publisherDraft");
-      localStorage.removeItem("utusanPenerbitCache");
-      localStorage.removeItem("utusanPenerbitCache");
-      localStorage.removeItem("penerbitFormIndex");
-      setSubmitted(true);
-
-      await Swal.fire({
-        title: "Berhasil",
-        text: "Data berhasil diupdate",
-        icon: "success",
-        timer: 3000,
-        timerProgressBar: true,
-        showConfirmButton: false,
-      });
-
-      router.push("/");
-    } catch (error) {
-      console.log(error);
-      Swal.fire({
-        icon: "error",
-        title: "Update Gagal",
-        text: `${error}`,
-        timer: 3000,
-        timerProgressBar: true,
-      });
-    }
+    });
   };
 
   const onSubmit = handleSubmit(async (values) => {
-    if (isUpdate) return submitUpdate(values);
-    return submitAdd();
+    if (isUpdate) return handleUpdateRegister(values);
+    return handleRegisterCompany();
   });
 
   useEffect(() => {
-    const draft = localStorage.getItem("publisherDraft");
+    const draft = localStorage.getItem(FORM_PENERBIT_2_CACHE_KEY);
     if (draft) {
       reset(JSON.parse(draft));
     }
@@ -411,7 +349,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
   useEffect(() => {
     if (!isReady || isClearing) return; // 🚩 skip save kalau sedang clear
     const timeout = setTimeout(() => {
-      localStorage.setItem("publisherDraft", JSON.stringify(values));
+      localStorage.setItem(FORM_PENERBIT_2_CACHE_KEY, JSON.stringify(values));
     }, 1000);
     return () => clearTimeout(timeout);
   }, [values, isReady, isClearing]);
@@ -473,16 +411,42 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
 
   const agree = watch(`agree`);
 
+  const getUpdateFieldValueBasedFormKey = (
+    values: FormPenerbitValues
+  ): string => {
+    if (!formKey) return "-";
+
+    switch (formKey) {
+      case "sk-kumham-terakhir":
+        return values.sk_kumham_terahkir;
+      case "siup":
+        return values.siup;
+      case "tdp":
+        return values.tdp;
+      case "npwp":
+        return values.fileNpwp;
+      case "akta-pendirian-perusahaan":
+        return values.akta_pendirian;
+      case "sk-kumham-pendirian":
+        return values.sk_kumham_path;
+      case "akta-perubahan-terakhir":
+        return values.akta_perubahan_terahkir_path;
+      case "laporan-keuangan":
+        return values.laporanKeuangan;
+      case "rekening-koran":
+        return values.rekeningKoran;
+      default:
+        return "-";
+    }
+  };
+
   return (
     <FormProvider {...methods}>
       <div className="px-6 md:px-24 bg-white">
-        <div className="w-full py-28 text-black grid grid-cols-1 md:grid-cols-2 gap-10 mx-auto">
+        <div className="w-full text-black grid grid-cols-1 md:grid-cols-2 gap-10 mx-auto">
           <section className="w-full">
             <div className="grid grid-cols-2 gap-4">
-              <UpdateRing
-                identity={"sk-kumham-terakhir"}
-                formKey={profile?.form}
-              >
+              <UpdateRing identity={"sk-kumham-terakhir"} formKey={formKey}>
                 <FileUpload
                   label="SK Kumham Terakhir"
                   fileUrl={watch("sk_kumham_terahkir")}
@@ -490,7 +454,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
                   error={errors?.sk_kumham_terahkir?.message}
                 />
               </UpdateRing>
-              <UpdateRing identity={"siup"} formKey={profile?.form}>
+              <UpdateRing identity={"siup"} formKey={formKey}>
                 <FileUpload
                   label="Surat Izin Usaha Perdagangan (SIUP)"
                   fileUrl={watch("siup")}
@@ -498,7 +462,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
                   error={errors?.siup?.message}
                 />
               </UpdateRing>
-              <UpdateRing identity={"tdp"} formKey={profile?.form}>
+              <UpdateRing identity={"tdp"} formKey={formKey}>
                 <FileUpload
                   label="Tanda Daftar Perusahaan (TDP)"
                   fileUrl={watch("tdp")}
@@ -506,7 +470,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
                   error={errors?.tdp?.message}
                 />
               </UpdateRing>
-              <UpdateRing identity={"npwp"} formKey={profile?.form}>
+              <UpdateRing identity={"npwp"} formKey={formKey}>
                 <FileUpload
                   label="NPWP"
                   fileUrl={watch("fileNpwp")}
@@ -515,7 +479,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
                 />
               </UpdateRing>
 
-              <UpdateRing identity={"nib"} formKey={profile?.form}>
+              <UpdateRing identity={"nib"} formKey={formKey}>
                 <FileUpload
                   label="Nomor Induk Berusaha (NIB)"
                   fileUrl={watch("company_nib_path")}
@@ -526,7 +490,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
 
               <UpdateRing
                 identity={"akta-pendirian-perusahaan"}
-                formKey={profile?.form}
+                formKey={formKey}
               >
                 <FileUpload
                   label="Akte Pendirian Perusahaan"
@@ -536,10 +500,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
                 />
               </UpdateRing>
 
-              <UpdateRing
-                identity={"sk-kumham-pendirian"}
-                formKey={profile?.form}
-              >
+              <UpdateRing identity={"sk-kumham-pendirian"} formKey={formKey}>
                 <FileUpload
                   label="SK Kumham Pendirian"
                   fileUrl={watch("sk_kumham_path")}
@@ -550,7 +511,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
 
               <UpdateRing
                 identity={"akta-perubahan-terakhir"}
-                formKey={profile?.form}
+                formKey={formKey}
               >
                 <FileUpload
                   label="Akte Perubahan Terakhir"
@@ -590,7 +551,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
               <div className="flex flex-col">
                 <SectionTitle text="2. Struktur Permodalan" />
                 <div className="my-1" />
-                <UpdateRing identity="laporan-keuangan" formKey={profile?.form}>
+                <UpdateRing identity="laporan-keuangan" formKey={formKey}>
                   <FileUpload
                     label="Laporan Keuangan"
                     fileUrl={watch("laporanKeuangan")}
@@ -601,7 +562,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
               </div>
 
               <div className="flex flex-col">
-                <UpdateRing identity="rekening-koran" formKey={profile?.form}>
+                <UpdateRing identity="rekening-koran" formKey={formKey}>
                   <FileUpload
                     label="Rekening Koran"
                     fileUrl={watch("rekeningKoran")}
@@ -625,7 +586,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
                   index={index}
                   isKomisaris={false}
                   hasDirekturUtama={hasDirekturUtama}
-                  updateFormKey={profile?.form}
+                  updateFormKey={formKey}
                   updateIdentity={`${index}-direktur`}
                   onDelete={() => direkturFA.remove(index)}
                 />
@@ -658,7 +619,7 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
                   index={index}
                   isKomisaris
                   hasKomisarisUtama={hasKomisarisUtama}
-                  updateFormKey={profile?.form}
+                  updateFormKey={formKey}
                   updateIdentity={`${index}-komisaris`}
                   onDelete={() => komisarisFA.remove(index)}
                 />
@@ -707,9 +668,11 @@ const FormPenerbit: React.FC<Props> = ({ onBack, profile, isUpdate }) => {
             </div>
 
             <div className="w-full flex justify-end gap-4 mt-6">
-              <FormButton onClick={onBack} type="outlined">
-                Kembali
-              </FormButton>
+              {!isUpdate && (
+                <FormButton onClick={onBack} type="outlined">
+                  Kembali
+                </FormButton>
+              )}
               <FormButton
                 onClick={onSubmit}
                 disabled={!agree}
