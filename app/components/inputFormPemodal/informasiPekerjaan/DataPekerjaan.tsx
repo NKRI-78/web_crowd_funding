@@ -943,56 +943,6 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           </div>
         </div>
 
-        <div className="mb-4 mt-4">
-          <label className="text-md mb-2">
-            NPWP Perusahaan <span className="text-red-500">*</span>
-          </label>
-
-          <p className="text-sm text-gray-400 mb-2">
-            File maksimal berukuran 10mb
-          </p>
-          <UpdateRing
-            identity={`${dataProfile?.form}`}
-            // formKey={dataProfile?.form}
-            formKey="npwp"
-          >
-            {/* Input File yang disembunyikan */}
-            <input
-              type="file"
-              id="npwpUrlUpload"
-              className="hidden"
-              onChange={handleFileChange}
-              disabled={uploadStatus["npwpUrl"] === true}
-              accept="application/pdf, image/*"
-              data-keyname="npwpUrl"
-            />
-
-            {/* Label sebagai tombol */}
-            <label
-              htmlFor="npwpUrlUpload"
-              className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
-            >
-              <>
-                <FaFileAlt />
-                Upload Dokumen
-              </>
-            </label>
-            {typeof window !== "undefined" && formData.npwpUrl && (
-              <button
-                type="button"
-                onClick={onLihatNPWP}
-                className="text-blue-600 underline text-sm block mt-2 mb-2"
-              >
-                Lihat NPWP
-              </button>
-            )}
-
-            {errors?.npwpUrl && (
-              <p className="text-red-500 text-sm mt-1">{errors.npwpUrl[0]}</p>
-            )}
-          </UpdateRing>
-        </div>
-
         {/* <div className="mb-4 mt-4">
           <label className="text-md mb-2">
             Foto Pemodal <span className="text-red-500">*</span>
@@ -1040,7 +990,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           </p>
         )} */}
 
-        <div className="mb-6">
+        <div className="mb-6 mt-6">
           <h3 className="font-semibold text-gray-900 mb-2">
             Pernyataan Kebenaran Data
           </h3>

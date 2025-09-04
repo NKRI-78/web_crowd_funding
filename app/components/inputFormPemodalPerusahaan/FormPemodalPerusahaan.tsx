@@ -328,7 +328,7 @@ const FormPemodalPerusahaan: React.FC<FormPemodalPerusahaanProps> = ({
             type="text"
             value={formFields.noNpwpFormatted || ""}
             onChange={(val) => {
-              const rawValue = val.target.value.replace(/\D/g, ""); // hanya angka
+              const rawValue = val.target.value.replace(/\D/g, "");
               let formattedValue = rawValue;
 
               if (rawValue.length > 2) {

@@ -80,15 +80,6 @@ const FormPemodal: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    // const userCookie = Cookies.get("user");
-    // console.log(userCookie, "userCookie");
-    // if (!userCookie) return;
-
-    // const user = JSON.parse(userCookie);
-    // const userToken = user?.token;
-
-    // if (!userToken) return;
-
     const userCookie = Cookies.get("user");
     if (!userCookie) return;
 
@@ -99,11 +90,6 @@ const FormPemodal: React.FC = () => {
     setToken(token);
 
     const fetchProfile = async () => {
-      // if (!token) {
-      //   console.warn("Token tidak ditemukan di cookies.");
-      //   return;
-      // }
-
       try {
         setIsLoading(true);
         const response = await axios.get(`${API_BACKEND}/api/v1/profile`, {
@@ -191,7 +177,7 @@ const FormPemodal: React.FC = () => {
             toleransiResiko: data.risk?.tolerance || "",
             pengalamanInvestasi: data.risk?.experience || "",
             pengetahuanPasarModal: data.risk?.pengetahuan_pasar_modal || "",
-            setujuKebenaranData: true, // jika ingin auto-centang
+            setujuKebenaranData: true,
             setujuRisikoInvestasi: true,
             signature: data.signature_path || "",
           }));
@@ -215,7 +201,6 @@ const FormPemodal: React.FC = () => {
   );
 
   function getFormIndex(form: string | null): number {
-    // console.log("get form index, form= " + form);
     if (!form) return 0;
 
     const lowerForm = form.toLowerCase();
@@ -225,11 +210,10 @@ const FormPemodal: React.FC = () => {
     } else if (lowerForm.includes("npwp")) {
       return 1;
     } else {
-      return 0; // default fallback jika tidak ketemu
+      return 0;
     }
   }
 
-  // const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(
     isUpdate ? getFormIndex(form) : 0
   );
@@ -240,14 +224,13 @@ const FormPemodal: React.FC = () => {
     Record<string, string[]>
   >({});
 
-  // Zod schema untuk Data Pribadi
   const schemaDataPribadi = z
     .object({
       nama: z.string().min(1, "Nama wajib diisi"),
 
       nik: z
         .string({ required_error: "NIK wajib diisi" })
-        .min(1, "NIK wajib diisi") // tampilkan error jika kosong
+        .min(1, "NIK wajib diisi")
         .refine((val) => val.length === 16, {
           message: "NIK harus 16 digit",
         }),
@@ -352,7 +335,7 @@ const FormPemodal: React.FC = () => {
       setujuKebenaranData: z.literal(true),
       setujuRisikoInvestasi: z.literal(true),
       // signature: z.string().min(1, "Tanda tangan wajib"),
-      npwpUrl: z.string().min(1, "Upload NPWP wajib"),
+      // npwpUrl: z.string().min(1, "Upload NPWP wajib"),
       // fotoPemodalUrl: z.string().min(1, "Upload Foto wajib"),
       provincePekerjaan: z
         .object({
