@@ -58,6 +58,8 @@ const FormPemodal: React.FC = () => {
         monthly_income: string;
         npwp_path: string;
         position: string;
+        npwp: string;
+        annual_income: string;
       };
       risk: {
         goal: string;
@@ -78,15 +80,6 @@ const FormPemodal: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    // const userCookie = Cookies.get("user");
-    // console.log(userCookie, "userCookie");
-    // if (!userCookie) return;
-
-    // const user = JSON.parse(userCookie);
-    // const userToken = user?.token;
-
-    // if (!userToken) return;
-
     const userCookie = Cookies.get("user");
     if (!userCookie) return;
 
@@ -97,11 +90,6 @@ const FormPemodal: React.FC = () => {
     setToken(token);
 
     const fetchProfile = async () => {
-      // if (!token) {
-      //   console.warn("Token tidak ditemukan di cookies.");
-      //   return;
-      // }
-
       try {
         setIsLoading(true);
         const response = await axios.get(`${API_BACKEND}/api/v1/profile`, {
@@ -165,6 +153,7 @@ const FormPemodal: React.FC = () => {
             jabatan: data.investor.job?.position || "",
             alamatPerusahaan: data.investor.job?.company_address || "",
             penghasilanBulanan: data.investor.job?.monthly_income || "",
+            penghasilanTahunan: data.investor.job?.annual_income || "",
             npwpUrl: data.investor.job?.npwp_path || "",
             fotoPemodalUrl: data.avatar || "",
 
@@ -188,7 +177,7 @@ const FormPemodal: React.FC = () => {
             toleransiResiko: data.risk?.tolerance || "",
             pengalamanInvestasi: data.risk?.experience || "",
             pengetahuanPasarModal: data.risk?.pengetahuan_pasar_modal || "",
-            setujuKebenaranData: true, // jika ingin auto-centang
+            setujuKebenaranData: true,
             setujuRisikoInvestasi: true,
             signature: data.signature_path || "",
           }));
@@ -212,7 +201,6 @@ const FormPemodal: React.FC = () => {
   );
 
   function getFormIndex(form: string | null): number {
-    // console.log("get form index, form= " + form);
     if (!form) return 0;
 
     const lowerForm = form.toLowerCase();
@@ -222,11 +210,10 @@ const FormPemodal: React.FC = () => {
     } else if (lowerForm.includes("npwp")) {
       return 1;
     } else {
-      return 0; // default fallback jika tidak ketemu
+      return 0;
     }
   }
 
-  // const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(
     isUpdate ? getFormIndex(form) : 0
   );
@@ -237,17 +224,17 @@ const FormPemodal: React.FC = () => {
     Record<string, string[]>
   >({});
 
-  // Zod schema untuk Data Pribadi
   const schemaDataPribadi = z
     .object({
       nama: z.string().min(1, "Nama wajib diisi"),
-      // nik: z.string().length(16, "NIK harus 16 digit"),
+
       nik: z
         .string({ required_error: "NIK wajib diisi" })
-        .min(1, "NIK wajib diisi") // tampilkan error jika kosong
+        .min(1, "NIK wajib diisi")
         .refine((val) => val.length === 16, {
           message: "NIK harus 16 digit",
         }),
+      npwp: z.string().min(1, "Nomor Npwp wajib diisi"),
       tempatLahir: z.string().min(1, "Tempat lahir wajib diisi"),
       tanggalLahir: z.string().min(1, "Tanggal lahir wajib diisi"),
       jenisKelamin: z.string().min(1, "Jenis kelamin wajib diisi"),
@@ -269,7 +256,7 @@ const FormPemodal: React.FC = () => {
       namaPemilik: z.string().min(1, "Nama pemilik rekening wajib diisi"),
       cabangBank: z.string().min(1, "Cabang bank wajib diisi"),
       ktpUrl: z.string().min(1, "Upload KTP wajib"),
-      rekeningKoran: z.string().optional(), // jika perlu
+      rekeningKoran: z.string().optional(),
       provincePribadi: z
         .object({
           value: z.string(),
@@ -328,13 +315,14 @@ const FormPemodal: React.FC = () => {
         path: ["pekerjaanLainnya"],
       }
     );
-  // Zod schema untuk Data Pekerjaan
+
   const schemaDataPekerjaan = z
     .object({
       namaPerusahaan: z.string().min(1, "Nama perusahaan wajib diisi"),
       jabatan: z.string().min(1, "Jabatan wajib diisi"),
       alamatPerusahaan: z.string().min(1, "Alamat perusahaan wajib diisi"),
-      penghasilanBulanan: z.string().min(1, "Penghasilan tahunan wajib diisi"),
+      // penghasilanBulanan: z.string().min(1, "Penghasilan tahunan wajib diisi"),
+      penghasilanTahunan: z.string().min(1, "Penghasilan tahunan wajib diisi"),
       tujuanInvestasi: z.string().min(1, "Tujuan investasi wajib diisi"),
       tujuanInvestasiLainnya: z.string().optional(),
       toleransiResiko: z.string().min(1, "Toleransi resiko wajib diisi"),
@@ -347,7 +335,7 @@ const FormPemodal: React.FC = () => {
       setujuKebenaranData: z.literal(true),
       setujuRisikoInvestasi: z.literal(true),
       // signature: z.string().min(1, "Tanda tangan wajib"),
-      npwpUrl: z.string().min(1, "Upload NPWP wajib"),
+      // npwpUrl: z.string().min(1, "Upload NPWP wajib"),
       // fotoPemodalUrl: z.string().min(1, "Upload Foto wajib"),
       provincePekerjaan: z
         .object({
@@ -412,6 +400,7 @@ const FormPemodal: React.FC = () => {
         return {
           nama: parsed.nama || "",
           nik: parsed.nik || "",
+          npwp: parsed.npwp || "",
           tempatLahir: parsed.tempatLahir || "",
           tanggalLahir: parsed.tanggalLahir || "",
           jenisKelamin: parsed.jenisKelamin || "",
@@ -444,6 +433,7 @@ const FormPemodal: React.FC = () => {
     return {
       nama: "",
       nik: "",
+      npwp: "",
       tempatLahir: "",
       tanggalLahir: "",
       jenisKelamin: "",
@@ -452,9 +442,7 @@ const FormPemodal: React.FC = () => {
       pekerjaan: "",
       pekerjaanLainnya: "",
       addres: "",
-      // namaBank: { value: "", label: "" },
       namaBank: null,
-
       nomorRekening: "",
       namaPemilik: "",
       cabangBank: "",
@@ -481,6 +469,7 @@ const FormPemodal: React.FC = () => {
           jabatan: parsed.jabatan || "",
           alamatPerusahaan: parsed.alamatPerusahaan || "",
           penghasilanBulanan: parsed.penghasilanBulanan || "",
+          penghasilanTahunan: parsed.penghasilanTahunan || "",
           tujuanInvestasi: parsed.tujuanInvestasi || "",
           tujuanInvestasiLainnya: parsed.tujuanInvestasiLainnya || "",
           toleransiResiko: parsed.toleransiResiko || "",
@@ -508,6 +497,7 @@ const FormPemodal: React.FC = () => {
       jabatan: "",
       alamatPerusahaan: "",
       penghasilanBulanan: "",
+      penghasilanTahunan: "",
       tujuanInvestasi: "",
       tujuanInvestasiLainnya: "",
       toleransiResiko: "",
@@ -523,7 +513,6 @@ const FormPemodal: React.FC = () => {
       districtPekerjaan: null,
       subDistrictPekerjaan: null,
       posCodePekerjaan: "",
-      // namaBank_efek: { value: "", label: "" },
       namaBank_efek: null,
       nomorRekening_efek: "",
       namaPemilik_efek: "",
@@ -602,6 +591,7 @@ const FormPemodal: React.FC = () => {
         setDataPribadi({
           nama: parsed.nama || "",
           nik: parsed.nik || "",
+          npwp: parsed.npwp || "",
           tempatLahir: parsed.tempatLahir || "",
           tanggalLahir: parsed.tanggalLahir || "",
           jenisKelamin: parsed.jenisKelamin || "",
@@ -631,6 +621,7 @@ const FormPemodal: React.FC = () => {
           jabatan: parsed.jabatan || "",
           alamatPerusahaan: parsed.alamatPerusahaan || "",
           penghasilanBulanan: parsed.penghasilanBulanan || "",
+          penghasilanTahunan: parsed.penghasilanTahunan || "",
           tujuanInvestasi: parsed.tujuanInvestasi || "",
           tujuanInvestasiLainnya: parsed.tujuanInvestasiLainnya || "",
           toleransiResiko: parsed.toleransiResiko || "",
@@ -716,6 +707,13 @@ const FormPemodal: React.FC = () => {
     setDataPekerjaan((prev) => ({
       ...prev,
       penghasilanBulanan: penghasilanBulanan,
+    }));
+  };
+
+  const handlePenghasilanTahunanChange = (penghasilanTahunan: string) => {
+    setDataPekerjaan((prev) => ({
+      ...prev,
+      penghasilanTahunan: penghasilanTahunan,
     }));
   };
 
@@ -912,23 +910,6 @@ const FormPemodal: React.FC = () => {
               ? data.pekerjaanLainnya
               : data.pekerjaan,
           signature_path: data.signature,
-          // location: {
-          //   name: "-",
-          //   url: "-",
-          //   lat: "-",
-          //   lng: "-",
-          // },
-          // doc: {
-          //   id: "-",
-          //   path: "-",
-          // },
-          // capital: "-",
-          // roi: "-",
-          // min_invest: "-",
-          // unit_price: "-",
-          // unit_total: "-",
-          // number_of_unit: "-",
-          // periode: "-",
           nama_ahli_waris: data.name_heir,
           phone_ahli_waris: data.phone_heir,
           slip_gaji: data.slipGajiUrl,
@@ -954,6 +935,8 @@ const FormPemodal: React.FC = () => {
             position: data.jabatan,
             monthly_income: data.penghasilanBulanan,
             npwp_path: data.npwpUrl,
+            npwp: data.npwp,
+            annual_income: data.penghasilanTahunan,
           },
           risk: {
             goal:
@@ -975,6 +958,8 @@ const FormPemodal: React.FC = () => {
             },
           }
         );
+
+        console.log("Payload akan dikirim:", payload);
       } else {
         const payload = {
           val: form === "ktp" ? data.ktpUrl : data.npwpUrl,
@@ -993,6 +978,8 @@ const FormPemodal: React.FC = () => {
             dataType = "";
         }
 
+        console.log("Payload update:", { dataType, payload });
+
         const response = await axios.put(
           `${API_BACKEND}/api/v1/document/update/user/${dataType}`,
           payload,
@@ -1000,7 +987,6 @@ const FormPemodal: React.FC = () => {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-            // params: { type: dataType },
           }
         );
       }
@@ -1017,7 +1003,6 @@ const FormPemodal: React.FC = () => {
         icon: "success",
         timer: 3000,
         timerProgressBar: true,
-        // showConfirmButton: false,
       }).then(() => {
         setSelectedIndex(0);
         router.push("/dashboard");
@@ -1107,6 +1092,7 @@ const FormPemodal: React.FC = () => {
             formData={dataPekerjaan}
             onChange={handleChangeDataPekerjaan}
             onPenghasilanBulanan={handlePenghasilanBulananChange}
+            onPenghasilanTahunan={handlePenghasilanTahunanChange}
             onTujuanInvetasi={handleonTujuanInvetasiChange}
             onToleransiResiko={handleToleransiResikoChange}
             onPengalamanInvestasi={handlePengalamanInvestasi}

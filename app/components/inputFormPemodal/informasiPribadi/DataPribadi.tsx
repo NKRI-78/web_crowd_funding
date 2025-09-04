@@ -11,11 +11,14 @@ import { API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { compressImage } from "@/app/helper/CompressorImage";
 import UpdateRing from "../component/UpdateRing";
 import ContainerSelfie from "../component/ContainerSelfie";
+import TextField from "@/app/components/inputFormPemodalPerusahaan/component/TextField";
 
 interface Props {
   formData: {
     nama: string;
     nik: string;
+    npwp: string;
+    noNpwpFormatted?: string;
     tempatLahir: string;
     tanggalLahir: string;
     jenisKelamin: string;
@@ -98,8 +101,10 @@ interface Props {
         company_name: string;
         company_address: string;
         monthly_income: string;
+        annual_income: string;
         npwp_path: string;
         position: string;
+        npwp: string;
       };
     };
     form: string;
@@ -520,7 +525,8 @@ const ComponentDataPribadi: React.FC<Props> = ({
   useEffect(() => {
     if (
       !dataProfile?.investor.bank?.bank_name ||
-      customOptionsBank.length === 0
+      customOptionsBank.length === 0 ||
+      !isUpdate
     )
       return;
 
@@ -600,6 +606,85 @@ const ComponentDataPribadi: React.FC<Props> = ({
             />
             {errors?.nik && (
               <p className="text-red-500 text-sm mt-1">{errors.nik[0]}</p>
+            )}
+          </div>
+
+          {/* <div>
+            <label className="text-sm font-medium mb-2">
+              Nomor NPWP <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="npwp"
+              value={formData.npwp}
+              onChange={onChange}
+              placeholder="Nomor NPWP"
+              className="border p-2 w-full rounded mb-0 placeholder:text-sm"
+            />
+            {errors?.npwp && (
+              <p className="text-red-500 text-sm mt-1">{errors.npwp[0]}</p>
+            )}
+          </div> */}
+
+          <div>
+            <label className="text-sm font-medium mb-2">
+              Nomor NPWP <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="npwp"
+              value={formData.noNpwpFormatted || ""}
+              onChange={(e) => {
+                const rawValue = e.target.value.replace(/\D/g, "");
+                let formattedValue = rawValue;
+
+                if (rawValue.length > 2) {
+                  formattedValue =
+                    rawValue.slice(0, 2) + "." + rawValue.slice(2);
+                }
+                if (rawValue.length > 5) {
+                  formattedValue =
+                    formattedValue.slice(0, 6) + "." + formattedValue.slice(6);
+                }
+                if (rawValue.length > 8) {
+                  formattedValue =
+                    formattedValue.slice(0, 10) +
+                    "." +
+                    formattedValue.slice(10);
+                }
+                if (rawValue.length > 9) {
+                  formattedValue =
+                    formattedValue.slice(0, 12) +
+                    "-" +
+                    formattedValue.slice(12);
+                }
+                if (rawValue.length > 12) {
+                  formattedValue =
+                    formattedValue.slice(0, 16) +
+                    "." +
+                    formattedValue.slice(16);
+                }
+
+                onChange({
+                  target: {
+                    name: "npwp",
+                    value: rawValue,
+                  },
+                } as React.ChangeEvent<HTMLInputElement>);
+
+                onChange({
+                  target: {
+                    name: "noNpwpFormatted",
+                    value: formattedValue,
+                  },
+                } as React.ChangeEvent<HTMLInputElement>);
+              }}
+              maxLength={20}
+              placeholder="Nomor NPWP"
+              className="border p-2 w-full rounded mb-0 placeholder:text-sm"
+            />
+            {errors?.npwp && (
+              <p className="text-red-500 text-sm mt-1">{errors.npwp[0]}</p>
             )}
           </div>
 

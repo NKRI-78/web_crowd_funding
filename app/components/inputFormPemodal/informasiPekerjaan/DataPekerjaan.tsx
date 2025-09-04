@@ -6,6 +6,7 @@ import Select from "react-select";
 import { API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { compressImage } from "@/app/helper/CompressorImage";
 import UpdateRing from "../component/UpdateRing";
+import { NumericFormat } from "react-number-format";
 
 interface Props {
   formData: {
@@ -13,6 +14,7 @@ interface Props {
     jabatan: string;
     alamatPerusahaan: string;
     penghasilanBulanan: string;
+    penghasilanTahunan: string;
     tujuanInvestasi: string;
     tujuanInvestasiLainnya: string;
     toleransiResiko: string;
@@ -43,6 +45,7 @@ interface Props {
   ) => void;
 
   onPenghasilanBulanan: (value: string) => void;
+  onPenghasilanTahunan: (value: string) => void;
   onTujuanInvetasi: (value: string) => void;
   onToleransiResiko: (value: string) => void;
   onPengalamanInvestasi: (value: string) => void;
@@ -92,8 +95,10 @@ interface Props {
         company_name: string;
         company_address: string;
         monthly_income: string;
+        npwp: string;
         npwp_path: string;
         position: string;
+        annual_income: string;
       };
       risk: {
         goal: string;
@@ -112,6 +117,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   formData,
   onChange,
   onPenghasilanBulanan,
+  onPenghasilanTahunan,
   onTujuanInvetasi,
   onToleransiResiko,
   onPengalamanInvestasi,
@@ -132,12 +138,12 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
   const formPemodalStr = localStorage.getItem("formPemodal");
   const formPemodal = formPemodalStr ? JSON.parse(formPemodalStr) : null;
 
-  const penghasilanBulananOptions = [
-    { value: "< 100jt", label: "< 100jt" },
-    { value: "100jt - 500jt", label: "100jt - 500jt" },
-    { value: "500jt - 1m", label: "500jt - 1m" },
-    { value: "> 1m", label: "> 1m" },
-  ];
+  // const penghasilanBulananOptions = [
+  //   { value: "< 100jt", label: "< 100jt" },
+  //   { value: "100jt - 500jt", label: "100jt - 500jt" },
+  //   { value: "500jt - 1m", label: "500jt - 1m" },
+  //   { value: "> 1m", label: "> 1m" },
+  // ];
   const tujuanInvestasi = ["Jangka Pendek", "Jangka Panjang", "Lainnya"];
   const toleransiResiko = ["Rendah", "Menengah", "Tinggi"];
   const pengalamanInvestasi = ["Ada", "Tidak Ada"];
@@ -387,6 +393,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
       } as React.ChangeEvent<HTMLInputElement>);
 
       onPenghasilanBulanan(job.monthly_income || "");
+      onPenghasilanTahunan(job.annual_income || "");
 
       setSelectedProvincePekerjaan({
         value: job.province_name,
@@ -651,21 +658,25 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             Penghasilan Pertahun <span className="text-red-500">*</span>
           </label>
 
-          <Select
-            options={penghasilanBulananOptions}
-            placeholder="Pilih..."
-            value={penghasilanBulananOptions.find(
-              (opt) => opt.value === formData.penghasilanBulanan
-            )}
-            onChange={(selectedOption) =>
-              onPenghasilanBulanan(selectedOption?.value || "")
-            }
-            className="react-select-container"
-            classNamePrefix="react-select"
+          <NumericFormat
+            thousandSeparator="."
+            decimalSeparator=","
+            prefix="Rp "
+            placeholder="Rp ..."
+            value={formData.penghasilanTahunan}
+            onValueChange={(values) => {
+              onPenghasilanTahunan(values.value);
+            }}
+            isAllowed={(values) => {
+              const { floatValue } = values;
+              return !floatValue || floatValue < 1000000000000;
+            }}
+            className="w-full border border-gray-300 rounded-md px-3 py-2"
           />
-          {errors?.penghasilanBulanan && (
+
+          {errors?.penghasilanTahunan && (
             <p className="text-red-500 text-sm mt-1">
-              {errors.penghasilanBulanan[0]}
+              {errors.penghasilanTahunan[0]}
             </p>
           )}
         </div>
@@ -863,7 +874,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
 
       {/* KANAN */}
       <div>
-        <div className="mb-4 mt-4">
+        <div>
           <h2 className="text-lg md:text-xl font-bold mb-4">
             5. Rekening Efek (optional)
           </h2>
@@ -932,56 +943,6 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           </div>
         </div>
 
-        <div className="mb-4 mt-4">
-          <label className="text-md mb-2">
-            NPWP Perusahaan <span className="text-red-500">*</span>
-          </label>
-
-          <p className="text-sm text-gray-400 mb-2">
-            File maksimal berukuran 10mb
-          </p>
-          <UpdateRing
-            identity={`${dataProfile?.form}`}
-            // formKey={dataProfile?.form}
-            formKey="npwp"
-          >
-            {/* Input File yang disembunyikan */}
-            <input
-              type="file"
-              id="npwpUrlUpload"
-              className="hidden"
-              onChange={handleFileChange}
-              disabled={uploadStatus["npwpUrl"] === true}
-              accept="application/pdf, image/*"
-              data-keyname="npwpUrl"
-            />
-
-            {/* Label sebagai tombol */}
-            <label
-              htmlFor="npwpUrlUpload"
-              className="inline-flex text-sm items-center gap-2 py-2 px-4 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-gray-800 transition"
-            >
-              <>
-                <FaFileAlt />
-                Upload Dokumen
-              </>
-            </label>
-            {typeof window !== "undefined" && formData.npwpUrl && (
-              <button
-                type="button"
-                onClick={onLihatNPWP}
-                className="text-blue-600 underline text-sm block mt-2 mb-2"
-              >
-                Lihat NPWP
-              </button>
-            )}
-
-            {errors?.npwpUrl && (
-              <p className="text-red-500 text-sm mt-1">{errors.npwpUrl[0]}</p>
-            )}
-          </UpdateRing>
-        </div>
-
         {/* <div className="mb-4 mt-4">
           <label className="text-md mb-2">
             Foto Pemodal <span className="text-red-500">*</span>
@@ -1029,7 +990,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           </p>
         )} */}
 
-        <div className="mb-6">
+        <div className="mb-6 mt-6">
           <h3 className="font-semibold text-gray-900 mb-2">
             Pernyataan Kebenaran Data
           </h3>
