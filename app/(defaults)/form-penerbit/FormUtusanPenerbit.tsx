@@ -11,8 +11,10 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { getUser } from "@/app/lib/auth";
-import { useSearchParams } from "next/navigation";
 import UpdateRing from "@/app/components/inputFormPemodal/component/UpdateRing";
+import { ProfileUpdate } from "./IProfileUpdate";
+import { FORM_PIC_CACHE_KEY } from "./form-cache-key";
+import { UpdateFieldValue } from "./PenerbitParent";
 
 interface FormSchema {
   photo: string;
@@ -32,10 +34,8 @@ interface ErrorSchema {
   suratKuasa?: string;
 }
 
-const CACHE_KEY = "utusanPenerbitCache";
-
 const getFormCache = (): FormSchema | null => {
-  const cache = localStorage.getItem(CACHE_KEY);
+  const cache = localStorage.getItem(FORM_PIC_CACHE_KEY);
   if (cache) {
     return JSON.parse(cache) as FormSchema;
   } else {
@@ -44,16 +44,18 @@ const getFormCache = (): FormSchema | null => {
 };
 
 interface FormUtusanPenerbitProps {
-  onSubmit: () => void;
+  isUpdate: boolean;
+  profile: ProfileUpdate | null;
+  onSubmitCallback: () => void;
+  onUpdateCallback: (val: UpdateFieldValue) => void;
 }
 
 const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
-  onSubmit,
+  isUpdate,
+  profile,
+  onSubmitCallback,
+  onUpdateCallback,
 }) => {
-  const searchParams = useSearchParams();
-  const isUpdate = searchParams.get("update");
-  const form = searchParams.get("form");
-
   const [formFields, setFormFields] = useState<FormSchema>({
     photo: "",
     fullname: "",
@@ -66,10 +68,62 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
   const [errors, setErrors] = useState<ErrorSchema>({});
   const [loading, setLoading] = useState(false);
 
+  const formKey = profile?.form_key;
+
   const user = getUser();
 
   //* handle submit
   const handleSubmit = async () => {
+    if (isUpdate) {
+      onUpdateEvent();
+    } else {
+      onSubmitEvent();
+    }
+  };
+
+  //* inject fullname to field
+  // mendapatkan data user untuk didambil value fullname-nya kemudian di-inject kedalam localstorage
+  useEffect(() => {
+    if (profile) {
+      const fullnameFromRemote = profile.fullname;
+
+      // jika update data maka set semua nilai
+      if (isUpdate) {
+        setFormFields({
+          fullname: fullnameFromRemote,
+          fileKtp: profile.photo_ktp,
+          noKtp: profile.no_ktp,
+          suratKuasa: profile.doc.path,
+          jabatan: profile.position,
+          photo: profile.selfie,
+        });
+      } else {
+        // hanya inject nama ketika cache belum ada
+        const formCache = getFormCache();
+        // inject fullname hanya ketika datanya kosong
+        // jangan hapus kondisi ini karena bisa menyebabkan bug, form akan mereset semua field yang telah terisi
+        if (!formCache?.fullname) {
+          setFormFields({ ...formFields, fullname: fullnameFromRemote });
+        }
+      }
+    }
+  }, [profile]);
+
+  //* load cache
+  useEffect(() => {
+    const formCache = getFormCache();
+    if (formCache) {
+      setFormFields(formCache);
+    }
+  }, []);
+
+  //* write cache
+  useEffect(() => {
+    localStorage.setItem(FORM_PIC_CACHE_KEY, JSON.stringify(formFields));
+  }, [formFields]);
+
+  //* onSubmit
+  const onSubmitEvent = async () => {
     setLoading(true);
 
     const isValid = validateForm();
@@ -105,8 +159,8 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
           timerProgressBar: true,
         });
 
-        onSubmit();
-        localStorage.removeItem("utusanPenerbitCache");
+        onSubmitCallback();
+        localStorage.removeItem(FORM_PIC_CACHE_KEY);
       } catch (error: any) {
         Swal.fire({
           icon: "error",
@@ -125,62 +179,32 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
     }
   };
 
-  //* inject fullname to field
-  // mendapatkan data user untuk didambil value fullname-nya kemudian di-inject kedalam localstorage
-  useEffect(() => {
-    if (user) {
-      const fetchAndSetUser = async () => {
-        const res = await axios.get(`${API_BACKEND}/api/v1/profile`, {
-          headers: {
-            Authorization: `Bearer ${user?.token}`,
-          },
+  //* on update event
+  const onUpdateEvent = async () => {
+    const isValid = validateForm();
+
+    if (isValid) {
+      const swalResult = await Swal.fire({
+        icon: "question",
+        title: "Konfirmasi Perubahan Data",
+        text: "Apakah Anda yakin dengan data yang Anda inputkan sudah benar? mohon cek kembali jika masih ragu.",
+        confirmButtonText: "Sudah Benar",
+        cancelButtonText: "Cek Kembali",
+        confirmButtonColor: "#13733b",
+        cancelButtonColor: "#eaeaea",
+      });
+
+      if (swalResult.isConfirmed) {
+        onUpdateCallback({
+          val:
+            profile?.form_key === "surat-kuasa"
+              ? formFields.suratKuasa
+              : formFields.fileKtp,
+          val_array: [],
         });
-
-        const userData = res.data.data;
-
-        if (userData) {
-          // jika update data maka set semua nilai
-          if (isUpdate) {
-            console.log("set semua data dijalankan karena ia ISUPDATE");
-            setFormFields({
-              fullname: userData.fullname,
-              fileKtp: userData.photo_ktp,
-              noKtp: userData.no_ktp,
-              suratKuasa: userData.doc.path,
-              jabatan: userData.position,
-              photo: userData.selfie,
-            });
-          } else {
-            // hanya inject nama ketika cache belum ada
-            const formCache = getFormCache();
-            // inject fullname hanya ketika datanya kosong
-            // jangan hapus kondisi ini karena bisa menyebabkan bug, form akan mereset semua field yang telah terisi
-            if (!formCache?.fullname) {
-              const fullname = userData.fullname;
-              if (fullname) {
-                setFormFields({ ...formFields, fullname: fullname });
-              }
-            }
-          }
-        }
-      };
-
-      fetchAndSetUser();
+      }
     }
-  }, []);
-
-  //* load cache
-  useEffect(() => {
-    const formCache = getFormCache();
-    if (formCache) {
-      setFormFields(formCache);
-    }
-  }, []);
-
-  //* write cache
-  useEffect(() => {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(formFields));
-  }, [formFields]);
+  };
 
   //* validate form
   const validateForm = (): boolean => {
@@ -255,7 +279,7 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
   };
 
   return (
-    <div className="w-full py-28 mx-auto px-11 md:px-16 lg:px-52 bg-white">
+    <div className="w-full mx-auto px-11 md:px-16 lg:px-52 bg-white">
       <h1 className="text-black text-2xl font-bold">Form Utusan Penerbit</h1>
 
       <div className="my-2"></div>
@@ -337,7 +361,7 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
           <div className="my-6"></div>
 
           <div className="w-full flex gap-6 ">
-            <UpdateRing formKey={form} identity="surat-kuasa">
+            <UpdateRing formKey={formKey} identity="surat-kuasa">
               <div>
                 <SectionPoint text="Surat Kuasa" />
                 <Subtitle
@@ -359,7 +383,7 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
               </div>
             </UpdateRing>
 
-            <UpdateRing formKey={form} identity="ktp">
+            <UpdateRing formKey={formKey} identity="ktp">
               <div>
                 <SectionPoint text="File KTP" />
                 <Subtitle
@@ -386,7 +410,7 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
 
           <div className="w-full flex justify-end gap-4 mt-6">
             <FormButton disabled={loading} onClick={handleSubmit}>
-              {loading ? "Loading..." : "Lanjutkan"}
+              {loading ? "Loading..." : isUpdate ? "Update" : "Lanjutkan"}
             </FormButton>
           </div>
         </div>

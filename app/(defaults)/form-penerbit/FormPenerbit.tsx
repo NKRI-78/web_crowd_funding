@@ -16,13 +16,14 @@ import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { fetchProvinces } from "@/app/lib/fetchWilayah";
 import FormAlamat from "./FormAlamat";
 import Swal from "sweetalert2";
-import { ProfileUpdate } from "./IUpdateRegistrationKey";
 import RHFSelect from "./components/TypeBussiness";
 import RHFSelectGeneric from "./components/RHFSelectGeneric";
 import { fetchJenisUsaha, TypeOption } from "@/app/utils/fetchJenisUsaha";
 import { fetchJenisPerusahaan } from "@/app/utils/fetchJenisPerusahaan";
 import { fetchStatusCompany } from "@/app/utils/fetchStatusPerushaan";
 import { PhoneInput } from "./components/PhoneInput";
+import { ProfileUpdate } from "./IProfileUpdate";
+import { FORM_PENERBIT_1_CACHE_KEY } from "./form-cache-key";
 
 export const alamatSchema = z.object({
   name: z.string().optional(),
@@ -384,7 +385,7 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
   }, []);
 
   useEffect(() => {
-    const draft = localStorage.getItem("publisherDraft");
+    const draft = localStorage.getItem(FORM_PENERBIT_1_CACHE_KEY);
     if (draft) {
       reset(JSON.parse(draft));
     }
@@ -396,7 +397,7 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
     if (!isReady) return;
 
     const timeout = setTimeout(() => {
-      localStorage.setItem("publisherDraft", JSON.stringify(values));
+      localStorage.setItem(FORM_PENERBIT_1_CACHE_KEY, JSON.stringify(values));
     }, 1000);
 
     return () => clearTimeout(timeout);
@@ -510,7 +511,7 @@ export default function PublisherForm({ onNext, profile, isUpdate }: Props) {
   };
 
   return (
-    <section className="bg-white text-black items-center px-3 md:px-10 py-20 md:py-30">
+    <section className="bg-white text-black items-center px-3 md:px-10">
       <form
         onSubmit={handleSubmit(onSubmit, (errors) => {
           console.error("VALIDATION ERRORS:", errors);
