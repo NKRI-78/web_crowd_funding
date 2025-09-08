@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import TermsConditions from "@/app/components/TermsConditions/TermsConditions";
 
 export const metadata: Metadata = {
-  title: "Terms And Conditions | CapBridge",
+  title: "Terms And Conditions | FuLusme",
   description: "Terms And Conditions",
 };
 

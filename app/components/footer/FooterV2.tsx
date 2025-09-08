@@ -4,8 +4,8 @@ const Footer: React.FC = () => {
       <div className="container mx-auto px-6 md:px-20 grid grid-cols-1 md:grid-cols-5 gap-8">
         <div className="space-y-4">
           <img
-            src="/images/logo-white.png"
-            alt="CapBridge Logo"
+            src="/images/logo-fulusme.png"
+            alt="FuLusme Logo"
             className="h-12"
           />
           <ul className="space-y-2 text-sm">
@@ -73,7 +73,7 @@ const Footer: React.FC = () => {
           <p className="text-white">WhatsApp</p>
           <p className="text-white font-semibold">+62 xx xxx xx</p>
           <p className="text-white">Email</p>
-          <p className="text-white font-semibold">info@CapBridge</p>
+          <p className="text-white font-semibold">info@FuLusme</p>
           <div className="flex space-x-3 pt-2">
             <a href="#">
               <i className="fab fa-facebook-f"></i>

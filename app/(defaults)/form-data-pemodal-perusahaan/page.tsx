@@ -5,7 +5,7 @@ import FormDataPemodalPerusahaan from "@/app/components/inputFormPemodalPerusaha
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
-  title: "Form Pemodal Perusahaan | CapBridge",
+  title: "Form Pemodal Perusahaan | FuLusme",
   description: "Form Pemodal Perusahaan",
 };
 

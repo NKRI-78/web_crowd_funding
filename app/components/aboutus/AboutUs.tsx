@@ -13,13 +13,13 @@ const AboutUs: React.FC = () => {
       name: "Eva Marlina",
       title: "President Commissioner",
       img: "/images/default-profile.png",
-      description: `Berpengalaman di industri telekomunikasi sebagai Associate director dan Chief of Corporate Relation Affairs, dan memiliki pengalaman finansial yang mumpuni untuk mendukung jalannya CapBridge.`,
+      description: `Berpengalaman di industri telekomunikasi sebagai Associate director dan Chief of Corporate Relation Affairs, dan memiliki pengalaman finansial yang mumpuni untuk mendukung jalannya FuLusme.`,
     },
     donald: {
       name: "Donald Akbar",
       title: "Chief Executive Officer",
       img: "/images/default-profile.png",
-      description: `Berkecimpung sebagai komisaris dan komisaris utama di beberapa perusahaan multi industri, membuatnya memiliki pengalaman yang panjang dan tajam sebagai pengawas jalannya CapBridge . Dengan memiliki visi dan misi untuk memajukan bisnis dengan konsep Urun Dana/ securities Crowdfunding bagi seluruh masyarakat, diharapkan CapBridge dapat bermanfaat bagi dunia bisnis di Indonesia.`,
+      description: `Berkecimpung sebagai komisaris dan komisaris utama di beberapa perusahaan multi industri, membuatnya memiliki pengalaman yang panjang dan tajam sebagai pengawas jalannya FuLusme . Dengan memiliki visi dan misi untuk memajukan bisnis dengan konsep Urun Dana/ securities Crowdfunding bagi seluruh masyarakat, diharapkan FuLusme dapat bermanfaat bagi dunia bisnis di Indonesia.`,
     },
     nanda: {
       name: "Nandana Pawitra",
@@ -67,8 +67,8 @@ const AboutUs: React.FC = () => {
             KOMITMEN KAMI
           </h1>
           <p className="text-white text-sm leading-relaxed">
-            CapBridge berkomitmen untuk memberikan akses pembiayaan dan
-            investasi yang lebih menguntungkan untuk investor dan pemilik bisnis
+            FuLusme berkomitmen untuk memberikan akses pembiayaan dan investasi
+            yang lebih menguntungkan untuk investor dan pemilik bisnis
           </p>
           <div className="flex gap-6 items-center">
             <img
@@ -108,7 +108,7 @@ const AboutUs: React.FC = () => {
       {/* NILAI */}
       <section className="w-full bg-gray-100 px-10 md:px-20 py-20">
         <h2 className="text-3xl md:text-4xl font-bold text-center text-[#10565C] mb-16">
-          CapBridge
+          FuLusme
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-center md:text-left">
           <div>
@@ -125,7 +125,7 @@ const AboutUs: React.FC = () => {
             <div className="flex justify-center md:justify-start mb-4">
               <span className="text-3xl">🔥</span>
             </div>
-            <h3 className="text-xl font-bold text-[#10565C] mb-2">CapBridge</h3>
+            <h3 className="text-xl font-bold text-[#10565C] mb-2">FuLusme</h3>
             <p className="text-gray-700">
               Selalu menjaga keseimbangan, kebutuhan kenyamanan dan keamanan
               pemodal dan penerbit

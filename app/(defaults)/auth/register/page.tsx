@@ -5,14 +5,12 @@ import type { Metadata } from "next";
 import Register from "@components/auth/register/Register";
 
 export const metadata: Metadata = {
-  title: "Daftar | CapBridge",
-  description: "CapBridge",
+  title: "Daftar | FuLusme",
+  description: "FuLusme",
 };
 
 const RegisterPage: React.FC = () => {
-  return (
-    <Register />
-  );
+  return <Register />;
 };
 
 export default RegisterPage;

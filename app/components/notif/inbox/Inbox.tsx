@@ -225,7 +225,7 @@ const Inbox = () => {
           onReject={() => {
             setOpenDialog(false);
           }}
-          barrierAction={() => {
+          onClose={() => {
             setOpenDialog(false);
           }}
         />
