@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import WaitingPayment from "./WaitingPayment";
 
 export const metadata: Metadata = {
-  title: "Menunggu Pembayaran | CapBridge",
+  title: "Menunggu Pembayaran | FuLusme",
   description: "Menunggu Pembayaran",
 };
 

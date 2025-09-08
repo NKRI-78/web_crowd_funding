@@ -4,14 +4,12 @@ import type { Metadata } from "next";
 import AboutUs from "@/app/components/aboutus/AboutUs";
 
 export const metadata: Metadata = {
-  title: "Tentang | CapBridge",
+  title: "Tentang | FuLusme",
   description: "Tentang",
 };
 
 const AboutUsPage: React.FC = () => {
-  return (
-    <AboutUs/>
-  );
+  return <AboutUs />;
 };
 
 export default AboutUsPage;

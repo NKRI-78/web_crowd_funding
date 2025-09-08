@@ -5,7 +5,7 @@ import FormPemodal from "@/app/components/inputFormPemodal/FormPemodal";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
-  title: "Form Pemodal | CapBridge",
+  title: "Form Pemodal | FuLusme",
   description: "Form Pemodal",
 };
 

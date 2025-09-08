@@ -102,11 +102,11 @@ const WaitingPayment = () => {
 
   useEffect(() => {
     if (expired) {
-      document.title = "Pembayaran Kadaluarsa | CapBridge";
+      document.title = "Pembayaran Kadaluarsa | FuLusme";
     } else if (waitingPayment?.status === "PAID") {
-      document.title = "Pembayaran Berhasil | CapBridge";
+      document.title = "Pembayaran Berhasil | FuLusme";
     } else {
-      document.title = "Menunggu Pembayaran | CapBridge";
+      document.title = "Menunggu Pembayaran | FuLusme";
     }
   }, [expired, waitingPayment?.status]);
 

@@ -5,8 +5,8 @@ import ClientLayout from "@components/client/Client";
 import { FileViewerProvider } from "./hooks/useFileViewerModal";
 
 export const metadata = {
-  title: "Beranda | CapBridge",
-  description: "CapBridge",
+  title: "Beranda | FuLusme",
+  description: "FuLusme",
 };
 
 export default function RootLayout({

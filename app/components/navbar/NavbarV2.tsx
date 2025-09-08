@@ -6,7 +6,6 @@ import { BellRing, Menu, X } from "lucide-react";
 import { AppDispatch, RootState } from "@redux/store";
 import { useDispatch, useSelector } from "react-redux";
 import { loadSession } from "@redux/slices/authSlice";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import Modal from "@/app/helper/Modal";
 import RegisterV2 from "../auth/register/RegisterV2";
@@ -14,20 +13,16 @@ import RegisterOtp from "../auth/register/RegisterOtp";
 import RegisterSelectRole from "../auth/register/RegisterSelectRole";
 import Cookies from "js-cookie";
 import axios from "axios";
-import { produce } from "immer";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
-import BroadcastIcon from "../animation/BroadcastIcon";
-
-interface ProfileData {
-  fullname: string;
-  avatar: string;
-  last_education: string;
-  gender: string;
-  status_marital: string;
-  address_detail: string;
-  occupation: string;
-}
+import { User } from "@/app/interfaces/user/IUser";
+import {
+  FORM_INDEX_CACHE_KEY,
+  FORM_PENERBIT_1_CACHE_KEY,
+  FORM_PENERBIT_2_CACHE_KEY,
+  FORM_PIC_CACHE_KEY,
+} from "@/app/(defaults)/form-penerbit/form-cache-key";
+import { getUser } from "@/app/lib/auth";
 
 const NavbarV2: React.FC = () => {
   const [isSticky, setIsSticky] = useState(false);
@@ -54,7 +49,7 @@ const NavbarV2: React.FC = () => {
   const [step, setStep] = useState<
     "register" | "otp" | "role" | "login" | null
   >(null);
-  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [profile, setProfile] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const userCookie = Cookies.get("user");
 
@@ -74,15 +69,13 @@ const NavbarV2: React.FC = () => {
 
   useEffect(() => {
     setHydrated(true);
-    const userCookie = Cookies.get("user");
-    if (!userCookie) return;
+    const userCookie = getUser();
 
     try {
-      const user = JSON.parse(userCookie);
-      if (user?.token) {
-        setToken(user.token);
+      if (userCookie?.token) {
+        setToken(userCookie.token);
       }
-      setUserData(user);
+      setUserData(userCookie);
     } catch (err) {
       console.error("Failed to parse user cookie", err);
     }
@@ -104,6 +97,22 @@ const NavbarV2: React.FC = () => {
         console.error("Failed to fetch profile", err);
       });
   }, [token, pathname]);
+
+  //* remove cookie & cache data
+  const removeData = () => {
+    //* penerbit
+    localStorage.removeItem(FORM_INDEX_CACHE_KEY);
+    localStorage.removeItem(FORM_PIC_CACHE_KEY);
+    localStorage.removeItem(FORM_PENERBIT_1_CACHE_KEY);
+    localStorage.removeItem(FORM_PENERBIT_2_CACHE_KEY);
+
+    //* pemodal
+    localStorage.removeItem("formPemodal");
+
+    //* user
+    Cookies.remove("user");
+    localStorage.removeItem("user");
+  };
 
   return (
     <>
@@ -135,10 +144,8 @@ const NavbarV2: React.FC = () => {
           <Link href={"/"}>
             <div className="flex items-center gap-2">
               <img
-                src={
-                  isSticky ? "/images/logo-green.png" : "/images/logo-white.png"
-                }
-                alt="CapBridge Logo"
+                src={"/images/logo-fulusme.png"}
+                alt="FuLusme Logo"
                 className="h-8 w-8 object-contain transition-all duration-300"
               />
 
@@ -147,7 +154,7 @@ const NavbarV2: React.FC = () => {
                   isSticky ? "text-[#10565C]" : "text-white"
                 }`}
               >
-                CAPBRIDGE
+                FuLusme
               </span>
             </div>
           </Link>
@@ -171,7 +178,6 @@ const NavbarV2: React.FC = () => {
                   >
                     {" "}
                     Halo, {profile?.fullname}
-                    {/* {userData.email} */}
                   </p>
                 </div>
 
@@ -244,7 +250,7 @@ const NavbarV2: React.FC = () => {
                 <Link href={"/"}>
                   {" "}
                   <div className={`text-xl text-center font-bold text-white`}>
-                    CAPBRIDGE
+                    FuLusme
                   </div>
                 </Link>
 
@@ -309,7 +315,6 @@ const NavbarV2: React.FC = () => {
                         >
                           {" "}
                           Halo, {profile?.fullname}
-                          {/* {userData.email} */}
                         </p>
                       </li>
                     </>
@@ -347,13 +352,7 @@ const NavbarV2: React.FC = () => {
                       <li>
                         <button
                           onClick={() => {
-                            localStorage.removeItem("formPenerbitDraft");
-                            localStorage.removeItem("publisherDraft");
-                            localStorage.removeItem("user");
-                            localStorage.removeItem("formPemodal");
-                            localStorage.removeItem("utusanPenerbitCache");
-                            localStorage.removeItem("penerbitFormIndex");
-                            Cookies.remove("user");
+                            removeData();
                             window.location.href = "/auth/login";
                           }}
                           className="px-5 py-2 rounded-lg bg-red-500 text-white"
@@ -436,7 +435,7 @@ const NavbarV2: React.FC = () => {
               >
                 <Link href={"/"}>
                   <div className={`text-xl text-center font-bold text-white`}>
-                    CAPBRIDGE
+                    FuLusme
                   </div>
                 </Link>
                 <ul className="flex flex-col gap-6 text-white text-base font-semibold pt-16">
@@ -490,7 +489,6 @@ const NavbarV2: React.FC = () => {
                         >
                           {" "}
                           Halo, {profile?.fullname}
-                          {/* {userData.email} */}
                         </p>
                       </li>
                     </>
@@ -531,13 +529,7 @@ const NavbarV2: React.FC = () => {
                       <li>
                         <button
                           onClick={() => {
-                            localStorage.removeItem("formPenerbitDraft");
-                            localStorage.removeItem("publisherDraft");
-                            localStorage.removeItem("user");
-                            localStorage.removeItem("formPemodal");
-                            localStorage.removeItem("utusanPenerbitCache");
-                            localStorage.removeItem("penerbitFormIndex");
-                            Cookies.remove("user");
+                            removeData();
                             window.location.href = "/auth/login";
                           }}
                           className="px-5 py-2 rounded-lg bg-red-500 text-white"
@@ -652,20 +644,13 @@ const NavbarV2: React.FC = () => {
                       >
                         {" "}
                         Halo, {profile?.fullname}
-                        {/* {userData.email} */}
                       </p>
                     </li>
 
                     <li>
                       <button
                         onClick={() => {
-                          localStorage.removeItem("formPenerbitDraft");
-                          localStorage.removeItem("publisherDraft");
-                          localStorage.removeItem("user");
-                          localStorage.removeItem("formPemodal");
-                          localStorage.removeItem("utusanPenerbitCache");
-                          localStorage.removeItem("penerbitFormIndex");
-                          Cookies.remove("user");
+                          removeData();
                           window.location.href = "/auth/login";
                         }}
                         className="px-5 py-2 rounded-lg bg-red-500 text-white"
@@ -742,6 +727,7 @@ const NavbarV2: React.FC = () => {
           )}
         </div>
       </nav>
+
       <Modal isOpen={step === "register"} onClose={closeModal} title="Daftar">
         <RegisterV2 onNext={() => setStep("otp")} onClose={closeModal} />
       </Modal>
@@ -761,57 +747,6 @@ const NavbarV2: React.FC = () => {
         <RegisterSelectRole onClose={closeModal} />
       </Modal>
     </>
-  );
-};
-
-const UserMenu = ({
-  email,
-  handleMenuOpen,
-}: {
-  email: string;
-  handleMenuOpen: (isOpen: boolean) => void;
-}) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  return (
-    <ul className="list-none text-sm text-white">
-      <li>
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full flex items-center justify-between py-2 rounded hover:bg-violet-700 transition-colors"
-        >
-          <p className=" text-white truncate">{email}</p>
-          {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
-
-        {isExpanded && (
-          <ul className="mt-1 ml-6 space-y-1 text-sm text-white">
-            <li>
-              <Link
-                href="/inbox"
-                className="block px-3 py-1 rounded hover:bg-violet-700 transition-colors"
-                onClick={() => {
-                  handleMenuOpen(false);
-                }}
-              >
-                Inbox
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/transaction"
-                onClick={() => {
-                  handleMenuOpen(false);
-                }}
-                className="block px-3 py-1 rounded hover:bg-violet-700 transition-colors"
-              >
-                Transaksi
-              </Link>
-            </li>
-          </ul>
-        )}
-      </li>
-    </ul>
   );
 };
 

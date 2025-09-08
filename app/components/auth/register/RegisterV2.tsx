@@ -271,20 +271,20 @@ export default function RegisterForm({
               Ada kemungkinan Anda tidak bisa menjual kembali saham bisnis
               dengan cepat. Lakukan diversifikasi investasi, hanya gunakan dana
               yang siap Anda lepaskan (affors to loose) dan atau disimpan dalam
-              jangka panjang. CapBridge tidak memaksa pengguna untuk membeli
-              saham bisnis sebagai investasi. Semua keputusan pembelian
-              merupakan keputusan independen oleh pengguna.
+              jangka panjang. FuLusme tidak memaksa pengguna untuk membeli saham
+              bisnis sebagai investasi. Semua keputusan pembelian merupakan
+              keputusan independen oleh pengguna.
             </p>
             <p className="text-sm text-gray-700 mb-1">
-              CapBridge bertindak sebagai penyelenggara urun dana yang
+              FuLusme bertindak sebagai penyelenggara urun dana yang
               mempertemukan pemodal dan penerbit, bukan sebagai pihak yang
               menjalankan bisnis (Penerbit). Otoritas Jasa Keuangan bertindak
               sebagai regulator dan pemberi izin, bukan sebagai penjamin
               investasi. Keputusan pembelian saham, sepenuhnya merupakan hak dan
-              tanggung jawab Pemodal (investor). Dengan membeli saham di
-              CapBridge berarti Anda sudah menyetujui seluruh syarat dan
-              ketentuan serta memahami semua risiko investasi termasuk resiko
-              kehilangan sebagian atau seluruh modal.
+              tanggung jawab Pemodal (investor). Dengan membeli saham di FuLusme
+              berarti Anda sudah menyetujui seluruh syarat dan ketentuan serta
+              memahami semua risiko investasi termasuk resiko kehilangan
+              sebagian atau seluruh modal.
             </p>
             <p className="text-sm text-gray-700 mb-1">
               “OTORITAS JASA KEUANGAN TIDAK MEMBERIKAN PERNYATAAN MENYETUJUI
@@ -357,7 +357,7 @@ export default function RegisterForm({
                 Risiko Kegagalan Sistem Elektronik
               </span>
               <p className="text-sm text-gray-700 mb-1">
-                CapBridge sudah menerapkan sistem elektronik dan keamanan data
+                FuLusme sudah menerapkan sistem elektronik dan keamanan data
                 yang handal. Namun gangguan sistem teknologi informasi dan
                 kegagalan sistem mungkin saja tetap terjadi. Untuk mencegah hal
                 tersebut terjadi.

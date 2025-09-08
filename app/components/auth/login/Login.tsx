@@ -110,15 +110,15 @@ const Login: React.FC = () => {
       <div className="flex justify-between items-center mb-10">
         <div className="flex items-center gap-2">
           <img
-            src="/images/logo-green.png"
-            alt="CapBridge Logo"
+            src="/images/logo-fulusme.png"
+            alt="FuLusme Logo"
             className="w-12 h-12"
           />
           <span
             className={`text-xl font-bold
               text-[#00798a]`}
           >
-            CAPBRIDGE
+            FuLusme
           </span>
         </div>
         <a href="/">

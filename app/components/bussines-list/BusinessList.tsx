@@ -2,96 +2,17 @@
 
 import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { ProjectCard } from "../project/Project";
-import { IProjectData } from "@/app/interface/IProject";
+import { ProjectCard } from "../project/ProjectCard";
 import { getAllProject } from "@/actions/GetAllProject";
+import { Project } from "@/app/interfaces/project/IProject";
 
-type Project = {
-  image: string;
-  alt: string;
-  status: "Proyek Berakhir" | "Proyek Berjalan";
-  statusColor: "purple" | "green";
-  title: string;
-  danaTerkumpul: string;
-  kebutuhanModal: string;
-  minimalInvestasi: string;
-  jangkaWaktu: string;
-  proyeksiROI: string;
-};
-
-const projects: Project[] = [
-  {
-    image: "/images/mitra.jpg",
-    alt: "Mitra10 Garut",
-    status: "Proyek Berakhir",
-    statusColor: "purple",
-    title:
-      "PROYEK PENGADAAN MATERIAL DAN INSTALASI PERALATAN MITRA10 GARUT TAHUN 2024",
-    danaTerkumpul: "Rp 500.000.000",
-    kebutuhanModal: "Rp 500.000.000",
-    minimalInvestasi: "Rp 1.000.000",
-    jangkaWaktu: "2 Bulan",
-    proyeksiROI: "4% (24% p.a)",
-  },
-  {
-    image: "/images/tower.jpg",
-    alt: "Tower Bersama Group",
-    status: "Proyek Berjalan",
-    statusColor: "green",
-    title:
-      "Jasa Pemeliharaan Perangkat Penunjang Infrastruktur Telekomunikasi Tower Bersama Group (TBG)",
-    danaTerkumpul: "Rp 850.000.000",
-    kebutuhanModal: "Rp 850.000.000",
-    minimalInvestasi: "Rp 1.000.000",
-    jangkaWaktu: "6 Bulan",
-    proyeksiROI: "9.5% (19.01% p.a)",
-  },
-  {
-    image: "/images/pln.jpg",
-    alt: "PLN Balikpapan",
-    status: "Proyek Berakhir",
-    statusColor: "purple",
-    title:
-      "Pembangunan Extention Bay Trafo Gardu Induk Balikpapan PT PLN Indonesia",
-    danaTerkumpul: "Rp 300.000.000",
-    kebutuhanModal: "Rp 300.000.000",
-    minimalInvestasi: "Rp 1.000.000",
-    jangkaWaktu: "2 Bulan",
-    proyeksiROI: "18% p.a",
-  },
-  {
-    image: "/images/resto.jpg",
-    alt: "Renovasi Resto M-Lounge",
-    status: "Proyek Berakhir",
-    statusColor: "purple",
-    title: "Renovasi Interior Resto M-Lounge",
-    danaTerkumpul: "Rp 400.000.000",
-    kebutuhanModal: "Rp 400.000.000",
-    minimalInvestasi: "Rp 1.000.000",
-    jangkaWaktu: "12 Bulan",
-    proyeksiROI: "18% p.a",
-  },
-  {
-    image: "/images/cv.jpg",
-    alt: "Pulsa Data Telekomunikasi",
-    status: "Proyek Berakhir",
-    statusColor: "purple",
-    title: "Pembelian Pulsa Data Operator Telekomunikasi",
-    danaTerkumpul: "Rp 200.000.000",
-    kebutuhanModal: "Rp 200.000.000",
-    minimalInvestasi: "Rp 1.000.000",
-    jangkaWaktu: "2 Bulan",
-    proyeksiROI: "22% p.a",
-  },
-];
 const BussinesList: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  const [project, seProject] = useState<IProjectData[]>([]);
+  const [project, seProject] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -182,7 +103,7 @@ const BussinesList: React.FC = () => {
 
         {/* Project Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-14">
-          {project.map((project: IProjectData, index) => (
+          {project.map((project: Project, index) => (
             <ProjectCard key={index} project={project} />
           ))}
         </div>

@@ -1,21 +1,22 @@
 import clsx from "clsx";
 import { InboxResponse } from "./inbox-interface";
+import GeneralDialog from "../GeneralDialog";
 
 interface Props {
   inbox?: InboxResponse | null;
   onAccept: () => void;
   onReject: () => void;
-  barrierAction?: () => void;
+  onClose?: () => void;
 }
 
 const InboxModalDialog: React.FC<Props> = ({
   inbox,
   onAccept,
-  barrierAction,
+  onClose,
   onReject,
 }) => {
   return (
-    <Dialog open onOpenChange={barrierAction}>
+    <GeneralDialog isOpen onClose={onClose ?? (() => {})} className="p-1">
       <DialogContent>
         {/* header */}
         <DialogHeader>
@@ -33,7 +34,7 @@ const InboxModalDialog: React.FC<Props> = ({
           <Button onClick={onAccept}>Update</Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
+    </GeneralDialog>
   );
 };
 

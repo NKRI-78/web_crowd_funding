@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import PembayaranBCAWithDetail from "./PymentManual";
 
 export const metadata: Metadata = {
-  title: "Payment Manual | CapBridge",
+  title: "Payment Manual | FuLusme",
   description: "Payment Manual",
 };
 

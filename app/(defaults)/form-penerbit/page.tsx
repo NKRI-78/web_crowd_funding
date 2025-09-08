@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import MultiStepForm from "./PenerbitParent";
 
 export const metadata: Metadata = {
-  title: "Form Penerbit | CapBridge",
+  title: "Form Penerbit | FuLusme",
   description: "Form Penerbit",
 };
 
