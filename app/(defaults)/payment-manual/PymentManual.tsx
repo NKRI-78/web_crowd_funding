@@ -51,8 +51,8 @@ type Props = {
 
 export default function PembayaranDanamon({
   bankName = "Bank BCA",
-  accountNumber = "2443 24234 2343",
-  accountOwner = "PT Fulusme",
+  accountNumber = "5855319788",
+  accountOwner = "PT Fintek Andalan Solusi Teknologi",
   logoSrc = "/images/bank/bca-logo.png",
 }: Props) {
   const [copied, setCopied] = useState(false);

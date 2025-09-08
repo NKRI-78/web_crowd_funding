@@ -17,6 +17,7 @@ import axios from "axios";
 import { produce } from "immer";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
+import BroadcastIcon from "../animation/BroadcastIcon";
 
 interface ProfileData {
   fullname: string;
@@ -210,6 +211,8 @@ const NavbarV2: React.FC = () => {
                     )}
                   </Link>
                 </Tippy>
+
+                {/* <BroadcastIcon active color={!isSticky ? "white" : "#10565C"} /> */}
 
                 <button onClick={toggleMenu} className="relative">
                   {userData?.role === "user" && step !== "role" && (

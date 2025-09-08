@@ -134,12 +134,13 @@ type Props = {
 export default function PembayaranBCAWithDetail({
   inboxId,
   bankName = "Bank BCA",
-  accountNumber = "2443 24234 2343",
-  accountOwner = "PT Fulusme",
+  accountNumber = "5855319788",
+  accountOwner = "PT Fintek Andalan Solusi Teknologi",
   logoSrc = "/images/bank/bca-logo.png",
 }: Props) {
   /* ----------------- state umum ----------------- */
-  const [copied, setCopied] = useState(false);
+  const [copiedRek, setCopiedRek] = useState(false);
+  const [copiedTotal, setCopiedTotal] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [previewURL, setPreviewURL] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -223,8 +224,14 @@ export default function PembayaranBCAWithDetail({
   /* ----------------- helpers ----------------- */
   const copyRekening = () => {
     navigator.clipboard.writeText(accountNumber.replace(/\s+/g, ""));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1800);
+    setCopiedRek(true);
+    setTimeout(() => setCopiedRek(false), 1800);
+  };
+
+  const copyTotal = () => {
+    navigator.clipboard.writeText(totalPrice.toString());
+    setCopiedTotal(true);
+    setTimeout(() => setCopiedTotal(false), 1800);
   };
 
   const onDrop = useCallback(
@@ -374,10 +381,19 @@ export default function PembayaranBCAWithDetail({
 
             {/* Kartu rekening */}
             <div className="bg-gray-50 border border-[#10565C] rounded-2xl p-5 space-y-3">
-              <p className="text-gray-600">Nomor Rekening</p>
-              <p className="text-2xl font-bold text-gray-900 tracking-wide">
-                {accountNumber}
-              </p>
+              <p className="text-gray-600 mb-1">Nomor Rekening</p>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-bold text-gray-900 tracking-wide">
+                  {accountNumber}
+                </span>
+                <button type="button" onClick={copyRekening}>
+                  {copiedRek ? (
+                    <Check size={20} color="#10565C" />
+                  ) : (
+                    <Copy size={20} color="#10565C" />
+                  )}
+                </button>
+              </div>
               <p className="text-gray-500">{accountOwner}</p>
 
               <div className="mt-3 flex items-center justify-between gap-4 rounded-xl border border-[#10565C] bg-[#10565C]/5 px-4 py-3">
@@ -389,18 +405,17 @@ export default function PembayaranBCAWithDetail({
                     {formatRupiah(totalPrice)}
                   </p>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={copyTotal}
+                  className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#10565C] text-white hover:opacity-90 transition"
+                >
+                  {copiedTotal ? <Check size={14} /> : <Copy size={14} />}
+                </button>
               </div>
 
-              <button
-                type="button"
-                onClick={copyRekening}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#10565C] text-white hover:opacity-90 transition"
-              >
-                {copied ? <Check size={18} /> : <Copy size={18} />}
-                {copied ? "Disalin!" : "Salin Rekening"}
-              </button>
-
-              <div className="pt-3 border-t border-[#10565C]">
+              <div className="pt-2">
                 <h2 className="text-base text-gray-600 md:text-lg font-semibold">
                   Cara Pembayaran
                 </h2>
@@ -439,11 +454,21 @@ export default function PembayaranBCAWithDetail({
             onSubmit={handleSubmit(onSubmit)}
             className="mt-6 bg-gray-50 border border-[#10565C] rounded-2xl p-5 space-y-4"
           >
-            <div className="rounded-xl border border-[#10565C] bg-[#10565C]/5 px-4 py-3">
-              <p className="text-xs text-gray-600">Total pembayaran</p>
-              <p className="text-xl font-bold text-[#10565C]">
-                {formatRupiah(totalPrice)}
-              </p>
+            <div className="mt-3 flex items-center justify-between gap-4 rounded-xl border border-[#10565C] bg-[#10565C]/5 px-4 py-3">
+              <div>
+                <p className="text-xs text-gray-600">Total pembayaran</p>
+                <p className="text-2xl font-extrabold tracking-tight text-[#10565C]">
+                  {formatRupiah(totalPrice)}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={copyTotal}
+                className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#10565C] text-white hover:opacity-90 transition"
+              >
+                {copiedTotal ? <Check size={14} /> : <Copy size={14} />}
+              </button>
             </div>
 
             <div className="flex items-center justify-between">
