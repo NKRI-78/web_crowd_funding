@@ -11,7 +11,6 @@ import { API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { compressImage } from "@/app/helper/CompressorImage";
 import UpdateRing from "../component/UpdateRing";
 import ContainerSelfie from "../component/ContainerSelfie";
-import TextField from "@/app/components/inputFormPemodalPerusahaan/component/TextField";
 
 interface Props {
   formData: {
@@ -38,8 +37,8 @@ interface Props {
     districtPribadi: { value: string; label: string };
     subDistrictPribadi: { value: string; label: string };
     posCode: string;
-    name_heir: string;
-    phone_heir: string;
+    nama_ahli_waris: string;
+    phone_ahli_waris: string;
     fotoPemodalUrlPribadi: string;
   };
   onLihatKTP?: () => void;
@@ -76,6 +75,8 @@ interface Props {
     district_name: string;
     subdistrict_name: string;
     postal_code: string;
+    nama_ahli_waris: string;
+    phone_ahli_waris: string;
     investor: {
       bank: {
         no: string;
@@ -180,8 +181,6 @@ const ComponentDataPribadi: React.FC<Props> = ({
   const urlWilayah = "https://api.wilayah.site";
 
   const today = new Date();
-  // const maxDate = new Date();
-  // maxDate.setFullYear(today.getFullYear() - 17);
 
   // get tahun dikurang 17
   const maxDate = new Date(
@@ -328,6 +327,80 @@ const ComponentDataPribadi: React.FC<Props> = ({
     }
   };
 
+  const formatNpwp = (rawValue: string) => {
+    let formattedValue = rawValue;
+
+    if (rawValue.length > 2) {
+      formattedValue = rawValue.slice(0, 2) + "." + rawValue.slice(2);
+    }
+    if (rawValue.length > 5) {
+      formattedValue =
+        formattedValue.slice(0, 6) + "." + formattedValue.slice(6);
+    }
+    if (rawValue.length > 8) {
+      formattedValue =
+        formattedValue.slice(0, 10) + "." + formattedValue.slice(10);
+    }
+    if (rawValue.length > 9) {
+      formattedValue =
+        formattedValue.slice(0, 12) + "-" + formattedValue.slice(12);
+    }
+    if (rawValue.length > 12) {
+      formattedValue =
+        formattedValue.slice(0, 16) + "." + formattedValue.slice(16);
+    }
+
+    return formattedValue;
+  };
+
+  useEffect(() => {
+    if (!dataProfile || !isUpdate) return;
+
+    if (dataProfile?.investor?.job?.npwp) {
+      const rawNpwp = dataProfile.investor.job.npwp;
+      onChange({
+        target: {
+          name: "npwp",
+          value: rawNpwp,
+        },
+      } as React.ChangeEvent<HTMLInputElement>);
+
+      onChange({
+        target: {
+          name: "noNpwpFormatted",
+          value: formatNpwp(rawNpwp),
+        },
+      } as React.ChangeEvent<HTMLInputElement>);
+    }
+
+    if (dataProfile.avatar) {
+      onChange({
+        target: {
+          name: "fotoPemodalUrlPribadi",
+          value: dataProfile.avatar,
+        },
+      } as React.ChangeEvent<HTMLInputElement>);
+    }
+
+    if (dataProfile.nama_ahli_waris) {
+      onChange({
+        target: {
+          name: "nama_ahli_waris",
+          value: dataProfile.nama_ahli_waris,
+        },
+      } as React.ChangeEvent<HTMLInputElement>);
+    }
+
+    if (dataProfile.phone_ahli_waris) {
+      onChange({
+        target: {
+          name: "phone_ahli_waris",
+          value: dataProfile.phone_ahli_waris,
+        },
+      } as React.ChangeEvent<HTMLInputElement>);
+    }
+  }, [dataProfile, isUpdate]);
+
   useEffect(() => {
     const fetchProvince = async () => {
       try {
@@ -460,7 +533,6 @@ const ComponentDataPribadi: React.FC<Props> = ({
 
   useEffect(() => {
     if (!Object.keys(formData).length) return;
-
     if (formData.provincePribadi)
       setSelectedProvincePribadi(formData.provincePribadi);
     if (formData.cityPribadi) setSelectedCityPribadi(formData.cityPribadi);
@@ -469,23 +541,10 @@ const ComponentDataPribadi: React.FC<Props> = ({
     if (formData.subDistrictPribadi)
       setSelectedSubDistrictPribadi(formData.subDistrictPribadi);
     if (formData.namaBank) setSelectedBank(formData.namaBank);
-
     if (formData?.posCode) {
-      console.log("Prefill posCode berhasil:", formData.posCode);
       setPosCode(formData.posCode);
     }
   }, [formData]);
-
-  // useEffect(() => {
-  //   if (dataProfile?.postal_code && !formData.posCode) {
-  //     onChange({
-  //       target: {
-  //         name: "posCode",
-  //         value: dataProfile.postal_code,
-  //       },
-  //     } as React.ChangeEvent<HTMLInputElement>);
-  //   }
-  // }, [dataProfile?.postal_code]);
 
   const customOptions: OptionValue[] = province.map(
     (province: { code: any; nama: any }) => ({
@@ -566,7 +625,6 @@ const ComponentDataPribadi: React.FC<Props> = ({
             <ContainerSelfie
               defaultPhoto={formData.fotoPemodalUrlPribadi}
               photoResult={(file) => {
-                // console.log(file, "selfie");
                 if (file) {
                   handleFotoChange(file, "fotoPemodalUrl");
                 }
@@ -608,23 +666,6 @@ const ComponentDataPribadi: React.FC<Props> = ({
               <p className="text-red-500 text-sm mt-1">{errors.nik[0]}</p>
             )}
           </div>
-
-          {/* <div>
-            <label className="text-sm font-medium mb-2">
-              Nomor NPWP <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              name="npwp"
-              value={formData.npwp}
-              onChange={onChange}
-              placeholder="Nomor NPWP"
-              className="border p-2 w-full rounded mb-0 placeholder:text-sm"
-            />
-            {errors?.npwp && (
-              <p className="text-red-500 text-sm mt-1">{errors.npwp[0]}</p>
-            )}
-          </div> */}
 
           <div>
             <label className="text-sm font-medium mb-2">
@@ -1063,14 +1104,16 @@ const ComponentDataPribadi: React.FC<Props> = ({
             </label>
             <input
               type="text"
-              name="name_heir"
-              value={formData.name_heir}
+              name="nama_ahli_waris"
+              value={formData.nama_ahli_waris}
               onChange={onChange}
               placeholder="Nama ahli waris"
               className="border p-2 w-full rounded mb-0 placeholder:text-sm"
             />
-            {errors?.name_heir && (
-              <p className="text-red-500 text-sm mt-1">{errors.name_heir[0]}</p>
+            {errors?.nama_ahli_waris && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.nama_ahli_waris[0]}
+              </p>
             )}
           </div>
 
@@ -1080,15 +1123,15 @@ const ComponentDataPribadi: React.FC<Props> = ({
             </label>
             <input
               type="text"
-              name="phone_heir"
-              value={formData.phone_heir}
+              name="phone_ahli_waris"
+              value={formData.phone_ahli_waris}
               onChange={onChange}
               placeholder="Nomor telepon ahli waris"
               className="border p-2 w-full rounded mb-0 placeholder:text-sm"
             />
-            {errors?.phone_heir && (
+            {errors?.phone_ahli_waris && (
               <p className="text-red-500 text-sm mt-1">
-                {errors.phone_heir[0]}
+                {errors.phone_ahli_waris[0]}
               </p>
             )}
           </div>

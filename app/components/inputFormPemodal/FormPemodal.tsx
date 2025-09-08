@@ -31,6 +31,8 @@ const FormPemodal: React.FC = () => {
     district_name: string;
     subdistrict_name: string;
     postal_code: string;
+    nama_ahli_waris: string;
+    phone_ahli_waris: string;
     investor: {
       bank: {
         no: string;
@@ -143,8 +145,8 @@ const FormPemodal: React.FC = () => {
               ? { value: data.subdistrict_name, label: data.subdistrict_name }
               : null,
             posCode: data.postal_code || "",
-            name_heir: data.name_heir || "",
-            phone_heir: data.phone_heir || "",
+            nama_ahli_waris: data.nama_ahli_waris || "",
+            phone_ahli_waris: data.phone_ahli_waris || "",
           }));
 
           setDataPekerjaan((prev) => ({
@@ -295,8 +297,10 @@ const FormPemodal: React.FC = () => {
         }),
 
       posCode: z.string().min(1, "Kode pos wajib dipilih"),
-      name_heir: z.string().min(1, "Nama ahli waris wajib diisi"),
-      phone_heir: z.string().min(1, "Nomor telepon ahli waris wajib diisi"),
+      nama_ahli_waris: z.string().min(1, "Nama ahli waris wajib diisi"),
+      phone_ahli_waris: z
+        .string()
+        .min(1, "Nomor telepon ahli waris wajib diisi"),
       fotoPemodalUrlPribadi: z.string().min(1, "Upload Foto wajib"),
     })
     .refine((data) => data.nama === data.namaPemilik, {
@@ -424,8 +428,8 @@ const FormPemodal: React.FC = () => {
           districtPribadi: parsed.districtPribadi ?? null,
           subDistrictPribadi: parsed.subDistrictPribadi ?? null,
           posCode: parsed.posCode || "",
-          name_heir: parsed.name_heir || "",
-          phone_heir: parsed.phone_heir || "",
+          nama_ahli_waris: parsed.nama_ahli_waris || "",
+          phone_ahli_waris: parsed.phone_ahli_waris || "",
           fotoPemodalUrlPribadi: parsed.fotoPemodalUrlPribadi || "",
         };
       }
@@ -453,8 +457,8 @@ const FormPemodal: React.FC = () => {
       districtPribadi: null,
       subDistrictPribadi: null,
       posCode: "",
-      name_heir: "",
-      phone_heir: "",
+      nama_ahli_waris: "",
+      phone_ahli_waris: "",
       fotoPemodalUrlPribadi: "",
     };
   });
@@ -554,7 +558,7 @@ const FormPemodal: React.FC = () => {
       return;
     }
 
-    if (name === "phone_heir") {
+    if (name === "phone_ahli_waris") {
       const numericValue = value.replace(/\D/g, "");
       if (numericValue.length > 13) return;
 
@@ -571,7 +575,7 @@ const FormPemodal: React.FC = () => {
       "namaBank",
       "namaPemilik",
       "cabangBank",
-      "name_heir",
+      "nama_ahli_waris",
     ];
 
     const formattedValue = capitalizeFields.includes(name)
@@ -611,8 +615,8 @@ const FormPemodal: React.FC = () => {
           districtPribadi: parsed.districtPribadi ?? null,
           subDistrictPribadi: parsed.subDistrictPribadi ?? null,
           posCode: parsed.posCode || "",
-          name_heir: parsed.name_heir || "",
-          phone_heir: parsed.phone_heir || "",
+          nama_ahli_waris: parsed.nama_ahli_waris || "",
+          phone_ahli_waris: parsed.phone_ahli_waris || "",
           fotoPemodalUrlPribadi: parsed.fotoPemodalUrlPribadi || "",
         });
 
@@ -910,8 +914,8 @@ const FormPemodal: React.FC = () => {
               ? data.pekerjaanLainnya
               : data.pekerjaan,
           signature_path: data.signature,
-          nama_ahli_waris: data.name_heir,
-          phone_ahli_waris: data.phone_heir,
+          nama_ahli_waris: data.nama_ahli_waris,
+          phone_ahli_waris: data.phone_ahli_waris,
           slip_gaji: data.slipGajiUrl,
           nama_rekening_efek: data.namaPemilik_efek || "-",
           nomor_rekening_efek: data.nomorRekening_efek || "-",
