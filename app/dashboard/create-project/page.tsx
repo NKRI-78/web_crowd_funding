@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import CreateProjectPenerbit from "@/app/components/createProjectPenerbit/CreateProjectPenerbit";
 
 export const metadata: Metadata = {
-  title: "Create Project | CapBridge",
+  title: "Create Project | FuLusme",
   description: "Create Project Penerbit",
 };
 

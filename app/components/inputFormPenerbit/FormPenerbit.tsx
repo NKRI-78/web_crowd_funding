@@ -20,7 +20,7 @@ import FormButton from "./_component/FormButton";
 import UpdateRing from "./_component/UpdateRing";
 
 import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
-import { IFormPublisher } from "@/app/interface/IFormPublisher";
+// import { IFormPublisher } from "@/app/interface/IFormPublisher";
 import { getUser } from "@/app/lib/auth";
 
 import {
@@ -38,6 +38,7 @@ import {
   FORM_PIC_CACHE_KEY,
 } from "@/app/(defaults)/form-penerbit/form-cache-key";
 import { UpdateFieldValue } from "@/app/(defaults)/form-penerbit/PenerbitParent";
+import { IFormPublisher } from "./IFormPublisher";
 
 type Props = {
   profile: ProfileUpdate | null;

@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { Building, UserSearch } from "lucide-react";
-import FormButton from "../inputFormPemodalPerusahaan/component/FormButton";
 import { Stepper } from "react-form-stepper";
-import { Project, ProjectStatus, UserProfile } from "./IUserProfile";
+import { PanelContent } from "./PanelContent";
+import { PanelContainer } from "./PanelContainer";
+import { ProjectCard } from "./PenerbitProjectCard";
+import { User } from "@/app/interfaces/user/IUser";
+import GridView from "../GridView";
 
 interface Props {
-  profile: UserProfile | null;
+  profile: User | null;
 }
 
 export const DashboardPenerbit: React.FC<Props> = ({ profile }) => {
+  const projects = profile?.company.projects ?? [];
+
   const [currentStep, setCurrentStep] = useState(0);
 
   const statusSteps: Record<string, number> = {
@@ -36,7 +41,7 @@ export const DashboardPenerbit: React.FC<Props> = ({ profile }) => {
   return (
     <div className="space-y-4">
       {!profile?.company?.projects && (
-        <Container clasName="flex flex-col items-center text-center">
+        <PanelContainer clasName="flex flex-col items-center text-center">
           {
             // cek apakah user telah register company
             // dengan mengecek apakah properti nama perusahaan sudah ada valuenya apa belum
@@ -66,10 +71,10 @@ export const DashboardPenerbit: React.FC<Props> = ({ profile }) => {
               />
             )
           }
-        </Container>
+        </PanelContainer>
       )}
 
-      <Container>
+      <PanelContainer>
         <h2 className="font-bold text-lg text-black">Status Proyek</h2>
 
         <div className="text-black">
@@ -108,112 +113,25 @@ export const DashboardPenerbit: React.FC<Props> = ({ profile }) => {
             ]}
           />
         </div>
-      </Container>
+      </PanelContainer>
 
       {profile!.company.projects?.length > 0 && (
-        <Container>
+        <PanelContainer>
           <h2 className="font-bold text-lg text-black mb-5">Proyek Saya</h2>
 
-          <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {profile?.company.projects.map((project) => (
-              <ProjectCard key={project.id} {...project} />
-            ))}
-          </div>
-        </Container>
-      )}
-    </div>
-  );
-};
-
-//* container
-const Container: React.FC<{
-  children?: React.ReactNode;
-  clasName?: string;
-}> = ({ children, clasName }) => {
-  return (
-    <div className="w-full bg-white shadow-md rounded-2xl p-8">
-      <div className={clasName}>{children}</div>
-    </div>
-  );
-};
-
-//* panel content
-const PanelContent: React.FC<{
-  title: string;
-  message: string;
-  icon?: React.ReactNode;
-  buttonTitle?: string;
-  actionButton?: () => void;
-}> = ({ title, message, icon, buttonTitle, actionButton }) => {
-  return (
-    <div className="flex flex-col items-center max-w-md">
-      {icon && <div className="text-teal-700 mb-4">{icon}</div>}
-      <h2 className="font-bold text-xl md:text-2xl text-black mb-2">{title}</h2>
-      <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-4">
-        {message}
-      </p>
-
-      {buttonTitle && (
-        <FormButton onClick={actionButton}>{buttonTitle}</FormButton>
-      )}
-    </div>
-  );
-};
-
-//* project card
-const ProjectCard: React.FC<Project> = ({
-  media,
-  title,
-  deskripsi,
-  status,
-}) => {
-  return (
-    <div className="cursor-pointer transition-all duration-200 active:scale-[0.99] active:shadow-lg">
-      <div className="rounded-xl overflow-hidden shadow border">
-        <div className="relative h-40">
-          <img
-            src={
-              media && media.length !== 0 ? media[0].path : "/images/img.jpg"
-            }
-            alt={title}
-            className="object-cover w-full h-full"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.onerror = null; // mencegah infinite loop
-              target.src = "/images/img.jpg";
-            }}
-          />
-
-          <div className="absolute inset-0 bg-[#10565C]/40" />
-
-          {status === "PUBLISH" ? (
-            <StatusContainer title="Sedang Tayang" bgColor="bg-red-500" />
-          ) : (
-            <StatusContainer title="Sedang Direview" bgColor="bg-gray-700" />
+          {projects && (
+            <GridView
+              items={projects}
+              gapClass="gap-4"
+              breakpointCols={{ sm: 1, md: 2, lg: 4 }}
+              itemKey={(p) => p.id}
+              renderItem={(p, i) => {
+                return <ProjectCard project={p} />;
+              }}
+            />
           )}
-        </div>
-
-        <div className="p-4 bg-[#10565C]  h-full">
-          <p className="font-semibold text-white text-sm text-start mb-2">
-            {title}
-          </p>
-          <p className="text-white text-xs text-start line-clamp-5">
-            {deskripsi}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-//* status container
-const StatusContainer: React.FC<{ title: string; bgColor: string }> = ({
-  title,
-  bgColor,
-}) => {
-  return (
-    <div className={`absolute top-2 right-2 ${bgColor} rounded-md py-1 px-2`}>
-      <p className="text-white text-sm"> {title} </p>
+        </PanelContainer>
+      )}
     </div>
   );
 };

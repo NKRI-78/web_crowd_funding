@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import FormDokumenTambahanPage from "@/app/components/formDokumenTambahanPenerbit/FormDokumenTambahanPage";
 
 export const metadata: Metadata = {
-  title: "Form Pelengkap | CapBridge",
+  title: "Form Pelengkap | FuLusme",
   description: "Add Form Pelengkap Penerbit",
 };
 

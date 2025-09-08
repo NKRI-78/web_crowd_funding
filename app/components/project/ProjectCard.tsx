@@ -1,12 +1,10 @@
 import ProgressBar from "@/app/(defaults)/sukuk/components/ProgressBar";
-import { IProjectData } from "@/app/interface/IProject";
-import { formatPriceOrEmpty } from "@/app/lib/price";
+import { Project } from "@/app/interfaces/project/IProject";
 import { formatRupiah } from "@/app/lib/utils";
 import { useRouter } from "next/navigation";
+import { FilledButton } from "../Button";
 
-export const ProjectCard: React.FC<{ project: IProjectData }> = ({
-  project,
-}) => {
+export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
   const router = useRouter();
 
   const isFinish = project.is_apbn ? "block" : "hidden";
@@ -36,30 +34,37 @@ export const ProjectCard: React.FC<{ project: IProjectData }> = ({
         <div className="absolute inset-0 bg-opacity-60 bg-[#10565C]/40" />
       </div>
 
-      <div className="p-4 bg-[#10565C] w-full h-full text-white">
-        <p className="font-semibold text-2xl md:text-lg text-start mb-2 text-white">
+      <div className="px-4 pt-2 pb-4 bg-[#10565C] w-full h-full text-white">
+        {/* jenis proyek */}
+        <p className="text-white text-sm w-full flex mb-2">
+          {project.type_of_project}
+        </p>
+
+        {/* title proyek */}
+        <p className="font-semibold text-2xl md:text-lg text-start text-white mb-2">
           {project.title}
         </p>
-        <p className="text-white/40 text-xs w-full flex">Nilai Penawaran</p>
-        <div className="w-full flex justify-between">
+
+        {/* progress bar */}
+        <ProgressBar percentage={50} />
+
+        {/* nilai penawaran */}
+        <div className="w-full flex justify-between mt-3">
           <p className="text-white text-sm font-semibold">
             {formatRupiah(project?.capital)}
           </p>
           <p className="text-white/40 text-xs">10 Investor</p>
         </div>
-        <ProgressBar percentage={50} />
-        <div className="w-full flex justify-between">
-          <p className="text-white/40 text-xs ">Sisa Penawaran</p>
-          <p className="text-white text-sm font-semibold">33%</p>
-        </div>
-        <div className="w-full flex justify-between">
-          <p className="text-white text-sm font-semibold">Rp 6.660.000.000</p>
+
+        {/* sisa masa tayang */}
+        <div className="w-full flex justify-end mb-3 mt-2">
+          <p className="text-white text-xs font-semibold">{`Tersisa ${project.remaining_days} hari lagi`}</p>
         </div>
 
         <div className="w-full flex justify-end">
-          <button className="text-black text-sm font-semibold bg-white px-2 py-1 rounded-md hover:bg-white/80 transition">
+          <FilledButton className="bg-white px-3 py-1 rounded-[6px] text-black">
             Investasi
-          </button>
+          </FilledButton>
         </div>
       </div>
     </div>

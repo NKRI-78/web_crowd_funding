@@ -17,6 +17,7 @@ import {
   FORM_PIC_CACHE_KEY,
 } from "./form-cache-key";
 import Swal from "sweetalert2";
+import CircularProgressIndicator from "@/app/components/CircularProgressIndicator";
 
 export interface UpdateFieldValueManajemen {
   id: string;
@@ -165,8 +166,7 @@ export default function MultiStepFormWrapper() {
     <div className="py-28 bg-white">
       {loadingGetFormIndex ? (
         <div className="w-full h-[calc(100vh-28px)] flex flex-col items-center justify-center gap-4">
-          <div className="w-10 h-10 border-4 border-[#13733b] border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-600">Memuat halaman...</p>
+          <CircularProgressIndicator textDescription="Memuat halaman.." />
         </div>
       ) : (
         <>

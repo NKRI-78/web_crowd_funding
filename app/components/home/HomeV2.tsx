@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ProjectCard } from "@components/project/Project";
-import { IProjectData } from "@/app/interface/IProject";
+import { ProjectCard } from "@/app/components/project/ProjectCard";
+// import { IProjectData } from "@/app/interface/IProject";
 import Cookies from "js-cookie";
 import { getAllProject } from "@/actions/GetAllProject";
 import Modal from "@/app/helper/Modal";
@@ -12,10 +12,12 @@ import RegisterSelectRole from "../auth/register/RegisterSelectRole";
 import RegisterV2 from "../auth/register/RegisterV2";
 import axios from "axios";
 import { API_BACKEND } from "@/app/utils/constant";
-import { InboxModel } from "../notif/inbox-interface";
+import { InboxResponse } from "../notif/inbox-interface";
 import { useDispatch } from "react-redux";
 import { setBadge } from "@/redux/slices/badgeSlice";
 import { createSocket } from "@/app/utils/sockets";
+import { Project } from "@/app/interfaces/project/IProject";
+import GridView from "../GridView";
 
 const HomeV2: React.FC = () => {
   const dispatch = useDispatch();
@@ -26,7 +28,7 @@ const HomeV2: React.FC = () => {
     "Umum"
   );
   const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const [project, seProject] = useState<IProjectData[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
@@ -41,7 +43,7 @@ const HomeV2: React.FC = () => {
     const fetchTopVideos = async () => {
       setLoading(true);
       const res = await getAllProject();
-      seProject(res?.data ?? []);
+      setProjects(res?.data ?? []);
       setLoading(false);
     };
 
@@ -82,8 +84,8 @@ const HomeV2: React.FC = () => {
       }
 
       const unReadInboxes = res.data["data"].filter(
-        (inbox: InboxModel) => inbox.is_read === false
-      ) as InboxModel[];
+        (inbox: InboxResponse) => inbox.is_read === false
+      ) as InboxResponse[];
       dispatch(setBadge(unReadInboxes.length));
     } catch (e) {
       dispatch(setBadge(0));
@@ -116,9 +118,9 @@ const HomeV2: React.FC = () => {
   const faqData = {
     Umum: [
       {
-        question: "Apa itu CapBridge?",
+        question: "Apa itu FuLusme?",
         answer:
-          "CapBridge adalah Penyelenggara Layanan Urun Dana Berbasis Teknologi Informasi (Securities Crowdfunding) yang merupakan tempat bertemunya Pemodal dan Penerbit dalam satu wadah platform.",
+          "FuLusme adalah Penyelenggara Layanan Urun Dana Berbasis Teknologi Informasi (Securities Crowdfunding) yang merupakan tempat bertemunya Pemodal dan Penerbit dalam satu wadah platform.",
       },
       {
         question: "Apa itu Efek?",
@@ -135,12 +137,12 @@ const HomeV2: React.FC = () => {
       {
         question: "Apa itu Pemodal?",
         answer:
-          "Anda bisa mendaftar di platform CapBridge, melakukan verifikasi, dan mulai berinvestasi pada proyek yang tersedia.",
+          "Anda bisa mendaftar di platform FuLusme, melakukan verifikasi, dan mulai berinvestasi pada proyek yang tersedia.",
       },
       {
-        question: "Bagaimana cara berinvestasi di CapBridge?",
+        question: "Bagaimana cara berinvestasi di FuLusme?",
         answer:
-          "Untuk berinvestasi, langkah pertama Anda harus memiliki akun di CapBridge. Berikut tata cara pembuatan Akun Pemodal : \n • Daftarkan diri Anda pada tautan berikut. \n • Masukkan data diri anda, email, dan nomor ponsel yang anda pakai \n • Setelah memasukkan nomor ponsel pada langkah pertama, anda akan diminta memasukkan kode OTP yang dikirimkan ke nomor ponsel anda \n • Kemudian masukkan kata sandi yang ingin anda gunakan \n • Anda harus membaca dan menyetujui syarat dan ketentuan kami sebelum mendaftarkan diri. Kemudian akan dikirimkan email verifikasi pada email yang anda masukkan \n • Verifikasi email dan kemudian masuk menggunakan Email dan kata sandi anda. \n • Langkah berikutnya adalah proses KYC yang berada di posisi sebelah kiri Dashboard, dimana Anda harus mengisi semua tahapan dan pertanyaan yang ada. Setelah Anda mengisi semua data pada proses KYC, maka akan dilakukan verifikasi data oleh tim CapBridge yang memerlukan waktu 2x24 jam di hari kerja. \n • Anda akan menerima pemberitahuan via email terkait status verifikasi data Anda. Jika data Anda sudah terverifikasi, maka Anda dapat mulai berinvestasi di CapBridge.",
+          "Untuk berinvestasi, langkah pertama Anda harus memiliki akun di FuLusme. Berikut tata cara pembuatan Akun Pemodal : \n • Daftarkan diri Anda pada tautan berikut. \n • Masukkan data diri anda, email, dan nomor ponsel yang anda pakai \n • Setelah memasukkan nomor ponsel pada langkah pertama, anda akan diminta memasukkan kode OTP yang dikirimkan ke nomor ponsel anda \n • Kemudian masukkan kata sandi yang ingin anda gunakan \n • Anda harus membaca dan menyetujui syarat dan ketentuan kami sebelum mendaftarkan diri. Kemudian akan dikirimkan email verifikasi pada email yang anda masukkan \n • Verifikasi email dan kemudian masuk menggunakan Email dan kata sandi anda. \n • Langkah berikutnya adalah proses KYC yang berada di posisi sebelah kiri Dashboard, dimana Anda harus mengisi semua tahapan dan pertanyaan yang ada. Setelah Anda mengisi semua data pada proses KYC, maka akan dilakukan verifikasi data oleh tim FuLusme yang memerlukan waktu 2x24 jam di hari kerja. \n • Anda akan menerima pemberitahuan via email terkait status verifikasi data Anda. Jika data Anda sudah terverifikasi, maka Anda dapat mulai berinvestasi di FuLusme.",
       },
       {
         question: "Apa yang dimaksud dengan Prospekstus?",
@@ -152,7 +154,7 @@ const HomeV2: React.FC = () => {
       {
         question: "Apa itu Penerbit?",
         answer:
-          "Penerbit adalah pihak yang mencari pendanaan melalui platform CapBridge dengan menawarkan efek kepada publik.",
+          "Penerbit adalah pihak yang mencari pendanaan melalui platform FuLusme dengan menawarkan efek kepada publik.",
       },
       {
         question:
@@ -264,7 +266,7 @@ const HomeV2: React.FC = () => {
               Cara Baru Investasi Aman dan Menguntungkan
             </h2>
             <p className="text-[#969696] text-base md:text-lg">
-              Capbridge adalah penyelenggara urun dana berbasis teknologi
+              FuLusme adalah penyelenggara urun dana berbasis teknologi
               informasi di Indonesia yang beroperasi sesuai prinsip ESG
               (Environmental, Social, Governance)...
             </p>
@@ -322,11 +324,15 @@ const HomeV2: React.FC = () => {
           temukan peluang untuk berinvestasi hari ini.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {project.map((project: IProjectData, index) => (
-            <ProjectCard key={index} project={project} />
-          ))}
-        </div>
+        <GridView
+          items={projects}
+          gapClass="gap-4"
+          breakpointCols={{ sm: 2, md: 3, lg: 4 }}
+          itemKey={(p) => p.id}
+          renderItem={(p, i) => {
+            return <ProjectCard project={p} />;
+          }}
+        />
 
         <button
           onClick={() => {
@@ -500,7 +506,7 @@ const HomeV2: React.FC = () => {
         </h2>
         <div className="max-h-[500px] relative  overflow-y-scroll p-6 border border-gray-300 rounded-lg space-y-4 text-justify text-sm leading-relaxed">
           <p className="text-1xl">
-            PT Fintek Andalan Solusi Teknologi (CapBridge) adalah Penyelenggara
+            PT Fintek Andalan Solusi Teknologi (FuLusme) adalah Penyelenggara
             Layanan Urun Dana melalui Penawaran Efek Berbasis Teknologi
             Informasi (Securities Crowdfunding) sebagaimana tunduk pada
             ketentuan Peraturan Otoritas Jasa Keuangan NOMOR 57/POJK.04/2020
@@ -527,7 +533,7 @@ const HomeV2: React.FC = () => {
           </p>
           <p>
             1. Anda perlu mempertimbangkan dengan cermat, teliti dan seksama
-            setiap investasi bisnis yang akan Anda lakukan di CapBridge,
+            setiap investasi bisnis yang akan Anda lakukan di FuLusme,
             berdasarkan pengetahuan, keilmuan serta pengalaman yang Anda miliki
             dalam hal keuangan dan bisnis. Dibutuhkan kajian/penelaahan laporan
             keuangan, target tujuan investasi, kemampuan analisis, serta
@@ -535,17 +541,16 @@ const HomeV2: React.FC = () => {
           </p>
           <p>
             Anda menyadari bahwa setiap bisnis pasti memiliki risikonya
-            masing-masing. Untuk itu, dengan berinvestasi melalui CapBridge,
-            Anda sudah mengerti akan segala resiko yang dapat terjadi di
-            kemudian hari, seperti penurunan performa bisnis, hingga
-            kebangkrutan dari bisnis yang anda investasikan tersebut.
+            masing-masing. Untuk itu, dengan berinvestasi melalui FuLusme, Anda
+            sudah mengerti akan segala resiko yang dapat terjadi di kemudian
+            hari, seperti penurunan performa bisnis, hingga kebangkrutan dari
+            bisnis yang anda investasikan tersebut.
           </p>
           <p>
-            CapBridgeTIDAK BERTANGGUNG JAWAB terhadap risiko kerugian dan
-            gugatan hukum serta segala bentuk risiko lain yang timbul dikemudian
-            hari atas hasil investasi bisnis yang anda tentukan sendiri saat
-            ini. Beberapa risiko yang dapat terjadi saat Anda berinvestasi yaitu
-            :
+            FuLusmeTIDAK BERTANGGUNG JAWAB terhadap risiko kerugian dan gugatan
+            hukum serta segala bentuk risiko lain yang timbul dikemudian hari
+            atas hasil investasi bisnis yang anda tentukan sendiri saat ini.
+            Beberapa risiko yang dapat terjadi saat Anda berinvestasi yaitu :
           </p>
           <div>
             <p className="font-bold text-md">Risiko Usaha</p>
@@ -598,9 +603,8 @@ const HomeV2: React.FC = () => {
               yang baru diterbitkan tersebut. Penerbit dapat menerbitkan Efek
               baru jika jumlah penawaran yang diajukan masih dibawah batas
               maksimum. Jika Penerbit mengadakan urun dana lagi dan terjadi
-              penerbitan Efek baru, maka CapBridge akan membuka bisnis tersebut
-              di website CapBridge dan menginformasikan kepada semua pemegang
-              Efek.
+              penerbitan Efek baru, maka FuLusme akan membuka bisnis tersebut di
+              website FuLusme dan menginformasikan kepada semua pemegang Efek.
             </p>
           </div>
           <div>
@@ -608,22 +612,22 @@ const HomeV2: React.FC = () => {
             <p className="my-1">
               Risiko yang timbul adanya Penerbit melanggar atau tidak lagi
               memenuhi kriteria Efek Syariah. Penerbit yang listing di platform
-              CapBridge sudah melalui proses screening dari tim analis bisnis
-              CapBridge. Penerbit yang dipilih berdasarkan rekam jejak bisnis
-              yang baik dan memenuhi standar dalam kesesuaian kriteria prinsip
+              FuLusme sudah melalui proses screening dari tim analis bisnis
+              FuLusme. Penerbit yang dipilih berdasarkan rekam jejak bisnis yang
+              baik dan memenuhi standar dalam kesesuaian kriteria prinsip
               syariah yang diputuskan dalam persetujuan akhir oleh Dewan
-              Pengawas Syariah. Dalam hal ini CapBridge sebagai penyelenggara
-              akan memonitoring kepada Penerbit secara berkala.
+              Pengawas Syariah. Dalam hal ini FuLusme sebagai penyelenggara akan
+              memonitoring kepada Penerbit secara berkala.
             </p>
           </div>
           <div>
             <p className="font-bold text-md">Kegagalan Sistem Elektronik</p>
             <p className="my-1">
-              CapBridge telah menerapkan sistem teknologi informasi dan keamanan
+              FuLusme telah menerapkan sistem teknologi informasi dan keamanan
               data yang handal. Namun bagaimanapun juga tetap memungkinkan jika
               terjadi gangguan sistem teknologi informasi dan kegagalan sistem,
               jika ini terjadi maka akan menyebabkan aktivitas bisnis Anda di
-              platform CapBridge menjadi tertunda.
+              platform FuLusme menjadi tertunda.
             </p>
             <p className="my-1">
               2. Semua materi terkait pilihan investasi yang tercantum dalam
@@ -657,7 +661,7 @@ const HomeV2: React.FC = () => {
               lainnya{" "}
             </p>
             <p className="my-1">
-              5. CapBridge bertindak sebagai Penyelenggara Layanan Urun Dana,
+              5. FuLusme bertindak sebagai Penyelenggara Layanan Urun Dana,
               bukan sebagai pihak yang menjalankan kegiatan usaha atau proyek
               Penerbit. Otoritas Jasa Keuangan bertindak sebagai regulator dan
               pemberi izin, pengawas Penyelenggara, bukan sebagai penjamin
