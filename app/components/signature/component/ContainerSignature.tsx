@@ -147,7 +147,6 @@ const ContainerSignature: React.FC<Props> = ({ formData, onSignatureSave }) => {
         Tanda Tangan Pemodal
       </h3>
 
-      {/* Disclaimer */}
       <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 text-sm rounded-md p-4 mb-4 leading-relaxed">
         <p>
           “Keputusan terkait investasi sepenuhnya ada di tangan Anda. Kami tidak

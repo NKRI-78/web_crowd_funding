@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import ContainerSignature from "./component/ContainerSignature";
+import DocumentPreview from "./component/DocumentPreview";
 
 interface FormData {
   signature: string;
@@ -19,14 +20,15 @@ const FormSignature: React.FC = () => {
       alert("Tanda tangan wajib diisi!");
       return;
     }
-
     console.log("Form submitted:", formData);
-    // TODO: Kirim ke backend (axios/fetch) dengan formData.signature
+    // TODO: Kirim ke backend
   };
 
   return (
-    <div className="max-w-lg mx-auto p-4">
-      <h2 className="text-xl font-semibold mb-4">Form Tanda Tangan</h2>
+    <div className="max-w-3xl mx-auto p-6 space-y-6">
+      <h2 className="text-xl font-semibold">Form Tanda Tangan</h2>
+
+      <DocumentPreview fileId="1k0hbt_DAQfAMArfc1Yl-hI8Q-aGiRU5d" />
 
       <ContainerSignature
         formData={formData}
