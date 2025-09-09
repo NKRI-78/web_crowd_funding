@@ -142,15 +142,12 @@ const ContainerSignature: React.FC<Props> = ({ formData, onSignatureSave }) => {
   }, []);
 
   return (
-    <div className="justify-center gap-6 p-6 max-w-6xl mx-auto">
-      <h3 className="font-semibold text-gray-900 mb-3 text-lg">
-        Tanda Tangan Pemodal
-      </h3>
-
-      <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 text-sm rounded-md p-4 mb-4 leading-relaxed">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div></div>
+      {/* <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 text-sm rounded-md p-4 leading-relaxed">
         <p>
-          “Keputusan terkait investasi sepenuhnya ada di tangan Anda. Kami tidak
-          bertanggung jawab atas kerugian atas investasi ini.”
+          Keputusan terkait investasi sepenuhnya ada di tangan Anda. Kami tidak
+          bertanggung jawab atas kerugian atas investasi ini.
         </p>
         <p className="mt-2">
           Pemodal mengerti dan memahami bahwa pembagian dividen kepada para
@@ -159,11 +156,11 @@ const ContainerSignature: React.FC<Props> = ({ formData, onSignatureSave }) => {
           akta anggaran dasar Penerbit dan peraturan perundang-undangan yang
           berlaku.
         </p>
-      </div>
+      </div> */}
 
-      <div className="rounded-2xl border border-gray-300 shadow-sm bg-white p-3">
+      <div className="rounded-md border border-gray-300 shadow-sm bg-white p-3">
         <div
-          className="rounded-lg border border-dashed border-gray-400 flex items-center justify-center w-full max-w-xl mx-auto"
+          className="rounded-md border border-dashed border-gray-400 flex items-center justify-center w-full max-w-xl mx-auto"
           style={{ height: 200 }}
         >
           <SignatureCanvas
@@ -175,7 +172,7 @@ const ContainerSignature: React.FC<Props> = ({ formData, onSignatureSave }) => {
               }
             }}
             canvasProps={{
-              className: "sigCanvas w-full h-full block bg-white rounded-lg",
+              className: "sigCanvas w-full h-full block bg-white rounded-md",
             }}
           />
         </div>
@@ -183,34 +180,33 @@ const ContainerSignature: React.FC<Props> = ({ formData, onSignatureSave }) => {
         <p className="text-xs text-gray-500 mt-2 text-center">
           Silakan tanda tangani area di atas
         </p>
-      </div>
+        <div className="flex gap-3 mt-4 justify-center">
+          <button
+            type="button"
+            onClick={handleClearSignature}
+            disabled={isEmpty}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              isEmpty
+                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                : "bg-red-500 hover:bg-red-600 text-white"
+            }`}
+          >
+            {isSignatureSaved ? "Hapus" : "Ulang"}
+          </button>
 
-      <div className="flex gap-3 mt-4 justify-center">
-        <button
-          type="button"
-          onClick={handleClearSignature}
-          disabled={isEmpty}
-          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-            isEmpty
-              ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-              : "bg-red-500 hover:bg-red-600 text-white"
-          }`}
-        >
-          {isSignatureSaved ? "Hapus" : "Ulang"}
-        </button>
-
-        <button
-          type="button"
-          onClick={handleSaveSignature}
-          disabled={isSignatureSaved}
-          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-            isSignatureSaved
-              ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-              : "bg-green-500 hover:bg-green-600 text-white"
-          }`}
-        >
-          Simpan Tanda Tangan
-        </button>
+          <button
+            type="button"
+            onClick={handleSaveSignature}
+            disabled={isSignatureSaved}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              isSignatureSaved
+                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                : "bg-green-500 hover:bg-green-600 text-white"
+            }`}
+          >
+            Simpan Tanda Tangan
+          </button>
+        </div>
       </div>
     </div>
   );
