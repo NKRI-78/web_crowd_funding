@@ -21,6 +21,7 @@ export interface Project {
   company_profile: string;
   spk: string;
   loa: string;
+  doc_prospect: string;
   mulai_project: string;
   selesai_project: string;
   jadwal_pembayaran_bunga: string;
