@@ -223,12 +223,15 @@ const FormPemodal: React.FC = () => {
 
     const lowerForm = form.toLowerCase();
 
-    if (lowerForm.includes("ktp")) {
-      return 0;
-    } else if (lowerForm.includes("npwp")) {
-      return 1;
-    } else {
-      return 0;
+    switch (true) {
+      case lowerForm.includes("ktp"):
+        return 0;
+      case lowerForm.includes("npwp"):
+      case lowerForm.includes("slip-gaji"):
+      case lowerForm.includes("slip_gaji"):
+        return 1;
+      default:
+        return 0;
     }
   }
 
@@ -341,7 +344,7 @@ const FormPemodal: React.FC = () => {
       namaPerusahaan: z.string().min(1, "Nama perusahaan wajib diisi"),
       jabatan: z.string().min(1, "Jabatan wajib diisi"),
       alamatPerusahaan: z.string().min(1, "Alamat perusahaan wajib diisi"),
-      // penghasilanBulanan: z.string().min(1, "Penghasilan tahunan wajib diisi"),
+      slipGajiUrl: z.string().min(1, "Slip gaji wajib diupload"),
       penghasilanTahunan: z.string().min(1, "Penghasilan tahunan wajib diisi"),
       tujuanInvestasi: z.string().min(1, "Tujuan investasi wajib diisi"),
       tujuanInvestasiLainnya: z.string().optional(),
@@ -979,24 +982,30 @@ const FormPemodal: React.FC = () => {
 
         console.log("Payload akan dikirim:", payload);
       } else {
-        const payload = {
-          val: form === "ktp" ? data.ktpUrl : data.npwpUrl,
-        };
+        function mapFormToDataType(form: string | null): {
+          dataType: string;
+          val: string;
+        } {
+          if (!form) return { dataType: "", val: "" };
 
-        let dataType = "";
-
-        switch (form) {
-          case "ktp":
-            dataType = "ktp_path";
-            break;
-          case "npwp":
-            dataType = "npwp_path";
-            break;
-          default:
-            dataType = "";
+          switch (form.toLowerCase()) {
+            case "ktp":
+              return { dataType: "ktp_path", val: data.ktpUrl };
+            case "npwp":
+              return { dataType: "npwp_path", val: data.npwpUrl };
+            case "slip-gaji":
+              return { dataType: "slip_gaji", val: data.slipGajiUrl };
+            default:
+              return { dataType: "", val: "" };
+          }
         }
 
-        console.log("Payload update:", { dataType, payload });
+        const { dataType, val } = mapFormToDataType(form);
+        const payload = { val };
+
+        console.log("Payload update:", {
+          payload,
+        });
 
         const response = await axios.put(
           `${API_BACKEND}/api/v1/document/update/user/${dataType}`,

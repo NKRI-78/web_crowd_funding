@@ -5,7 +5,9 @@ import ContainerSignature from "./component/ContainerSignature";
 import DocumentPreview from "./component/DocumentPreview";
 import { PDFDocument } from "pdf-lib";
 import Swal from "sweetalert2";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 interface FormData {
   signature: string;
@@ -13,6 +15,12 @@ interface FormData {
 
 const FormSignature: React.FC = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const pdfUrl = searchParams.get("pdf");
+  const projectPaymentId = searchParams.get("field5");
+  console.log("Project Payment ID:", projectPaymentId);
+
   const [formData, setFormData] = useState<FormData>({ signature: "" });
 
   const handleSignatureSave = (signatureUrl: string) => {
@@ -20,6 +28,27 @@ const FormSignature: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    const userCookie = Cookies.get("user");
+    let token: string | null = null;
+
+    if (userCookie) {
+      try {
+        const parsedUser = JSON.parse(userCookie);
+        token = parsedUser.token;
+      } catch (e) {
+        console.error("Gagal parsing user cookie:", e);
+      }
+    }
+
+    if (!token) {
+      Swal.fire({
+        title: "Gagal",
+        text: "Token tidak ditemukan, silakan login ulang.",
+        icon: "error",
+      });
+      return;
+    }
+
     if (!formData.signature) {
       Swal.fire({
         title: "Tanda Tangan Wajib Diisi",
@@ -30,12 +59,19 @@ const FormSignature: React.FC = () => {
       return;
     }
 
-    const pdfUrl =
-      "/dummy_pdf/Formulir%20Perjanjian%20Fulusme%20layanan%20urun%20dana%20dengan%20Pemodal%20bersifat%20utang.pdf";
+    if (!pdfUrl) {
+      Swal.fire({
+        title: "Dokumen tidak ditemukan",
+        text: "Tidak ada file PDF untuk ditandatangani.",
+        icon: "error",
+        timer: 2500,
+      });
+      return;
+    }
+
     const existingPdfBytes = await fetch(pdfUrl).then((res) =>
       res.arrayBuffer()
     );
-
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
 
     const signatureRes = await fetch(formData.signature);
@@ -50,8 +86,6 @@ const FormSignature: React.FC = () => {
 
     const pages = pdfDoc.getPages();
     const lastPage = pages[pages.length - 1];
-
-    const { width, height } = lastPage.getSize();
     const { width: sigW, height: sigH } = signatureImage.scale(0.1);
 
     lastPage.drawImage(signatureImage, {
@@ -65,21 +99,59 @@ const FormSignature: React.FC = () => {
     const blob = new Blob([new Uint8Array(pdfBytes)], {
       type: "application/pdf",
     });
-    const url = URL.createObjectURL(blob);
+    const file = new File([blob], "signed.pdf", { type: "application/pdf" });
 
-    window.open(url, "_blank");
+    const uploadForm = new FormData();
+    uploadForm.append("folder", "web");
+    uploadForm.append("subfolder", "signed-doc");
+    uploadForm.append("media", file);
 
-    localStorage.removeItem("signature");
+    const uploadRes = await axios.post(
+      "https://api-media.inovatiftujuh8.com/api/v1/media/upload",
+      uploadForm
+    );
 
-    Swal.fire({
-      title: "Berhasil!",
-      text: "Tanda tangan berhasil ditempel ke dokumen.",
-      icon: "success",
-      timer: 2000,
-      showConfirmButton: false,
-    }).then(() => {
-      router.push("/dashboard");
-    });
+    const signedPdfUrl = uploadRes.data?.data?.path;
+    if (!signedPdfUrl) {
+      Swal.fire({
+        title: "Gagal",
+        text: "Upload PDF gagal.",
+        icon: "error",
+      });
+      return;
+    }
+
+    try {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_BACKEND}/api/v1/contract-letter-project-payment/upload`,
+        {
+          project_payment_id: projectPaymentId,
+          path: signedPdfUrl,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      Swal.fire({
+        title: "Berhasil!",
+        text: "Tanda tangan berhasil ditempel & dikirim.",
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      }).then(() => {
+        localStorage.removeItem("signature");
+        router.push("/dashboard");
+      });
+    } catch (err: any) {
+      Swal.fire({
+        title: "Gagal",
+        text: err.response?.data?.message || "Submit gagal.",
+        icon: "error",
+      });
+    }
   };
 
   return (
@@ -88,7 +160,7 @@ const FormSignature: React.FC = () => {
         Form Tanda Tangan Pemodal
       </h3>
 
-      <DocumentPreview fileUrl="/dummy_pdf/Formulir%20Perjanjian%20Fulusme%20layanan%20urun%20dana%20dengan%20Pemodal%20bersifat%20utang.pdf" />
+      <DocumentPreview fileUrl={pdfUrl ?? ""} />
 
       <ContainerSignature
         formData={formData}
