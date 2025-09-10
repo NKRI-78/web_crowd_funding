@@ -9,8 +9,11 @@ import { getUser } from "@/app/lib/auth";
 import { PaymentMethodType } from "./components/types";
 import TransactionSummary from "./components/TransactionSummary";
 import ConfirmButton from "./components/ConfirmButton";
-import ProjectCardDummy from "./components/ProjectCardDummy";
 import ProjectCardSkeleton from "./components/ProjectCardSkeleton";
+import { Project } from "@/app/interfaces/project/IProject";
+import Custom404 from "@/app/not-found";
+import ProjectCardDummy from "./components/ProjectCardDummy";
+import ProjectCardCheckout from "./components/ProjectCardDummy";
 
 const PaymentMethod = ({ id }: { id: string }) => {
   const [methods, setMethods] = useState<PaymentMethodType[]>([]);
@@ -19,9 +22,19 @@ const PaymentMethod = ({ id }: { id: string }) => {
   const [loading, setLoading] = useState(true);
 
   const router = useRouter();
+  const [amount, setAmount] = useState<number | null>(null);
+  const [totalPrice, setTotalPrice] = useState<number>(0);
+  const [project, setProject] = useState<Project | null>(null);
+  const [isNotFound, setIsNotFound] = useState(false);
 
-  // 🔹 dummy harga dasar
-  const baseAmount = 250000;
+  useEffect(() => {
+    const saved = localStorage.getItem("invest_amount");
+    if (saved) {
+      setAmount(Number(saved));
+    }
+  }, []);
+
+  const baseAmount = amount;
 
   useEffect(() => {
     const userData = getUser();
@@ -43,25 +56,51 @@ const PaymentMethod = ({ id }: { id: string }) => {
     }
   }, []);
 
+  //* fetch project detail by id
+  useEffect(() => {
+    if (id) {
+      const fetchProject = async () => {
+        try {
+          const response = await axios.get(
+            `${API_BACKEND}/api/v1/project/detail/${id}`
+          );
+          setProject(response.data.data);
+        } catch (error: any) {
+          console.error("Gagal ambil data project:", error);
+
+          if (error.response?.status === 400) {
+            setIsNotFound(true);
+          }
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchProject();
+    }
+  }, []);
+
   const handleSelect = (method: PaymentMethodType) => {
     setSelectedMethod(method);
   };
 
   const handleStorePayment = async () => {
     if (!selectedMethod) return;
+    setLoading(true);
     try {
       const payload = {
         project_id: id,
         payment_method: selectedMethod.id.toString(),
+        amount: baseAmount,
       };
 
       const userData = getUser();
       if (userData) {
-        const endpoint = `${API_BACKEND}/api/v1/payment/order`;
+        const endpoint = `${API_BACKEND}/api/v1/project/payment`;
         const result = await axios.post(endpoint, payload, {
           headers: { Authorization: `Bearer ${userData?.token}` },
         });
-        router.push(`/waiting-payment?orderId=${result.data.data.inbox.id}`);
+        router.push(`/waiting-payment?orderId=${result.data.data.id}`);
       }
     } catch (err: any) {
       let errorMessage = "Terjadi kesalahan. Silakan coba lagi.";
@@ -77,6 +116,7 @@ const PaymentMethod = ({ id }: { id: string }) => {
       }
       Swal.fire({ icon: "error", title: "Oops...", text: errorMessage });
     }
+    setLoading(false);
   };
 
   // skeleton shimmer card
@@ -94,20 +134,30 @@ const PaymentMethod = ({ id }: { id: string }) => {
     </div>
   );
 
-  return (
+  return isNotFound ? (
+    <>
+      <Custom404 />
+    </>
+  ) : (
     <div className="py-28 px-4 md:px-12 flex flex-col items-center">
       {/* Card Proyek */}
       {loading ? (
         <ProjectCardSkeleton />
       ) : (
-        <ProjectCardDummy
-          title="Grand Ocean Beach Club and Resort"
-          company="PT Cipta Karya Nusantara"
-          category="KONTRAKTOR"
-          price={90000}
-          location="Canggu, Bali"
-          image="https://picsum.photos/id/1018/800/400"
-        />
+        <>
+          <ProjectCardCheckout
+            title={project?.title ?? "-"}
+            company={project?.company.name ?? "-"}
+            location={project?.location.name ?? "-"}
+            locationUrl={project?.location.url ?? "-"}
+            unitPrice={Number(project?.unit_price ?? "-")}
+            minInvest={Number(project?.min_invest ?? "-")}
+            roi={project?.roi ?? "-"}
+            tenor={project?.loan_term ?? "-"}
+            image={project?.medias[0]?.path ?? "-"}
+            amountInvested={amount ?? 0}
+          />
+        </>
       )}
       {/* Card Utama */}
       <div className="w-full bg-white rounded-2xl my-2 p-6 shadow-md">
@@ -138,9 +188,6 @@ const PaymentMethod = ({ id }: { id: string }) => {
                   <p className="text-sm font-medium text-gray-800 text-center">
                     {method.name}
                   </p>
-                  <p className="text-xs text-gray-500">
-                    Fee Rp{method.fee.toLocaleString("id-ID")}
-                  </p>
                 </div>
               ))}
         </div>
@@ -150,7 +197,8 @@ const PaymentMethod = ({ id }: { id: string }) => {
           <div className="mt-6">
             <TransactionSummary
               method={selectedMethod}
-              baseAmount={baseAmount}
+              baseAmount={baseAmount ?? 0}
+              onTotalChange={setTotalPrice}
             />
 
             <hr className="my-6 border-gray-200" />

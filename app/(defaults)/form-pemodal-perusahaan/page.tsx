@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 const FormPemodalPerusahaanPage: React.FC = () => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <FormPemodalPerusahaan />
+      <FormPemodalPerusahaan onSubmit={() => {}} />
     </Suspense>
   );
 };

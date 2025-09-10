@@ -1,124 +1,98 @@
 "use client";
 
 import React from "react";
+import { MapPin } from "lucide-react";
 
-interface ProjectCardProps {
+interface ProjectCheckoutProps {
   title: string;
   company: string;
-  category: string;
-  price: number;
   location: string;
+  locationUrl?: string;
+  unitPrice: number;
+  minInvest: number;
+  roi: string;
+  tenor: string;
   image: string;
-  fundedAmount?: number;
-  targetAmount?: number;
-  fundedPercent?: number;
-  investors?: number;
-  tenor?: string;
-  roi?: string;
-  daysLeft?: number;
-  status?: "Prelisting" | "Listing" | "Berjalan" | "Terpenuhi";
+  amountInvested: number; // 🔹 Nominal investasi
 }
 
-const statusColors: Record<string, string> = {
-  Prelisting: "bg-yellow-100 text-yellow-700",
-  Listing: "bg-blue-100 text-blue-700",
-  Berjalan: "bg-green-100 text-green-700",
-  Terpenuhi: "bg-gray-100 text-gray-700",
-};
-
-const ProjectCardDummy: React.FC<ProjectCardProps> = ({
+const ProjectCardCheckout: React.FC<ProjectCheckoutProps> = ({
   title,
   company,
-  category,
-  price,
   location,
+  locationUrl,
+  unitPrice,
+  minInvest,
+  roi,
+  tenor,
   image,
-  fundedAmount = 175000000,
-  targetAmount = 250000000,
-  fundedPercent = 70,
-  investors = 125,
-  tenor = "12 Bulan",
-  roi = "+8% / tahun",
-  daysLeft = 15,
-  status = "Listing",
+  amountInvested,
 }) => {
   return (
-    <div className="w-full bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-6 hover:shadow-md transition">
-      {/* Grid 2 kolom */}
-      <div className="grid grid-cols-1 md:grid-cols-2">
+    <div className="w-full bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-3">
         {/* Gambar */}
-        <div className="relative w-full h-48 md:h-full">
+        <div className="relative w-full h-40 md:h-full md:col-span-1">
           <img src={image} alt={title} className="w-full h-full object-cover" />
-          <span className="absolute top-3 left-3 bg-[#10565C] text-white text-xs font-medium px-3 py-1 rounded-full shadow-sm">
-            {category}
-          </span>
         </div>
 
         {/* Detail */}
-        <div className="p-5 flex flex-col justify-between">
+        <div className="p-5 md:col-span-2 flex flex-col justify-between">
           <div>
             <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-            <p className="text-sm text-gray-500">{company}</p>
+            <p className="text-sm text-gray-500 mb-4">{company}</p>
 
-            {/* Info Grid */}
-            <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+            {/* Nominal Investasi */}
+            <div className="mb-4 p-3 rounded-lg bg-gray-50 text-white">
+              <span className="text-xs opacity-90 text-gray-500">
+                Nominal Investasi Anda
+              </span>
+              <p className="text-xl font-extrabold text-[#10565C]">
+                Rp{amountInvested.toLocaleString("id-ID")}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="bg-gray-50 p-2 rounded-lg">
-                <span className="text-gray-500">Harga Unit</span>
-                <p className="font-semibold text-[#10565C]">
-                  Rp{price.toLocaleString("id-ID")}
+                <span className="text-gray-500 text-xs">Harga Unit</span>
+                <p className="font-semibold text-gray-900">
+                  Rp{unitPrice.toLocaleString("id-ID")}
                 </p>
               </div>
               <div className="bg-gray-50 p-2 rounded-lg">
-                <span className="text-gray-500">Lokasi</span>
-                <p className="font-semibold text-gray-900">{location}</p>
+                <span className="text-gray-500 text-xs">Minimal Investasi</span>
+                <p className="font-semibold text-gray-900">
+                  Rp{minInvest.toLocaleString("id-ID")}
+                </p>
               </div>
               <div className="bg-gray-50 p-2 rounded-lg">
-                <span className="text-gray-500">Tenor</span>
+                <span className="text-gray-500 text-xs">Tenor</span>
                 <p className="font-semibold text-gray-900">{tenor}</p>
               </div>
               <div className="bg-gray-50 p-2 rounded-lg">
-                <span className="text-gray-500">ROI (Proyeksi)</span>
-                <p className="font-semibold text-green-600">{roi}</p>
+                <span className="text-gray-500 text-xs">ROI (Proyeksi)</span>
+                <p className="font-semibold text-green-600">{roi}%</p>
+              </div>
+
+              {/* Lokasi */}
+              <div className="col-span-2 bg-gray-50 p-3 rounded-lg flex items-center justify-between">
+                <div>
+                  <span className="text-gray-500 text-xs block">Lokasi</span>
+                  <p className="font-semibold text-gray-900">{location}</p>
+                </div>
+                {locationUrl && (
+                  <a
+                    href={locationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-blue-600 text-blue-600 text-xs font-medium hover:bg-blue-600 hover:text-white transition"
+                  >
+                    <MapPin className="h-4 w-4" />
+                    Lihat Lokasi
+                  </a>
+                )}
               </div>
             </div>
-          </div>
-
-          {/* Progress Bar + Status + Tombol */}
-          <div className="mt-4">
-            {/* Status */}
-            <div className="mb-2">
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[status]}`}
-              >
-                {status}
-              </span>
-            </div>
-
-            {/* Dana Terkumpul */}
-            <div className="mb-3">
-              <div className="flex justify-between text-xs text-gray-500 mb-1">
-                <span>
-                  Rp{fundedAmount.toLocaleString("id-ID")} / Rp
-                  {targetAmount.toLocaleString("id-ID")}
-                </span>
-                <span>{daysLeft} Hari Tersisa</span>
-              </div>
-              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-2 bg-[#10565C] rounded-full"
-                  style={{ width: `${fundedPercent}%` }}
-                />
-              </div>
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>{fundedPercent}% Terkumpul</span>
-                <span>{investors} Investor</span>
-              </div>
-            </div>
-
-            {/* Tombol */}
-            <button className="w-full py-2 px-4 rounded-lg bg-[#10565C] text-white text-sm font-medium hover:bg-[#0d494e] transition">
-              Lihat Detail
-            </button>
           </div>
         </div>
       </div>
@@ -126,4 +100,4 @@ const ProjectCardDummy: React.FC<ProjectCardProps> = ({
   );
 };
 
-export default ProjectCardDummy;
+export default ProjectCardCheckout;

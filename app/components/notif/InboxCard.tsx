@@ -22,10 +22,7 @@ const InboxCard: React.FC<Props> = ({ inbox, onClick }) => {
         )}
       </div>
       <p className="text-sm text-gray-400 mt-2">
-        {moment(inbox.created_at)
-          .utc()
-          .locale("id")
-          .format("DD MMMM YYYY, HH:mm")}
+        {moment(inbox.created_at).format("DD MMMM YYYY, HH:mm")}
       </p>
     </div>
   );

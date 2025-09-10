@@ -13,7 +13,6 @@ import { API_BACKEND } from "@/app/utils/constant";
 import { InboxResponse } from "../notif/inbox-interface";
 import { useDispatch } from "react-redux";
 import { setBadge } from "@/redux/slices/badgeSlice";
-import { createSocket } from "@/app/utils/sockets";
 import { getUser } from "@/app/lib/auth";
 import { Project } from "@/app/interfaces/project/IProject";
 
@@ -68,25 +67,6 @@ const Home: React.FC = () => {
       dispatch(setBadge(0));
     }
   };
-
-  useEffect(() => {
-    const socket = createSocket(user?.id ?? "-");
-
-    socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
-      console.log("Socket connected user id :", user?.id ?? "-");
-    });
-
-    socket.on("inbox-update", (data) => {
-      console.log("Update");
-      const token = user?.token;
-      if (token) fetchInbox(token);
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
 
   const faqData = {
     Umum: [
