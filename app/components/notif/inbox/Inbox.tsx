@@ -165,23 +165,19 @@ const Inbox = () => {
     }
   };
 
-  //* handle inbox on click
   const handleInboxOnClick = (inbox: InboxResponse) => {
     markAsRead(inbox.id);
 
-    // is update document ketika field_3 berisi key "reupload-document" dari admin
-    const isUpdateDocument = inbox.field_3 === "reupload-document";
-    console.log(inbox.field_3);
-    if (isUpdateDocument) {
+    if (inbox.field_3 === "reupload-document") {
+      setSelectedInbox(inbox);
+      setOpenDialog(true);
+    } else if (inbox.field_3 === "additional-document") {
+      navigateToAddAditionalDocument(inbox.field_2);
+    } else if (inbox.field_3 === "uploaded-doc") {
       setSelectedInbox(inbox);
       setOpenDialog(true);
     } else {
-      console.log(inbox.field_3 === "additional-document");
-      if (inbox.field_3 === "additional-document") {
-        navigateToAddAditionalDocument(inbox.field_2);
-      } else {
-        navigateToBillingInfo(inbox);
-      }
+      navigateToBillingInfo(inbox);
     }
   };
 
@@ -210,24 +206,37 @@ const Inbox = () => {
         )}
       </div>
 
-      {dialogIsOpen && user?.token && (
+      {dialogIsOpen && user?.token && selectedInbox && (
         <InboxModalDialog
           inbox={selectedInbox}
           onAccept={() => {
-            if (updateKey) {
-              if (roleUser !== "investor") {
-                router.push(`/form-penerbit?update=true&form=${updateKey}`);
-              } else {
-                router.push(`/form-pemodal?update=true&form=${updateKey}`);
+            if (selectedInbox.field_3 === "reupload-document") {
+              if (updateKey) {
+                if (roleUser !== "investor") {
+                  router.push(`/form-penerbit?update=true&form=${updateKey}`);
+                } else {
+                  if (updateKey === "slip-gaji") {
+                    router.push(`/form-pemodal?update=true&form=slip-gaji`);
+                  } else {
+                    router.push(`/form-pemodal?update=true&form=${updateKey}`);
+                  }
+                }
+              }
+            } else if (selectedInbox.field_3 === "uploaded-doc") {
+              const pdfUrl = selectedInbox.field_4;
+              if (pdfUrl) {
+                router.push(
+                  `/form-signature?pdf=${encodeURIComponent(pdfUrl)}&inboxId=${
+                    selectedInbox.id
+                  }&field5=${selectedInbox.field_5}`
+                );
               }
             }
-          }}
-          onReject={() => {
+
             setOpenDialog(false);
           }}
-          onClose={() => {
-            setOpenDialog(false);
-          }}
+          onReject={() => setOpenDialog(false)}
+          onClose={() => setOpenDialog(false)}
         />
       )}
     </>

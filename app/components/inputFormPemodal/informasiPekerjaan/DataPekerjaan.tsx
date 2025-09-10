@@ -70,6 +70,7 @@ interface Props {
     status_marital: string;
     address_detail: string;
     occupation: string;
+    slip_gaji: string;
     investor: {
       bank: {
         no: string;
@@ -106,6 +107,12 @@ interface Props {
         experience: string;
         capital_market_knowledge: string;
       };
+      profile_security_account: {
+        account_name: string;
+        account: string;
+        account_sub_no: string;
+        account_bank: string;
+      };
     };
     form: string;
   };
@@ -137,13 +144,6 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
 
   const formPemodalStr = localStorage.getItem("formPemodal");
   const formPemodal = formPemodalStr ? JSON.parse(formPemodalStr) : null;
-
-  // const penghasilanBulananOptions = [
-  //   { value: "< 100jt", label: "< 100jt" },
-  //   { value: "100jt - 500jt", label: "100jt - 500jt" },
-  //   { value: "500jt - 1m", label: "500jt - 1m" },
-  //   { value: "> 1m", label: "> 1m" },
-  // ];
   const tujuanInvestasi = ["Jangka Pendek", "Jangka Panjang", "Lainnya"];
   const toleransiResiko = ["Rendah", "Menengah", "Tinggi"];
   const pengalamanInvestasi = ["Ada", "Tidak Ada"];
@@ -433,7 +433,6 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
       setSelectedSubDistrictPekerjaan(formData.subDistrictPekerjaan);
     }
     if (formData?.posCodePekerjaan) {
-      // console.log("Prefill posCode berhasil:", formData.posCodePekerjaan);
       setPosCode(formData.posCodePekerjaan);
     }
 
