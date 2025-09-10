@@ -23,12 +23,15 @@ import {
   FORM_PIC_CACHE_KEY,
 } from "@/app/(defaults)/form-penerbit/form-cache-key";
 import { getUser } from "@/app/lib/auth";
+import { createSocket } from "@/app/utils/sockets";
+import { fetchInboxAction } from "@/actions/fetchInbox";
+import { fetchInboxClient } from "@/app/lib/fetchInbox";
+import { fetchInboxThunk, updateInboxes } from "@/redux/slices/inboxSlice";
+import { API_BACKEND } from "@/app/utils/constant";
 
 const NavbarV2: React.FC = () => {
   const [isSticky, setIsSticky] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
-  const badgeCount = useSelector((state: RootState) => state.badge.badgeCount);
 
   //* floating inbox hooks
   const [isInboxTooltipOpen, setIsInboxTooltipOpen] = useState(false);
@@ -40,8 +43,8 @@ const NavbarV2: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const auth = useSelector((state: RootState) => state.auth);
 
-  const user =
-    typeof window !== "undefined" ? localStorage.getItem("user") : null;
+  const user = getUser();
+
   // const userData = user ? JSON.parse(user) : null;
   const [userData, setUserData] = useState<any>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -54,6 +57,28 @@ const NavbarV2: React.FC = () => {
   const userCookie = Cookies.get("user");
 
   const closeModal = () => setStep(null);
+
+  const badgeCount = useSelector((state: RootState) => state.badge.badgeCount);
+
+  useEffect(() => {
+    console.log("user token");
+    console.log(user?.id);
+
+    const socket = createSocket(user?.id ?? "-");
+
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+      console.log("Socket connected user id :", user?.id ?? "-");
+    });
+
+    socket.on("inbox-update", async () => {
+      await dispatch(fetchInboxThunk(user?.token ?? "-"));
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -85,7 +110,7 @@ const NavbarV2: React.FC = () => {
     if (!token) return;
 
     axios
-      .get("https://api-capbridge.langitdigital78.com/api/v1/profile", {
+      .get(`${API_BACKEND}/api/v1/profile`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -728,22 +753,10 @@ const NavbarV2: React.FC = () => {
         </div>
       </nav>
 
-      <Modal isOpen={step === "register"} onClose={closeModal} title="Daftar">
-        <RegisterV2 onNext={() => setStep("otp")} onClose={closeModal} />
-      </Modal>
-
-      <Modal
-        isOpen={step === "otp"}
-        onClose={closeModal}
-        title="Verifikasi OTP"
-      >
+      <Modal isOpen={step === "otp"} onClose={closeModal}>
         <RegisterOtp onNext={() => setStep("role")} onClose={closeModal} />
       </Modal>
-      <Modal
-        isOpen={step === "role"}
-        onClose={closeModal}
-        title="Verifikasi OTP"
-      >
+      <Modal isOpen={step === "role"} onClose={closeModal}>
         <RegisterSelectRole onClose={closeModal} />
       </Modal>
     </>

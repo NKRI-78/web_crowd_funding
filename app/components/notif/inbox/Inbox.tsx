@@ -10,28 +10,38 @@ import { InboxResponse } from "../inbox-interface";
 import InboxEmpty from "../InboxEmpty";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
-import { createSocket } from "@/app/utils/sockets";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setBadge } from "@/redux/slices/badgeSlice";
 import { getUser } from "@/app/lib/auth";
 import InboxCard from "../InboxCard";
+import { AppDispatch, RootState } from "@/redux/store";
+import { fetchInboxThunk, updateInboxes } from "@/redux/slices/inboxSlice";
 
 const Inbox = () => {
   // data hook
-  const [inboxes, setInboxes] = useState<InboxResponse[]>([]);
   const [selectedInbox, setSelectedInbox] = useState<InboxResponse | null>(
     null
   );
 
-  // badge
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+  const {
+    items: inboxes,
+    loading,
+    error,
+  } = useSelector((state: RootState) => state.inbox);
+  const user = getUser();
+
+  useEffect(() => {
+    if (user?.token) {
+      dispatch(fetchInboxThunk(user?.token));
+    }
+  }, [user?.token, dispatch]);
 
   // state hook
   const isOnline = useOnlineStatus();
   const [dialogIsOpen, setOpenDialog] = useState<boolean>(false);
 
   const router = useRouter();
-  const user = getUser();
 
   const roleCookie = Cookies.get("role");
   const userRoleCookie = Cookies.get("user");
@@ -61,73 +71,12 @@ const Inbox = () => {
   // admin mengirim key melalui field_4 yang nanti dicocokan dengan formKey
   const updateKey = selectedInbox?.field_4;
 
-  //* initstate
-  useEffect(() => {
-    if (isOnline) {
-      console.log("isOnline" + isOnline);
-      fetchInbox();
-    }
-  }, [isOnline]);
-
-  //* socket
-  useEffect(() => {
-    const socket = createSocket(user?.id ?? "-");
-
-    socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
-      console.log("Socket connected user id :", user?.id ?? "-");
-    });
-
-    socket.on("inbox-update", (data) => {
-      console.log("Update");
-      fetchInbox();
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
-
   //* set badge to reducer
   useEffect(() => {
     dispatch(
       setBadge(inboxes.filter((inbox) => inbox.is_read == false).length)
     );
   }, [inboxes]);
-
-  //* fetch inbox
-  const fetchInbox = async () => {
-    try {
-      console.log("user token");
-      console.log(user?.token);
-      if (user?.token) {
-        const res = await axios(`${API_BACKEND}/api/v1/inbox/list`, {
-          headers: {
-            Authorization: `Bearer ${user?.token}`,
-          },
-        });
-        if (!res.data["data"]) {
-          setInboxes([]);
-          return;
-        }
-        const filteredInboxes = res.data["data"]
-          .filter(
-            (inbox: InboxResponse) =>
-              inbox.type === "billing" && inbox.status !== "REJECTED"
-          )
-          .reverse();
-        setInboxes(filteredInboxes);
-      }
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Gagal Mendapatkan Data Inbox",
-        text: `Maaf saat ini tidak bisa mendapatkan data inbox ${error}`,
-        showConfirmButton: false,
-        timer: 3000,
-      });
-    }
-  };
 
   //* mark as read
   const markAsRead = (inboxId: number) => {
@@ -140,7 +89,7 @@ const Inbox = () => {
       }
       return inbox;
     });
-    setInboxes(updatedInboxes);
+    dispatch(updateInboxes(updatedInboxes));
   };
 
   //* navigate to billing info
@@ -152,8 +101,6 @@ const Inbox = () => {
     const projectId = inbox.field_2;
 
     if (inboxId && rawPaymentDetail) {
-      const paymentDetail = JSON.parse(rawPaymentDetail);
-      const administrationFee = paymentDetail.total_amount;
       router.push(`/payment-manual/${inboxId}`);
     }
   };
@@ -184,7 +131,9 @@ const Inbox = () => {
   return (
     <>
       <div className="py-28 px-6 text-black">
-        {inboxes.length ? (
+        {loading ? (
+          <InboxSkeleton />
+        ) : inboxes.length ? (
           <div className="flex flex-col gap-y-3">
             {inboxes?.map((inbox) => {
               return (
@@ -198,6 +147,10 @@ const Inbox = () => {
               );
             })}
           </div>
+        ) : error ? (
+          <>
+            <InboxEmpty title="Ada masalah server" message={error} />
+          </>
         ) : (
           <InboxEmpty
             title="Belum ada inbox"
@@ -244,3 +197,13 @@ const Inbox = () => {
 };
 
 export default Inbox;
+
+function InboxSkeleton() {
+  return (
+    <div className="animate-pulse flex flex-col gap-3">
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="rounded-lg bg-white h-20 w-full" />
+      ))}
+    </div>
+  );
+}

@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Tesseract from "tesseract.js";
-import { classifyFromTesseractText } from "@/app/utils/strict-npwp";
 
 type NpwpProps = {
   /** Dipakai parent utk reset field Zod/RHF di awal proses */
@@ -134,19 +133,6 @@ export default function NPWPOCR({ onUpload, onDetected, onFail }: NpwpProps) {
 
     setProgress(100);
     setDebugText(logAll.trim());
-
-    // Klasifikasi
-    const res = classifyFromTesseractText(bestText);
-    if (res.isNPWP) {
-      setNpwp(res.npwp!);
-      setError(null);
-      onDetected?.(res.npwp!); // parent akan setValue('npwp', ...) + trigger Zod
-    } else {
-      setNpwp(null);
-      const msg = "Hanya dokumen NPWP yang diterima / belum terbaca.";
-      setError(msg);
-      onFail?.("not-npwp");
-    }
   }
 
   return (

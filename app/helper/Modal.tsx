@@ -5,11 +5,12 @@ import {
   TransitionChild,
 } from "@headlessui/react";
 import React, { Fragment, ReactNode } from "react";
+import { X } from "lucide-react"; // 🔹 icon X
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
+  title?: string; // optional
   children: ReactNode;
 }
 
@@ -46,7 +47,20 @@ const ShowModal: React.FC<ModalProps> = ({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="bg-white border-0 p-0 rounded-3xl overflow-hidden  w-full max-w-3xl my-8 text-black dark:text-secondary">
+              <DialogPanel className="bg-white border-0 p-0 rounded-3xl overflow-hidden w-full max-w-3xl my-8 text-black dark:text-secondary">
+                {/* Header hanya muncul kalau ada title */}
+                {title && (
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                    <h2 className="text-lg font-semibold">{title}</h2>
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="p-2 rounded-full hover:bg-gray-100 transition"
+                    >
+                      <X className="h-5 w-5 text-gray-600" />
+                    </button>
+                  </div>
+                )}
                 <div>{children}</div>
               </DialogPanel>
             </TransitionChild>

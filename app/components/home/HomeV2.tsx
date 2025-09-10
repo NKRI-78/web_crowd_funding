@@ -15,7 +15,6 @@ import { API_BACKEND } from "@/app/utils/constant";
 import { InboxResponse } from "../notif/inbox-interface";
 import { useDispatch } from "react-redux";
 import { setBadge } from "@/redux/slices/badgeSlice";
-import { createSocket } from "@/app/utils/sockets";
 import { Project } from "@/app/interfaces/project/IProject";
 import GridView from "../GridView";
 
@@ -91,29 +90,6 @@ const HomeV2: React.FC = () => {
       dispatch(setBadge(0));
     }
   };
-
-  useEffect(() => {
-    const userId = getUserId();
-    console.log("user token");
-    console.log(userId);
-
-    const socket = createSocket(userId ?? "-");
-
-    socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
-      console.log("Socket connected user id :", userId ?? "-");
-    });
-
-    socket.on("inbox-update", (data) => {
-      console.log("Update");
-      const token = getUserToken();
-      if (token) fetchInbox(token);
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
 
   const faqData = {
     Umum: [
