@@ -9,6 +9,7 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { API_BACKEND } from "@/app/utils/constant";
+import Link from "next/link";
 
 const errorMessages: Record<string, string> = {
   CREDENTIALS_IS_INCORRECT: "Password yang kamu masukkan salah.",
@@ -121,11 +122,11 @@ const Login: React.FC = () => {
             FuLusme
           </span>
         </div>
-        <a href="/">
+        <Link href="/">
           <button className="text-[#10565C] font-bold text-sm">
             &lt; Kembali Ke Beranda
           </button>
-        </a>
+        </Link>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">

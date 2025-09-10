@@ -172,7 +172,7 @@ const HomeV2: React.FC = () => {
         {/* Left content */}
         <div className="space-y-6 z-10 relative text-center md:text-left">
           <h1 className="text-4xl md:text-6xl font-bold leading-tight ">
-            Fund the Future. <br /> Together
+            Fund the Future <br /> Together
           </h1>
           <p className="text-white text-base md:text-lg leading-relaxed italic">
             "Ide Hebat Layak Diperjuangkan. Bantu wujudkan mimpi besar, satu
@@ -648,10 +648,15 @@ const HomeV2: React.FC = () => {
       </section>
 
       <div className="fixed bottom-4 right-4 z-50">
-        <button className="flex items-center bg-[#29a71a] text-white px-4 py-2 font-bold rounded-full shadow-lg">
+        <a
+          href="https://wa.me/6282138820134"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center bg-[#29a71a] text-white px-4 py-2 font-bold rounded-full shadow-lg"
+        >
           <img src="/images/wa.png" alt="WA" className="w-5 h-5 mr-2" />
           Butuh Bantuan?
-        </button>
+        </a>
       </div>
 
       <Modal

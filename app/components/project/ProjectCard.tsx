@@ -61,11 +61,11 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
           <p className="text-white text-xs font-semibold">{`Tersisa ${project.remaining_days} hari lagi`}</p>
         </div>
 
-        <div className="w-full flex justify-end">
+        {/* <div className="w-full flex justify-end">
           <FilledButton className="bg-white px-3 py-1 rounded-[6px] text-black">
             Investasi
           </FilledButton>
-        </div>
+        </div> */}
       </div>
     </div>
   );

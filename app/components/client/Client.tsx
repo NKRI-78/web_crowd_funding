@@ -57,6 +57,7 @@ export default function ClientLayout({
             pathname === "/dashboard/dokumen-pelengkap" ||
             pathname === "/inbox" ||
             pathname === "/form-data-pemodal-perusahaan" ||
+            pathname === "/broadcast" ||
             pathname === "/transaction"
               ? ""
               : !isViewer && <FooterV2 />}

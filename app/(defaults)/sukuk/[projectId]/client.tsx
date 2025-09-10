@@ -22,9 +22,10 @@ import { Project } from "@/app/interfaces/project/IProject";
 import GeneralDialog from "@/app/components/GeneralDialog";
 import ShareDialog from "@/app/components/ShareDialog";
 import CircularProgressIndicator from "@/app/components/CircularProgressIndicator";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Modal from "@/app/helper/Modal";
 import InputNominal from "../components/InputNominal";
-import { useRouter } from "next/navigation";
 
 type Props = {
   id: string;
@@ -299,6 +300,17 @@ const SukukClient = ({ id }: Props) => {
                   </a>
                 </p>
               </div>
+              <p className="text-xs text-center mt-4">
+                Butuh Pertanyaan?{" "}
+                <a
+                  href="https://wa.me/6282138820134"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 font-semibold"
+                >
+                  Hubungi Kami
+                </a>
+              </p>
             </div>
           </div>
         )}

@@ -5,13 +5,19 @@ import { UserSearch } from "lucide-react";
 import { Project } from "@/app/interfaces/project/IProject";
 import { User } from "@/app/interfaces/user/IUser";
 import { ProjectCard } from "../project/ProjectCard";
+import GridView from "../GridView";
 
 interface Props {
   profile: User | null;
   projects: Project[];
+  investedProjects: Project[];
 }
 
-const DashboardPemodal: React.FC<Props> = ({ profile, projects }) => {
+const DashboardPemodal: React.FC<Props> = ({
+  profile,
+  projects,
+  investedProjects,
+}) => {
   return (
     <div className="space-y-4">
       {/* panel container */}
@@ -25,18 +31,39 @@ const DashboardPemodal: React.FC<Props> = ({ profile, projects }) => {
         </PanelContainer>
       )}
 
-      {/* project */}
+      {/* proyek yang ia invest */}
+      {investedProjects.length > 0 && (
+        <PanelContainer>
+          <h2 className="font-bold text-lg text-black mb-5">Portfolio</h2>
+
+          <GridView
+            items={investedProjects}
+            gapClass="gap-4"
+            breakpointCols={{ sm: 2, md: 3, lg: 4 }}
+            itemKey={(p) => p.id}
+            renderItem={(p) => {
+              return <ProjectCard project={p} />;
+            }}
+          />
+        </PanelContainer>
+      )}
+
+      {/* semua proyek yang sedang berjalan */}
       {projects.length > 0 && (
         <PanelContainer>
           <h2 className="font-bold text-lg text-black mb-5">
             Proyek yang sedang berjalan
           </h2>
 
-          <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {projects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
+          <GridView
+            items={projects}
+            gapClass="gap-4"
+            breakpointCols={{ sm: 2, md: 3, lg: 4 }}
+            itemKey={(p) => p.id}
+            renderItem={(p) => {
+              return <ProjectCard project={p} />;
+            }}
+          />
         </PanelContainer>
       )}
     </div>

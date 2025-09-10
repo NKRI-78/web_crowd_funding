@@ -15,20 +15,23 @@ import CircularProgressIndicator from "../CircularProgressIndicator";
 export const Dashboard: React.FC = () => {
   const user = getUser();
 
-  const [profile, setProfile] = useState<User | null>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [profile, setProfile] = useState<User | null>(null);
+
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [investedProjects, setInvestedProjects] = useState<Project[]>([]);
 
   //* fetch data
   useEffect(() => {
     setLoading(true);
-    const token = user?.token;
-    if (token) {
+
+    if (user) {
       const fetchProfile = async () => {
         try {
           const res = await axios.get(`${API_BACKEND}/api/v1/profile`, {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${user.token}`,
             },
           });
 
@@ -56,7 +59,7 @@ export const Dashboard: React.FC = () => {
           try {
             const res = await axios.get(`${API_BACKEND}/api/v1/project/list`, {
               headers: {
-                Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${user.token}`,
               },
             });
 
@@ -66,7 +69,25 @@ export const Dashboard: React.FC = () => {
             setProjects([]);
           }
         };
+        const fetchInvestedProjects = async () => {
+          try {
+            const res = await axios.get(
+              `${API_BACKEND}/api/v1/dashboard/investor`,
+              {
+                headers: {
+                  Authorization: `Bearer ${user.token}`,
+                },
+              }
+            );
+
+            const projects = res.data.data ?? [];
+            setInvestedProjects(projects);
+          } catch (error) {
+            setInvestedProjects([]);
+          }
+        };
         fetchProjects();
+        fetchInvestedProjects();
       }
     }
   }, []);
@@ -85,7 +106,11 @@ export const Dashboard: React.FC = () => {
             {user?.role === "emiten" ? (
               <DashboardPenerbit profile={profile} />
             ) : user?.role === "investor" ? (
-              <DashboardPemodal profile={profile} projects={projects} />
+              <DashboardPemodal
+                profile={profile}
+                projects={projects}
+                investedProjects={investedProjects}
+              />
             ) : user?.role === "user" ? (
               <DashboardUser />
             ) : (
