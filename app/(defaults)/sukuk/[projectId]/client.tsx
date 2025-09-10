@@ -292,25 +292,18 @@ const SukukClient = ({ id }: Props) => {
                 ) : (
                   <></>
                 )}
-
                 <p className="text-xs text-center mt-4">
                   Butuh Pertanyaan?{" "}
-                  <a href="#" className="text-blue-600 font-semibold">
+                  <a
+                    href="https://wa.me/6282138820134"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 font-semibold"
+                  >
                     Hubungi Kami
                   </a>
                 </p>
               </div>
-              <p className="text-xs text-center mt-4">
-                Butuh Pertanyaan?{" "}
-                <a
-                  href="https://wa.me/6282138820134"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 font-semibold"
-                >
-                  Hubungi Kami
-                </a>
-              </p>
             </div>
           </div>
         )}

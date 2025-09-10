@@ -65,32 +65,6 @@ const HomeV2: React.FC = () => {
     return userJson.id;
   }
 
-  useEffect(() => {
-    const token = getUserToken();
-    if (token) fetchInbox(token);
-  }, []);
-
-  const fetchInbox = async (token: string) => {
-    try {
-      const res = await axios(`${API_BACKEND}/api/v1/inbox/list`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!res.data["data"]) {
-        dispatch(setBadge(0));
-        return;
-      }
-
-      const unReadInboxes = res.data["data"].filter(
-        (inbox: InboxResponse) => inbox.is_read === false
-      ) as InboxResponse[];
-      dispatch(setBadge(unReadInboxes.length));
-    } catch (e) {
-      dispatch(setBadge(0));
-    }
-  };
-
   const faqData = {
     Umum: [
       {

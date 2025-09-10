@@ -28,6 +28,7 @@ import { fetchInboxAction } from "@/actions/fetchInbox";
 import { fetchInboxClient } from "@/app/lib/fetchInbox";
 import { fetchInboxThunk, updateInboxes } from "@/redux/slices/inboxSlice";
 import { API_BACKEND } from "@/app/utils/constant";
+import { setBadge } from "@/redux/slices/badgeSlice";
 
 const PRIMARY_COLOR = "#10565C";
 const ON_PRIMARY_COLOR = "#FFFFFF";
@@ -71,7 +72,16 @@ const NavbarV2: React.FC = () => {
     });
 
     socket.on("inbox-update", async () => {
-      await dispatch(fetchInboxThunk(user?.token ?? "-"));
+      console.log("Test");
+      const inboxes = await dispatch(fetchInboxThunk(user?.token ?? "-"));
+
+      dispatch(
+        setBadge(
+          Array.isArray(inboxes?.payload)
+            ? inboxes.payload.filter((inbox) => !inbox.is_read).length
+            : 0
+        )
+      );
     });
 
     return () => {
@@ -118,6 +128,24 @@ const NavbarV2: React.FC = () => {
         });
     }
   }, [userData]);
+
+  const fetchAndUpdateBadge = async () => {
+    if (user?.token) {
+      const inboxes = await dispatch(fetchInboxThunk(user?.token));
+
+      dispatch(
+        setBadge(
+          Array.isArray(inboxes?.payload)
+            ? inboxes.payload.filter((inbox) => !inbox.is_read).length
+            : 0
+        )
+      );
+    }
+  };
+
+  useEffect(() => {
+    fetchAndUpdateBadge();
+  }, [user?.token, dispatch]);
 
   //* remove cookie & cache data
   const removeData = () => {
@@ -620,3 +648,6 @@ const DrawerButton: React.FC<{
 };
 
 export default NavbarV2;
+function getUserToken() {
+  throw new Error("Function not implemented.");
+}
