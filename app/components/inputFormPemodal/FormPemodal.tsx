@@ -13,6 +13,7 @@ import ComponentDataPekerjaan from "./informasiPekerjaan/DataPekerjaan";
 import { API_BACKEND } from "@/app/utils/constant";
 import FileViewerModal from "@/app/(defaults)/viewer/components/FilePriviewModal";
 import { setCookie } from "@/app/helper/cookie";
+import { getUser } from "@/app/lib/auth";
 
 export const pemodalKeys: string[] = ["ktp-upload", "npwp-upload"];
 
@@ -81,7 +82,7 @@ const FormPemodal: React.FC = () => {
     form: string;
   };
   const router = useRouter();
-  const [token, setToken] = useState(null);
+  const [user, setUser] = useState<AuthDataResponse | null>(null);
   const searchParams = useSearchParams();
   const isUpdate = searchParams.get("update") === "true";
   const form = searchParams.get("form");
@@ -90,21 +91,21 @@ const FormPemodal: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    const userCookie = Cookies.get("user");
+    const userCookie = getUser();
     if (!userCookie) return;
 
-    const user = JSON.parse(userCookie);
-    const token = user?.token;
+    // const user = JSON.parse(userCookie);
+    // const token = user?.token;
 
-    if (!token) return;
-    setToken(token);
+    // if (!token) return;
+    setUser(userCookie);
 
     const fetchProfile = async () => {
       try {
         setIsLoading(true);
         const response = await axios.get(`${API_BACKEND}/api/v1/profile`, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${userCookie.token}`,
           },
         });
 
@@ -997,14 +998,20 @@ const FormPemodal: React.FC = () => {
           payload,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${user?.token}`,
             },
           }
         );
 
         console.log("Payload akan dikirim:", payload);
 
-        // setCookie("user", "  ");
+        setCookie(
+          "user",
+          JSON.stringify({
+            ...user,
+            role: "investor",
+          } as AuthDataResponse)
+        );
       } else {
         const { dataType, val } = mapFormToDataType(form, data);
         const payload = { val };
@@ -1018,7 +1025,7 @@ const FormPemodal: React.FC = () => {
           payload,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${user?.token}`,
             },
           }
         );
