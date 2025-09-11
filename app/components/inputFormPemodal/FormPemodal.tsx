@@ -889,6 +889,27 @@ const FormPemodal: React.FC = () => {
     setSelectedIndex((prev) => prev + 1);
   };
 
+  function mapFormToDataType(
+    form: string | null,
+    data: any
+  ): {
+    dataType: string;
+    val: string;
+  } {
+    if (!form) return { dataType: "", val: "" };
+
+    switch (form.toLowerCase()) {
+      case "ktp":
+        return { dataType: "ktp_path", val: data.ktpUrl };
+      case "npwp":
+        return { dataType: "npwp_path", val: data.npwpUrl };
+      case "slip-gaji":
+        return { dataType: "slip_gaji", val: data.slipGajiUrl };
+      default:
+        return { dataType: "", val: "" };
+    }
+  }
+
   const handleSubmit = async () => {
     const savedData = localStorage.getItem("formPemodal");
 
@@ -985,25 +1006,7 @@ const FormPemodal: React.FC = () => {
 
         // setCookie("user", "  ");
       } else {
-        function mapFormToDataType(form: string | null): {
-          dataType: string;
-          val: string;
-        } {
-          if (!form) return { dataType: "", val: "" };
-
-          switch (form.toLowerCase()) {
-            case "ktp":
-              return { dataType: "ktp_path", val: data.ktpUrl };
-            case "npwp":
-              return { dataType: "npwp_path", val: data.npwpUrl };
-            case "slip-gaji":
-              return { dataType: "slip_gaji", val: data.slipGajiUrl };
-            default:
-              return { dataType: "", val: "" };
-          }
-        }
-
-        const { dataType, val } = mapFormToDataType(form);
+        const { dataType, val } = mapFormToDataType(form, data);
         const payload = { val };
 
         console.log("Payload update:", {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 
 import type { Metadata } from "next";
 import FormDokumenTambahanPage from "@/app/components/formDokumenTambahanPenerbit/FormDokumenTambahanPage";
@@ -9,7 +9,11 @@ export const metadata: Metadata = {
 };
 
 const CreateProjectPenerbitPage: React.FC = () => {
-  return <FormDokumenTambahanPage />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <FormDokumenTambahanPage />
+    </Suspense>
+  );
 };
 
 export default CreateProjectPenerbitPage;

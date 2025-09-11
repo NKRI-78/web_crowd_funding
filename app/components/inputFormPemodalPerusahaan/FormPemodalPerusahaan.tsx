@@ -34,13 +34,7 @@ interface ErrorSchema {
   suratKuasa?: string;
 }
 
-interface FormPemodalPerusahaanProps {
-  onSubmit: () => void;
-}
-
-const FormPemodalPerusahaan: React.FC<FormPemodalPerusahaanProps> = ({
-  onSubmit,
-}) => {
+const FormPemodalPerusahaan: React.FC = () => {
   const [formFields, setFormFields] = useState<FormSchema>({
     photo: null,
     fullname: "",
