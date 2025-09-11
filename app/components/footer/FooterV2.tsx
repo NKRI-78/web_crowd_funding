@@ -3,7 +3,11 @@ const Footer: React.FC = () => {
     <footer className="w-full bg-[#10565C] relative text-white py-12 rounded-t-5xl">
       <div className="container mx-auto px-6 md:px-20 grid grid-cols-1 md:grid-cols-5 gap-8">
         <div className="space-y-4">
-          <img src="/images/img.jpg" alt="CapBridge Logo" className="h-12" />
+          <img
+            src="/images/logo-fulusme-vertical-white.png"
+            alt="FuLusme Logo"
+            className="h-9 mb-2"
+          />
           <ul className="space-y-2 text-sm">
             <li>
               <a href="#" className="hover:underline">
@@ -69,7 +73,7 @@ const Footer: React.FC = () => {
           <p className="text-white">WhatsApp</p>
           <p className="text-white font-semibold">+62 xx xxx xx</p>
           <p className="text-white">Email</p>
-          <p className="text-white font-semibold">info@CapBridge</p>
+          <p className="text-white font-semibold">info@FuLusme</p>
           <div className="flex space-x-3 pt-2">
             <a href="#">
               <i className="fab fa-facebook-f"></i>

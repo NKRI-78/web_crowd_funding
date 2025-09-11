@@ -4,549 +4,415 @@ import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 
 import type { Swiper as SwiperType } from "swiper";
+import Swal from "sweetalert2";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Thumbs } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import { useParams } from "next/navigation";
 import Cookies from "js-cookie";
 import axios from "axios";
 import defaultImage from "/public/images/default-image.png";
 import { API_BACKEND } from "@/app/utils/constant";
 import Custom404 from "@/app/not-found";
 import ProgressBar from "../components/ProgressBar";
-
-type Project = {
-  id: string;
-  title: string;
-  goal: string;
-  medias: {
-    id: number;
-    path: string;
-  }[];
-  location: {
-    id: number;
-    name: string;
-    url: string;
-    lat: string;
-    lng: string;
-  };
-  doc: {
-    id: string;
-    path: string;
-  };
-  capital: string;
-  roi: string;
-  min_invest: string;
-  unit_price: string;
-  unit_total: string;
-  number_of_unit: string;
-  periode: string;
-  type_of_bond: string;
-  nominal_value: string;
-  time_periode: string;
-  interest_rate: string;
-  interest_payment_schedule: string;
-  principal_payment_schedule: string;
-  use_of_funds: string;
-  collateral_guarantee: string;
-  desc_job: string;
-  is_apbn: boolean;
-  is_approved: boolean;
-  company: {
-    name: string;
-  };
-  created_at: string;
-  updated_at: string;
-};
+import { formatRupiah } from "@/app/lib/utils";
+import { getUser } from "@/app/lib/auth";
+import { Project } from "@/app/interfaces/project/IProject";
+import GeneralDialog from "@/app/components/GeneralDialog";
+import ShareDialog from "@/app/components/ShareDialog";
+import CircularProgressIndicator from "@/app/components/CircularProgressIndicator";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import Modal from "@/app/helper/Modal";
+import InputNominal from "../components/InputNominal";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import { fetchDashboardClient } from "@/redux/slices/dashboardSlice";
 
 type Props = {
   id: string;
 };
 
 const SukukClient = ({ id }: Props) => {
-  const [showModal, setShowModal] = useState(false);
-  const [showLocationModal, setShowLocationModal] = useState(false);
-
-  const [mode, setMode] = useState<"unit" | "nominal">("unit");
-  const [unit, setUnit] = useState(1);
-  const [nominalInput, setNominalInput] = useState("");
+  const [showLocationDialog, setShowLocationDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null);
 
-  const hargaUnit = 100000;
-  const nominal = unit * hargaUnit;
-  const roi = 0.095;
-  const keuntungan = nominal * roi;
-
-  const params = useParams();
-  // const id = params.id;
-  // const id = "fe973f69-6ff4-4157-a3bc-0e04054cf101";
   const [project, setProject] = useState<Project | null>(null);
+  const [isNotFound, setIsNotFound] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<any>(null);
   const [hydrated, setHydrated] = useState(false);
-  const [isNotFound, setIsNotFound] = useState(false);
   const [role, setRole] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const {
+    data: quotaData,
+    loading: loadingDashboard,
+    error: errorDashboard,
+  } = useSelector((state: RootState) => state.dashboard);
 
-  console.log(role, "id");
+  const user = getUser();
 
   useEffect(() => {
-    const userCookie = Cookies.get("user");
-    if (!userCookie) return;
+    dispatch(fetchDashboardClient(user?.token ?? ""));
+  }, [dispatch]);
 
-    try {
-      const user = JSON.parse(userCookie);
-      if (user?.token) {
-        console.log(user.role);
-        setRole(user.role);
+  useEffect(() => {
+    const userCookie = getUser();
+    if (userCookie) {
+      try {
+        setRole(userCookie.role);
+      } catch (err) {
+        console.error("Failed to parse user cookie", err);
       }
-    } catch (err) {
-      console.error("Failed to parse user cookie", err);
     }
   }, []);
 
-  const handleInputChange = (value: string) => {
-    const numeric = value.replace(/[^\d]/g, "");
-    if (mode === "unit") {
-      setUnit(parseInt(numeric) || 0);
-    } else {
-      setNominalInput(numeric);
-      setUnit(Math.floor((parseInt(numeric) || 0) / hargaUnit));
-    }
-  };
-
-  const formattedKeuntungan = new Intl.NumberFormat("id-ID").format(keuntungan);
-
+  //* fetch project detail by id
   useEffect(() => {
-    if (!id) return;
+    if (id) {
+      const fetchProject = async () => {
+        try {
+          const response = await axios.get(
+            `${API_BACKEND}/api/v1/project/detail/${id}`
+          );
+          setProject(response.data.data);
+        } catch (error: any) {
+          console.error("Gagal ambil data project:", error);
 
-    const fetchProject = async () => {
-      try {
-        const response = await axios.get(
-          `${API_BACKEND}/api/v1/project/detail/${id}`
-        );
-        setProject(response.data.data);
-      } catch (error: any) {
-        console.error("Gagal ambil data project:", error);
-
-        // Cek jika error 404
-        if (error.response?.status === 400) {
-          setIsNotFound(true);
+          // Cek jika error 404
+          if (error.response?.status === 400) {
+            setIsNotFound(true);
+          }
+        } finally {
+          setLoading(false);
         }
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
 
-    fetchProject();
-  }, [id]);
-
-  const formatRupiah = (value?: string | number): string => {
-    if (value === undefined || value === null) return "-";
-
-    const number = typeof value === "string" ? parseInt(value) : value;
-
-    if (isNaN(number)) return "-";
-
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(number);
-  };
+      fetchProject();
+    }
+  }, []);
 
   useEffect(() => {
     setHydrated(true);
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUserData(parsedUser);
-      } catch (err) {
-        console.error("Gagal parsing user dari localStorage", err);
-      }
-    }
+    const userCookie = Cookies.get("user");
+    const user = userCookie ? JSON.parse(userCookie) : null;
+    setUserData(user);
   }, []);
+
+  const handleConfirm = (val: number) => {
+    localStorage.setItem("invest_amount", String(val));
+    router.push(`/payment-method/${id}`);
+  };
 
   return isNotFound ? (
     <>
       <Custom404 />
     </>
   ) : (
-    <section className="py-28 px-4 md:px-12">
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-          <div className="bg-white w-full max-w-md rounded-xl p-6 relative shadow-xl">
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute right-4 top-4 text-gray-400 hover:text-gray-700"
-            >
-              <X />
-            </button>
-
-            <h2 className="text-lg font-semibold mb-4 flex text-black items-center gap-2">
-              📊 Simulasi
-            </h2>
-
-            <div className="space-y-4 text-sm">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setMode("unit")}
-                  className={`px-3 py-1 rounded-full border text-sm ${
-                    mode === "unit"
-                      ? "bg-[#3E268D] text-white"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
+    <>
+      <section className="py-28 px-4 md:px-12">
+        {loading ? (
+          <div className="w-full h-[calc(100vh-28px)] flex flex-col items-center justify-center gap-4">
+            <CircularProgressIndicator textDescription="Memuat halaman.." />
+          </div>
+        ) : (
+          <div className="w-full flex flex-col lg:flex-row">
+            <div className="w-full lg:w-1/2 lg:mx-2">
+              <div className="relative rounded-xl overflow-hidden">
+                <Swiper
+                  modules={[Navigation, Thumbs]}
+                  navigation
+                  spaceBetween={10}
+                  thumbs={{ swiper: thumbsSwiper }}
+                  slidesPerView={1}
+                  className="rounded-xl"
                 >
-                  Unit
-                </button>
-                <button
-                  onClick={() => setMode("nominal")}
-                  className={`px-3 py-1 rounded-full border text-sm ${
-                    mode === "nominal"
-                      ? "bg-[#3E268D] text-white"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  Nominal (Rp)
-                </button>
+                  {project?.medias.map((item, idx) => (
+                    <SwiperSlide key={idx}>
+                      <div className="relative">
+                        <img
+                          src={
+                            item.path && item.path.startsWith("https")
+                              ? item.path
+                              : defaultImage.src
+                          }
+                          alt={`Slide ${idx + 1}`}
+                          className="w-full h-64 object-cover"
+                        />
+                      </div>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
               </div>
 
-              <div className="flex items-center justify-between gap-2">
-                <label className="text-black font-medium">
-                  Masukkan {mode === "unit" ? "Unit" : "Nominal"}
-                </label>
-                <input
-                  type="text"
-                  value={
-                    mode === "unit"
-                      ? unit.toString()
-                      : new Intl.NumberFormat("id-ID").format(
-                          parseInt(nominalInput || "0")
-                        )
-                  }
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  className="border px-2 py-1 rounded-md w-40 text-black text-right"
-                />
+              <div className="mt-4 flex justify-center">
+                <div className="w-full">
+                  <Swiper
+                    onSwiper={setThumbsSwiper}
+                    spaceBetween={10}
+                    slidesPerView={Math.min(project?.medias.length ?? 0, 5)} // tampil max 5
+                    centeredSlides={false} // biar mulai dari kiri
+                    watchSlidesProgress
+                    allowTouchMove={(project?.medias.length ?? 0) > 5} // disable scroll kalau <= 5
+                    className="cursor-pointer max-w-fit"
+                  >
+                    {project?.medias.map((item, idx) => (
+                      <SwiperSlide
+                        key={idx}
+                        className={`${
+                          (project?.medias.length ?? 0) == 1 ? "!w-20" : "!w-30"
+                        }`}
+                      >
+                        <img
+                          src={item.path}
+                          alt={`Thumbnail ${idx + 1}`}
+                          className="w-full h-20 object-cover rounded-md border-2 border-transparent hover:border-blue-500 transition"
+                        />
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+                </div>
               </div>
 
-              <div className="border-t pt-2">
-                <p className="text-xs text-[#677AB9] font-medium">
-                  Estimasi ROI (Berdasarkan Proyeksi)
+              <div className="mt-6">
+                <h2 className="text-lg text-black font-semibold mb-2">
+                  Tentang Bisnis
+                </h2>
+                <p className="text-sm mb-4">{project?.desc_job}</p>
+              </div>
+            </div>
+            <div className="w-full lg:w-1/2 lg:mx-2">
+              <div className="bg-gray-100 rounded-xl p-3 shadow-md">
+                <div className="bg-white rounded-lg p-2">
+                  <h3 className="text-xl text-black font-bold">
+                    {project?.title}
+                  </h3>
+                  <div className="my-2">
+                    <div className="flex flex-wrap justify-between">
+                      <p className="text-xs text-[#677AB9]">Perusahaan</p>
+                      <p className="text-sm">{project?.company.name}</p>
+                    </div>
+                    <div className="flex flex-wrap justify-between">
+                      <p className="text-xs text-[#677AB9]">Kode Efek</p>
+                      <p className="text-sm">{project?.kode_efek}</p>
+                    </div>
+                    <div className="flex flex-wrap justify-between">
+                      <p className="text-xs text-[#677AB9]">Jenis Akad</p>
+                      <p className="text-sm">{project?.type_of_project}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white p-2 rounded-lg space-y-1 mt-3">
+                  <ProgressBar percentage={50} bgColor="#f3f4f6" />
+
+                  <div className="flex flex-wrap justify-between">
+                    <p className="text-xs font-bold text-[#677AB9]">
+                      Dana Terkumpul
+                    </p>
+                    <p className="text-xs font-bold">{formatRupiah("a")}</p>
+                  </div>
+
+                  <div className="flex flex-wrap justify-between">
+                    <p className="text-xs font-bold text-[#677AB9]">
+                      Sisa Masa Tayang
+                    </p>
+                    <p className="text-xs font-bold">{`${
+                      project?.remaining_days ?? "-"
+                    } Hari lagi`}</p>
+                  </div>
+                </div>
+
+                <div className="bg-white p-2 rounded-lg mt-3">
+                  <div className="flex flex-wrap my-2 justify-between">
+                    <p className="text-xs text-[#677AB9]"> Kategori Bisnis</p>
+                    <p className="text-xs">{project?.company?.jenis_usaha}</p>
+                  </div>
+                  <div className="flex flex-wrap my-2 justify-between">
+                    <p className="text-xs text-[#677AB9]">Minimal Investasi:</p>
+                    <p className="text-xs">
+                      {formatRupiah(project?.min_invest)}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap my-2 justify-between">
+                    <p className="text-xs text-[#677AB9]">Harga Unit:</p>
+                    <p className="text-xs">
+                      {formatRupiah(project?.unit_price)}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap my-2 justify-between">
+                    <p className="text-xs text-[#677AB9]"> Jumlah Unit </p>
+                    <p className="text-xs">
+                      {formatRupiah(project?.jumlah_unit)}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap my-2 justify-between">
+                    <p className="text-xs text-[#677AB9]"> Total Unit (Rp) </p>
+                    <p className="text-xs">
+                      {" "}
+                      {formatRupiah(project?.capital)}{" "}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap my-2 justify-between">
+                    <p className="text-xs text-[#677AB9]">Tenor:</p>
+                    <p className="text-xs">{project?.loan_term}</p>
+                  </div>
+                  <div className="flex flex-wrap my-2 justify-between">
+                    <p className="text-xs text-[#677AB9]">ROI (Proyeksi):</p>
+                    <p className="text-xs">{project?.roi}%</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap justify-evenly gap-4 mt-3 text-sm">
+                  <button
+                    className="bg-white text-xs text-black border px-4 py-2 rounded-md"
+                    onClick={() => {
+                      setShowShareDialog(true);
+                    }}
+                  >
+                    Bagikan
+                  </button>
+                  <button
+                    className="bg-white text-xs text-black border px-4 py-2 rounded-md"
+                    onClick={() => {
+                      if (project?.doc_prospect) {
+                        window.open(project.doc_prospect, "_blank");
+                      }
+                    }}
+                  >
+                    Prospektus
+                  </button>
+                  s
+                  <button
+                    onClick={() => setShowLocationDialog(true)}
+                    className="bg-white text-xs text-black border px-4 py-2 rounded-md"
+                  >
+                    Lokasi
+                  </button>
+                </div>
+
+                {role !== "emiten" ? (
+                  hydrated && userData !== null ? (
+                    quotaData?.verified_investor ? (
+                      <button
+                        onClick={() => setShowModal(true)}
+                        className="w-full bg-[#10565c] hover:bg-[#104348] text-white font-semibold py-2 rounded-md mt-4 cursor-pointer"
+                      >
+                        Beli Efek
+                      </button>
+                    ) : (
+                      <button
+                        disabled
+                        className="w-full bg-gray-300 text-white font-semibold py-2 rounded-md mt-4 cursor-not-allowed"
+                      >
+                        Akun Belum Terverifikasi
+                      </button>
+                    )
+                  ) : (
+                    <button
+                      disabled
+                      className="w-full bg-gray-300 text-white font-semibold py-2 rounded-md mt-4 cursor-not-allowed"
+                    >
+                      Harap login terlebih dahulu
+                    </button>
+                  )
+                ) : null}
+
+                <p className="text-xs text-center mt-4">
+                  Butuh Pertanyaan?{" "}
+                  <a
+                    href="https://wa.me/6282138820134"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 font-semibold"
+                  >
+                    Hubungi Kami
+                  </a>
                 </p>
-                <p className="font-bold text-black">9.5%</p>
               </div>
-
-              <div>
-                <p className="text-xs text-[#677AB9] font-medium">Tenor</p>
-                <p className="font-bold text-black">{project?.time_periode}</p>
-              </div>
-
-              <div className="bg-gray-100 p-3 rounded-lg">
-                <p className="text-xs text-[#677AB9] font-medium mb-1">
-                  Estimasi Keuntungan (Berdasarkan Proyeksi)
-                </p>
-                <p className="text-black font-bold text-xl">
-                  Rp {formattedKeuntungan}
-                </p>
-              </div>
-
-              <p className="text-[10px] text-gray-500 mt-1">
-                * Kinerja Masa lalu tidak menjamin Kinerja Masa depan
-              </p>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {showLocationModal && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-          <div className="bg-white w-full max-w-lg rounded-xl p-6 relative shadow-xl">
-            <button
-              onClick={() => setShowLocationModal(false)}
-              className="absolute right-4 top-4 text-gray-400 hover:text-gray-700"
-            >
-              <X />
-            </button>
+        <ShareDialog
+          isOpen={showShareDialog}
+          onClose={() => setShowShareDialog(false)}
+        />
 
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-black">
-              📍 Lokasi
-            </h2>
+        <GeneralDialog
+          isOpen={showLocationDialog}
+          onClose={() => {
+            setShowLocationDialog(false);
+          }}
+        >
+          <div>
+            {/* header */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-700">Lokasi</h2>
+              <button
+                className="text-gray-600 hover:text-gray-800"
+                onClick={() => {
+                  setShowLocationDialog(false);
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-            <p className="text-sm text-black mb-4">
-              Blok, Jl. Komp. BSD Blok Rp No.90, Lengkong Wetan, Serpong
-              Sub-District, South Tangerang City, Banten 15310
-            </p>
-
-            <div className="bg-gray-100 rounded-lg px-4 py-2 flex justify-between items-center text-sm mb-4">
+            {/* content */}
+            <div className="bg-gray-100 rounded-lg px-4 py-2 flex justify-between items-center text-sm mb-3">
               <input
                 type="text"
-                value="https://maps.app.goo.gl/Zcm3fjeKTwzKN9Qs9"
+                value={project?.location.url}
                 readOnly
                 className="bg-transparent w-full outline-none text-black"
               />
               <button
-                onClick={() =>
-                  navigator.clipboard.writeText(
-                    "https://maps.app.goo.gl/Zcm3fjeKTwzKN9Qs9"
-                  )
-                }
-                className="ml-2 px-2 py-1 text-sm bg-[#677AB9] hover:bg-[#2a1a6a] text-white rounded"
+                onClick={() => {
+                  navigator.clipboard.writeText(project?.location.url ?? "-");
+                  Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    title: "Link berhasil disalin.",
+                    allowEscapeKey: true,
+                    timer: 2000,
+                    showConfirmButton: false,
+                  });
+                }}
+                className="ml-2 px-2 py-1 text-sm bg-[#13733b] hover:bg-[#106332] text-white rounded"
               >
                 Salin
               </button>
             </div>
+
             <a
-              href="https://maps.app.goo.gl/Zcm3fjeKTwzKN9Qs9"
+              href={project?.location.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block text-center text-sm w-full bg-[#677AB9] hover:bg-[#2a1a6a] text-white py-2 rounded-lg font-semibold"
+              className="block text-center text-sm w-full bg-[#13733b] hover:bg-[#106332] text-white py-2 rounded-lg font-semibold"
             >
               Go To Maps
             </a>
           </div>
-        </div>
-      )}
-
-      <div className="w-full flex flex-col lg:flex-row">
-        <div className="w-full lg:w-1/2 lg:mx-2">
-          <div className="relative rounded-xl overflow-hidden">
-            <Swiper
-              modules={[Navigation, Thumbs]}
-              navigation
-              spaceBetween={10}
-              thumbs={{ swiper: thumbsSwiper }}
-              slidesPerView={1}
-              className="rounded-xl"
-            >
-              {project?.medias.map((item, idx) => (
-                <SwiperSlide key={idx}>
-                  <div className="relative">
-                    <img
-                      src={
-                        item.path && item.path.startsWith("https")
-                          ? item.path
-                          : defaultImage.src
-                      }
-                      alt={`Slide ${idx + 1}`}
-                      className="w-full h-64 object-cover"
-                    />
-                    {/* <div className="absolute top-2 left-2 flex gap-2 flex-wrap">
-                      {item.tags.map((tag, i) => (
-                                        <span
-                                        key={i}
-                                        className={`text-white text-xs font-bold px-3 py-1 rounded-full ${
-                                            i === 0 ? 'bg-red-600' : 'bg-indigo-800'
-                                        }`}
-                                        >
-                                        {tag}
-                                        </span>
-                                    ))}
-                    </div> */}
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-          </div>
-
-          <div className="mt-4 flex justify-center">
-            <div className="w-full">
-              <Swiper
-                onSwiper={setThumbsSwiper}
-                spaceBetween={10}
-                slidesPerView={Math.min(project?.medias.length ?? 0, 5)} // tampil max 5
-                centeredSlides={false} // biar mulai dari kiri
-                watchSlidesProgress
-                allowTouchMove={(project?.medias.length ?? 0) > 5} // disable scroll kalau <= 5
-                className="cursor-pointer max-w-fit"
-              >
-                {project?.medias.map((item, idx) => (
-                  <SwiperSlide
-                    key={idx}
-                    className={`${
-                      (project?.medias.length ?? 0) == 1 ? "!w-20" : "!w-30"
-                    }`}
-                  >
-                    <img
-                      src={item.path}
-                      alt={`Thumbnail ${idx + 1}`}
-                      className="w-full h-20 object-cover rounded-md border-2 border-transparent hover:border-blue-500 transition"
-                    />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <h2 className="text-lg text-black font-semibold mb-2">
-              Tentang Bisnis
-            </h2>
-            <p className="text-sm mb-4">{project?.desc_job}</p>
-          </div>
-        </div>
-        <div className="w-full lg:w-1/2 lg:mx-2">
-          <div className="bg-gray-100 rounded-xl p-3 shadow-md space-y-2">
-            <div className="bg-white rounded-lg p-2">
-              <h3 className="text-xl text-black font-bold">{project?.title}</h3>
-              <div className="my-2">
-                <div className="flex flex-wrap justify-between">
-                  <p className="text-xs text-[#677AB9]">Perusahaan</p>
-                  <p className="text-sm">{project?.company.name}</p>
-                </div>
-                <div className="flex flex-wrap justify-between">
-                  <p className="text-xs text-[#677AB9]">Kode Efek</p>
-                  <p className="text-sm">PPJA1</p>
-                </div>
-                <div className="flex flex-wrap justify-between">
-                  <p className="text-xs text-[#677AB9]">Jenis Akad</p>
-                  <p className="text-sm">Efek Bersifat Utang</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-2 rounded-lg space-y-1">
-              <ProgressBar percentage={0} />
-
-              <div className="flex flex-wrap justify-between">
-                <p className="text-xs font-bold text-[#677AB9]">
-                  Dana Terkumpul
-                </p>
-                <p className="text-xs font-bold">{formatRupiah("a")}</p>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg p-2 flex justify-evenly">
-              <div className="flex gap-1 flex-col items-center">
-                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#3E268D] text-white"></div>
-                <div className="text-xs text-center font-medium text-gray-900">
-                  Prelisting
-                </div>
-              </div>
-              <div className="flex gap-1 flex-col items-center">
-                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#3E268D] text-white"></div>
-                <div className="text-xs text-center font-medium text-gray-900">
-                  Listing
-                </div>
-              </div>
-              <div className="flex gap-1 flex-col items-center">
-                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#3E268D] text-white"></div>
-                <div className="text-xs text-center font-medium text-gray-900">
-                  Pendanaan Terpenuhi
-                </div>
-              </div>
-              <div className="flex gap-1 flex-col items-center">
-                <div className="rounded-full w-4 h-4 flex items-center justify-center bg-[#3E268D] text-white"></div>
-                <div className="text-xs text-center font-medium text-gray-900">
-                  Berjalan
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-2 rounded-lg">
-              <div className="flex flex-wrap my-2 justify-between">
-                <p className="text-xs text-[#677AB9]"> Kategori Bisnis</p>
-                <p className="text-xs">KONTRAKTOR</p>
-              </div>
-              <div className="flex flex-wrap my-2 justify-between">
-                <p className="text-xs text-[#677AB9]">Minimal Investasi:</p>
-                <p className="text-xs">{formatRupiah(project?.min_invest)}</p>
-              </div>
-              <div className="flex flex-wrap my-2 justify-between">
-                <p className="text-xs text-[#677AB9]">Harga Unit:</p>
-                <p className="text-xs">
-                  {formatRupiah(project?.nominal_value)}
-                </p>
-              </div>
-              <div className="flex flex-wrap my-2 justify-between">
-                <p className="text-xs text-[#677AB9]"> Jumlah Unit </p>
-                <p className="text-xs">
-                  {formatRupiah(project?.number_of_unit)}
-                </p>
-              </div>
-              <div className="flex flex-wrap my-2 justify-between">
-                <p className="text-xs text-[#677AB9]"> Total Unit (Rp) </p>
-                <p className="text-xs"> {formatRupiah(project?.unit_total)} </p>
-              </div>
-              <div className="flex flex-wrap my-2 justify-between">
-                <p className="text-xs text-[#677AB9]">Periode Pengembalian:</p>
-                <p className="text-xs">{project?.interest_payment_schedule}</p>
-              </div>
-              <div className="flex flex-wrap my-2 justify-between">
-                <p className="text-xs text-[#677AB9]">Tenor:</p>
-                <p className="text-xs">{project?.time_periode}</p>
-              </div>
-              <div className="flex flex-wrap my-2 justify-between">
-                <p className="text-xs text-[#677AB9]">ROI (Proyeksi):</p>
-                {/* <p className="text-xs">{project.proyeksiROI}</p> */}
-              </div>
-            </div>
-
-            <div className="flex flex-wrap justify-evenly gap-4 mt-4 text-sm">
-              <button
-                onClick={() => setShowModal(true)}
-                className="bg-white text-xs text-black border px-4 py-2 rounded-md"
-              >
-                Simulasi
-              </button>
-              <button
-                className="bg-white text-xs text-black border px-4 py-2 rounded-md"
-                onClick={() => {
-                  navigator.clipboard
-                    .writeText(window.location.href)
-                    .then(() => {
-                      alert("Link berhasil disalin!");
-                      setTimeout(() => {
-                        console.log("Alert selesai");
-                      }, 2000);
-                    })
-                    .catch(() => {
-                      alert("Gagal menyalin link");
-                    });
-                }}
-              >
-                Bagikan
-              </button>
-              <button
-                className="bg-white text-xs text-black border px-4 py-2 rounded-md"
-                onClick={() => window.open(project?.doc.path, "_blank")}
-              >
-                Proposal
-              </button>
-              <button
-                onClick={() => setShowLocationModal(true)}
-                className="bg-white text-xs text-black border px-4 py-2 rounded-md"
-              >
-                Lokasi
-              </button>
-            </div>
-
-            {role !== "emiten" ? (
-              hydrated && userData !== null ? (
-                <button className="w-full bg-purple-700 hover:bg-purple-600 text-white font-semibold py-2 rounded-md mt-4 cursor-pointer">
-                  Beli Efek
-                </button>
-              ) : (
-                <button className="w-full bg-gray-300 text-white font-semibold py-2 rounded-md mt-4 cursor-not-allowed">
-                  Beli Efek
-                </button>
-              )
-            ) : (
-              <></>
-            )}
-
-            <p className="text-xs text-center mt-2">
-              Butuh Pertanyaan?{" "}
-              <a href="#" className="text-blue-600 font-semibold">
-                Hubungi Kami
-              </a>
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
+        </GeneralDialog>
+      </section>
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={"Beli Efek"}
+      >
+        <InputNominal
+          minValue={Number(project?.min_invest)}
+          quota={Number(quotaData?.summary.remaining_quota_idr) ?? 0}
+          onConfirm={handleConfirm}
+        />
+      </Modal>
+    </>
   );
 };
 

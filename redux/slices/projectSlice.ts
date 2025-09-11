@@ -1,3 +1,4 @@
+import { Project } from "@/app/interfaces/project/IProject";
 import {
   projectDelete,
   projectList,

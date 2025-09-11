@@ -137,7 +137,7 @@ const Navbar: React.FC = () => {
                 isSticky ? "text-[#321B87]" : "text-white"
               }`}
             >
-              CapBridge
+              FuLusme
             </div>
           </Link>
 
@@ -207,7 +207,7 @@ const Navbar: React.FC = () => {
                 <Link href={"/"}>
                   {" "}
                   <div className={`text-xl text-center font-bold text-white`}>
-                    CapBridge
+                    FuLusme
                   </div>
                 </Link>
                 <ul className="flex flex-col gap-6 text-white text-base font-semibold pt-16">
@@ -412,7 +412,7 @@ const Navbar: React.FC = () => {
                       isSticky ? "text-[#321B87]" : "text-white"
                     }`}
                   >
-                    CapBridge
+                    FuLusme
                   </div>
                 </Link>
                 <ul className="flex flex-col gap-6 text-white text-base font-semibold pt-16">

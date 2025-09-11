@@ -4,8 +4,8 @@ import type { Metadata } from "next";
 import Verification from "@components/auth/verification/Verification";
 
 export const metadata: Metadata = {
-  title: "Verification | CapBridge",
-  description: "CapBridge",
+  title: "Verification | FuLusme",
+  description: "FuLusme",
 };
 
 const VerificationPage: React.FC = () => {

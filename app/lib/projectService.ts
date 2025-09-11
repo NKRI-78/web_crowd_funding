@@ -1,5 +1,6 @@
 import axios from "axios";
 import Swal from "sweetalert2";
+import { Project } from "../interfaces/project/IProject";
 
 export const projectList = async () => {
   try {

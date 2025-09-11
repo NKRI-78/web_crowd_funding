@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import Inbox from "@/app/components/notif/inbox/Inbox";
 
 export const metadata: Metadata = {
-  title: "Inbox | CapBridge",
+  title: "Inbox | FuLusme",
   description: "Inbox",
 };
 

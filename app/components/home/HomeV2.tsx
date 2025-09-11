@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ProjectCard } from "@components/project/Project";
-import { IProjectData } from "@/app/interface/IProject";
+import { ProjectCard } from "@/app/components/project/ProjectCard";
+// import { IProjectData } from "@/app/interface/IProject";
 import Cookies from "js-cookie";
 import { getAllProject } from "@/actions/GetAllProject";
 import Modal from "@/app/helper/Modal";
@@ -12,10 +12,11 @@ import RegisterSelectRole from "../auth/register/RegisterSelectRole";
 import RegisterV2 from "../auth/register/RegisterV2";
 import axios from "axios";
 import { API_BACKEND } from "@/app/utils/constant";
-import { InboxModel } from "../notif/InboxModel";
+import { InboxResponse } from "../notif/inbox-interface";
 import { useDispatch } from "react-redux";
 import { setBadge } from "@/redux/slices/badgeSlice";
-import { createSocket } from "@/app/utils/sockets";
+import { Project } from "@/app/interfaces/project/IProject";
+import GridView from "../GridView";
 
 const HomeV2: React.FC = () => {
   const dispatch = useDispatch();
@@ -26,17 +27,22 @@ const HomeV2: React.FC = () => {
     "Umum"
   );
   const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const [project, seProject] = useState<IProjectData[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [step, setStep] = useState<"register" | "otp" | "role" | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     const fetchTopVideos = async () => {
       setLoading(true);
       const res = await getAllProject();
-      seProject(res?.data ?? []);
+      setProjects(res?.data ?? []);
       setLoading(false);
     };
 
@@ -59,61 +65,12 @@ const HomeV2: React.FC = () => {
     return userJson.id;
   }
 
-  useEffect(() => {
-    const token = getUserToken();
-    if (token) fetchInbox(token);
-  }, []);
-
-  const fetchInbox = async (token: string) => {
-    try {
-      const res = await axios(`${API_BACKEND}/api/v1/inbox/list`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!res.data["data"]) {
-        dispatch(setBadge(0));
-        return;
-      }
-
-      const unReadInboxes = res.data["data"].filter(
-        (inbox: InboxModel) => inbox.is_read === false
-      ) as InboxModel[];
-      dispatch(setBadge(unReadInboxes.length));
-    } catch (e) {
-      dispatch(setBadge(0));
-    }
-  };
-
-  useEffect(() => {
-    const userId = getUserId();
-    console.log("user token");
-    console.log(userId);
-
-    const socket = createSocket(userId ?? "-");
-
-    socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
-      console.log("Socket connected user id :", userId ?? "-");
-    });
-
-    socket.on("inbox-update", (data) => {
-      console.log("Update");
-      const token = getUserToken();
-      if (token) fetchInbox(token);
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
-
   const faqData = {
     Umum: [
       {
-        question: "Apa itu CapBridge?",
+        question: "Apa itu FuLusme?",
         answer:
-          "CapBridge adalah Penyelenggara Layanan Urun Dana Berbasis Teknologi Informasi (Securities Crowdfunding) yang merupakan tempat bertemunya Pemodal dan Penerbit dalam satu wadah platform.",
+          "FuLusme adalah Penyelenggara Layanan Urun Dana Berbasis Teknologi Informasi (Securities Crowdfunding) yang merupakan tempat bertemunya Pemodal dan Penerbit dalam satu wadah platform.",
       },
       {
         question: "Apa itu Efek?",
@@ -130,12 +87,12 @@ const HomeV2: React.FC = () => {
       {
         question: "Apa itu Pemodal?",
         answer:
-          "Anda bisa mendaftar di platform CapBridge, melakukan verifikasi, dan mulai berinvestasi pada proyek yang tersedia.",
+          "Anda bisa mendaftar di platform FuLusme, melakukan verifikasi, dan mulai berinvestasi pada proyek yang tersedia.",
       },
       {
-        question: "Bagaimana cara berinvestasi di CapBridge?",
+        question: "Bagaimana cara berinvestasi di FuLusme?",
         answer:
-          "Untuk berinvestasi, langkah pertama Anda harus memiliki akun di CapBridge. Berikut tata cara pembuatan Akun Pemodal : \n • Daftarkan diri Anda pada tautan berikut. \n • Masukkan data diri anda, email, dan nomor ponsel yang anda pakai \n • Setelah memasukkan nomor ponsel pada langkah pertama, anda akan diminta memasukkan kode OTP yang dikirimkan ke nomor ponsel anda \n • Kemudian masukkan kata sandi yang ingin anda gunakan \n • Anda harus membaca dan menyetujui syarat dan ketentuan kami sebelum mendaftarkan diri. Kemudian akan dikirimkan email verifikasi pada email yang anda masukkan \n • Verifikasi email dan kemudian masuk menggunakan Email dan kata sandi anda. \n • Langkah berikutnya adalah proses KYC yang berada di posisi sebelah kiri Dashboard, dimana Anda harus mengisi semua tahapan dan pertanyaan yang ada. Setelah Anda mengisi semua data pada proses KYC, maka akan dilakukan verifikasi data oleh tim CapBridge yang memerlukan waktu 2x24 jam di hari kerja. \n • Anda akan menerima pemberitahuan via email terkait status verifikasi data Anda. Jika data Anda sudah terverifikasi, maka Anda dapat mulai berinvestasi di CapBridge.",
+          "Untuk berinvestasi, langkah pertama Anda harus memiliki akun di FuLusme. Berikut tata cara pembuatan Akun Pemodal : \n • Daftarkan diri Anda pada tautan berikut. \n • Masukkan data diri anda, email, dan nomor ponsel yang anda pakai \n • Setelah memasukkan nomor ponsel pada langkah pertama, anda akan diminta memasukkan kode OTP yang dikirimkan ke nomor ponsel anda \n • Kemudian masukkan kata sandi yang ingin anda gunakan \n • Anda harus membaca dan menyetujui syarat dan ketentuan kami sebelum mendaftarkan diri. Kemudian akan dikirimkan email verifikasi pada email yang anda masukkan \n • Verifikasi email dan kemudian masuk menggunakan Email dan kata sandi anda. \n • Langkah berikutnya adalah proses KYC yang berada di posisi sebelah kiri Dashboard, dimana Anda harus mengisi semua tahapan dan pertanyaan yang ada. Setelah Anda mengisi semua data pada proses KYC, maka akan dilakukan verifikasi data oleh tim FuLusme yang memerlukan waktu 2x24 jam di hari kerja. \n • Anda akan menerima pemberitahuan via email terkait status verifikasi data Anda. Jika data Anda sudah terverifikasi, maka Anda dapat mulai berinvestasi di FuLusme.",
       },
       {
         question: "Apa yang dimaksud dengan Prospekstus?",
@@ -147,7 +104,7 @@ const HomeV2: React.FC = () => {
       {
         question: "Apa itu Penerbit?",
         answer:
-          "Penerbit adalah pihak yang mencari pendanaan melalui platform CapBridge dengan menawarkan efek kepada publik.",
+          "Penerbit adalah pihak yang mencari pendanaan melalui platform FuLusme dengan menawarkan efek kepada publik.",
       },
       {
         question:
@@ -179,6 +136,8 @@ const HomeV2: React.FC = () => {
     setStep(null);
   };
 
+  const userToken = getUserToken();
+
   return (
     <div>
       {/* Hero Section */}
@@ -186,25 +145,26 @@ const HomeV2: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-[#218AC2]/70 to-[#10565C]/70 z-0" />
         {/* Left content */}
         <div className="space-y-6 z-10 relative text-center md:text-left">
-          <h1 className="text-3xl md:text-6xl font-bold leading-tight">
-            Fund the Future. <br /> Together
+          <h1 className="text-4xl md:text-6xl font-bold leading-tight ">
+            Fund the Future <br /> Together
           </h1>
-          <p className="text-white text-lg leading-relaxed italic">
+          <p className="text-white text-base md:text-lg leading-relaxed italic">
             "Ide Hebat Layak Diperjuangkan. Bantu wujudkan mimpi besar, satu
             kontribusi kecil pada satu waktu. Gabung bersama ribuan pendukung
             yang percaya pada perubahan."
           </p>
 
-          <button
-            className="text-white text-lg bg-[#10565C] hover:bg-[#0c4246] focus:ring-1 focus:ring-white rounded-lg px-6 py-3 me-2 mb-2 dark:bg-[#10565C] dark:hover:bg-[#0c4246] focus:outline-none dark:focus:ring-white font-extrabold"
-            onClick={() => {
-              setStep("register");
-              setShowOtpModal(true);
-              console.log("tes");
-            }}
-          >
-            DAFTAR SEKARANG
-          </button>
+          {isClient && !getUserToken() && (
+            <button
+              className="text-white text-lg bg-[#10565C] hover:bg-[#0c4246] focus:ring-1 focus:ring-white rounded-lg px-6 py-3 me-2 mb-2 dark:bg-[#10565C] dark:hover:bg-[#0c4246] focus:outline-none dark:focus:ring-white font-extrabold"
+              onClick={() => {
+                setStep("register");
+                setShowOtpModal(true);
+              }}
+            >
+              DAFTAR SEKARANG
+            </button>
+          )}
 
           {/* Logos */}
           <div className="flex justify-center md:justify-start gap-6 items-center">
@@ -226,98 +186,80 @@ const HomeV2: React.FC = () => {
             <img
               src="/images/IPHONEMOCKUP.png"
               alt="mockup"
-              className="w-52 md:w-[75%] absolute -top-0 left-1/2 -translate-x-1/2 z-20"
+              className="w-72 md:w-[85%] absolute -top-0 left-1/2 -translate-x-1/2 z-20"
             />
 
             {/* Gambar investment di bawah */}
             <img
               src="/images/investment.png"
               alt="investment"
-              className="w-60 md:w-[150%] relative z-10"
+              className="w-72 md:w-[150%] relative z-10"
             />
           </div>
         </div>
       </section>
 
       <section className="bg-white relative text-black pt-14 pb-5 px-6 text-center md:px-16">
-        <div className="flex gap-x-6">
-          <div className="basis-6/12">
+        <div className="flex flex-col md:flex-row gap-x-6 gap-y-10 md:gap-y-0">
+          {/* Gambar */}
+          <div className="basis-full md:basis-6/12">
             <img
-              className="w-full"
+              className="w-3/4 md:w-full mx-auto"
               src="/images/secure-investment.png"
               alt="Secure Investment"
             />
           </div>
 
-          <div className="basis-6/12 text-left flex flex-col gap-y-6">
-            <h2 className=" text-[#10565C] text-xl md:text-4xl font-extrabold leading-tight tracking-tight">
+          {/* Konten */}
+          <div className="basis-full md:basis-6/12 text-left flex flex-col gap-y-6">
+            <h2 className="text-[#10565C] text-2xl md:text-4xl font-extrabold leading-tight tracking-tight">
               Cara Baru Investasi Aman dan Menguntungkan
             </h2>
-            <p className="text-[#969696] text-lg">
-              Capbridge adalah penyelenggara urun dana berbasis teknologi
+            <p className="text-[#969696] text-base md:text-lg">
+              FuLusme adalah penyelenggara urun dana berbasis teknologi
               informasi di Indonesia yang beroperasi sesuai prinsip ESG
-              (Environmental, Social, Governance). Melalui platform ini, kami
-              memperkuat tata kelola yang transparan, serta menjunjung tinggi
-              etika bisnis yang selaras dengan 17 tujuan pembangunan
-              berkelanjutan.
+              (Environmental, Social, Governance)...
             </p>
-            <div>
-              <ul className="flex flex-col gap-y-8">
-                <li className="border-b-2 border-b-[#DDDDDD] pb-8">
-                  <div>
-                    <h3 className="text-[#10565C] text-2xl font-extrabold tracking-tight">
-                      1. Platform resmi yang berizin
-                    </h3>
-                    <ul className="flex flex-col gap-y-5 mt-5 ">
-                      <li className="flex gap-x-1 items-center">
-                        <img
-                          className="w-6"
-                          src="/images/check.png"
-                          alt="Check"
-                        />
-                        <span className="text-[#969696]">
-                          Berizin resmi dan di awasi OJK: Surat KEP-11/D.04/2025
-                        </span>
-                      </li>
-                      <li className="flex gap-x-1 items-center">
-                        <img
-                          className="w-6"
-                          src="/images/check.png"
-                          alt="Check"
-                        />
-                        <span className="text-[#969696]">
-                          Bersertifikasi ISO 27009:2025
-                        </span>
-                      </li>
-                      <li className="flex gap-x-1 items-center">
-                        <img
-                          className="w-6"
-                          src="/images/check.png"
-                          alt="Check"
-                        />
-                        <span className="text-[#969696]">
-                          Anggota resmi dari ALUDI
-                        </span>
-                      </li>
-                    </ul>
-                  </div>
-                </li>
-                <li className="border-b-2 border-b-[#DDDDDD] pb-8">
-                  <div>
-                    <h3 className="text-[#10565C] text-2xl font-extrabold tracking-tight">
-                      2. Imbal hasil yang menarik
-                    </h3>
-                  </div>
-                </li>
-                <li className="">
-                  <div>
-                    <h3 className="text-[#10565C] text-2xl font-extrabold tracking-tight">
-                      3. Syarat dan proses yang mudah
-                    </h3>
-                  </div>
-                </li>
-              </ul>
-            </div>
+
+            <ul className="flex flex-col gap-y-8">
+              <li className="border-b-2 border-b-[#DDDDDD] pb-8">
+                <h3 className="text-[#10565C] text-xl md:text-2xl font-extrabold tracking-tight">
+                  1. Platform resmi yang berizin
+                </h3>
+                <ul className="flex flex-col gap-y-5 mt-5">
+                  <li className="flex gap-x-2 items-center">
+                    <img className="w-6" src="/images/check.png" alt="Check" />
+                    <span className="text-[#969696]">
+                      Berizin resmi dan diawasi OJK: Surat KEP-11/D.04/2025
+                    </span>
+                  </li>
+                  <li className="flex gap-x-2 items-center">
+                    <img className="w-6" src="/images/check.png" alt="Check" />
+                    <span className="text-[#969696]">
+                      Bersertifikasi ISO 27009:2025
+                    </span>
+                  </li>
+                  <li className="flex gap-x-2 items-center">
+                    <img className="w-6" src="/images/check.png" alt="Check" />
+                    <span className="text-[#969696]">
+                      Anggota resmi dari ALUDI
+                    </span>
+                  </li>
+                </ul>
+              </li>
+
+              <li className="border-b-2 border-b-[#DDDDDD] pb-8">
+                <h3 className="text-[#10565C] text-xl md:text-2xl font-extrabold tracking-tight">
+                  2. Imbal hasil yang menarik
+                </h3>
+              </li>
+
+              <li>
+                <h3 className="text-[#10565C] text-xl md:text-2xl font-extrabold tracking-tight">
+                  3. Syarat dan proses yang mudah
+                </h3>
+              </li>
+            </ul>
           </div>
         </div>
       </section>
@@ -332,11 +274,15 @@ const HomeV2: React.FC = () => {
           temukan peluang untuk berinvestasi hari ini.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {project.map((project: IProjectData, index) => (
-            <ProjectCard key={index} project={project} />
-          ))}
-        </div>
+        <GridView
+          items={projects}
+          gapClass="gap-4"
+          breakpointCols={{ sm: 2, md: 3, lg: 4 }}
+          itemKey={(p) => p.id}
+          renderItem={(p, i) => {
+            return <ProjectCard project={p} />;
+          }}
+        />
 
         <button
           onClick={() => {
@@ -510,7 +456,7 @@ const HomeV2: React.FC = () => {
         </h2>
         <div className="max-h-[500px] relative  overflow-y-scroll p-6 border border-gray-300 rounded-lg space-y-4 text-justify text-sm leading-relaxed">
           <p className="text-1xl">
-            PT Fintek Andalan Solusi Teknologi (CapBridge) adalah Penyelenggara
+            PT Fintek Andalan Solusi Teknologi (FuLusme) adalah Penyelenggara
             Layanan Urun Dana melalui Penawaran Efek Berbasis Teknologi
             Informasi (Securities Crowdfunding) sebagaimana tunduk pada
             ketentuan Peraturan Otoritas Jasa Keuangan NOMOR 57/POJK.04/2020
@@ -537,7 +483,7 @@ const HomeV2: React.FC = () => {
           </p>
           <p>
             1. Anda perlu mempertimbangkan dengan cermat, teliti dan seksama
-            setiap investasi bisnis yang akan Anda lakukan di CapBridge,
+            setiap investasi bisnis yang akan Anda lakukan di FuLusme,
             berdasarkan pengetahuan, keilmuan serta pengalaman yang Anda miliki
             dalam hal keuangan dan bisnis. Dibutuhkan kajian/penelaahan laporan
             keuangan, target tujuan investasi, kemampuan analisis, serta
@@ -545,17 +491,16 @@ const HomeV2: React.FC = () => {
           </p>
           <p>
             Anda menyadari bahwa setiap bisnis pasti memiliki risikonya
-            masing-masing. Untuk itu, dengan berinvestasi melalui CapBridge,
-            Anda sudah mengerti akan segala resiko yang dapat terjadi di
-            kemudian hari, seperti penurunan performa bisnis, hingga
-            kebangkrutan dari bisnis yang anda investasikan tersebut.
+            masing-masing. Untuk itu, dengan berinvestasi melalui FuLusme, Anda
+            sudah mengerti akan segala resiko yang dapat terjadi di kemudian
+            hari, seperti penurunan performa bisnis, hingga kebangkrutan dari
+            bisnis yang anda investasikan tersebut.
           </p>
           <p>
-            CapBridgeTIDAK BERTANGGUNG JAWAB terhadap risiko kerugian dan
-            gugatan hukum serta segala bentuk risiko lain yang timbul dikemudian
-            hari atas hasil investasi bisnis yang anda tentukan sendiri saat
-            ini. Beberapa risiko yang dapat terjadi saat Anda berinvestasi yaitu
-            :
+            FuLusmeTIDAK BERTANGGUNG JAWAB terhadap risiko kerugian dan gugatan
+            hukum serta segala bentuk risiko lain yang timbul dikemudian hari
+            atas hasil investasi bisnis yang anda tentukan sendiri saat ini.
+            Beberapa risiko yang dapat terjadi saat Anda berinvestasi yaitu :
           </p>
           <div>
             <p className="font-bold text-md">Risiko Usaha</p>
@@ -608,9 +553,8 @@ const HomeV2: React.FC = () => {
               yang baru diterbitkan tersebut. Penerbit dapat menerbitkan Efek
               baru jika jumlah penawaran yang diajukan masih dibawah batas
               maksimum. Jika Penerbit mengadakan urun dana lagi dan terjadi
-              penerbitan Efek baru, maka CapBridge akan membuka bisnis tersebut
-              di website CapBridge dan menginformasikan kepada semua pemegang
-              Efek.
+              penerbitan Efek baru, maka FuLusme akan membuka bisnis tersebut di
+              website FuLusme dan menginformasikan kepada semua pemegang Efek.
             </p>
           </div>
           <div>
@@ -618,22 +562,22 @@ const HomeV2: React.FC = () => {
             <p className="my-1">
               Risiko yang timbul adanya Penerbit melanggar atau tidak lagi
               memenuhi kriteria Efek Syariah. Penerbit yang listing di platform
-              CapBridge sudah melalui proses screening dari tim analis bisnis
-              CapBridge. Penerbit yang dipilih berdasarkan rekam jejak bisnis
-              yang baik dan memenuhi standar dalam kesesuaian kriteria prinsip
+              FuLusme sudah melalui proses screening dari tim analis bisnis
+              FuLusme. Penerbit yang dipilih berdasarkan rekam jejak bisnis yang
+              baik dan memenuhi standar dalam kesesuaian kriteria prinsip
               syariah yang diputuskan dalam persetujuan akhir oleh Dewan
-              Pengawas Syariah. Dalam hal ini CapBridge sebagai penyelenggara
-              akan memonitoring kepada Penerbit secara berkala.
+              Pengawas Syariah. Dalam hal ini FuLusme sebagai penyelenggara akan
+              memonitoring kepada Penerbit secara berkala.
             </p>
           </div>
           <div>
             <p className="font-bold text-md">Kegagalan Sistem Elektronik</p>
             <p className="my-1">
-              CapBridge telah menerapkan sistem teknologi informasi dan keamanan
+              FuLusme telah menerapkan sistem teknologi informasi dan keamanan
               data yang handal. Namun bagaimanapun juga tetap memungkinkan jika
               terjadi gangguan sistem teknologi informasi dan kegagalan sistem,
               jika ini terjadi maka akan menyebabkan aktivitas bisnis Anda di
-              platform CapBridge menjadi tertunda.
+              platform FuLusme menjadi tertunda.
             </p>
             <p className="my-1">
               2. Semua materi terkait pilihan investasi yang tercantum dalam
@@ -667,7 +611,7 @@ const HomeV2: React.FC = () => {
               lainnya{" "}
             </p>
             <p className="my-1">
-              5. CapBridge bertindak sebagai Penyelenggara Layanan Urun Dana,
+              5. FuLusme bertindak sebagai Penyelenggara Layanan Urun Dana,
               bukan sebagai pihak yang menjalankan kegiatan usaha atau proyek
               Penerbit. Otoritas Jasa Keuangan bertindak sebagai regulator dan
               pemberi izin, pengawas Penyelenggara, bukan sebagai penjamin
@@ -678,16 +622,21 @@ const HomeV2: React.FC = () => {
       </section>
 
       <div className="fixed bottom-4 right-4 z-50">
-        <button className="flex items-center bg-[#29a71a] text-white px-4 py-2 font-bold rounded-full shadow-lg">
+        <a
+          href="https://wa.me/6282138820134"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center bg-[#29a71a] text-white px-4 py-2 font-bold rounded-full shadow-lg"
+        >
           <img src="/images/wa.png" alt="WA" className="w-5 h-5 mr-2" />
           Butuh Bantuan?
-        </button>
+        </a>
       </div>
 
       <Modal
         isOpen={showOtpModal}
         onClose={handleClose}
-        title={step === "otp" ? "Verifikasi OTP" : "Pilih Role"}
+        // title={step === "otp" ? "Verifikasi OTP" : "Pilih Role"}
       >
         {step === "register" && (
           <RegisterV2 onNext={() => setStep("otp")} onClose={handleClose} />

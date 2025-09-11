@@ -41,14 +41,14 @@ const TermsConditions: React.FC = () => {
                 dan dikeluarkan oleh Penerbit.
               </li>
               <li>
-                <strong>CapBridge</strong> adalah penyedia layanan Securities
+                <strong>FuLusme</strong> adalah penyedia layanan Securities
                 Crowd Funding (Layanan Urun Dana), yaitu tempat bertemunya
                 Pemodal dan Penerbit dalam 1 marketplace (platform).Berikutnya
                 didefinisikan sebagai Platform atau Penyelenggara layanan. Hanya
                 terdaftar sebagai platform Securities Crowd Funding dan tidak
                 menjalankan kegiatan perbankan, asuransi atau yang setara dan
-                sejenisnya. CapBridge bukan nama perusahaan melainkan merk
-                dagang dari PT Fintek Andalan Solusi Teknologi yang berlokasi di
+                sejenisnya. FuLusme bukan nama perusahaan melainkan merk dagang
+                dari PT Fintek Andalan Solusi Teknologi yang berlokasi di
                 Jakarta.
               </li>
               <li>
@@ -169,11 +169,11 @@ const TermsConditions: React.FC = () => {
             </h2>
             <p>
               Pengguna mengajukan keluhan atau pengaduan dengan menghubungi
-              layanan Contact Center CapBridge, melalui media telepon dan email
+              layanan Contact Center FuLusme, melalui media telepon dan email
               Pencatatan data pengguna dan kebutuhan informasi Pada saat
-              customer berinteraksi dengan Contact Center CapBridge maka agen
-              akan mencatat informasi dari pengguna Jika pengaduan diluar fitur
-              yang ada di CapBridge, maka permintaan pengaduan akan ditolak
+              customer berinteraksi dengan Contact Center FuLusme maka agen akan
+              mencatat informasi dari pengguna Jika pengaduan diluar fitur yang
+              ada di FuLusme, maka permintaan pengaduan akan ditolak
             </p>
 
             <h2 className="text-xl font-semibold text-gray-800">
@@ -187,7 +187,7 @@ const TermsConditions: React.FC = () => {
             </li>
             <p>Tindakan dalam penolakan menangani pengaduan :</p>
             <li>
-              Apabila terjadi pengaduan terkait dengan CapBridge atau potensi
+              Apabila terjadi pengaduan terkait dengan FuLusme atau potensi
               materiil, maka secara langsung telah tercantum dalam perjanjian/
               dokumen pendukung lainnya
             </li>
@@ -198,7 +198,7 @@ const TermsConditions: React.FC = () => {
             <li>Penyampaian ketidaktersedia nya informasi</li>
             <li>
               Pada saat pengguna dapat menerima alasan penolakan pemberian
-              informasi yang diberikan oleh CapBridge
+              informasi yang diberikan oleh FuLusme
             </li>
 
             <h2 className="text-xl font-semibold text-gray-800">
@@ -210,8 +210,8 @@ const TermsConditions: React.FC = () => {
               Agen akan melakukan eskalasi ke team leader maksimum 1x24 jam.
               Penyelesaian pengaduan (resolution time) paling lambat dilakukan 2
               x 24 jam. Penambahan waktu diperlukan apabila masalah atau kasus
-              belum terselesaikan, CapBridge akan konfirmasi terlebih dahulu
-              kepada pengguna. CapBridge mengutamakan prinsip musyawarah dan
+              belum terselesaikan, FuLusme akan konfirmasi terlebih dahulu
+              kepada pengguna. FuLusme mengutamakan prinsip musyawarah dan
               kekeluargaan dalam penyelesaian masalah/pengaduan
             </p>
 
@@ -223,10 +223,10 @@ const TermsConditions: React.FC = () => {
               akan mengutip komisi yang besarnya 10% (sepuluh persen) dari total
               pendanaan yang disetujui untuk Penerbit. Dengan pertimbangan
               tertentu dari pihak Penyelenggara sehingga calon Penerbit dan
-              Pemodal tidak berhak dalam daftar pengguna di CapBridge , maka
-              pihak penyelenggara tidak akan membebankan kewajiban atau biaya
-              apapun. Biaya lain yang timbul secara tidak langsung dan menjadi
-              beban Penerbit dalam terlaksananya kerjasama ini adalah :
+              Pemodal tidak berhak dalam daftar pengguna di FuLusme , maka pihak
+              penyelenggara tidak akan membebankan kewajiban atau biaya apapun.
+              Biaya lain yang timbul secara tidak langsung dan menjadi beban
+              Penerbit dalam terlaksananya kerjasama ini adalah :
             </p>
             <li>Pemeriksaan keabsahan SHM surat jaminan di BPN</li>
             <li>
@@ -348,12 +348,11 @@ const TermsConditions: React.FC = () => {
               secara proporsional kepada Pemodal paling lambat 2 (dua) Hari
               Kerja setelah penawaran Efek dinyatakan batal demi hukum. Bagi
               Pemodal yang transaksinya tidak valid atau valid sebagian, maka
-              pihak CapBridge akan menghubungi Pemodal untuk melakukan
-              konfirmasi. Apabila Pemodal tidak melakukan konfirmasi balik
-              selama 5 (lima) Hari Kerja kepada Penyelenggara, maka transaksi
-              Pemodal tersebut dimasukkan ke dalam Rekening Escrow Pemodal
-              diplatform Penyelenggara yang sewaktu-waktu dapat ditarik oleh
-              Pemodal
+              pihak FuLusme akan menghubungi Pemodal untuk melakukan konfirmasi.
+              Apabila Pemodal tidak melakukan konfirmasi balik selama 5 (lima)
+              Hari Kerja kepada Penyelenggara, maka transaksi Pemodal tersebut
+              dimasukkan ke dalam Rekening Escrow Pemodal diplatform
+              Penyelenggara yang sewaktu-waktu dapat ditarik oleh Pemodal
             </p>
             <p>
               Dalam hal transaksi pembelian Efek Pemodal dilakukan pada saat
@@ -518,7 +517,7 @@ const TermsConditions: React.FC = () => {
             <li>
               Dengan pertimbangan tertentu dari pihak Penyelenggara sehingga
               calon Penerbit dan Pemodal tidak berhak dalam daftar stakeholder
-              di CapBridge maka pihak Platform tidak akan membebankan kewajiban
+              di FuLusme maka pihak Platform tidak akan membebankan kewajiban
               atau biaya apapun
             </li>
 
@@ -583,22 +582,22 @@ const TermsConditions: React.FC = () => {
               Perlindungan Data Pribadi
             </h2>
             <p>
-              Pemodal dan/atau Penerbit memberikan kuasa kepada CapBridge
-              Layanan Urun Dana untuk : Melaksanakan pengecekan dan penilaian
-              pembiayaan kepada Penerbit termasuk melakukan asesmen atau
-              validasi terhadap setiap Data Pribadi dan dokumen atau informasi
-              apapun yang diperoleh dari atau disingkapkan oleh Penerbit.
-              Mendapatkan dan melakukan verifikasi informasi mengenai. Pemodal
-              dan/atau Penerbit, sesuai dengan pertimbangan tunggal dan absolut
-              CapBridge Layanan Urun Dana jika dianggap Perlu Pemodal dan
-              Penerbit setuju untuk datanya didaftarkan di Digisign dan Bank
-              Danamon Indonesia sebagai Bank Kustodian. Menggunakan semua sumber
-              relevan, yang dapat digunakan oleh CapBridge Layanan Urun Dana ,
-              untuk menyediakan informasi yang dibutuhkan oleh CapBridge Layanan
-              Urun Dana terkait dengan fasilitas Pembiayaan yang diberikan
+              Pemodal dan/atau Penerbit memberikan kuasa kepada FuLusme Layanan
+              Urun Dana untuk : Melaksanakan pengecekan dan penilaian pembiayaan
+              kepada Penerbit termasuk melakukan asesmen atau validasi terhadap
+              setiap Data Pribadi dan dokumen atau informasi apapun yang
+              diperoleh dari atau disingkapkan oleh Penerbit. Mendapatkan dan
+              melakukan verifikasi informasi mengenai. Pemodal dan/atau
+              Penerbit, sesuai dengan pertimbangan tunggal dan absolut FuLusme
+              Layanan Urun Dana jika dianggap Perlu Pemodal dan Penerbit setuju
+              untuk datanya didaftarkan di Digisign dan Bank Danamon Indonesia
+              sebagai Bank Kustodian. Menggunakan semua sumber relevan, yang
+              dapat digunakan oleh FuLusme Layanan Urun Dana , untuk menyediakan
+              informasi yang dibutuhkan oleh FuLusme Layanan Urun Dana terkait
+              dengan fasilitas Pembiayaan yang diberikan
             </p>
             <p>
-              Dengan ini, Para Pemodal dan Penerbit menyetujui bahwa CapBridge
+              Dengan ini, Para Pemodal dan Penerbit menyetujui bahwa FuLusme
               Layanan Urun Dana dapat mengumpulkan, menyimpan, memproses,
               membuka informasi, mengakses, mengkaji, dan/atau menggunakan data
               pribadi (termasuk informasi pribadi yang sensitif) tentang Para
@@ -607,12 +606,12 @@ const TermsConditions: React.FC = () => {
               yang berlaku (Data Pribadi) dan Para Pemodal dan Penerbit
               menyatakan setuju dengan ketentuan Data Pribadi yang diatur dalam
               Kebijakan Privasi sebagaimana telah dibaca dan dipahami oleh Para
-              Pemodal dan Penerbit yang tersedia pada Penyelenggara CapBridge
+              Pemodal dan Penerbit yang tersedia pada Penyelenggara FuLusme
               Layanan Urun. Dana Mengungkapkan informasi dan/atau data terkait
               Pemodal dan/atau Penerbit dan rekening-rekeningnya, dan/atau kartu
               kredit yang dimiliki (jika ada dan sebagaimana relevan) kepada
-              CapBridge Layanan Urun Dana , atau informasi lainnya yang
-              dipandang penting oleh CapBridge Layanan Urun Dana kepada:
+              FuLusme Layanan Urun Dana , atau informasi lainnya yang dipandang
+              penting oleh FuLusme Layanan Urun Dana kepada:
             </p>
             <li>
               Kantor perwakilan dan cabang dan/atau perusahaan atau perusahaan
@@ -651,40 +650,40 @@ const TermsConditions: React.FC = () => {
             </h2>
             <p>
               Pemodal wajib untuk membaca secara seksama dan menyetujui
-              Perjanjian Pengikatan sebelum dapat menggunakan layanan CapBridge
-              Layanan Urun Dana. CapBridge Layanan Urun Dana berhak dari waktu
-              ke waktu sesuai diskresinya merubah termasuk menambahkan maupun
+              Perjanjian Pengikatan sebelum dapat menggunakan layanan FuLusme
+              Layanan Urun Dana. FuLusme Layanan Urun Dana berhak dari waktu ke
+              waktu sesuai diskresinya merubah termasuk menambahkan maupun
               mengurangi isi dan bagian Perjanjian Pengikatan yang mengikat
-              Pemodal dengan CapBridge Layanan Urun Dana sebagai dasar hukum
-              untuk pemanfaatan jasa dan penggunaan Penyelenggara CapBridge
-              Layanan Urun Dana. Diwajibkan berdasarkan ketentuan hukum dan/atau
-              peraturan perundang-undangan yang berlaku (Ketentuan Hukum) atau
-              sewajarnya diperlukan menurut diskresi atau pertimbangan CapBridge
-              Layanan Urun Dana dalam mendukung upayanya untuk mematuhi
-              Ketentuan Hukum atau mengadakan penyesuaian secara operasional
-              maupun transaksional terhadap syarat atau ketentuan sebagaimana
-              diatur Ketentuan Hukum tersebut
+              Pemodal dengan FuLusme Layanan Urun Dana sebagai dasar hukum untuk
+              pemanfaatan jasa dan penggunaan Penyelenggara FuLusme Layanan Urun
+              Dana. Diwajibkan berdasarkan ketentuan hukum dan/atau peraturan
+              perundang-undangan yang berlaku (Ketentuan Hukum) atau sewajarnya
+              diperlukan menurut diskresi atau pertimbangan FuLusme Layanan Urun
+              Dana dalam mendukung upayanya untuk mematuhi Ketentuan Hukum atau
+              mengadakan penyesuaian secara operasional maupun transaksional
+              terhadap syarat atau ketentuan sebagaimana diatur Ketentuan Hukum
+              tersebut
             </p>
             <h2 className="text-xl font-semibold text-gray-800">
               Pembaharuan Data
             </h2>
             <p>
-              CapBridge Layanan Urun Dana dapat sewaktu-waktu melakukan
-              modifikasi data Penerbit dan/atau Pemodal (Modifikasi) yang
-              terdapat dalam database Penyelenggara CapBridge Layanan Urun Dana
-              . Hal ini termasuk, namun tidak terbatas pada, pembaharuan
-              informasi Penerbit dan/atau Pemodal, Data Pribadi, dan mengunggah
-              dokumen tambahan yang berkaitan dengan data Para Pemodal dan
-              Penerbit. Para Pemodal dan Penerbit akan diberikan pemberitahuan
-              dalam kurun waktu tertentu sebagaimana ditentukan CapBridge
-              Layanan Urun Dana (Periode Pemberitahuan) untuk menerima atau
-              menolak Modifikasi. Para Pemodal dan Penerbit dianggap mengetahui
-              Modifikasi yang dilakukan, apabila tidak ada respon yang diberikan
-              kepada CapBridge Layanan Urun Dana selama Periode Pemberitahuan.
-              Para Pemodal dan Penerbit dapat mengajukan Modifikasi atas Data
-              Pribadi Para Pemodal dan Penerbit sesuai dengan ketentuan yang
-              terdapat pada Prosedur Manajemen Data Pribadi yang tersedia di
-              Penyelenggara CapBridge Layanan Urun Dana
+              FuLusme Layanan Urun Dana dapat sewaktu-waktu melakukan modifikasi
+              data Penerbit dan/atau Pemodal (Modifikasi) yang terdapat dalam
+              database Penyelenggara FuLusme Layanan Urun Dana . Hal ini
+              termasuk, namun tidak terbatas pada, pembaharuan informasi
+              Penerbit dan/atau Pemodal, Data Pribadi, dan mengunggah dokumen
+              tambahan yang berkaitan dengan data Para Pemodal dan Penerbit.
+              Para Pemodal dan Penerbit akan diberikan pemberitahuan dalam kurun
+              waktu tertentu sebagaimana ditentukan FuLusme Layanan Urun Dana
+              (Periode Pemberitahuan) untuk menerima atau menolak Modifikasi.
+              Para Pemodal dan Penerbit dianggap mengetahui Modifikasi yang
+              dilakukan, apabila tidak ada respon yang diberikan kepada FuLusme
+              Layanan Urun Dana selama Periode Pemberitahuan. Para Pemodal dan
+              Penerbit dapat mengajukan Modifikasi atas Data Pribadi Para
+              Pemodal dan Penerbit sesuai dengan ketentuan yang terdapat pada
+              Prosedur Manajemen Data Pribadi yang tersedia di Penyelenggara
+              FuLusme Layanan Urun Dana
             </p>
             <h2 className="text-xl font-semibold text-gray-800">
               Keadaan Kahar (Force Majeure)

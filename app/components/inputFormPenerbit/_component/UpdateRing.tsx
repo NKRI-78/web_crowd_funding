@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from "react";
 interface UpdateRingProps {
   children: React.ReactNode;
   identity: string;
-  formKey: string | undefined;
+  formKey: string | undefined | null;
 }
 
 const UpdateRing: React.FC<UpdateRingProps> = ({

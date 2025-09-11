@@ -14,21 +14,6 @@ export interface FormPenerbitState {
   rekeningKoran: string;
   direktur: JobStructureFormData[];
   komisaris: JobStructureFormData[];
-  fotoProyek: string[];
-  titleProyek: string;
-  nilaiNominal: string;
-  jenisObligasi: string;
-  jangkaWaktu: string;
-  tingkatBunga: string;
-  jadwalBunga: string;
-  jadwalPokok: string;
-  penggunaanDana: string[];
-  jaminanKolateral: string[];
-  deskripsiPekerjaan: string;
-  jenisBiaya: string;
-  fileDokumenKontrakApbn?: string;
-  noKontrakApbn?: string;
-  companyProfile: string;
 }
 
 export const maxStructure = 3;
@@ -39,21 +24,6 @@ export function useFormPenerbit() {
     rekeningKoran: "",
     direktur: [],
     komisaris: [],
-    fotoProyek: [],
-    titleProyek: "",
-    nilaiNominal: "",
-    jenisObligasi: "konvensional",
-    jangkaWaktu: "6 Bulan",
-    tingkatBunga: "10",
-    jadwalBunga: "1 Bulan",
-    jadwalPokok: "1 Bulan",
-    penggunaanDana: [],
-    jaminanKolateral: [],
-    deskripsiPekerjaan: "",
-    fileDokumenKontrakApbn: "",
-    noKontrakApbn: "",
-    jenisBiaya: "Iya",
-    companyProfile: "",
   });
 
   useEffect(() => {

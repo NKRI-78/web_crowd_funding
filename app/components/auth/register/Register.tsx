@@ -55,7 +55,7 @@ const Register: React.FC = () => {
   return (
     <div className="w-full md:w-1/2 bg-white px-6 md:px-20 py-10">
       <div className="flex justify-between items-center mb-10">
-        <img src="/images/img.jpg" alt="CapBridge Logo" className="w-20 h-20" />
+        <img src="/images/img.jpg" alt="FuLusme Logo" className="w-20 h-20" />
         <button
           onClick={() => router.push("/")}
           className="text-[#321B87] font-bold text-sm"
@@ -65,7 +65,7 @@ const Register: React.FC = () => {
       </div>
 
       <h1 className="text-3xl font-medium text-[#321B87] mb-2">
-        Selamat Datang <span className="font-bold">di CapBridge,</span>
+        Selamat Datang <span className="font-bold">di FuLusme,</span>
       </h1>
       <p className="text-lg text-[#321B87] mb-10">
         Silahkan berinvestasi dengan <br className="md:hidden" />

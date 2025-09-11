@@ -4,45 +4,43 @@ import useOnlineStatus from "@/app/hooks/useOnlineStatus";
 import { API_BACKEND } from "@/app/utils/constant";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import InboxDialogMessage from "../InboxDialogMessage";
+import InboxModalDialog from "../InboxModalDialog";
 import Swal from "sweetalert2";
-import { InboxModel } from "../InboxModel";
-import EmptyInbox from "../EmptyInbox";
+import { InboxResponse } from "../inbox-interface";
+import InboxEmpty from "../InboxEmpty";
 import { useRouter } from "next/navigation";
-import moment from "moment";
 import Cookies from "js-cookie";
-import { createSocket } from "@/app/utils/sockets";
 import { useDispatch, useSelector } from "react-redux";
 import { setBadge } from "@/redux/slices/badgeSlice";
 import { getUser } from "@/app/lib/auth";
-
-interface InboxState {
-  loading?: boolean;
-  errorMessage?: string | null;
-}
+import InboxCard from "../InboxCard";
+import { AppDispatch, RootState } from "@/redux/store";
+import { fetchInboxThunk, updateInboxes } from "@/redux/slices/inboxSlice";
 
 const Inbox = () => {
   // data hook
-  const [inboxes, setInboxes] = useState<InboxModel[]>([]);
+  const [selectedInbox, setSelectedInbox] = useState<InboxResponse | null>(
+    null
+  );
 
-  // badge
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+  const {
+    items: inboxes,
+    loading,
+    error,
+  } = useSelector((state: RootState) => state.inbox);
+  const user = getUser();
+
+  useEffect(() => {
+    if (user?.token) {
+      dispatch(fetchInboxThunk(user?.token));
+    }
+  }, [user?.token, dispatch]);
 
   // state hook
-  const isOnline = useOnlineStatus();
   const [dialogIsOpen, setOpenDialog] = useState<boolean>(false);
-  const [inboxId, setInboxId] = useState<number>(0);
-  const [selectedProject, setSelectedProject] = useState<{
-    projectId: string;
-    price: string;
-  }>({ projectId: "", price: "" });
-  const [inboxState, setInboxState] = useState<InboxState>({
-    loading: true,
-    errorMessage: null,
-  });
 
   const router = useRouter();
-  const user = getUser();
 
   const roleCookie = Cookies.get("role");
   const userRoleCookie = Cookies.get("user");
@@ -68,18 +66,9 @@ const Inbox = () => {
     }
   }
 
-  //* use effect
-  useEffect(() => {
-    if (isOnline) {
-      console.log("isOnline" + isOnline);
-      fetchInbox();
-    } else {
-      setInboxState({
-        loading: false,
-        errorMessage: "Tidak ada koneksi internet",
-      });
-    }
-  }, [isOnline]);
+  // update formKey liat: "app\(defaults)\form-penerbit\UpdateProfileInterface.ts" untuk detail key nya
+  // admin mengirim key melalui field_4 yang nanti dicocokan dengan formKey
+  const updateKey = selectedInbox?.field_4;
 
   //* set badge to reducer
   useEffect(() => {
@@ -87,40 +76,6 @@ const Inbox = () => {
       setBadge(inboxes.filter((inbox) => inbox.is_read == false).length)
     );
   }, [inboxes]);
-
-  //* fetch inbox
-  const fetchInbox = async () => {
-    try {
-      console.log("user token");
-      console.log(user?.token);
-      if (user?.token) {
-        const res = await axios(`${API_BACKEND}/api/v1/inbox/list`, {
-          headers: {
-            Authorization: `Bearer ${user?.token}`,
-          },
-        });
-        if (!res.data["data"]) {
-          setInboxes([]);
-          return;
-        }
-        const filteredBillingInboxes = res.data["data"]
-          .filter(
-            (inbox: InboxModel) =>
-              inbox.type === "billing" && inbox.status !== "REJECTED"
-          )
-          .reverse();
-        setInboxes(filteredBillingInboxes);
-        setInboxState({
-          loading: false,
-        });
-      }
-    } catch (error) {
-      setInboxState({
-        loading: false,
-        errorMessage: "Terjadi Kesalahan",
-      });
-    }
-  };
 
   //* mark as read
   const markAsRead = (inboxId: number) => {
@@ -133,164 +88,109 @@ const Inbox = () => {
       }
       return inbox;
     });
-    setInboxes(updatedInboxes);
+    dispatch(updateInboxes(updatedInboxes));
   };
 
-  //* reject project
-  const rejectProject = async (projectId: string) => {
-    const result = await Swal.fire({
-      title: "Apakah Anda yakin?",
-      text: "Jika iya maka project Anda akan ditolak",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#e3342f",
-      cancelButtonColor: "#6c757d",
-      confirmButtonText: "Ya, Setuju",
-      cancelButtonText: "Batal",
-    });
+  //* navigate to billing info
+  const navigateToBillingInfo = (inbox: InboxResponse) => {
+    // raw payment detail dari api masih berupa data json dalam bentuk string
+    // perlu dikonversi dulu ke json
+    const rawPaymentDetail = inbox.data;
+    const inboxId = inbox.id;
+    const projectId = inbox.field_2;
 
-    if (result.isConfirmed) {
-      try {
-        if (!user?.token) throw new Error("Unauthorized");
-
-        await axios.put(
-          `${API_BACKEND}/api/v1/admin/verify/project`,
-          {
-            id: projectId,
-            status: "3", // REJECTED
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${user?.token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        setOpenDialog(false);
-        deleteInboxById(inboxId);
-      } catch (error) {
-        console.error("Gagal menolak proyek:", error);
-        Swal.fire({
-          title: "Gagal",
-          text: "Terjadi kesalahan saat menolak proyek.",
-          icon: "error",
-        });
-      }
+    if (inboxId && rawPaymentDetail) {
+      router.push(`/payment-manual/${inboxId}`);
     }
   };
 
-  const approveProject = (projectId: string, price: string) => {
-    return router.push(`/payment-method?projectId=${projectId}&price=${price}`);
+  //* navigate to additional document
+  const navigateToAddAditionalDocument = (projectId: string | undefined) => {
+    if (projectId) {
+      router.push(`/dashboard/dokumen-pelengkap?projectId=${projectId}`);
+    }
   };
 
-  //* delete inbox by id
-  const deleteInboxById = (inboxId: number) => {
-    const updatedInboxes = inboxes.filter((inbox) => inbox.id !== inboxId);
-    setInboxes(updatedInboxes);
+  const handleInboxOnClick = (inbox: InboxResponse) => {
+    markAsRead(inbox.id);
+
+    if (inbox.field_3 === "reupload-document") {
+      setSelectedInbox(inbox);
+      setOpenDialog(true);
+    } else if (inbox.field_3 === "additional-document") {
+      navigateToAddAditionalDocument(inbox.field_2);
+    } else if (inbox.field_3 === "uploaded-doc") {
+      setSelectedInbox(inbox);
+      setOpenDialog(true);
+    } else {
+      navigateToBillingInfo(inbox);
+    }
   };
-
-  useEffect(() => {
-    const user = getUser();
-    console.log("user token");
-    console.log(user?.id);
-
-    const socket = createSocket(user?.id ?? "-");
-
-    socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
-      console.log("Socket connected user id :", user?.id ?? "-");
-    });
-
-    socket.on("inbox-update", (data) => {
-      console.log("Update");
-      fetchInbox();
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
 
   return (
     <>
       <div className="py-28 px-6 text-black">
-        {inboxes.length ? (
+        {loading ? (
+          <InboxSkeleton />
+        ) : inboxes.length ? (
           <div className="flex flex-col gap-y-3">
             {inboxes?.map((inbox) => {
               return (
-                <div
+                <InboxCard
                   key={inbox.id}
-                  className="w-full p-4 rounded-lg bg-white shadow-sm border border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer"
+                  inbox={inbox}
                   onClick={() => {
-                    setInboxId(inbox.id);
-                    setSelectedProject({
-                      projectId: inbox.field_2,
-                      price: inbox.field_1,
-                    });
-                    markAsRead(inbox.id);
-
-                    console.log(
-                      "is update document?" + inbox.field_3 ===
-                        "reupload-document"
-                    );
-
-                    setOpenDialog(true);
+                    handleInboxOnClick(inbox);
                   }}
-                >
-                  <div className="flex items-start justify-between">
-                    <p className="text-sm font-semibold">{inbox.title}</p>
-                    {inbox.is_read === false && (
-                      <span className="text-xs text-blue-600 font-medium bg-blue-100 px-2 py-0.5 rounded-full">
-                        Baru
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-400 mt-2">
-                    {moment(inbox.created_at)
-                      .utc()
-                      .locale("id")
-                      .format("DD MMMM YYYY, HH:mm")}
-                  </p>
-                </div>
+                />
               );
             })}
           </div>
+        ) : error ? (
+          <>
+            <InboxEmpty title="Ada masalah server" message={error} />
+          </>
         ) : (
-          <EmptyInbox
+          <InboxEmpty
             title="Belum ada inbox"
             message="Kamu belum menerima pesan apa pun saat ini."
           />
         )}
       </div>
 
-      {dialogIsOpen && user?.token && (
-        <InboxDialogMessage
-          userToken={user?.token!}
-          inboxId={inboxId}
-          onReject={(id, isUpdateDocument) => {
-            if (isUpdateDocument) {
-              setOpenDialog(false);
-            } else {
-              rejectProject(id);
-            }
-          }}
-          onAccept={(isUpdateDocument, form) => {
-            if (isUpdateDocument) {
-              if (role !== 1 || roleUser !== "investor") {
-                console.log("update dokumen");
-                console.log(form);
-                router.push(`/form-penerbit?update=true&form=${form}`);
-              } else {
-                router.push(`/form-pemodal?update=true&form=${form}`);
+      {dialogIsOpen && user?.token && selectedInbox && (
+        <InboxModalDialog
+          inbox={selectedInbox}
+          onAccept={() => {
+            if (selectedInbox.field_3 === "reupload-document") {
+              if (updateKey) {
+                if (roleUser !== "investor") {
+                  router.push(
+                    `/form-penerbit?update=true&form=${updateKey}&inbox-id=${selectedInbox.id}`
+                  );
+                } else {
+                  if (updateKey === "slip-gaji") {
+                    router.push(`/form-pemodal?update=true&form=slip-gaji`);
+                  } else {
+                    router.push(`/form-pemodal?update=true&form=${updateKey}`);
+                  }
+                }
               }
-            } else {
-              approveProject(selectedProject.projectId, selectedProject.price);
+            } else if (selectedInbox.field_3 === "uploaded-doc") {
+              const pdfUrl = selectedInbox.field_4;
+              if (pdfUrl) {
+                router.push(
+                  `/form-signature?pdf=${encodeURIComponent(pdfUrl)}&inboxId=${
+                    selectedInbox.id
+                  }&field5=${selectedInbox.field_5}`
+                );
+              }
             }
-          }}
-          barrierAction={() => {
+
             setOpenDialog(false);
           }}
+          onReject={() => setOpenDialog(false)}
+          onClose={() => setOpenDialog(false)}
         />
       )}
     </>
@@ -298,3 +198,13 @@ const Inbox = () => {
 };
 
 export default Inbox;
+
+function InboxSkeleton() {
+  return (
+    <div className="animate-pulse flex flex-col gap-3">
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="rounded-lg bg-white h-20 w-full" />
+      ))}
+    </div>
+  );
+}

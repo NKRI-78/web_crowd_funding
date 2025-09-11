@@ -1,40 +1,33 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useFormContext, Controller, useWatch } from "react-hook-form";
 import TextField from "./TextField";
 import FileInput from "./FileInput";
 import SectionPoint from "./SectionPoint";
 import SectionSubtitle from "./SectionSubtitle";
-import { JobStructureError } from "../FormPenerbit";
-import DropdownSelect from "./DropdownSelect";
 import UpdateRing from "./UpdateRing";
+import Select from "react-select";
+import { FormPenerbitValues } from "../formPenerbit.schema";
 
-export interface JobStructureData {
-  nama: string;
-  jabatan: string;
-  noKTP: string;
-  fileKTP: string;
-  fileNPWP: string;
-}
+type NamePrefix = "direktur" | "komisaris";
 
 interface JobStructureFormProps {
   label?: string;
-  data: JobStructureData;
-  onChange: (update: keyof JobStructureData, value: string) => void;
+  namePrefix: NamePrefix;
+  index: number;
   showDeleteButton?: boolean;
   onDelete?: () => void;
-  errors?: JobStructureError;
   isKomisaris?: boolean;
   hasDirekturUtama?: boolean;
   hasKomisarisUtama?: boolean;
   updateIdentity: string;
-  updateFormKey: string | undefined;
+  updateFormKey?: string;
 }
 
 const JobStructureForm: React.FC<JobStructureFormProps> = ({
   label,
-  data,
-  onChange,
+  namePrefix,
+  index,
   onDelete,
-  errors,
   showDeleteButton = true,
   isKomisaris = false,
   hasDirekturUtama = false,
@@ -42,6 +35,14 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
   updateIdentity,
   updateFormKey,
 }) => {
+  const { control, setValue } = useFormContext<FormPenerbitValues>();
+
+  // pantau jabatan baris ini
+  const jabatanThisRow = useWatch({
+    control,
+    name: `${namePrefix}.${index}.jabatan` as const,
+  });
+
   return (
     <div className="w-full flex flex-col mt-2 p-3 rounded-md bg-gray-50 border">
       <div className="flex justify-between">
@@ -51,6 +52,7 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
           <button
             onClick={onDelete}
             className="bg-gray-200 px-2 rounded-md hover:bg-gray-200"
+            type="button"
           >
             <h4 className="font-semibold text-xs text-gray-500 hover:text-gray-700">
               Hapus
@@ -60,68 +62,98 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
       </div>
 
       <div className="mt-2 mb-2 w-full flex gap-2">
+        {/* Nama */}
         <div className="w-full">
           <p className="text-[11px] mb-1 font-semibold text-gray-500">Nama</p>
-          <TextField
-            placeholder="Nama"
-            value={data.nama}
-            className="flex-[1]"
-            onChange={(e) => onChange("nama", e.target.value)}
-            errorText={errors?.nama}
+          <Controller
+            control={control}
+            name={`${namePrefix}.${index}.nama` as const}
+            render={({ field, fieldState }) => (
+              <TextField
+                placeholder="Nama"
+                value={field.value ?? ""}
+                onChange={(e) => field.onChange(e.target.value)}
+                className="flex-[1]"
+                errorText={fieldState.error?.message}
+              />
+            )}
           />
         </div>
 
+        {/* Jabatan */}
         <div className="w-full">
           <p className="text-[11px] mb-1 font-semibold text-gray-500">
             Jabatan
           </p>
-          {isKomisaris ? (
-            <DropdownSelect
-              options={[
-                ...(!hasKomisarisUtama
-                  ? [{ label: "Komisaris Utama", value: "komisaris-utama" }]
-                  : []),
-                { label: "Komisaris", value: "komisaris" },
-              ]}
-              value={data.jabatan}
-              defaultValue="komisaris-utama"
-              onChange={(val) => {
-                onChange("jabatan", val);
-              }}
-              placeholder="Jabatan"
-              maxHeightDropdown="180px"
-              errorText={errors?.jabatan}
-            />
-          ) : (
-            <DropdownSelect
-              options={[
-                ...(!hasDirekturUtama
-                  ? [{ label: "Direktur Utama", value: "direktur-utama" }]
-                  : []),
-                { label: "Direktur", value: "direktur" },
-              ]}
-              value={data.jabatan}
-              defaultValue="direktur-utama"
-              onChange={(val) => {
-                onChange("jabatan", val);
-              }}
-              placeholder="Jabatan"
-              maxHeightDropdown="180px"
-              errorText={errors?.jabatan}
-            />
-          )}
+
+          <Controller
+            control={control}
+            name={`${namePrefix}.${index}.jabatan` as const}
+            defaultValue={isKomisaris ? "komisaris" : "direktur"}
+            render={({ field, fieldState }) => {
+              const isUtama =
+                (field.value ?? "") ===
+                (isKomisaris ? "komisaris-utama" : "direktur-utama");
+
+              const options = isKomisaris
+                ? [
+                    ...(!hasKomisarisUtama || isUtama
+                      ? [{ label: "Komisaris Utama", value: "komisaris-utama" }]
+                      : []),
+                    { label: "Komisaris", value: "komisaris" },
+                  ]
+                : [
+                    ...(!hasDirekturUtama || isUtama
+                      ? [{ label: "Direktur Utama", value: "direktur-utama" }]
+                      : []),
+                    { label: "Direktur", value: "direktur" },
+                  ];
+
+              return (
+                <Select
+                  options={options}
+                  value={
+                    options.find((opt) => opt.value === field.value) ?? null
+                  }
+                  onChange={(val) => field.onChange(val?.value)}
+                  placeholder="Jabatan"
+                  className="text-sm"
+                  styles={{
+                    control: (base) => ({
+                      ...base,
+                      minHeight: "36px",
+                      borderColor: fieldState.error ? "red" : base.borderColor,
+                    }),
+                  }}
+                  isClearable={false}
+                />
+              );
+            }}
+          />
         </div>
       </div>
 
+      {/* No KTP */}
       <div className="w-full">
         <p className="text-[11px] mb-1 font-semibold text-gray-500">No KTP</p>
-        <TextField
-          placeholder="No KTP"
-          value={data.noKTP}
-          type="number"
-          maxLength={16}
-          onChange={(e) => onChange("noKTP", e.target.value)}
-          errorText={errors?.noKTP}
+        <Controller
+          control={control}
+          name={`${namePrefix}.${index}.noKTP` as const}
+          render={({ field, fieldState }) => (
+            <TextField
+              placeholder="No KTP"
+              value={field.value ?? ""}
+              type="text"
+              maxLength={16}
+              onChange={(e) => {
+                const onlyDigits = e.target.value
+                  .replace(/\D/g, "")
+                  .slice(0, 16);
+                field.onChange(onlyDigits);
+              }}
+              errorText={fieldState.error?.message}
+            />
+          )}
         />
       </div>
 
@@ -130,31 +162,45 @@ const JobStructureForm: React.FC<JobStructureFormProps> = ({
         className="mt-2 mb-1"
       />
 
+      {/* Uploads */}
       <div className="flex gap-2">
         <UpdateRing
           identity={`${updateIdentity}-upload-ktp`}
           formKey={updateFormKey}
         >
-          <FileInput
-            fileName="Upload KTP"
-            placeholder="Upload KTP"
-            fileUrl={data.fileKTP}
-            onChange={(fileUrl) => onChange("fileKTP", fileUrl)}
-            errorText={errors?.fileKTP}
-            accept=".pdf,.jpg,.jpeg,.png,.heic,.heif"
+          <Controller
+            control={control}
+            name={`${namePrefix}.${index}.fileKTP` as const}
+            render={({ field, fieldState }) => (
+              <FileInput
+                fileName="Upload KTP"
+                placeholder="Upload KTP"
+                fileUrl={field.value ?? ""}
+                onChange={(fileUrl) => field.onChange(fileUrl)}
+                errorText={fieldState.error?.message}
+                accept=".pdf,.jpg,.jpeg,.png,.heic,.heif"
+              />
+            )}
           />
         </UpdateRing>
+
         <UpdateRing
           identity={`${updateIdentity}-upload-npwp`}
           formKey={updateFormKey}
         >
-          <FileInput
-            fileName="Upload NPWP"
-            placeholder="Upload NPWP"
-            fileUrl={data.fileNPWP}
-            onChange={(fileUrl) => onChange("fileNPWP", fileUrl)}
-            errorText={errors?.fileNPWP}
-            accept=".pdf,.jpg,.jpeg,.png,.heic,.heif"
+          <Controller
+            control={control}
+            name={`${namePrefix}.${index}.fileNPWP` as const}
+            render={({ field, fieldState }) => (
+              <FileInput
+                fileName="Upload NPWP"
+                placeholder="Upload NPWP"
+                fileUrl={field.value ?? ""}
+                onChange={(fileUrl) => field.onChange(fileUrl)}
+                errorText={fieldState.error?.message}
+                accept=".pdf,.jpg,.jpeg,.png,.heic,.heif"
+              />
+            )}
           />
         </UpdateRing>
       </div>

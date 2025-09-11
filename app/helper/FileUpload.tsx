@@ -1,11 +1,12 @@
 import { FaFileAlt } from "react-icons/fa";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useFileViewerModal } from "../hooks/useFileViewerModal";
+import SectionPoint from "../components/inputFormPenerbit/_component/SectionPoint";
 
 type FileUploadProps = {
   label: string;
   fileUrl?: string;
-  onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void> | void; // support async
   error?: string;
 };
 
@@ -17,40 +18,58 @@ export default function FileUpload({
 }: FileUploadProps) {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const { openFile } = useFileViewerModal();
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
+    setIsUploading(true);
+    try {
+      await onUpload(e);
+    } finally {
+      setIsUploading(false);
+      e.target.value = "";
+    }
+  };
 
   return (
     <div className="mb-4">
-      <p className="text-sm mb-1">
-        {label}
-        <span className="text-red-500 ml-1">*</span>
-      </p>
+      <SectionPoint text={label} className="mb-1" />
+
       <button
         type="button"
-        onClick={() => fileRef.current?.click()}
-        className="flex items-center w-56 bg-gray-800 text-white py-2 rounded-lg"
+        onClick={() => !isUploading && fileRef.current?.click()}
+        disabled={isUploading}
+        className={`flex items-center w-56 py-2 rounded-lg ${
+          isUploading
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-gray-800 text-white"
+        }`}
       >
-        <FaFileAlt size={20} className="mx-2" /> Upload Dokumen
+        <FaFileAlt size={20} className="mx-2" />
+        {isUploading ? "Mengunggah..." : "Upload Dokumen"}
       </button>
+
       <input
         type="file"
         ref={fileRef}
         accept="application/pdf"
         multiple
-        onChange={onUpload}
+        onChange={handleChange}
         className="hidden"
       />
+
       {fileUrl && (
         <button
           type="button"
           onClick={() => openFile(fileUrl)}
-          rel="noopener noreferrer"
           className="text-blue-600 underline text-sm mt-2 block"
         >
           Lihat Dokumen
         </button>
       )}
+
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-      <p className="text-xs text-gray-500">File maksimal berukuran 10mb</p>
+      <p className="text-xs text-gray-500">File maksimal berukuran 10MB</p>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import Transaction from "@/app/components/notif/transaction/Transaction";
 
 export const metadata: Metadata = {
-  title: "Transaction | CapBridge",
+  title: "Transaction | FuLusme",
   description: "Transaction",
 };
 

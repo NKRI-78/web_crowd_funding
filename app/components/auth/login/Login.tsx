@@ -9,6 +9,12 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { API_BACKEND } from "@/app/utils/constant";
+import Link from "next/link";
+
+const errorMessages: Record<string, string> = {
+  CREDENTIALS_IS_INCORRECT: "Password yang kamu masukkan salah.",
+  USER_NOT_FOUND: "Email salah atau belum terdaftar, cek kembali email Anda.",
+};
 
 const Login: React.FC = () => {
   const router = useRouter();
@@ -36,7 +42,7 @@ const Login: React.FC = () => {
         password,
       });
       const userData = response.data.data;
-      Cookies.set("user", JSON.stringify(response.data.data));
+      Cookies.set("user", JSON.stringify(response.data.data), { expires: 7 });
 
       if (!userData.enabled) {
         await Swal.fire({
@@ -82,12 +88,18 @@ const Login: React.FC = () => {
         showConfirmButton: false,
       });
 
-      router.push("/");
+      router.push("/dashboard");
     } catch (error: any) {
+      const rawMessage = error.response?.data?.message;
+
+      const message =
+        errorMessages[rawMessage as keyof typeof errorMessages] ??
+        "Terjadi kesalahan saat login. Silakan coba lagi.";
+
       Swal.fire({
         icon: "error",
         title: "Login Gagal",
-        text: error.response?.data?.message || "Terjadi kesalahan saat login.",
+        text: message,
       });
     } finally {
       setLoading(false);
@@ -97,17 +109,21 @@ const Login: React.FC = () => {
   return (
     <div className="w-full md:w-1/2 bg-white px-10 md:px-15 py-5 mx-auto">
       <div className="flex justify-between items-center mb-10">
-        <img src="/images/img.jpg" alt="CapBridge Logo" className="w-20 h-20" />
-        <a href="/">
-          <button className="text-[#321B87] font-bold text-sm">
+        <img
+          src="/images/logo-fulusme-vertical.png"
+          alt="FuLusme Logo"
+          className="h-10"
+        />
+        <Link href="/">
+          <button className="text-[#10565C] font-bold text-sm">
             &lt; Kembali Ke Beranda
           </button>
-        </a>
+        </Link>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
-        <div>
-          <label className="font-bold text-[#321B87] block mb-1">Email</label>
+        <div className="w-full">
+          <label className="font-bold text-[#10565C] block mb-1">Email</label>
           <input
             type="email"
             className="w-full p-3 bg-[#F1F5F9] rounded text-black"
@@ -116,8 +132,8 @@ const Login: React.FC = () => {
           />
         </div>
 
-        <div>
-          <label className="font-bold text-[#321B87] block mb-1">
+        <div className="w-full">
+          <label className="font-bold text-[#10565C] block mb-1">
             Kata Sandi
           </label>
           <div className="relative">
@@ -142,8 +158,8 @@ const Login: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full md:w-1/4 bg-[#321B87] text-white py-3 rounded-full font-bold transition ${
-              loading ? "opacity-60 cursor-not-allowed" : "hover:bg-[#2A1572]"
+            className={`w-full md:w-1/4 bg-[#10565C] text-white py-3 rounded-xl font-bold transition ${
+              loading ? "opacity-60 cursor-not-allowed" : "hover:bg-[#16EDFF]"
             }`}
           >
             {loading ? "Loading..." : "Masuk"}

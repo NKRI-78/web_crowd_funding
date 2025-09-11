@@ -32,12 +32,18 @@ export const sanitizeHtml = (html: string): string => {
   return DOMPurify.sanitize(html);
 };
 
-export const formatRupiah = (amount: number | string) => {
+export const formatRupiah = (value?: string | number): string => {
+  if (value === undefined || value === null) return "-";
+
+  const number = typeof value === "string" ? parseInt(value) : value;
+
+  if (isNaN(number)) return "-";
+
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
     minimumFractionDigits: 0,
-  }).format(Number(amount));
+  }).format(number);
 };
 
 export const formatInputRupiah = (value: string) => {
