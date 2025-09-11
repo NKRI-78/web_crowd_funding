@@ -9,10 +9,12 @@ import EmptyTransaction from "../InboxEmpty";
 import InboxCard from "../InboxCard";
 import Swal from "sweetalert2";
 import { getUser } from "@/app/lib/auth";
+import TransactionInvestorPage from "./TransactionInvestor";
 
 const Transaction = () => {
   // data hook
   const [transactions, setTransactions] = useState<InboxResponse[]>([]);
+  const [user, setUser] = useState<any>(null);
 
   // state hook
   const isOnline = useOnlineStatus();
@@ -88,7 +90,14 @@ const Transaction = () => {
     }
   };
 
-  return (
+  useEffect(() => {
+    const u = getUser();
+    setUser(u);
+  }, []);
+
+  return user?.role == "investor" ? (
+    <TransactionInvestorPage />
+  ) : (
     <>
       <div className="py-28 px-6 text-black">
         {transactions.length ? (

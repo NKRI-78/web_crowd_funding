@@ -26,6 +26,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Modal from "@/app/helper/Modal";
 import InputNominal from "../components/InputNominal";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import { fetchDashboardClient } from "@/redux/slices/dashboardSlice";
 
 type Props = {
   id: string;
@@ -45,6 +48,18 @@ const SukukClient = ({ id }: Props) => {
   const [role, setRole] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const {
+    data: quotaData,
+    loading: loadingDashboard,
+    error: errorDashboard,
+  } = useSelector((state: RootState) => state.dashboard);
+
+  const user = getUser();
+
+  useEffect(() => {
+    dispatch(fetchDashboardClient(user?.token ?? ""));
+  }, [dispatch]);
 
   useEffect(() => {
     const userCookie = getUser();
@@ -283,20 +298,31 @@ const SukukClient = ({ id }: Props) => {
 
                 {role !== "emiten" ? (
                   hydrated && userData !== null ? (
-                    <button
-                      onClick={() => setShowModal(true)}
-                      className="w-full bg-[#10565c] hover:bg-[#104348] text-white font-semibold py-2 rounded-md mt-4 cursor-pointer"
-                    >
-                      Beli Efek
-                    </button>
+                    quotaData?.verified_investor ? (
+                      <button
+                        onClick={() => setShowModal(true)}
+                        className="w-full bg-[#10565c] hover:bg-[#104348] text-white font-semibold py-2 rounded-md mt-4 cursor-pointer"
+                      >
+                        Beli Efek
+                      </button>
+                    ) : (
+                      <button
+                        disabled
+                        className="w-full bg-gray-300 text-white font-semibold py-2 rounded-md mt-4 cursor-not-allowed"
+                      >
+                        Akun Belum Terverifikasi
+                      </button>
+                    )
                   ) : (
-                    <button className="w-full bg-gray-300 text-white font-semibold py-2 rounded-md mt-4 cursor-not-allowed">
-                      Beli Efek
+                    <button
+                      disabled
+                      className="w-full bg-gray-300 text-white font-semibold py-2 rounded-md mt-4 cursor-not-allowed"
+                    >
+                      Harap login terlebih dahulu
                     </button>
                   )
-                ) : (
-                  <></>
-                )}
+                ) : null}
+
                 <p className="text-xs text-center mt-4">
                   Butuh Pertanyaan?{" "}
                   <a
@@ -382,7 +408,7 @@ const SukukClient = ({ id }: Props) => {
       >
         <InputNominal
           minValue={Number(project?.min_invest)}
-          quota={5000000}
+          quota={Number(quotaData?.summary.remaining_quota_idr) ?? 0}
           onConfirm={handleConfirm}
         />
       </Modal>
