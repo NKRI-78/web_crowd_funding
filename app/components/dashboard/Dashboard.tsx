@@ -64,7 +64,7 @@ export const Dashboard: React.FC = () => {
               },
             });
 
-            const projects = res.data.data ?? [];
+            const projects = (res.data.data ?? []) as Project[];
             setProjects(projects);
           } catch (error) {
             setProjects([]);

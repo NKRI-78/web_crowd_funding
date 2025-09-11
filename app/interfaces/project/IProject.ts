@@ -19,6 +19,8 @@ export interface Project {
   tingkat_bunga: string;
   capital: string;
   company_profile: string;
+  target_amount: number;
+  user_paid_amount: number;
   spk: string;
   loa: string;
   doc_prospect: string;
