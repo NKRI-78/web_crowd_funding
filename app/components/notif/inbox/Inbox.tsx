@@ -38,7 +38,6 @@ const Inbox = () => {
   }, [user?.token, dispatch]);
 
   // state hook
-  const isOnline = useOnlineStatus();
   const [dialogIsOpen, setOpenDialog] = useState<boolean>(false);
 
   const router = useRouter();
@@ -166,7 +165,9 @@ const Inbox = () => {
             if (selectedInbox.field_3 === "reupload-document") {
               if (updateKey) {
                 if (roleUser !== "investor") {
-                  router.push(`/form-penerbit?update=true&form=${updateKey}`);
+                  router.push(
+                    `/form-penerbit?update=true&form=${updateKey}&inbox-id=${selectedInbox.id}`
+                  );
                 } else {
                   if (updateKey === "slip-gaji") {
                     router.push(`/form-pemodal?update=true&form=slip-gaji`);

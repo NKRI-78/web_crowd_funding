@@ -22,6 +22,12 @@ export const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [investedProjects, setInvestedProjects] = useState<Project[]>([]);
 
+  console.log("has user ? ");
+  console.log(user !== null);
+  console.log(user);
+  console.log("user?.role");
+  console.log(user?.role);
+
   //* fetch data
   useEffect(() => {
     setLoading(true);
@@ -112,7 +118,7 @@ export const Dashboard: React.FC = () => {
                 investedProjects={investedProjects}
               />
             ) : user?.role === "user" ? (
-              <DashboardUser />
+              <DashboardUser user={user} />
             ) : (
               <></>
             )}

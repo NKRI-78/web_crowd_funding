@@ -636,7 +636,7 @@ const HomeV2: React.FC = () => {
       <Modal
         isOpen={showOtpModal}
         onClose={handleClose}
-        title={step === "otp" ? "Verifikasi OTP" : "Pilih Role"}
+        // title={step === "otp" ? "Verifikasi OTP" : "Pilih Role"}
       >
         {step === "register" && (
           <RegisterV2 onNext={() => setStep("otp")} onClose={handleClose} />

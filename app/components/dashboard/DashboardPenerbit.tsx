@@ -52,7 +52,7 @@ export const DashboardPenerbit: React.FC<Props> = ({ profile }) => {
                   title="Akun Berhasil Diverifikasi"
                   message="Selamat! Akun Anda telah berhasil diverifikasi. Sekarang Anda sudah bisa mulai membuat project pertama Anda."
                   buttonTitle="Buat Proyek"
-                  actionButton={() => {}}
+                  navigateToPath={"/dashboard/create-project"}
                 />
               ) : (
                 <PanelContent
@@ -67,7 +67,7 @@ export const DashboardPenerbit: React.FC<Props> = ({ profile }) => {
                 title="Lengkapi Data Perusahaan Anda"
                 message="Untuk menayangkan proyek, Anda perlu menyelesaikan proses registrasi data perusahaan terlebih dahulu. Silakan lengkapi segera untuk melanjutkan."
                 buttonTitle="Registrasi Perusahaan"
-                actionButton={() => {}}
+                navigateToPath={"/form-penerbit"}
               />
             )
           }

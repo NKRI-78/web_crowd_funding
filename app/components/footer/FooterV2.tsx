@@ -4,7 +4,7 @@ const Footer: React.FC = () => {
       <div className="container mx-auto px-6 md:px-20 grid grid-cols-1 md:grid-cols-5 gap-8">
         <div className="space-y-4">
           <img
-            src="/images/logo-fulusme.png"
+            src="/images/logo-fulusme-white.png"
             alt="FuLusme Logo"
             className="h-12"
           />

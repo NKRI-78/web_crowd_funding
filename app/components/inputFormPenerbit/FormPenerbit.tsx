@@ -186,48 +186,56 @@ const FormPenerbit: React.FC<Props> = ({
     }
   }, [isUpdate, profile]);
 
-  const handleRegisterCompany = async () => {
+  const handleRegisterCompany = async (
+    penerbitFormCache: FormPenerbitValues
+  ) => {
     try {
-      const draft = localStorage.getItem(FORM_PENERBIT_2_CACHE_KEY);
+      const draft = localStorage.getItem(FORM_PENERBIT_1_CACHE_KEY);
+      console.log(draft);
       const userData = getUser();
+
       if (!draft || !userData) return;
 
-      const draftParsed: IFormPublisher = JSON.parse(draft);
+      const publisherFormCache: IFormPublisher = JSON.parse(draft);
+
+      console.log(publisherFormCache);
 
       const payload = {
         role: "2",
-        company_name: draftParsed.company_name,
+        company_name: publisherFormCache.company_name,
         company_nib: "-",
-        company_nib_path: draftParsed.company_nib_path,
-        akta_pendirian: draftParsed.akta_pendirian,
-        akta_pendirian_path: draftParsed.akta_pendirian,
-        akta_perubahan_terahkir: draftParsed.akta_perubahan_terahkir_path,
-        akta_perubahan_terahkir_path: draftParsed.akta_perubahan_terahkir_path,
-        sk_kumham: draftParsed.sk_kumham_path,
-        sk_kumham_path: draftParsed.sk_kumham_path,
-        sk_kumham_terahkir: draftParsed.sk_kumham_terahkir,
+        company_nib_path: penerbitFormCache.company_nib_path,
+        akta_pendirian: penerbitFormCache.akta_pendirian,
+        akta_pendirian_path: penerbitFormCache.akta_pendirian,
+        akta_perubahan_terahkir: penerbitFormCache.akta_perubahan_terahkir_path,
+        akta_perubahan_terahkir_path:
+          penerbitFormCache.akta_perubahan_terahkir_path,
+        sk_kumham: penerbitFormCache.sk_kumham_path,
+        sk_kumham_path: penerbitFormCache.sk_kumham_path,
+        sk_kumham_terahkir: penerbitFormCache.sk_kumham_terahkir,
         // npwp: "-",
-        npwp_path: draftParsed.fileNpwp,
-        didirikan: draftParsed.establishedYear,
-        site: draftParsed.webCompany,
-        email: draftParsed.emailCompany,
+        npwp_path: penerbitFormCache.fileNpwp,
+        didirikan: publisherFormCache.establishedYear,
+        site: publisherFormCache.webCompany,
+        email: publisherFormCache.emailCompany,
         phone:
-          draftParsed.noPhoneCompany.kode + draftParsed.noPhoneCompany.nomor,
-        bank_name: draftParsed.namaBank,
-        bank_account: draftParsed.nomorRekening,
-        bank_owner: draftParsed.namaPemilik,
-        siup: draftParsed.siup,
-        tdp: draftParsed.tdp,
-        jenis_usaha: draftParsed.jenis_usaha,
-        jenis_perusahaan: draftParsed.companyType,
-        status_kantor: draftParsed.statusCompanys,
-        total_employees: String(draftParsed.total_employees),
-        laporan_keuangan_path: draftParsed.laporanKeuangan,
-        address: draftParsed.address,
-        rekening_koran_path: draftParsed.rekeningKoran,
+          publisherFormCache.noPhoneCompany.kode +
+          publisherFormCache.noPhoneCompany.nomor,
+        bank_name: publisherFormCache.namaBank,
+        bank_account: publisherFormCache.nomorRekening,
+        bank_owner: publisherFormCache.namaPemilik,
+        siup: penerbitFormCache.siup,
+        tdp: penerbitFormCache.tdp,
+        jenis_usaha: publisherFormCache.jenis_usaha,
+        jenis_perusahaan: publisherFormCache.companyType,
+        status_kantor: publisherFormCache.statusCompanys,
+        total_employees: String(penerbitFormCache.total_employees),
+        laporan_keuangan_path: penerbitFormCache.laporanKeuangan,
+        address: publisherFormCache.address,
+        rekening_koran_path: penerbitFormCache.rekeningKoran,
         directors:
-          draftParsed.direktur.length === 1
-            ? draftParsed.direktur.map((dir) => ({
+          penerbitFormCache.direktur.length === 1
+            ? penerbitFormCache.direktur.map((dir) => ({
                 title: "Direktur",
                 name: dir.nama,
                 position: "Direktur",
@@ -236,7 +244,7 @@ const FormPenerbit: React.FC<Props> = ({
                 npwp: "-",
                 npwp_path: dir.fileNPWP,
               }))
-            : draftParsed.direktur.map((dir) => ({
+            : penerbitFormCache.direktur.map((dir) => ({
                 title:
                   dir.jabatan === "direktur-utama"
                     ? "Direktur Utama"
@@ -251,7 +259,7 @@ const FormPenerbit: React.FC<Props> = ({
                 npwp: "-",
                 npwp_path: dir.fileNPWP,
               })),
-        komisaris: draftParsed.komisaris.map((kom) => ({
+        komisaris: penerbitFormCache.komisaris.map((kom) => ({
           title:
             kom.jabatan === "komisaris-utama" ? "Komisaris Utama" : "Komisaris",
           name: kom.nama,
@@ -286,6 +294,7 @@ const FormPenerbit: React.FC<Props> = ({
 
       onSubmidCallback();
     } catch (error: any) {
+      console.log(error);
       Swal.fire({
         icon: "error",
         title: "Kirim data gagal",
@@ -325,17 +334,35 @@ const FormPenerbit: React.FC<Props> = ({
       }
     }
 
-    onUpdateCallback({
-      val: getUpdateFieldValueBasedFormKey(values),
-      val_array: isSusunanManajemen
-        ? [{ id: idManajemen, val: valManajemen, type: isKTP ? "ktp" : "npwp" }]
-        : [],
+    const swalResult = await Swal.fire({
+      icon: "question",
+      title: "Konfirmasi Perubahan Data",
+      text: "Apakah Anda yakin dengan data yang Anda inputkan sudah benar? mohon cek kembali jika masih ragu.",
+      confirmButtonText: "Sudah Benar",
+      cancelButtonText: "Cek Kembali",
+      confirmButtonColor: "#13733b",
+      cancelButtonColor: "#eaeaea",
     });
+
+    if (swalResult.isConfirmed) {
+      onUpdateCallback({
+        val: getUpdateFieldValueBasedFormKey(values),
+        val_array: isSusunanManajemen
+          ? [
+              {
+                id: idManajemen,
+                val: valManajemen,
+                type: isKTP ? "ktp" : "npwp",
+              },
+            ]
+          : [],
+      });
+    }
   };
 
-  const onSubmit = handleSubmit(async (values) => {
+  const onSubmit = handleSubmit(async (values, e) => {
     if (isUpdate) return handleUpdateRegister(values);
-    return handleRegisterCompany();
+    return handleRegisterCompany(values);
   });
 
   useEffect(() => {

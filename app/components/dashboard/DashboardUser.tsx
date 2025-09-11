@@ -1,22 +1,66 @@
-import React from "react";
-import FormButton from "../inputFormPemodalPerusahaan/component/FormButton";
+import React, { useState } from "react";
+import { UserRound, UserRoundCheck } from "lucide-react";
+import { PanelContainer } from "./PanelContainer";
+import { PanelContent } from "./PanelContent";
+import Modal from "@/app/helper/Modal";
+import RegisterSelectRole from "../auth/register/RegisterSelectRole";
+import RegisterOtp from "../auth/register/RegisterOtp";
 
-const DashboardUser: React.FC = () => {
+const DashboardUser: React.FC<{
+  user: AuthDataResponse | null;
+}> = ({ user }) => {
+  const [step, setStep] = useState<"otp" | "role" | null>(null);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+
+  const handleClose = () => {
+    setShowOtpModal(false);
+  };
+
   return (
-    // <div className="shadow-md rounded-2xl bg-white w-full p-10 md:py-12 flex flex-col items-center text-center">
-    //   <div className="flex flex-col items-center max-w-md">
-    //     <div className="text-teal-700 mb-4">{icon}</div>
-    //     <h2 className="font-bold text-xl md:text-2xl text-black mb-2">
-    //       {title}
-    //     </h2>
-    //     <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-4">
-    //       {message}
-    //     </p>
+    <>
+      <PanelContainer clasName="flex flex-col items-center text-center">
+        {user?.enabled ? (
+          <PanelContent
+            icon={<UserRoundCheck className="w-16 h-16" />}
+            title="Peran Belum Dipilih"
+            renderMessage={() => (
+              <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-4">
+                Sebelum mulai menjelajahi aplikasi, yuk tentukan dulu peran yang
+                sesuai dengan tujuan Anda. Jika ingin menawarkan proyek
+                investasi, pilih sebagai{" "}
+                <span className="font-semibold text-[#2e2275]">Penerbit</span>.
+                Namun jika Anda ingin mencari peluang investasi dan menanamkan
+                modal, pilih sebagai{" "}
+                <span className="font-semibold text-[#2e2275]">Investor</span>.
+              </p>
+            )}
+            buttonTitle="Pilih Peran"
+            actionButton={() => {
+              setStep("role");
+              setShowOtpModal(true);
+            }}
+          />
+        ) : (
+          <PanelContent
+            icon={<UserRound className="w-16 h-16" />}
+            title="Akun Belum Terverifikasi"
+            message="Akun ini perlu diverifikasi terlebih dahulu. Silakan masukkan kode OTP yang telah kami kirimkan ke email Anda agar dapat menggunakan aplikasi secara penuh."
+            buttonTitle="Verifikasi Akun"
+            actionButton={() => {
+              setStep("otp");
+              setShowOtpModal(true);
+            }}
+          />
+        )}
+      </PanelContainer>
 
-    //     <FormButton onClick={() => {}}>{buttonTitle}</FormButton>
-    //   </div>
-    // </div>
-    <div>dashboard user</div>
+      <Modal isOpen={showOtpModal} onClose={handleClose}>
+        {step === "role" && <RegisterSelectRole onClose={handleClose} />}
+        {step === "otp" && (
+          <RegisterOtp onNext={() => setStep("role")} onClose={handleClose} />
+        )}
+      </Modal>
+    </>
   );
 };
 

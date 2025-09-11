@@ -264,10 +264,15 @@ const SukukClient = ({ id }: Props) => {
                   </button>
                   <button
                     className="bg-white text-xs text-black border px-4 py-2 rounded-md"
-                    onClick={() => {}}
+                    onClick={() => {
+                      if (project?.doc_prospect) {
+                        window.open(project.doc_prospect, "_blank");
+                      }
+                    }}
                   >
                     Prospektus
                   </button>
+                  s
                   <button
                     onClick={() => setShowLocationDialog(true)}
                     className="bg-white text-xs text-black border px-4 py-2 rounded-md"

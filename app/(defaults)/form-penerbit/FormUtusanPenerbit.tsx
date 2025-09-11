@@ -15,6 +15,7 @@ import UpdateRing from "@/app/components/inputFormPemodal/component/UpdateRing";
 import { ProfileUpdate } from "./IProfileUpdate";
 import { FORM_PIC_CACHE_KEY } from "./form-cache-key";
 import { UpdateFieldValue } from "./PenerbitParent";
+import { setCookie } from "@/app/helper/cookie";
 
 interface FormSchema {
   photo: string;
@@ -84,6 +85,7 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
   //* inject fullname to field
   // mendapatkan data user untuk didambil value fullname-nya kemudian di-inject kedalam localstorage
   useEffect(() => {
+    console.log(`has profile ${profile !== null}`);
     if (profile) {
       const fullnameFromRemote = profile.fullname;
 
@@ -149,6 +151,14 @@ const FormUtusanPenerbit: React.FC<FormUtusanPenerbitProps> = ({
               Authorization: `Bearer ${user.token}`,
             },
           }
+        );
+
+        setCookie(
+          "user",
+          JSON.stringify({
+            ...user,
+            role: "emiten",
+          } as AuthDataResponse)
         );
 
         await Swal.fire({

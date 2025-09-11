@@ -178,7 +178,7 @@ const NavbarV2: React.FC = () => {
     <>
       <Nav sticky={isSticky}>
         <NavLayout>
-          <NavLogo />
+          <NavLogo sticky={isSticky} />
 
           {hydrated && userData !== null ? (
             //
@@ -557,6 +557,9 @@ const NavbarV2: React.FC = () => {
         </NavLayout>
       </Nav>
 
+      <Modal isOpen={step === "register"} onClose={closeModal}>
+        <RegisterV2 onNext={() => setStep("otp")} onClose={closeModal} />
+      </Modal>
       <Modal isOpen={step === "otp"} onClose={closeModal}>
         <RegisterOtp onNext={() => setStep("role")} onClose={closeModal} />
       </Modal>
@@ -596,21 +599,15 @@ const NavLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 const NavLogo: React.FC<{ sticky?: boolean }> = ({ sticky }) => {
   return (
     <Link href={"/"}>
-      <div className="flex items-center gap-2">
-        <img
-          src={"/images/logo-fulusme.png"}
-          alt="FuLusme Logo"
-          className="h-8 w-8"
-        />
-
-        <span
-          className={`text-xl font-bold ${
-            sticky ? `text-[${PRIMARY_COLOR}]` : `text-[${ON_PRIMARY_COLOR}]`
-          }`}
-        >
-          FuLusme
-        </span>
-      </div>
+      <img
+        src={
+          sticky
+            ? "/images/logo-fulusme-vertical.png"
+            : "/images/logo-fulusme-vertical-white.png"
+        }
+        alt="FuLusme Logo"
+        className="h-9"
+      />
     </Link>
   );
 };

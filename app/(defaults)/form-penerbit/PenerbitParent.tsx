@@ -48,6 +48,7 @@ export default function MultiStepFormWrapper() {
   const searchParams = useSearchParams();
   const isUpdate = searchParams.get("update");
   const formKey = searchParams.get("form");
+  const inboxId = searchParams.get("inbox-id");
 
   const [userProfile, setUserProfile] = useState<ProfileUpdate | null>(null);
 
@@ -79,32 +80,30 @@ export default function MultiStepFormWrapper() {
     localStorage.setItem(FORM_INDEX_CACHE_KEY, `${formIndex}`);
   }, [formIndex]);
 
-  //* get data user ketika isUpdate
-  // get data user ketika dalam mode isUpdate, data user akan di-inject kedalam masing2 form
+  //* get data user
+  // get data user, data user akan di-inject kedalam masing2 form
   useEffect(() => {
-    if (isUpdate) {
-      const fetchUser = async () => {
-        try {
-          if (userCookie) {
-            const res = await axios(`${API_BACKEND}/api/v1/profile`, {
-              headers: {
-                Authorization: `Bearer ${userCookie.token}`,
-              },
-            });
+    const fetchUser = async () => {
+      try {
+        if (userCookie) {
+          const res = await axios(`${API_BACKEND}/api/v1/profile`, {
+            headers: {
+              Authorization: `Bearer ${userCookie.token}`,
+            },
+          });
 
-            console.log("update profile? " + isUpdate);
-            console.log("profile = ");
-            console.log(res.data["data"]);
+          console.log("update profile? " + isUpdate);
+          console.log("profile = ");
+          console.log(res.data["data"]);
 
-            setUserProfile({ ...res.data["data"], form_key: formKey });
-          }
-        } catch (error) {
-          console.log(error);
+          setUserProfile({ ...res.data["data"], form_key: formKey });
         }
-      };
-      fetchUser();
-    }
-  }, [isUpdate]);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const next = () => setFormIndex((prev) => prev + 1);
   const prev = () => setFormIndex((prev) => prev - 1);
@@ -116,11 +115,13 @@ export default function MultiStepFormWrapper() {
     const isSusunanManajemen = isKTP || isNPWP;
 
     const payload = {
-      user_id: userProfile?.id,
+      user_id: userProfile?.id ?? "-",
       // ...(formKey === "company-profile"
       //   ? { company_id: userProfile?.company.id }
       //   : { project_id: userProfile?.company.projects?.[0]?.id }),
-      project_id: userProfile?.company.projects?.[0]?.id,
+      inbox_id: inboxId ?? "-",
+      company_id: userProfile?.company.id ?? "-",
+      project_id: userProfile?.company.projects?.[0]?.id ?? "-",
       val: updateFieldValue.val,
       val_array: isSusunanManajemen ? updateFieldValue.val_array : [],
     };
