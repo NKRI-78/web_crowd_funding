@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { FileText } from "lucide-react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { compressImage } from "@/app/helper/CompressorImage";
+import CircularProgressIndicator from "../../CircularProgressIndicator";
 
 interface FileInputProps {
   fileName: string;
@@ -23,6 +24,8 @@ const FileInput: React.FC<FileInputProps> = ({
   accept,
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   function getFileNameFromUrl(url?: string | null): string | null {
     if (!url) return null;
@@ -57,7 +60,17 @@ const FileInput: React.FC<FileInputProps> = ({
     try {
       const res = await axios.post(
         `${API_BACKEND_MEDIA}/api/v1/media/upload`,
-        formData
+        formData,
+        {
+          onUploadProgress: (progress) => {
+            const total = progress.total ?? 1;
+            const percentCompleted = Math.round(
+              (progress.loaded * 100) / total
+            );
+            console.log("Progress:", percentCompleted, "%");
+            setUploadProgress(percentCompleted);
+          },
+        }
       );
 
       const url = res.data?.data?.path;
@@ -92,13 +105,26 @@ const FileInput: React.FC<FileInputProps> = ({
       >
         <FileText size={13} />
         {placeholder ?? "Upload Dokumen"}
-        <input
-          type="file"
-          className="hidden"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          accept={accept}
-        />
+        <div className="flex gap-x-4">
+          <input
+            type="file"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept={accept}
+          />
+        </div>
+        {uploadProgress !== 0 && uploadProgress <= 98 && (
+          <CircularProgressIndicator
+            progressValue={uploadProgress}
+            size={28}
+            styling={{
+              bgColor: "#374151",
+              stateColor: "#FFFFFF",
+              textColor: "#FFFFFF",
+            }}
+          />
+        )}
       </label>
 
       {fileUrl && (
