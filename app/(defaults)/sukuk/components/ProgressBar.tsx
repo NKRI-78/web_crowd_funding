@@ -1,18 +1,28 @@
 interface ProgressBarProps {
-  percentage: number;
-  maxWidth?: string; // contoh: "500px" atau "80%"
-  bgColor?: string; // contoh: "#f0f0f0" atau "red"
+  percentage: number; // bisa float, contoh 0.25
+  maxWidth?: string;
+  bgColor?: string;
+  precision?: number; // jumlah digit di belakang koma
 }
 
 const ProgressBar: React.FC<ProgressBarProps> = ({
   percentage,
-  maxWidth = "32rem", // default = 512px (max-w-lg)
-  bgColor = "white", // default = putih
+  maxWidth = "32rem",
+  bgColor = "white",
+  precision = 0, // default tetap bulat
 }) => {
   const safePercentage = Math.max(0, Math.min(percentage, 100));
 
   const labelWidthRem = 3;
   const labelLeft = `calc(${safePercentage}% - ${labelWidthRem / 2}rem)`;
+
+  // format label persentase
+  let labelText: string;
+  if (safePercentage > 0 && safePercentage < 1 && precision === 0) {
+    labelText = "<1%"; // biar ga tampil "0%"
+  } else {
+    labelText = safePercentage.toFixed(precision) + "%";
+  }
 
   return (
     <div
@@ -39,7 +49,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
           left: `min(max(${labelLeft}, 0rem), calc(100% - ${labelWidthRem}rem))`,
         }}
       >
-        {safePercentage}%
+        {labelText}
       </div>
     </div>
   );

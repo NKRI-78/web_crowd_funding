@@ -2,12 +2,20 @@ import ProgressBar from "@/app/(defaults)/sukuk/components/ProgressBar";
 import { Project } from "@/app/interfaces/project/IProject";
 import { formatRupiah } from "@/app/lib/utils";
 import { useRouter } from "next/navigation";
-import { FilledButton } from "../Button";
 
 export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
   const router = useRouter();
 
-  const isFinish = project.is_apbn ? "block" : "hidden";
+  console.log("project.user_paid_amount");
+  console.log(project.user_paid_amount);
+  console.log("project.target_amount");
+  console.log(project.target_amount);
+
+  const percentage = project.target_amount
+    ? (project.user_paid_amount / project.target_amount) * 100
+    : 0;
+
+  console.log(percentage);
 
   return (
     <div
@@ -41,12 +49,12 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
         </p>
 
         {/* title proyek */}
-        <p className="font-semibold text-2xl md:text-lg text-start text-white mb-2">
+        <p className="font-semibold text-lg text-start text-white mb-2 truncate">
           {project.title}
         </p>
 
         {/* progress bar */}
-        <ProgressBar percentage={50} />
+        <ProgressBar percentage={percentage} />
 
         {/* nilai penawaran */}
         <div className="w-full flex justify-between mt-3">
@@ -60,12 +68,6 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
         <div className="w-full flex justify-end mb-3 mt-2">
           <p className="text-white text-xs font-semibold">{`Tersisa ${project.remaining_days} hari lagi`}</p>
         </div>
-
-        {/* <div className="w-full flex justify-end">
-          <FilledButton className="bg-white px-3 py-1 rounded-[6px] text-black">
-            Investasi
-          </FilledButton>
-        </div> */}
       </div>
     </div>
   );

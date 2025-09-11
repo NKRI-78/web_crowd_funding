@@ -196,7 +196,7 @@ const NavbarV2: React.FC = () => {
                   Halo, {profile?.fullname}
                 </p>
                 {/* hanya muncul ketika ia suah register tapi belum memilih role */}
-                {userData && userData.role === "user" && step !== "role" && (
+                {/* {userData && userData.role === "user" && step !== "role" && (
                   <div className="hidden md:block">
                     <button
                       onClick={() => setStep("role")}
@@ -205,7 +205,7 @@ const NavbarV2: React.FC = () => {
                       Anda Belum Memilih Peran
                     </button>
                   </div>
-                )}
+                )} */}
 
                 <NotifIcon
                   badgeCount={badgeCount}
@@ -247,7 +247,7 @@ const NavbarV2: React.FC = () => {
                 {/* menu */}
                 <ul className="flex flex-col gap-6 text-white text-base font-semibold pt-16">
                   {/* hanya muncul ketika user belum memilih role */}
-                  {userData && userData.role === "user" && step !== "role" && (
+                  {/* {userData && userData.role === "user" && step !== "role" && (
                     <div className="block md:hidden">
                       <button
                         onClick={() => setStep("role")}
@@ -256,7 +256,7 @@ const NavbarV2: React.FC = () => {
                         Anda Belum Memilih Peran
                       </button>
                     </div>
-                  )}
+                  )} */}
 
                   <li onClick={toggleMenu}>
                     <Link
