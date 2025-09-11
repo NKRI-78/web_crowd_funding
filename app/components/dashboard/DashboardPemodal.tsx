@@ -6,11 +6,13 @@ import { Project } from "@/app/interfaces/project/IProject";
 import { User } from "@/app/interfaces/user/IUser";
 import { ProjectCard } from "../project/ProjectCard";
 import GridView from "../GridView";
+import { Portfolio } from "@/app/interfaces/portfolio/IPortfolio";
+import PortfolioCard from "../portfolio/PortfolioCard";
 
 interface Props {
   profile: User | null;
   projects: Project[];
-  investedProjects: Project[];
+  investedProjects: Portfolio[];
 }
 
 const DashboardPemodal: React.FC<Props> = ({
@@ -18,6 +20,8 @@ const DashboardPemodal: React.FC<Props> = ({
   projects,
   investedProjects,
 }) => {
+  console.log("investedProjects.length");
+  console.log(investedProjects.length);
   return (
     <div className="space-y-4">
       {/* panel container */}
@@ -40,9 +44,9 @@ const DashboardPemodal: React.FC<Props> = ({
             items={investedProjects}
             gapClass="gap-4"
             breakpointCols={{ sm: 2, md: 3, lg: 4 }}
-            itemKey={(p) => p.id}
+            itemKey={(p) => p.project_uid}
             renderItem={(p) => {
-              return <ProjectCard project={p} />;
+              return <PortfolioCard data={p} />;
             }}
           />
         </PanelContainer>

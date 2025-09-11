@@ -1,6 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { getUser } from "@/app/lib/auth";
+import { fetchDashboardClient } from "@/redux/slices/dashboardSlice";
+import { AppDispatch, RootState } from "@/redux/store";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 interface InputNominalProps {
   label?: string;
@@ -23,6 +27,22 @@ export default function InputNominal({
   const [loading, setLoading] = useState(false);
   const [checked, setChecked] = useState(false);
 
+  const dispatch = useDispatch<AppDispatch>();
+  const { data: dashboardData } = useSelector(
+    (state: RootState) => state.dashboard
+  );
+
+  const user = getUser();
+
+  useEffect(() => {
+    if (user?.token) {
+      dispatch(fetchDashboardClient(user.token));
+    }
+  }, [dispatch]);
+
+  // ✅ Cek apakah user sudah punya Rekening Efek
+  const rekEfek = dashboardData?.rek_efek === true;
+
   // format angka ke Rupiah style (1.000.000)
   const formatRupiah = (num: string) => {
     if (!num) return "";
@@ -38,7 +58,8 @@ export default function InputNominal({
 
     if (minValue > 0 && numeric < minValue) {
       setError(`Minimal investasi Rp${minValue.toLocaleString("id-ID")}`);
-    } else if (quota && numeric > quota) {
+    } else if (!rekEfek && quota && numeric > quota) {
+      // ✅ hanya validasi quota kalau rek_efek = false
       setError(`Maksimal investasi Rp${quota.toLocaleString("id-ID")} (kuota)`);
     } else {
       setError(null);
@@ -60,16 +81,8 @@ export default function InputNominal({
   };
 
   // progress bar calculation
-  const percent = quota ? Math.min((numericValue / quota) * 100, 100) : 0;
-
-  // 🔍 Debugging state
-  console.log({
-    value,
-    numericValue,
-    error,
-    checked,
-    loading,
-  });
+  const percent =
+    !rekEfek && quota ? Math.min((numericValue / quota) * 100, 100) : 0;
 
   return (
     <div className="w-full p-5 space-y-4">
@@ -78,12 +91,12 @@ export default function InputNominal({
           {label}
         </label>
       )}
+
+      {/* Input Nominal */}
       <div className="relative">
-        {/* Prefix Rp */}
         <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-700 font-semibold">
           Rp
         </span>
-
         <input
           type="text"
           inputMode="numeric"
@@ -95,10 +108,11 @@ export default function InputNominal({
           onChange={handleChange}
         />
       </div>
+
       {error && <p className="text-sm text-red-500">{error}</p>}
 
       {/* Kuota Info */}
-      {quota && (
+      {!rekEfek && quota && (
         <div className="space-y-2">
           <span className="block text-sm font-semibold text-gray-800">
             Kuota Investasi
@@ -119,6 +133,12 @@ export default function InputNominal({
             />
           </div>
         </div>
+      )}
+
+      {rekEfek && (
+        <p className="text-sm text-green-600 font-medium">
+          Rekening Efek terverifikasi — investasi tanpa batas kuota.
+        </p>
       )}
 
       {/* Disclaimer */}

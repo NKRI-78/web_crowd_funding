@@ -11,6 +11,7 @@ import { DashboardPenerbit } from "./DashboardPenerbit";
 import { Project } from "@/app/interfaces/project/IProject";
 import { User } from "@/app/interfaces/user/IUser";
 import CircularProgressIndicator from "../CircularProgressIndicator";
+import { Portfolio } from "@/app/interfaces/portfolio/IPortfolio";
 
 export const Dashboard: React.FC = () => {
   const user = getUser();
@@ -20,7 +21,7 @@ export const Dashboard: React.FC = () => {
   const [profile, setProfile] = useState<User | null>(null);
 
   const [projects, setProjects] = useState<Project[]>([]);
-  const [investedProjects, setInvestedProjects] = useState<Project[]>([]);
+  const [investedProjects, setInvestedProjects] = useState<Portfolio[]>([]);
 
   console.log("has user ? ");
   console.log(user !== null);
@@ -86,7 +87,10 @@ export const Dashboard: React.FC = () => {
               }
             );
 
-            const projects = res.data.data ?? [];
+            console.log("res.data.data.portfolio");
+            console.log(res.data.data.portfolio);
+
+            const projects = res.data.data.portfolio ?? [];
             setInvestedProjects(projects);
           } catch (error) {
             setInvestedProjects([]);

@@ -1,13 +1,7 @@
 "use server";
 
+import { InboxResponse } from "@/app/components/notif/inbox-interface";
 import { API_BACKEND } from "@/app/utils/constant";
-
-export interface InboxResponse {
-  id: number;
-  type: string;
-  status: string;
-  // tambahkan field lain sesuai API kamu
-}
 
 export async function fetchInboxAction(
   token: string

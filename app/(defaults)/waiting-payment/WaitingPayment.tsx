@@ -285,15 +285,17 @@ const WaitingPayment = () => {
 
             {/* Badge Status */}
             <div className="flex justify-center">
-              {statusLoading && !expired && (
+              {statusLoading ? (
                 <span className="px-4 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium flex items-center gap-2">
-                  Loading
+                  Harap Tunggu...
                 </span>
-              )}
-              {waitingPayment.payment_status === "PENDING" && !expired && (
-                <span className="px-4 py-1 rounded-full bg-yellow-100 text-yellow-700 text-sm font-medium flex items-center gap-2">
-                  <Clock size={16} /> Menunggu Pembayaran
-                </span>
+              ) : (
+                waitingPayment.payment_status === "PENDING" &&
+                !expired && (
+                  <span className="px-4 py-1 rounded-full bg-yellow-100 text-yellow-700 text-sm font-medium flex items-center gap-2">
+                    <Clock size={16} /> Menunggu Pembayaran
+                  </span>
+                )
               )}
               {waitingPayment.payment_status === "PAID" && (
                 <span className="px-4 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium flex items-center gap-2">
@@ -454,6 +456,15 @@ const WaitingPayment = () => {
           paid={150000000}
           reserved={20000000}
         /> */}
+
+        <div className="text-center">
+          <Link
+            href="/transaction"
+            className="inline-block px-6 py-3 rounded-lg bg-[#10565C] text-white font-semibold shadow"
+          >
+            Lihat Pesanan
+          </Link>
+        </div>
       </motion.div>
     </div>
   );

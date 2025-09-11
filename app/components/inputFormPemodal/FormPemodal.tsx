@@ -12,6 +12,7 @@ import ComponentDataPribadi from "./informasiPribadi/DataPribadi";
 import ComponentDataPekerjaan from "./informasiPekerjaan/DataPekerjaan";
 import { API_BACKEND } from "@/app/utils/constant";
 import FileViewerModal from "@/app/(defaults)/viewer/components/FilePriviewModal";
+import { setCookie } from "@/app/helper/cookie";
 
 export const pemodalKeys: string[] = ["ktp-upload", "npwp-upload"];
 
@@ -981,6 +982,8 @@ const FormPemodal: React.FC = () => {
         );
 
         console.log("Payload akan dikirim:", payload);
+
+        // setCookie("user", "  ");
       } else {
         function mapFormToDataType(form: string | null): {
           dataType: string;
