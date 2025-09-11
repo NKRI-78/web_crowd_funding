@@ -12,25 +12,25 @@ export default function RegisterSelectRole({
 
   const handleSelectRole = async (role: number, subRole?: string) => {
     try {
-      const userCookie = Cookies.get("user");
+      // const userCookie = Cookies.get("user");
 
-      if (userCookie) {
-        const user = JSON.parse(userCookie);
+      // if (userCookie) {
+      //   const user = JSON.parse(userCookie);
 
-        const updatedUser = {
-          ...user,
-          role:
-            role === 2
-              ? "emiten"
-              : role === 9
-              ? "investor company"
-              : "investor",
-          subRole: subRole || undefined,
-          enabled: true,
-        };
+      //   const updatedUser = {
+      //     ...user,
+      //     role:
+      //       role === 2
+      //         ? "emiten"
+      //         : role === 9
+      //         ? "investor company"
+      //         : "investor",
+      //     subRole: subRole || undefined,
+      //     enabled: true,
+      //   };
 
-        Cookies.set("user", JSON.stringify(updatedUser));
-      }
+      //   Cookies.set("user", JSON.stringify(updatedUser));
+      // }
 
       onClose?.();
 

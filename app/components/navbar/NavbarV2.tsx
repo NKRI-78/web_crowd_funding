@@ -28,6 +28,7 @@ import { fetchInboxAction } from "@/actions/fetchInbox";
 import { fetchInboxClient } from "@/app/lib/fetchInbox";
 import { fetchInboxThunk, updateInboxes } from "@/redux/slices/inboxSlice";
 import { API_BACKEND } from "@/app/utils/constant";
+import { setBadge } from "@/redux/slices/badgeSlice";
 
 const PRIMARY_COLOR = "#10565C";
 const ON_PRIMARY_COLOR = "#FFFFFF";
@@ -71,7 +72,16 @@ const NavbarV2: React.FC = () => {
     });
 
     socket.on("inbox-update", async () => {
-      await dispatch(fetchInboxThunk(user?.token ?? "-"));
+      console.log("Test");
+      const inboxes = await dispatch(fetchInboxThunk(user?.token ?? "-"));
+
+      dispatch(
+        setBadge(
+          Array.isArray(inboxes?.payload)
+            ? inboxes.payload.filter((inbox) => !inbox.is_read).length
+            : 0
+        )
+      );
     });
 
     return () => {
@@ -119,6 +129,24 @@ const NavbarV2: React.FC = () => {
     }
   }, [userData]);
 
+  const fetchAndUpdateBadge = async () => {
+    if (user?.token) {
+      const inboxes = await dispatch(fetchInboxThunk(user?.token));
+
+      dispatch(
+        setBadge(
+          Array.isArray(inboxes?.payload)
+            ? inboxes.payload.filter((inbox) => !inbox.is_read).length
+            : 0
+        )
+      );
+    }
+  };
+
+  useEffect(() => {
+    fetchAndUpdateBadge();
+  }, [user?.token, dispatch]);
+
   //* remove cookie & cache data
   const removeData = () => {
     //* penerbit
@@ -150,7 +178,7 @@ const NavbarV2: React.FC = () => {
     <>
       <Nav sticky={isSticky}>
         <NavLayout>
-          <NavLogo />
+          <NavLogo sticky={isSticky} />
 
           {hydrated && userData !== null ? (
             //
@@ -529,6 +557,9 @@ const NavbarV2: React.FC = () => {
         </NavLayout>
       </Nav>
 
+      <Modal isOpen={step === "register"} onClose={closeModal}>
+        <RegisterV2 onNext={() => setStep("otp")} onClose={closeModal} />
+      </Modal>
       <Modal isOpen={step === "otp"} onClose={closeModal}>
         <RegisterOtp onNext={() => setStep("role")} onClose={closeModal} />
       </Modal>
@@ -568,21 +599,15 @@ const NavLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 const NavLogo: React.FC<{ sticky?: boolean }> = ({ sticky }) => {
   return (
     <Link href={"/"}>
-      <div className="flex items-center gap-2">
-        <img
-          src={"/images/logo-fulusme.png"}
-          alt="FuLusme Logo"
-          className="h-8 w-8"
-        />
-
-        <span
-          className={`text-xl font-bold ${
-            sticky ? `text-[${PRIMARY_COLOR}]` : `text-[${ON_PRIMARY_COLOR}]`
-          }`}
-        >
-          FuLusme
-        </span>
-      </div>
+      <img
+        src={
+          sticky
+            ? "/images/logo-fulusme-vertical.png"
+            : "/images/logo-fulusme-vertical-white.png"
+        }
+        alt="FuLusme Logo"
+        className="h-9"
+      />
     </Link>
   );
 };
@@ -620,3 +645,6 @@ const DrawerButton: React.FC<{
 };
 
 export default NavbarV2;
+function getUserToken() {
+  throw new Error("Function not implemented.");
+}

@@ -264,10 +264,15 @@ const SukukClient = ({ id }: Props) => {
                   </button>
                   <button
                     className="bg-white text-xs text-black border px-4 py-2 rounded-md"
-                    onClick={() => {}}
+                    onClick={() => {
+                      if (project?.doc_prospect) {
+                        window.open(project.doc_prospect, "_blank");
+                      }
+                    }}
                   >
                     Prospektus
                   </button>
+                  s
                   <button
                     onClick={() => setShowLocationDialog(true)}
                     className="bg-white text-xs text-black border px-4 py-2 rounded-md"
@@ -292,25 +297,18 @@ const SukukClient = ({ id }: Props) => {
                 ) : (
                   <></>
                 )}
-
                 <p className="text-xs text-center mt-4">
                   Butuh Pertanyaan?{" "}
-                  <a href="#" className="text-blue-600 font-semibold">
+                  <a
+                    href="https://wa.me/6282138820134"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 font-semibold"
+                  >
                     Hubungi Kami
                   </a>
                 </p>
               </div>
-              <p className="text-xs text-center mt-4">
-                Butuh Pertanyaan?{" "}
-                <a
-                  href="https://wa.me/6282138820134"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 font-semibold"
-                >
-                  Hubungi Kami
-                </a>
-              </p>
             </div>
           </div>
         )}

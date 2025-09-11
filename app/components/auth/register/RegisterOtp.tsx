@@ -1,4 +1,4 @@
-import { getCookie } from "@app/helper/cookie";
+import { getCookie, setCookie } from "@app/helper/cookie";
 import { API_BACKEND } from "@app/utils/constant";
 import axios from "axios";
 import React, { useState } from "react";
@@ -69,7 +69,8 @@ export default function RegisterOtp({
       );
 
       const result: AuthResponse = response.data;
-      localStorage.setItem("user", JSON.stringify(result.data));
+      setCookie("user", JSON.stringify(result.data));
+      // localStorage.setItem("user", JSON.stringify(result.data));
 
       setLoading(false);
       Swal.fire({

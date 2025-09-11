@@ -109,19 +109,11 @@ const Login: React.FC = () => {
   return (
     <div className="w-full md:w-1/2 bg-white px-10 md:px-15 py-5 mx-auto">
       <div className="flex justify-between items-center mb-10">
-        <div className="flex items-center gap-2">
-          <img
-            src="/images/logo-fulusme.png"
-            alt="FuLusme Logo"
-            className="w-12 h-12"
-          />
-          <span
-            className={`text-xl font-bold
-              text-[#00798a]`}
-          >
-            FuLusme
-          </span>
-        </div>
+        <img
+          src="/images/logo-fulusme-vertical.png"
+          alt="FuLusme Logo"
+          className="h-10"
+        />
         <Link href="/">
           <button className="text-[#10565C] font-bold text-sm">
             &lt; Kembali Ke Beranda
@@ -130,7 +122,7 @@ const Login: React.FC = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
-        <div>
+        <div className="w-full">
           <label className="font-bold text-[#10565C] block mb-1">Email</label>
           <input
             type="email"
@@ -140,7 +132,7 @@ const Login: React.FC = () => {
           />
         </div>
 
-        <div>
+        <div className="w-full">
           <label className="font-bold text-[#10565C] block mb-1">
             Kata Sandi
           </label>
