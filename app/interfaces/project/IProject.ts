@@ -15,6 +15,7 @@ export interface Project {
   jangka_waktu: string;
   location: ProjectLocation;
   jumlah_minimal: number;
+  investor_paid: number;
   doc: ProjectDocument;
   tingkat_bunga: string;
   capital: string;

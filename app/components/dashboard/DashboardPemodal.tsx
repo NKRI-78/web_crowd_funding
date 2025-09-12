@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { PanelContainer } from "./PanelContainer";
 import { PanelContent } from "./PanelContent";
-import { UserSearch } from "lucide-react";
+import { UserRoundCheck, UserSearch } from "lucide-react";
 import { Project } from "@/app/interfaces/project/IProject";
 import { User } from "@/app/interfaces/user/IUser";
 import { ProjectCard } from "../project/ProjectCard";
@@ -20,20 +20,24 @@ const DashboardPemodal: React.FC<Props> = ({
   projects,
   investedProjects,
 }) => {
-  console.log("investedProjects.length");
-  console.log(investedProjects.length);
   return (
     <div className="space-y-4">
       {/* panel container */}
-      {!profile?.verify_investor && (
-        <PanelContainer clasName="flex flex-col items-center text-center">
+      <PanelContainer clasName="flex flex-col items-center text-center">
+        {!profile?.verify_investor ? (
           <PanelContent
             icon={<UserSearch className="w-16 h-16" />}
             title="Akun Anda Sedang Direview"
             message="Tim kami sedang memproses data akun Anda. Mohon tunggu hingga selesai. Setelah itu, Anda dapat mulai berinvestasi."
           />
-        </PanelContainer>
-      )}
+        ) : (
+          <PanelContent
+            icon={<UserRoundCheck className="w-16 h-16" />}
+            title="Akun Berhasil Diverifikasi"
+            message="Selamat! Akun Anda telah berhasil diverifikasi. Kini Anda sudah dapat mengakses seluruh fitur dan melakukan investasi pada proyek yang tersedia."
+          />
+        )}
+      </PanelContainer>
 
       {/* proyek yang ia invest */}
       {investedProjects.length > 0 && (

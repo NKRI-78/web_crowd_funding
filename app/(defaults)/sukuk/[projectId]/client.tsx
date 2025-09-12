@@ -55,6 +55,13 @@ const SukukClient = ({ id }: Props) => {
     error: errorDashboard,
   } = useSelector((state: RootState) => state.dashboard);
 
+  var percentage: number = 0;
+  if (project != null) {
+    percentage = project.target_amount
+      ? (project.user_paid_amount / project.target_amount) * 100
+      : 0;
+  }
+
   const user = getUser();
 
   useEffect(() => {
@@ -209,13 +216,24 @@ const SukukClient = ({ id }: Props) => {
                 </div>
 
                 <div className="bg-white p-2 rounded-lg space-y-1 mt-3">
-                  <ProgressBar percentage={50} bgColor="#f3f4f6" />
+                  <ProgressBar percentage={percentage} bgColor="#f3f4f6" />
 
                   <div className="flex flex-wrap justify-between">
                     <p className="text-xs font-bold text-[#677AB9]">
                       Dana Terkumpul
                     </p>
-                    <p className="text-xs font-bold">{formatRupiah("a")}</p>
+                    <p className="text-xs font-bold">
+                      {formatRupiah(project?.user_paid_amount)}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap justify-between">
+                    <p className="text-xs font-bold text-[#677AB9]">
+                      Total Investor
+                    </p>
+                    <p className="text-xs font-bold">
+                      {project?.investor_paid} investor
+                    </p>
                   </div>
 
                   <div className="flex flex-wrap justify-between">
@@ -287,7 +305,6 @@ const SukukClient = ({ id }: Props) => {
                   >
                     Prospektus
                   </button>
-                  s
                   <button
                     onClick={() => setShowLocationDialog(true)}
                     className="bg-white text-xs text-black border px-4 py-2 rounded-md"

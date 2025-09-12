@@ -3,6 +3,7 @@ import { InboxResponse } from "./inbox-interface";
 import GeneralDialog from "../GeneralDialog";
 
 interface Props {
+  role?: string;
   inbox?: InboxResponse | null;
   onAccept: () => void;
   onReject: () => void;
@@ -11,6 +12,7 @@ interface Props {
 
 const InboxModalDialog: React.FC<Props> = ({
   inbox,
+  role,
   onAccept,
   onClose,
   onReject,
@@ -31,32 +33,12 @@ const InboxModalDialog: React.FC<Props> = ({
           <Button variant="rejected" onClick={onReject}>
             Batal
           </Button>
-          <Button onClick={onAccept}>Update</Button>
+          <Button onClick={onAccept}>
+            {role === "investor" ? "Lihat Dokumen" : "Update"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </GeneralDialog>
-  );
-};
-
-const Dialog: React.FC<{
-  open: boolean;
-  onOpenChange?: (open: boolean) => void;
-  children: React.ReactNode;
-}> = ({ open, onOpenChange, children }) => {
-  if (!open) return null;
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-      onClick={() => onOpenChange?.(false)}
-    >
-      <div
-        className="bg-white w-full max-w-md rounded-md shadow-lg"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {children}
-      </div>
-    </div>
   );
 };
 

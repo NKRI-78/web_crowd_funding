@@ -1,11 +1,12 @@
 import { Project } from "@/app/interfaces/project/IProject";
-import FormButton from "../inputFormPenerbit/_component/FormButton";
-import { FilledButton, OutlinedButton } from "../Button";
+import { FilledButton } from "../Button";
+import { useRouter } from "next/navigation";
 
 //* project card
 export const ProjectCard: React.FC<{
   project: Project;
 }> = ({ project }) => {
+  const router = useRouter();
   const medias = project.medias ?? project.media;
 
   return (
@@ -43,7 +44,12 @@ export const ProjectCard: React.FC<{
       </div>
 
       <div className="w-full flex justify-end pr-4 pb-4">
-        <FilledButton className="bg-white px-3 py-1 rounded-[6px] text-black text-sm">
+        <FilledButton
+          onClick={() => {
+            router.push(`/sukuk/${project.id}`);
+          }}
+          className="bg-white px-3 py-1 rounded-[6px] text-black text-sm"
+        >
           Lihat Detail
         </FilledButton>
       </div>
