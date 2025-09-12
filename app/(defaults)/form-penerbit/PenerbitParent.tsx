@@ -199,7 +199,7 @@ export default function MultiStepFormWrapper() {
                 onUpdateDataRegister(val);
               }}
               onSubmidCallback={() => {
-                router.back();
+                router.push("/dashboard");
               }}
             />
           )}

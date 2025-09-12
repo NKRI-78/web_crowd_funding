@@ -1,8 +1,11 @@
+import Tippy from "@tippyjs/react";
+
 interface ProgressBarProps {
   percentage: number; // bisa float, contoh 0.25
   maxWidth?: string;
   bgColor?: string;
   precision?: number; // jumlah digit di belakang koma
+  tippyContent?: React.ReactNode;
 }
 
 const ProgressBar: React.FC<ProgressBarProps> = ({
@@ -10,6 +13,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   maxWidth = "32rem",
   bgColor = "white",
   precision = 0, // default tetap bulat
+  tippyContent,
 }) => {
   const safePercentage = Math.max(0, Math.min(percentage, 100));
 
@@ -43,14 +47,16 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       ></div>
 
       {/* Label Hijau */}
-      <div
-        className="absolute top-1/2 -translate-y-1/2 transform bg-gradient-to-r from-[#039BA9] to-[#2abc9f] text-white text-xs border border-white font-bold px-2 py-[1px] rounded-full shadow transition-all duration-300 whitespace-nowrap"
-        style={{
-          left: `min(max(${labelLeft}, 0rem), calc(100% - ${labelWidthRem}rem))`,
-        }}
-      >
-        {labelText}
-      </div>
+      <Tippy content={tippyContent ?? `${percentage.toFixed(3)}%`}>
+        <div
+          className="absolute top-1/2 -translate-y-1/2 transform bg-gradient-to-r from-[#039BA9] to-[#2abc9f] text-white text-xs border border-white font-bold px-2 py-[1px] rounded-full shadow transition-all duration-300 whitespace-nowrap cursor-pointer"
+          style={{
+            left: `min(max(${labelLeft}, 0rem), calc(100% - ${labelWidthRem}rem))`,
+          }}
+        >
+          {labelText}
+        </div>
+      </Tippy>
     </div>
   );
 };
