@@ -61,7 +61,9 @@ export const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
           <p className="text-white text-sm font-semibold">
             {formatRupiah(project?.capital)}
           </p>
-          <p className="text-white/40 text-xs">10 Investor</p>
+          <p className="text-white/40 text-xs">
+            {project.investor_paid} investor
+          </p>
         </div>
 
         {/* sisa masa tayang */}

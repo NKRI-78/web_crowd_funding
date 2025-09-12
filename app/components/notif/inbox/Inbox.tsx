@@ -160,6 +160,7 @@ const Inbox = () => {
 
       {dialogIsOpen && user?.token && selectedInbox && (
         <InboxModalDialog
+          role={user.role}
           inbox={selectedInbox}
           onAccept={() => {
             if (selectedInbox.field_3 === "reupload-document") {

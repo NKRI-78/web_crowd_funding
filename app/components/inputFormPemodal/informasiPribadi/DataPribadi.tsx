@@ -491,7 +491,9 @@ const ComponentDataPribadi: React.FC<Props> = ({
   useEffect(() => {
     const fetchBank = async () => {
       try {
-        const response = await axios.get(`http://157.245.193.49:9879/v1/bank`);
+        const response = await axios.get(
+          `https://api.gateway.langitdigital78.com/v1/bank`
+        );
         setBank(response.data.data.beneficiary_banks);
       } catch (error) {
         console.error("Gagal ambil bank:", error);
