@@ -6,74 +6,54 @@ import { Project } from "@/app/interfaces/project/IProject";
 import { User } from "@/app/interfaces/user/IUser";
 import { ProjectCard } from "../project/ProjectCard";
 import GridView from "../GridView";
-import { Portfolio } from "@/app/interfaces/portfolio/IPortfolio";
 import PortfolioCard from "../portfolio/PortfolioCard";
+import { InvestorData } from "@/app/interfaces/investor/IInvestorData";
+import { formatRupiah } from "@/app/lib/utils";
 
 interface Props {
   profile: User | null;
   projects: Project[];
-  investedProjects: Portfolio[];
+  data: InvestorData | null;
 }
 
-const DashboardPemodal: React.FC<Props> = ({
-  profile,
-  projects,
-  investedProjects,
-}) => {
+const DashboardPemodal: React.FC<Props> = ({ profile, projects, data }) => {
   return (
     <div className="space-y-4">
       {/* panel container */}
-      <PanelContainer clasName="flex flex-col items-center text-center">
-        {!profile?.verify_investor ? (
+      {!profile?.verify_investor && (
+        <PanelContainer clasName="flex flex-col items-center text-center">
           <PanelContent
             icon={<UserSearch className="w-16 h-16" />}
             title="Akun Anda Sedang Direview"
             message="Tim kami sedang memproses data akun Anda. Mohon tunggu hingga selesai. Setelah itu, Anda dapat mulai berinvestasi."
           />
-        ) : (
-          <PanelContent
-            icon={<UserRoundCheck className="w-16 h-16" />}
-            title="Akun Berhasil Diverifikasi"
-            message="Selamat! Akun Anda telah berhasil diverifikasi. Kini Anda sudah dapat mengakses seluruh fitur dan melakukan investasi pada proyek yang tersedia."
-          />
-        )}
+        </PanelContainer>
+      )}
+      {/* <PanelContent
+          icon={<UserRoundCheck className="w-16 h-16" />}
+          title="Akun Berhasil Diverifikasi"
+          message="Selamat! Akun Anda telah berhasil diverifikasi. Kini Anda sudah dapat mengakses seluruh fitur dan melakukan investasi pada proyek yang tersedia."
+        /> */}
+
+      <PanelContainer clasName="space-y-4">
+        <div>
+          <p className="font-semibold text-gray-500 text-lg">
+            Limit Investasi Saya
+          </p>
+          <p className="font-black text-black text-2xl">
+            {formatRupiah(data?.summary.remaining_quota_idr)}
+          </p>
+        </div>
+
+        <div>
+          <p className="font-semibold text-gray-500 text-lg">
+            Total Pengeluaran
+          </p>
+          <p className="font-black text-black text-2xl">
+            {formatRupiah(data?.summary.paid_all_time_idr)}
+          </p>
+        </div>
       </PanelContainer>
-
-      {/* proyek yang ia invest */}
-      {investedProjects.length > 0 && (
-        <PanelContainer>
-          <h2 className="font-bold text-lg text-black mb-5">Portfolio</h2>
-
-          <GridView
-            items={investedProjects}
-            gapClass="gap-4"
-            breakpointCols={{ sm: 2, md: 3, lg: 4 }}
-            itemKey={(p) => p.project_uid}
-            renderItem={(p) => {
-              return <PortfolioCard data={p} />;
-            }}
-          />
-        </PanelContainer>
-      )}
-
-      {/* semua proyek yang sedang berjalan */}
-      {projects.length > 0 && (
-        <PanelContainer>
-          <h2 className="font-bold text-lg text-black mb-5">
-            Proyek yang sedang berjalan
-          </h2>
-
-          <GridView
-            items={projects}
-            gapClass="gap-4"
-            breakpointCols={{ sm: 2, md: 3, lg: 4 }}
-            itemKey={(p) => p.id}
-            renderItem={(p) => {
-              return <ProjectCard project={p} />;
-            }}
-          />
-        </PanelContainer>
-      )}
     </div>
   );
 };

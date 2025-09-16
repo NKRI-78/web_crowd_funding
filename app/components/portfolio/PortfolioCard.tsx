@@ -1,12 +1,16 @@
-import { Portfolio } from "@/app/interfaces/portfolio/IPortfolio";
+import { InvestorDataPortfolio } from "@/app/interfaces/investor/IInvestorData";
 import { formatRupiah } from "@/app/lib/utils";
 import React from "react";
 
 interface PortfolioCardProps {
-  data: Portfolio;
+  data: InvestorDataPortfolio;
+  hasRekeningEfek?: boolean;
 }
 
-const PortfolioCard: React.FC<PortfolioCardProps> = ({ data }) => {
+const PortfolioCard: React.FC<PortfolioCardProps> = ({
+  data,
+  hasRekeningEfek = false,
+}) => {
   const {
     project_title,
     target_amount_idr,
@@ -29,9 +33,11 @@ const PortfolioCard: React.FC<PortfolioCardProps> = ({ data }) => {
         </p>
       </div>
 
-      <p className="text-xs text-gray-600 mt-1">
-        Alokasi {percentage}% dari total limit yang Anda punya
-      </p>
+      {!hasRekeningEfek && (
+        <p className="text-xs text-gray-600 mt-1">
+          Alokasi {percentage}% dari total limit yang Anda punya
+        </p>
+      )}
 
       {/* User Investment */}
       <div className="mt-4 flex justify-between items-center">

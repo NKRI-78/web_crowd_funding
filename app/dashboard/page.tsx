@@ -2,6 +2,7 @@ import React from "react";
 
 import type { Metadata } from "next";
 import { Dashboard } from "../components/dashboard/Dashboard";
+import DashboardLayout from "../components/dashboard/DashboardLayout";
 
 export const metadata: Metadata = {
   title: "Dashboard | FuLusme",
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 const DashboardPage: React.FC = () => {
-  return <Dashboard />;
+  return <DashboardLayout />;
 };
 
 export default DashboardPage;

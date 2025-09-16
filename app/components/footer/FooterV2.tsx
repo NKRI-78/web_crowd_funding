@@ -1,6 +1,6 @@
 const Footer: React.FC = () => {
   return (
-    <footer className="w-full bg-[#10565C] relative text-white py-12 rounded-t-5xl">
+    <footer className="w-full bg-[#10565C] relative text-white py-12">
       <div className="container mx-auto px-6 md:px-20 grid grid-cols-1 md:grid-cols-5 gap-8">
         <div className="space-y-4">
           <img
