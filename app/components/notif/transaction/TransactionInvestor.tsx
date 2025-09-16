@@ -50,7 +50,7 @@ export default function TransactionInvestorPage() {
   }, [page, user]);
 
   return (
-    <div className="py-28 px-6">
+    <div className="">
       {/* <h1 className="text-2xl font-bold mb-6 flex items-center gap-2 text-black">
         <FileText className="w-6 h-6 text-black" />
         Daftar Transaksi

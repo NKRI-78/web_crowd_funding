@@ -1,11 +1,12 @@
 import React from "react";
+import Transaction from "../notif/transaction/Transaction";
 
 interface Props {
   h?: string;
 }
 
 const DashboardTransaction: React.FC<Props> = (props) => {
-  return <div></div>;
+  return <Transaction />;
 };
 
 export default DashboardTransaction;
