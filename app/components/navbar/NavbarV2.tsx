@@ -324,15 +324,7 @@ const NavbarV2: React.FC = () => {
                   </li>
 
                   <li className="md:hidden">
-                    <p
-                      className={
-                        pathname == ""
-                          ? `text-[${ACTIVE_COLOR}]`
-                          : `text-[${ON_PRIMARY_COLOR}]`
-                      }
-                    >
-                      Halo, {profile?.fullname}
-                    </p>
+                    <p className="text-white">Halo, {profile?.fullname}</p>
                   </li>
 
                   <li

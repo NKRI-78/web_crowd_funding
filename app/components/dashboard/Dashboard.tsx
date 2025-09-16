@@ -11,7 +11,7 @@ import { DashboardPenerbit } from "./DashboardPenerbit";
 import { Project } from "@/app/interfaces/project/IProject";
 import { User } from "@/app/interfaces/user/IUser";
 import CircularProgressIndicator from "../CircularProgressIndicator";
-import { Portfolio } from "@/app/interfaces/portfolio/IPortfolio";
+import { InvestorData } from "@/app/interfaces/investor/IInvestorData";
 
 export const Dashboard: React.FC = () => {
   const user = getUser();
@@ -21,7 +21,7 @@ export const Dashboard: React.FC = () => {
   const [profile, setProfile] = useState<User | null>(null);
 
   const [projects, setProjects] = useState<Project[]>([]);
-  const [investedProjects, setInvestedProjects] = useState<Portfolio[]>([]);
+  const [investorData, setInvestorData] = useState<InvestorData | null>(null);
 
   //* fetch data
   useEffect(() => {
@@ -70,7 +70,7 @@ export const Dashboard: React.FC = () => {
             setProjects([]);
           }
         };
-        const fetchInvestedProjects = async () => {
+        const fetchInvestorData = async () => {
           try {
             const res = await axios.get(
               `${API_BACKEND}/api/v1/dashboard/investor`,
@@ -81,17 +81,14 @@ export const Dashboard: React.FC = () => {
               }
             );
 
-            console.log("res.data.data.portfolio");
-            console.log(res.data.data.portfolio);
-
-            const projects = res.data.data.portfolio ?? [];
-            setInvestedProjects(projects);
+            const data = res.data.data;
+            setInvestorData(data);
           } catch (error) {
-            setInvestedProjects([]);
+            setInvestorData(null);
           }
         };
         fetchProjects();
-        fetchInvestedProjects();
+        fetchInvestorData();
       }
     }
   }, []);
@@ -113,7 +110,7 @@ export const Dashboard: React.FC = () => {
               <DashboardPemodal
                 profile={profile}
                 projects={projects}
-                investedProjects={investedProjects}
+                data={investorData}
               />
             ) : user?.role === "user" ? (
               <DashboardUser user={user} />
