@@ -99,7 +99,7 @@ const Transaction = () => {
     <TransactionInvestorPage />
   ) : (
     <>
-      <div className="py-28 px-6 text-black">
+      <div className="text-black">
         {transactions.length ? (
           <div className="flex flex-col gap-y-3">
             {transactions?.map((transaction) => {
