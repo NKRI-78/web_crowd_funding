@@ -28,8 +28,18 @@ export default function TransactionInvestorView() {
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const [showModal, setShowModal] = useState(false); // modal utama
-  const [showConfirm, setShowConfirm] = useState(false); // modal konfirmasi sebelum refund
+  const [agreeRefundStatement, setAgreeRefundStatement] =
+    useState<boolean>(false);
+
+  // modal untuk dialog [ SEBELUM ] proses refund
+  const [showRefundStatement, setShowRefundStatement] = useState(false);
+  // modal untuk konfirmasi dialog [ SEBELUM ] proses refund
+  const [showConfirmRefundStatement, setShowConfirmRefundStatement] =
+    useState(false);
+
+  // modal untuk konfirmasi dialog [ SETELAH ] proses refund
+  const [showRefundExlanation, setShowRefundExplanation] = useState(false);
+
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(
     null
   );
@@ -163,7 +173,7 @@ export default function TransactionInvestorView() {
                                 setSelectedPaymentId(
                                   trx.payment_id.toString() ?? ""
                                 );
-                                setShowConfirm(true);
+                                setShowRefundStatement(true);
                               }}
                             >
                               <RotateCcw className="w-4 h-4" />
@@ -175,14 +185,9 @@ export default function TransactionInvestorView() {
                         {trx.payment_status === "REFUNDED" && (
                           <>
                             <button
-                              onClick={() =>
-                                Swal.fire({
-                                  icon: "info",
-                                  title: "Pengembalian Dana Diproses",
-                                  text: "Dana akan masuk ke rekening Anda dalam waktu maksimal 3 hari kerja.",
-                                  confirmButtonColor: "#10565C",
-                                })
-                              }
+                              onClick={() => {
+                                setShowRefundExplanation(true);
+                              }}
                               className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition duration-200"
                             >
                               <Eye className="w-4 h-4" />
@@ -200,40 +205,48 @@ export default function TransactionInvestorView() {
 
           {/* Modal Konfirmasi */}
           <GeneralDialog
-            isOpen={showConfirm}
+            isOpen={showRefundStatement}
             onClose={() => {
-              setShowConfirm(false);
+              setShowRefundStatement(false);
               setSelectedPaymentId(null);
+              setAgreeRefundStatement(false);
             }}
           >
-            <div className="w-full max-w-md">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-800">Konfirmasi</h2>
-                <button
-                  className="text-gray-600 hover:text-gray-800"
-                  onClick={() => {
-                    setShowConfirm(false);
-                    setSelectedPaymentId(null);
-                  }}
-                >
-                  <X size={20} />
-                </button>
-              </div>
-              <p className="text-sm text-gray-700 mb-6">
-                Apakah Anda yakin ingin mengajukan{" "}
-                <span className="font-semibold">pengembalian dana</span>?<br />
-                Proses ini membutuhkan waktu maksimal{" "}
-                <span className="font-semibold text-gray-900">
-                  3 hari kerja
-                </span>
-                . Setelah dana diproses, silakan periksa rekening Anda secara
-                berkala.
+            <div className="w-full">
+              <p className="text-2xl font-bold text-center mb-6">
+                Ajukan Pengembalian Dana
               </p>
+
+              <p className="text-gray-700 text-center mb-6">
+                Pengajuan pengembalian dana hanya dapat dilakukan dalam waktu
+                maksimal 2 jam setelah transaksi berhasil. Setelah pengajuan
+                diterima, proses verifikasi dan pengembalian dana oleh admin
+                memerlukan waktu hingga 3×24 jam.
+              </p>
+
+              <div className="flex items-center gap-2 mb-4">
+                <input
+                  type="checkbox"
+                  id="agreeRefundStatement"
+                  checked={agreeRefundStatement}
+                  onChange={(e) => setAgreeRefundStatement(e.target.checked)}
+                  className="mt-1"
+                />
+                <label
+                  htmlFor="agreeRefundStatement"
+                  className="text-xs text-gray-700"
+                >
+                  Saya telah membaca dan menyetujui ketentuan pengembalian dana
+                  di atas.
+                </label>
+              </div>
+
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => {
-                    setShowConfirm(false);
+                    setShowRefundStatement(false);
                     setSelectedPaymentId(null);
+                    setAgreeRefundStatement(false);
                   }}
                   className="px-4 py-2 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300"
                 >
@@ -241,12 +254,18 @@ export default function TransactionInvestorView() {
                 </button>
                 <button
                   onClick={() => {
-                    setShowConfirm(false);
-                    setShowModal(true);
+                    setShowRefundStatement(false);
+                    setShowConfirmRefundStatement(true);
+                    setAgreeRefundStatement(false);
                   }}
-                  className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700"
+                  disabled={!agreeRefundStatement}
+                  className={`px-4 py-2 rounded-md text-white ${
+                    agreeRefundStatement
+                      ? "bg-green-600 hover:bg-green-700"
+                      : "bg-gray-400 cursor-not-allowed"
+                  }`}
                 >
-                  Ya, Ajukan
+                  Ajukan
                 </button>
               </div>
             </div>
@@ -254,48 +273,29 @@ export default function TransactionInvestorView() {
 
           {/* Modal Proses Refund */}
           <GeneralDialog
-            isOpen={showModal}
+            isOpen={showConfirmRefundStatement}
             onClose={() => {
               if (!processing) {
-                setShowModal(false);
+                setShowConfirmRefundStatement(false);
                 setSelectedPaymentId(null);
               }
             }}
           >
-            <div className="w-full max-w-md">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-800">
-                  Pengembalian Dana
-                </h2>
-                <button
-                  className="text-gray-600 hover:text-gray-800"
-                  onClick={() => {
-                    if (!processing) {
-                      setShowModal(false);
-                      setSelectedPaymentId(null);
-                    }
-                  }}
-                >
-                  <X size={20} />
-                </button>
-              </div>
+            <div className="w-full">
+              <p className="text-2xl font-bold text-center mb-6">
+                Konfirmasi Pengajuan Pengembalian Dana
+              </p>
 
-              <div className="space-y-4 text-gray-700 text-sm leading-relaxed">
-                <p>
-                  Permintaan pengembalian dana Anda sedang diproses. Mohon
-                  tunggu hingga maksimal{" "}
-                  <span className="font-semibold text-gray-900">
-                    3 hari kerja
-                  </span>
-                  . Setelah selesai, silakan periksa rekening Anda.
-                </p>
-              </div>
+              <p className="text-gray-700 text-center mb-6">
+                Setelah diajukan, permintaan pengembalian dana akan diproses
+                oleh admin. Apakah Anda yakin ingin melanjutkan?
+              </p>
 
               <div className="mt-6 flex justify-end gap-2">
                 <button
                   disabled={processing}
                   onClick={() => {
-                    setShowModal(false);
+                    setShowConfirmRefundStatement(false);
                     setSelectedPaymentId(null);
                   }}
                   className="px-4 py-2 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
@@ -308,16 +308,13 @@ export default function TransactionInvestorView() {
                     if (!selectedPaymentId) return;
                     setProcessing(true);
                     try {
-                      const data = await refundPayment(
-                        selectedPaymentId,
-                        user?.token ?? ""
-                      );
+                      await refundPayment(selectedPaymentId, user?.token ?? "");
 
                       Swal.fire({
                         icon: "success",
-                        title: "Pengembalian Dana Diajukan",
+                        title: "Pengembalian Dana Berhasil Diajukan",
                         text: "Proses membutuhkan waktu maksimal 3 hari kerja. Silakan periksa rekening Anda secara berkala.",
-                        confirmButtonColor: "#16a34a", // hijau
+                        confirmButtonColor: "#13733b",
                       });
                     } catch (err: any) {
                       Swal.fire({
@@ -330,7 +327,7 @@ export default function TransactionInvestorView() {
                       });
                     } finally {
                       setProcessing(false);
-                      setShowModal(false);
+                      setShowConfirmRefundStatement(false);
                       setSelectedPaymentId(null);
                     }
                   }}
@@ -338,6 +335,37 @@ export default function TransactionInvestorView() {
                 >
                   {processing && <Loader2 className="w-4 h-4 animate-spin" />}
                   {processing ? "Memproses..." : "Konfirmasi Pengembalian"}
+                </button>
+              </div>
+            </div>
+          </GeneralDialog>
+
+          {/* DIALOG PENJELASAN SETELAH USER BERHASIL REFUND */}
+          <GeneralDialog
+            isOpen={showRefundExlanation}
+            onClose={() => {
+              setShowRefundExplanation(false);
+            }}
+          >
+            <div className="w-full">
+              <p className="text-2xl font-bold text-center mb-6">
+                Pengembalian Dana Sedang Diproses
+              </p>
+
+              <p className="text-gray-700 text-center mb-6">
+                Permintaan pengembalian dana Anda sedang diproses oleh tim kami.
+                Proses verifikasi dan pengembalian dana memerlukan waktu
+                maksimal 3×24 jam. Mohon cek rekening Anda secara berkala.
+              </p>
+
+              <div className="flex justify-center gap-2">
+                <button
+                  onClick={async () => {
+                    setShowRefundExplanation(false);
+                  }}
+                  className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
+                >
+                  Mengerti
                 </button>
               </div>
             </div>

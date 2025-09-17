@@ -52,7 +52,7 @@ export const DashboardPenerbit: React.FC<Props> = ({ profile }) => {
                   title="Akun Berhasil Diverifikasi"
                   message="Selamat! Akun Anda telah berhasil diverifikasi. Sekarang Anda sudah bisa mulai membuat project pertama Anda."
                   buttonTitle="Buat Proyek"
-                  navigateToPath={"/dashboard/create-project"}
+                  navigateToPath={"/create-project"}
                 />
               ) : (
                 <PanelContent
