@@ -257,7 +257,7 @@ const SidebarMenuItem: React.FC<{
 
         {expand && <p className="text-sm">{title}</p>}
 
-        {badgeCount && badgeCount > 0 && (
+        {badgeCount !== undefined && badgeCount > 0 && (
           <div className="absolute flex items-center justify-center right-4 h-5 w-5 rounded-full bg-red-100">
             <p className="text-xs font-semibold text-red-500">{badgeCount}</p>
           </div>
