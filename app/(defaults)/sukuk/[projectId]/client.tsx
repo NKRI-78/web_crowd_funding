@@ -360,59 +360,60 @@ const SukukClient = ({ id }: Props) => {
         />
 
         <GeneralDialog
-          isOpen={showLocationDialog}
+          isOpen={showModal}
           onClose={() => {
-            setShowLocationDialog(false);
+            setShowModal(false);
           }}
         >
-          <div>
-            {/* header */}
+          <div className="w-full max-w-md">
+            {/* Header */}
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-700">Lokasi</h2>
+              <h2 className="text-lg font-bold text-gray-800">
+                Pengembalian Dana
+              </h2>
               <button
                 className="text-gray-600 hover:text-gray-800"
-                onClick={() => {
-                  setShowLocationDialog(false);
-                }}
+                onClick={() => setShowModal(false)}
               >
                 <X size={20} />
               </button>
             </div>
 
-            {/* content */}
-            <div className="bg-gray-100 rounded-lg px-4 py-2 flex justify-between items-center text-sm mb-3">
-              <input
-                type="text"
-                value={project?.location.url}
-                readOnly
-                className="bg-transparent w-full outline-none text-black"
-              />
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(project?.location.url ?? "-");
-                  Swal.fire({
-                    toast: true,
-                    position: "top-end",
-                    title: "Link berhasil disalin.",
-                    allowEscapeKey: true,
-                    timer: 2000,
-                    showConfirmButton: false,
-                  });
-                }}
-                className="ml-2 px-2 py-1 text-sm bg-[#13733b] hover:bg-[#106332] text-white rounded"
-              >
-                Salin
-              </button>
+            {/* Content */}
+            <div className="space-y-3 text-gray-700 text-sm leading-relaxed">
+              <p>Permintaan pengembalian dana Anda sedang diproses.</p>
+              <p>
+                Dana akan dikembalikan ke rekening tujuan dalam waktu maksimal
+                <span className="font-semibold text-gray-900">
+                  {" "}
+                  3 hari kerja
+                </span>
+                .
+              </p>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 text-yellow-700 text-xs">
+                <strong>Catatan:</strong> Hari kerja dihitung tanpa akhir pekan
+                dan hari libur nasional.
+              </div>
             </div>
 
-            <a
-              href={project?.location.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block text-center text-sm w-full bg-[#13733b] hover:bg-[#106332] text-white py-2 rounded-lg font-semibold"
-            >
-              Go To Maps
-            </a>
+            {/* Footer */}
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300"
+              >
+                Tutup
+              </button>
+              <button
+                onClick={() => {
+                  // Aksi misalnya redirect ke halaman riwayat
+                  setShowModal(false);
+                }}
+                className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700"
+              >
+                Lihat Riwayat
+              </button>
+            </div>
           </div>
         </GeneralDialog>
       </section>
