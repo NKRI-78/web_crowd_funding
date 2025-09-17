@@ -93,6 +93,7 @@ const PaymentMethod = ({ id }: { id: string }) => {
         payment_method: selectedMethod.id.toString(),
         amount: baseAmount,
       };
+      console.log(payload);
 
       const userData = getUser();
       if (userData) {

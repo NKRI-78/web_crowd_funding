@@ -107,7 +107,7 @@ const Inbox = () => {
   //* navigate to additional document
   const navigateToAddAditionalDocument = (projectId: string | undefined) => {
     if (projectId) {
-      router.push(`/dashboard/dokumen-pelengkap?projectId=${projectId}`);
+      router.push(`/dokumen-pelengkap?projectId=${projectId}`);
     }
   };
 
