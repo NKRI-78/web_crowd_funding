@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Building, UserSearch } from "lucide-react";
 import { Stepper } from "react-form-stepper";
-import { PanelContent } from "./PanelContent";
-import { PanelContainer } from "./PanelContainer";
-import { ProjectCard } from "./PenerbitProjectCard";
+import { PanelContent } from "../PanelContent";
+import { PanelContainer } from "../PanelContainer";
 import { User } from "@/app/interfaces/user/IUser";
-import GridView from "../GridView";
+import GridView from "../../GridView";
+import { ProjectCard } from "../PenerbitProjectCard";
 
 interface Props {
   profile: User | null;
 }
 
 export const DashboardPenerbit: React.FC<Props> = ({ profile }) => {
-  const projects = profile?.company.projects ?? [];
-
   const [currentStep, setCurrentStep] = useState(0);
+
+  const projects = profile?.company.projects ?? [];
 
   const statusSteps: Record<string, number> = {
     UNVERIFIED: 0,
@@ -115,7 +115,7 @@ export const DashboardPenerbit: React.FC<Props> = ({ profile }) => {
         </div>
       </PanelContainer>
 
-      {profile!.company.projects?.length > 0 && (
+      {projects.length > 0 && (
         <PanelContainer>
           <h2 className="font-bold text-lg text-black mb-5">Proyek Saya</h2>
 

@@ -55,6 +55,11 @@ export default function ClientLayout({
             pathname === "/form-pemodal-perusahaan" ||
             pathname === "/dashboard/create-project" ||
             pathname === "/dashboard/dokumen-pelengkap" ||
+            pathname === "/dashboard/main" ||
+            pathname === "/dashboard/project-draft" ||
+            pathname === "/dashboard/portfolio" ||
+            pathname === "/dashboard/emiten-transaction" ||
+            pathname === "/dashboard/investor-transaction" ||
             pathname === "/inbox" ||
             pathname === "/form-data-pemodal-perusahaan" ||
             pathname === "/broadcast" ||

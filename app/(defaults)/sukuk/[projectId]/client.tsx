@@ -265,9 +265,7 @@ const SukukClient = ({ id }: Props) => {
                   </div>
                   <div className="flex flex-wrap my-2 justify-between">
                     <p className="text-xs text-[#677AB9]"> Jumlah Unit </p>
-                    <p className="text-xs">
-                      {formatRupiah(project?.jumlah_unit)}
-                    </p>
+                    <p className="text-xs">{`${project?.jumlah_unit} Unit`}</p>
                   </div>
                   <div className="flex flex-wrap my-2 justify-between">
                     <p className="text-xs text-[#677AB9]"> Total Unit (Rp) </p>
