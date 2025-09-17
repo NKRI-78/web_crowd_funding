@@ -63,7 +63,6 @@ export default function TransactionInvestorView() {
     }
   }, [page, user]);
 
-  // 🔧 fungsi refund
   const refundPayment = async (paymentId: string, token: string) => {
     try {
       const res = await axios.post(
@@ -169,6 +168,25 @@ export default function TransactionInvestorView() {
                             >
                               <RotateCcw className="w-4 h-4" />
                               Kembalikan Dana
+                            </button>
+                          </>
+                        )}
+
+                        {trx.payment_status === "REFUNDED" && (
+                          <>
+                            <button
+                              onClick={() =>
+                                Swal.fire({
+                                  icon: "info",
+                                  title: "Pengembalian Dana Diproses",
+                                  text: "Dana akan masuk ke rekening Anda dalam waktu maksimal 3 hari kerja.",
+                                  confirmButtonColor: "#10565C",
+                                })
+                              }
+                              className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition duration-200"
+                            >
+                              <Eye className="w-4 h-4" />
+                              Information
                             </button>
                           </>
                         )}
