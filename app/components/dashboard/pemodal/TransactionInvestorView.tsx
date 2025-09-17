@@ -1,20 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  User,
-  Building2,
-  FileText,
-  Calendar,
-  CircleDollarSign,
-  Inbox,
-} from "lucide-react";
+import { Building2, Calendar, CircleDollarSign, Inbox } from "lucide-react";
 import { getTransactions } from "@/actions/fetchTransaction";
 import { TransactionItem } from "@/app/interfaces/transaction/transaction";
 import Pagination from "../../pagination/pagination";
 import { getUser } from "@/app/lib/auth";
 
-export default function TransactionInvestorPage() {
+export default function TransactionInvestorView() {
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [page, setPage] = useState(1);
   const [limit] = useState(5);

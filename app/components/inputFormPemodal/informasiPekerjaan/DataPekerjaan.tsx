@@ -994,10 +994,15 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
             Pernyataan Kebenaran Data
           </h3>
           <p className="text-sm text-gray-500 mb-3">
-            Dengan ini saya menyatakan bahwa seluruh data yang saya berikan
-            adalah benar, akurat, dan sesuai dengan kondisi saat ini. Saya
-            bertanggung jawab penuh atas data yang diinput dan memahami bahwa
-            ketidaksesuaian informasi dapat berdampak pada proses investasi.
+            Dengan ini menyatakan dan menjamin kepada Penyelenggara bahwa dana
+            yang disetorkan oleh Pemodal ke dalam rekening virtual account
+            dan/atau escrow account Penyelenggara, dan yang digunakan oleh
+            Pemodal untuk melakukan pembelian Efek bersifat ekuitas maupun Efek
+            bersifat utang pada Penerbit merupakan milik Pemodal sendiri dan
+            diperoleh dengan cara yang tidak bertentangan dengan hukum dan
+            perundang-undangan yang berlaku di Negara Kesatuan Republik
+            Indonesia, termasuk namun tidak terbatas pada tindak pidana korupsi,
+            tindak pidana pencucian uang dan pendanaan terorisme
           </p>
           <label className="flex items-center gap-2 cursor-pointer">
             <input

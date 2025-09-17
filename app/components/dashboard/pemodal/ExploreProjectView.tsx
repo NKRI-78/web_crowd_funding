@@ -1,14 +1,14 @@
 import { Project } from "@/app/interfaces/project/IProject";
 import React from "react";
-import { PanelContainer } from "./PanelContainer";
-import GridView from "../GridView";
-import { ProjectCard } from "../project/ProjectCard";
+import { PanelContainer } from "../PanelContainer";
+import GridView from "../../GridView";
+import { ProjectCard } from "../../project/ProjectCard";
 
 interface Props {
   projects: Project[];
 }
 
-const DashboardExploreProject: React.FC<Props> = ({ projects }) => {
+const ExploreProjectView: React.FC<Props> = ({ projects }) => {
   return (
     <PanelContainer>
       <h2 className="font-bold text-lg text-black mb-5">
@@ -28,4 +28,4 @@ const DashboardExploreProject: React.FC<Props> = ({ projects }) => {
   );
 };
 
-export default DashboardExploreProject;
+export default ExploreProjectView;

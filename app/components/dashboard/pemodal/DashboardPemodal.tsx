@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
-import { PanelContainer } from "./PanelContainer";
-import { PanelContent } from "./PanelContent";
+import { PanelContainer } from "../PanelContainer";
+import { PanelContent } from "../PanelContent";
 import { UserRoundCheck, UserSearch } from "lucide-react";
 import { Project } from "@/app/interfaces/project/IProject";
 import { User } from "@/app/interfaces/user/IUser";
-import { ProjectCard } from "../project/ProjectCard";
-import GridView from "../GridView";
-import PortfolioCard from "../portfolio/PortfolioCard";
+import { ProjectCard } from "../../project/ProjectCard";
+import GridView from "../../GridView";
+import PortfolioCard from "../../portfolio/PortfolioCard";
 import { InvestorData } from "@/app/interfaces/investor/IInvestorData";
 import { formatRupiah } from "@/app/lib/utils";
 

@@ -299,19 +299,6 @@ const NavbarV2: React.FC = () => {
 
                   <li onClick={toggleMenu}>
                     <Link
-                      href="/transaction"
-                      className={
-                        pathname == "/transaction"
-                          ? `text-[${ACTIVE_COLOR}]`
-                          : `text-[${ON_PRIMARY_COLOR}]`
-                      }
-                    >
-                      Transaksi
-                    </Link>
-                  </li>
-
-                  <li onClick={toggleMenu}>
-                    <Link
                       href="/terms-conditions"
                       className={
                         pathname == "/terms-conditions"

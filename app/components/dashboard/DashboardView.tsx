@@ -5,15 +5,16 @@ import axios from "axios";
 import { API_BACKEND } from "@/app/utils/constant";
 import { getUser } from "@/app/lib/auth";
 import Swal from "sweetalert2";
-import DashboardPemodal from "./DashboardPemodal";
+import DashboardPemodal from "./pemodal/DashboardPemodal";
 import DashboardUser from "./DashboardUser";
-import { DashboardPenerbit } from "./DashboardPenerbit";
+import { DashboardPenerbit } from "./penerbit/DashboardPenerbit";
 import { Project } from "@/app/interfaces/project/IProject";
 import { User } from "@/app/interfaces/user/IUser";
 import CircularProgressIndicator from "../CircularProgressIndicator";
 import { InvestorData } from "@/app/interfaces/investor/IInvestorData";
+import DashboardUndefinedRole from "./UndefinedRole";
 
-export const Dashboard: React.FC = () => {
+export const DashboardView: React.FC = () => {
   const user = getUser();
 
   const [loading, setLoading] = useState(true);
@@ -94,30 +95,24 @@ export const Dashboard: React.FC = () => {
   }, []);
 
   return (
-    <div className="py-28 px-4 md:px-12">
+    <div className="">
       {loading ? (
-        <div className="w-full h-[70vh] flex flex-col items-center justify-center">
-          <CircularProgressIndicator textDescription="Memuat Halaman" />
-        </div>
+        <CircularProgressIndicator textDescription="Memuat Halaman" />
       ) : (
         <div>
-          <h2 className="text-black text-2xl font-bold">Dashboard</h2>
-
-          <div className="mt-6">
-            {user?.role === "emiten" ? (
-              <DashboardPenerbit profile={profile} />
-            ) : user?.role === "investor" ? (
-              <DashboardPemodal
-                profile={profile}
-                projects={projects}
-                data={investorData}
-              />
-            ) : user?.role === "user" ? (
-              <DashboardUser user={user} />
-            ) : (
-              <></>
-            )}
-          </div>
+          {user?.role === "emiten" ? (
+            <DashboardPenerbit profile={profile} />
+          ) : user?.role === "investor" ? (
+            <DashboardPemodal
+              profile={profile}
+              projects={projects}
+              data={investorData}
+            />
+          ) : user?.role === "user" ? (
+            <DashboardUser user={user} />
+          ) : (
+            <DashboardUndefinedRole />
+          )}
         </div>
       )}
     </div>

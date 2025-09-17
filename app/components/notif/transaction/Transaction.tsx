@@ -9,7 +9,7 @@ import EmptyTransaction from "../InboxEmpty";
 import InboxCard from "../InboxCard";
 import Swal from "sweetalert2";
 import { getUser } from "@/app/lib/auth";
-import TransactionInvestorPage from "./TransactionInvestor";
+import TransactionInvestorPage from "../../dashboard/pemodal/TransactionInvestorView";
 
 const Transaction = () => {
   // data hook

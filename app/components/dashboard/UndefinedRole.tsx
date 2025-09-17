@@ -1,7 +1,7 @@
 import React from "react";
 
-const UndefinedRole: React.FC = () => {
+const DashboardUndefinedRole: React.FC = () => {
   return <></>;
 };
 
-export default UndefinedRole;
+export default DashboardUndefinedRole;
