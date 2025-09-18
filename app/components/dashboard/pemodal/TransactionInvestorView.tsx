@@ -20,6 +20,7 @@ import { getUser } from "@/app/lib/auth";
 import GeneralDialog from "../../GeneralDialog";
 import { API_BACKEND } from "@/app/utils/constant";
 import Swal from "sweetalert2";
+import RefundButton from "./components/ButtonRefund";
 
 export default function TransactionInvestorView() {
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
@@ -142,12 +143,17 @@ export default function TransactionInvestorView() {
                         className={`px-2 py-1 text-xs rounded-full font-medium ${
                           trx.payment_status === "PENDING"
                             ? "bg-yellow-100 text-yellow-700"
-                            : "bg-green-100 text-green-700"
+                            : trx.payment_status === "REFUNDED"
+                            ? "bg-blue-100 text-blue-700"
+                            : trx.payment_status === "CANCELLED"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-gray-100 text-gray-700"
                         }`}
                       >
                         {trx.payment_status}
                       </span>
                     </td>
+
                     <td className="p-3 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <Calendar className="w-4 h-4 text-primary" />
@@ -165,22 +171,11 @@ export default function TransactionInvestorView() {
                           <Eye className="w-4 h-4" />
                           Lihat Detail
                         </a>
-                        {trx.payment_status == "PAID" && (
-                          <>
-                            <button
-                              className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md bg-green-600 text-white hover:bg-green-700 shadow-sm transition duration-200"
-                              onClick={() => {
-                                setSelectedPaymentId(
-                                  trx.payment_id.toString() ?? ""
-                                );
-                                setShowRefundStatement(true);
-                              }}
-                            >
-                              <RotateCcw className="w-4 h-4" />
-                              Kembalikan Dana
-                            </button>
-                          </>
-                        )}
+                        <RefundButton
+                          trx={trx}
+                          setSelectedPaymentId={setSelectedPaymentId}
+                          setShowRefundStatement={setShowRefundStatement}
+                        />
 
                         {trx.payment_status === "REFUNDED" && (
                           <>
