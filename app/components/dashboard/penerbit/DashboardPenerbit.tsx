@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Building, UserSearch } from "lucide-react";
-import { Stepper } from "react-form-stepper";
+import { Step, Stepper } from "react-form-stepper";
 import { PanelContent } from "../PanelContent";
 import { PanelContainer } from "../PanelContainer";
 import { User } from "@/app/interfaces/user/IUser";
@@ -9,9 +9,13 @@ import { ProjectCard } from "../PenerbitProjectCard";
 
 interface Props {
   profile: User | null;
+  hasPaidAdministration: boolean;
 }
 
-export const DashboardPenerbit: React.FC<Props> = ({ profile }) => {
+export const DashboardPenerbit: React.FC<Props> = ({
+  profile,
+  hasPaidAdministration,
+}) => {
   const [currentStep, setCurrentStep] = useState(0);
 
   const projects = profile?.company.projects ?? [];
@@ -27,10 +31,12 @@ export const DashboardPenerbit: React.FC<Props> = ({ profile }) => {
     PUBLISH: 3,
   };
 
+  const projectStatus = profile?.company?.projects?.[0]?.status ?? "";
+
   //* set timeline project by status
   useEffect(() => {
     const statusProject = profile?.company?.projects
-      ? profile?.company?.projects?.[0]?.status
+      ? projectStatus
       : profile?.verify_emiten
       ? "VERIFIED"
       : "UNVERIFIED";
@@ -38,39 +44,87 @@ export const DashboardPenerbit: React.FC<Props> = ({ profile }) => {
     setCurrentStep(statusSteps[statusProject]);
   }, [profile]);
 
+  const rejectedProject = projectStatus === "REJECTED";
+
+  const renderPanelContent = (): React.ReactNode => {
+    if (profile?.company.projects) {
+      if (hasPaidAdministration) {
+        return (
+          <PanelContent
+            title="Bukti Pembayaran Sudah Diterima"
+            message="Mohon tunggu informasi dari admin yang akan memberikan 
+            akses lanjutan terkait pengisian dokumen pelengkap max 2x24 jam. 
+            Informasi tersebut akan dikirimkan melalui inbox, 
+            silakan cek inbox Anda secara berkala. Terima kasih."
+            buttonTitle="Inbox"
+            navigateToPath={"/inbox"}
+          />
+        );
+      } else {
+        if (projectStatus === "APPROVED") {
+          return (
+            <PanelContent
+              title="Pembayaran Administrasi Proyek"
+              message="Link pembayaran administrasi proyek telah dikirimkan oleh admin. 
+              Harap baca dengan seksama informasi yang tertera pada invoice, 
+              kemudian segera lakukan pembayaran agar proses penayangan proyek 
+              dapat berlangsung lebih cepat. Terima kasih."
+              buttonTitle="Inbox"
+              navigateToPath={"/inbox"}
+            />
+          );
+        } else {
+          return (
+            <PanelContent
+              title="Proyek Sedang Direview"
+              message="Proyek Anda sedang dalam tahap review oleh admin. Mohon tunggu, 
+              tagihan pembayaran administrasi akan segera dikirimkan melalui menu inbox. 
+              Pastikan Anda mengecek inbox secara berkala. Terima kasih."
+              buttonTitle="Inbox"
+              navigateToPath={"/inbox"}
+            />
+          );
+        }
+      }
+    } else {
+      if (profile?.company.name) {
+        if (profile.verify_emiten) {
+          return (
+            <PanelContent
+              title="Akun Berhasil Diverifikasi"
+              message="Selamat! Akun Anda telah berhasil diverifikasi. Sekarang Anda sudah bisa mulai membuat project pertama Anda."
+              buttonTitle="Buat Proyek"
+              navigateToPath={"/create-project"}
+            />
+          );
+        } else {
+          return (
+            <PanelContent
+              icon={<UserSearch className="w-16 h-16" />}
+              title="Akun Anda Sedang Direview"
+              message="Tim kami sedang memproses data akun Anda. Mohon tunggu hingga selesai. Setelah itu, Anda dapat mulai mengajukan proyek."
+            />
+          );
+        }
+      } else {
+        return (
+          <PanelContent
+            icon={<Building className="w-16 h-16" />}
+            title="Lengkapi Data Perusahaan Anda"
+            message="Untuk menayangkan proyek, Anda perlu menyelesaikan proses registrasi data perusahaan terlebih dahulu. Silakan lengkapi segera untuk melanjutkan."
+            buttonTitle="Registrasi Perusahaan"
+            navigateToPath={"/form-penerbit"}
+          />
+        );
+      }
+    }
+  };
+
   return (
     <div className="space-y-4">
-      {!profile?.company?.projects && (
+      {projectStatus !== "PUBLISH" && projectStatus !== "REJECTED" && (
         <PanelContainer clasName="flex flex-col items-center text-center">
-          {
-            // cek apakah user telah register company
-            // dengan mengecek apakah properti nama perusahaan sudah ada valuenya apa belum
-            profile?.company.name ? (
-              // ketika emiten sudah berhasil ter-verifikasi
-              profile?.verify_emiten ? (
-                <PanelContent
-                  title="Akun Berhasil Diverifikasi"
-                  message="Selamat! Akun Anda telah berhasil diverifikasi. Sekarang Anda sudah bisa mulai membuat project pertama Anda."
-                  buttonTitle="Buat Proyek"
-                  navigateToPath={"/create-project"}
-                />
-              ) : (
-                <PanelContent
-                  icon={<UserSearch className="w-16 h-16" />}
-                  title="Akun Anda Sedang Direview"
-                  message="Tim kami sedang memproses data akun Anda. Mohon tunggu hingga selesai. Setelah itu, Anda dapat mulai mengajukan proyek."
-                />
-              )
-            ) : (
-              <PanelContent
-                icon={<Building className="w-16 h-16" />}
-                title="Lengkapi Data Perusahaan Anda"
-                message="Untuk menayangkan proyek, Anda perlu menyelesaikan proses registrasi data perusahaan terlebih dahulu. Silakan lengkapi segera untuk melanjutkan."
-                buttonTitle="Registrasi Perusahaan"
-                navigateToPath={"/form-penerbit"}
-              />
-            )
-          }
+          {renderPanelContent()}
         </PanelContainer>
       )}
 
@@ -86,7 +140,7 @@ export const DashboardPenerbit: React.FC<Props> = ({ profile }) => {
               circleFontSize: "16px", // font angka di dalam lingkaran
               borderRadius: "50%", // bentuk lingkaran (bisa "0" buat kotak)
               fontWeight: 500, // ketebalan label
-              activeBgColor: "#10B981",
+              activeBgColor: rejectedProject ? "#FF0000" : "#10B981",
               activeTextColor: "#fff",
               completedBgColor: "#10B981",
               completedTextColor: "#fff",
@@ -100,18 +154,21 @@ export const DashboardPenerbit: React.FC<Props> = ({ profile }) => {
             }}
             connectorStyleConfig={{
               size: 3,
-              activeColor: "#10B981", // garis menuju step aktif
+              activeColor: rejectedProject ? "#FF0000" : "#10B981", // garis menuju step aktif
               completedColor: "#10B981", // garis completed → hijau
               disabledColor: "#E5E7EB", // garis belum jalan
               style: "",
             }}
-            steps={[
-              { label: "Data Diproses" },
-              { label: "Review Proyek" },
-              { label: "Pembayaran Administrasi" },
-              { label: "Persetujuan Project" },
-            ]}
-          />
+          >
+            <Step label="Data Diproses" onClick={() => {}} />
+            <Step label="Review Proyek" onClick={() => {}} />
+            <Step label="Pembayaran Administrasi" onClick={() => {}} />
+            {rejectedProject ? (
+              <Step label="Proyek Ditolak" onClick={() => {}} />
+            ) : (
+              <Step label="Persetujuan Proyek" onClick={() => {}} />
+            )}
+          </Stepper>
         </div>
       </PanelContainer>
 

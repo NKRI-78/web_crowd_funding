@@ -167,7 +167,7 @@ export default function PembayaranDanamon({
       timerProgressBar: true,
     });
 
-    router.push("/transaction");
+    router.push("/dashboard/emiten-transaction");
   };
 
   return (
