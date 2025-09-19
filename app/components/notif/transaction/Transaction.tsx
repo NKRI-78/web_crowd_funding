@@ -10,13 +10,17 @@ import InboxCard from "../InboxCard";
 import Swal from "sweetalert2";
 import { getUser } from "@/app/lib/auth";
 import TransactionInvestorPage from "../../dashboard/pemodal/TransactionInvestorView";
+import Center from "../../Center";
+import CircularProgressIndicator from "../../CircularProgressIndicator";
+import { AnimatedWrapper } from "../../AnimatedWrapper";
 
 const Transaction = () => {
   // data hook
   const [transactions, setTransactions] = useState<InboxResponse[]>([]);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthDataResponse | null>(null);
 
   // state hook
+  const [loading, setLoading] = useState<boolean>(true);
   const isOnline = useOnlineStatus();
 
   //* use effect
@@ -28,6 +32,7 @@ const Transaction = () => {
 
   //* fetch inbox
   const fetchTransaction = async () => {
+    setLoading(true);
     try {
       const token = getUser()?.token;
       console.log("hastoken ", token);
@@ -54,6 +59,8 @@ const Transaction = () => {
         showConfirmButton: false,
         timer: 3000,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -92,35 +99,43 @@ const Transaction = () => {
 
   useEffect(() => {
     const u = getUser();
-    setUser(u);
+    if (u) setUser(u);
   }, []);
 
   return user?.role == "investor" ? (
     <TransactionInvestorPage />
   ) : (
     <>
-      <div className="text-black">
-        {transactions.length ? (
-          <div className="flex flex-col gap-y-3">
-            {transactions?.map((transaction) => {
-              return (
-                <InboxCard
-                  key={transaction.id}
-                  inbox={transaction}
-                  onClick={() => {
-                    handleCardOnClick(transaction);
-                  }}
-                />
-              );
-            })}
+      {loading ? (
+        <Center fullParent horizontal vertical>
+          <CircularProgressIndicator textDescription="Memuat Halaman" />
+        </Center>
+      ) : (
+        <AnimatedWrapper>
+          <div className="text-black">
+            {transactions.length ? (
+              <div className="flex flex-col gap-y-3">
+                {transactions?.map((transaction) => {
+                  return (
+                    <InboxCard
+                      key={transaction.id}
+                      inbox={transaction}
+                      onClick={() => {
+                        handleCardOnClick(transaction);
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <EmptyTransaction
+                title="Belum ada transaksi"
+                message="Kamu belum menerima transaksi apa pun saat ini."
+              />
+            )}
           </div>
-        ) : (
-          <EmptyTransaction
-            title="Belum ada transaksi"
-            message="Kamu belum menerima transaksi apa pun saat ini."
-          />
-        )}
-      </div>
+        </AnimatedWrapper>
+      )}
     </>
   );
 };

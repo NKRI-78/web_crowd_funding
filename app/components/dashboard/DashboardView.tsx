@@ -13,6 +13,9 @@ import { User } from "@/app/interfaces/user/IUser";
 import CircularProgressIndicator from "../CircularProgressIndicator";
 import { InvestorData } from "@/app/interfaces/investor/IInvestorData";
 import DashboardUndefinedRole from "./UndefinedRole";
+import Center from "../Center";
+import { AnimatedWrapper } from "../AnimatedWrapper";
+import { InboxResponse } from "../notif/inbox-interface";
 
 export const DashboardView: React.FC = () => {
   const user = getUser();
@@ -23,6 +26,8 @@ export const DashboardView: React.FC = () => {
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [investorData, setInvestorData] = useState<InvestorData | null>(null);
+
+  const [hasPaidAdministration, setHasPaidAdministration] = useState(false);
 
   //* fetch data
   useEffect(() => {
@@ -55,6 +60,24 @@ export const DashboardView: React.FC = () => {
         }
       };
       fetchProfile();
+
+      if (user?.role === "emiten") {
+        const fetchInbox = async () => {
+          try {
+            const res = await axios(`${API_BACKEND}/api/v1/inbox/list`, {
+              headers: {
+                Authorization: `Bearer ${user.token}`,
+              },
+            });
+            const inboxes = res.data.data as InboxResponse[];
+            const hasPaid = inboxes.some((data) => data.type === "transaction");
+            setHasPaidAdministration(hasPaid);
+          } catch (e) {
+            setHasPaidAdministration(false);
+          }
+        };
+        fetchInbox();
+      }
 
       if (user?.role === "investor") {
         const fetchProjects = async () => {
@@ -92,28 +115,30 @@ export const DashboardView: React.FC = () => {
         fetchInvestorData();
       }
     }
+    setLoading(false);
   }, []);
 
   return (
-    <div className="">
+    <div>
       {loading ? (
-        <CircularProgressIndicator textDescription="Memuat Halaman" />
+        <Center vertical horizontal className="h-screen">
+          <CircularProgressIndicator textDescription="Memuat Halaman" />
+        </Center>
       ) : (
-        <div>
+        <AnimatedWrapper>
           {user?.role === "emiten" ? (
-            <DashboardPenerbit profile={profile} />
-          ) : user?.role === "investor" ? (
-            <DashboardPemodal
+            <DashboardPenerbit
               profile={profile}
-              projects={projects}
-              data={investorData}
+              hasPaidAdministration={hasPaidAdministration}
             />
+          ) : user?.role === "investor" ? (
+            <DashboardPemodal profile={profile} data={investorData} />
           ) : user?.role === "user" ? (
             <DashboardUser user={user} />
           ) : (
             <DashboardUndefinedRole />
           )}
-        </div>
+        </AnimatedWrapper>
       )}
     </div>
   );

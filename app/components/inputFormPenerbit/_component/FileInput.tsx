@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { FileText } from "lucide-react";
 import axios from "axios";
 import Swal from "sweetalert2";
+import clsx from "clsx";
 import { API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { compressImage } from "@/app/helper/CompressorImage";
-import CircularProgressIndicator from "../../CircularProgressIndicator";
 
 interface FileInputProps {
   fileName: string;
@@ -26,6 +26,7 @@ const FileInput: React.FC<FileInputProps> = ({
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [loading, setLoading] = useState(false);
 
   function getFileNameFromUrl(url?: string | null): string | null {
     if (!url) return null;
@@ -41,11 +42,25 @@ const FileInput: React.FC<FileInputProps> = ({
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (loading) return;
+
+    setLoading(true);
+    console.log("loading? " + loading);
+
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      setLoading(false);
+      return;
+    }
 
     if (file.size > 10 * 1024 * 1024) {
-      alert("Ukuran file maksimal 10MB");
+      setLoading(false);
+      Swal.fire({
+        title: "Gagal",
+        text: "Ukuran file maksimal 10 mb.",
+        icon: "warning",
+        timer: 3000,
+      });
       return;
     }
 
@@ -76,16 +91,13 @@ const FileInput: React.FC<FileInputProps> = ({
       const url = res.data?.data?.path;
       if (url) {
         onChange(url);
-
-        Swal.fire({
-          title: "Berhasil",
-          text: `Upload ${fileName} berhasil!`,
-          icon: "success",
-          showConfirmButton: false,
-          timer: 1000,
-        });
       } else {
-        alert("Upload gagal, tidak ada URL yang diterima.");
+        Swal.fire({
+          title: "Gagal",
+          text: "Upload gagal, tidak ada URL yang diterima.",
+          icon: "warning",
+          timer: 3000,
+        });
       }
     } catch (error) {
       console.error("Gagal upload:", error);
@@ -95,16 +107,31 @@ const FileInput: React.FC<FileInputProps> = ({
         icon: "warning",
         timer: 3000,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="space-y-2">
       <label
-        className={`inline-flex items-center gap-2 px-2 md:px-6 py-2 rounded-lg cursor-pointer font-semibold text-[12px] text-white bg-gray-700 hover:bg-gray-800`}
+        className={clsx(
+          "relative inline-flex items-center gap-2 px-2 md:px-6 py-2 rounded-lg cursor-pointer font-semibold text-[12px] text-white overflow-hidden",
+          loading ? "bg-gray-400" : "bg-gray-700 hover:bg-gray-800"
+        )}
       >
-        <FileText size={13} />
-        {placeholder ?? "Upload Dokumen"}
+        {loading && (
+          <div
+            className="absolute left-0 top-0 h-full bg-gray-700 transition-all duration-200"
+            style={{ width: `${uploadProgress}%` }}
+          />
+        )}
+
+        <span className="relative z-10 flex items-center gap-2">
+          <FileText size={13} />
+          {placeholder ?? "Upload Dokumen"}
+        </span>
+
         <div className="flex gap-x-4">
           <input
             type="file"
@@ -112,18 +139,16 @@ const FileInput: React.FC<FileInputProps> = ({
             ref={fileInputRef}
             onChange={handleFileChange}
             accept={accept}
+            disabled={loading}
           />
         </div>
-        {uploadProgress !== 0 && uploadProgress <= 98 && (
-          <CircularProgressIndicator
-            progressValue={uploadProgress}
-            size={28}
-            styling={{
-              bgColor: "#374151",
-              stateColor: "#FFFFFF",
-              textColor: "#FFFFFF",
-            }}
-          />
+
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-20">
+            <span className="text-white font-bold text-xs bg-black/60 px-2 py-1 rounded-full">
+              {uploadProgress}%
+            </span>
+          </div>
         )}
       </label>
 

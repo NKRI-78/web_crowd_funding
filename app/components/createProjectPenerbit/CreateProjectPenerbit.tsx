@@ -588,8 +588,8 @@ const CreateProjectPenerbit: React.FC = () => {
             render={({ field }) => {
               return (
                 <TextField
-                  label="Instansi Pemberi Pemberi Proyek"
-                  placeholder="Instansi Pemberi Pemberi Proyek"
+                  label="Instansi Pemberi Proyek"
+                  placeholder="Instansi Pemberi Proyek"
                   value={field.value}
                   onChange={(e) => {
                     field.onChange(e.target.value);
@@ -606,7 +606,7 @@ const CreateProjectPenerbit: React.FC = () => {
             render={({ field }) => {
               return (
                 <DropdownSelect
-                  label="Jenis Instansi Pemberi Proyek Proyek"
+                  label="Jenis Instansi Pemberi Proyek"
                   value={field.value}
                   options={jenisInstansiPemberiProyek.map((type) => {
                     return {

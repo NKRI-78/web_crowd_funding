@@ -1,25 +1,23 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { PanelContainer } from "../PanelContainer";
 import { PanelContent } from "../PanelContent";
-import { UserRoundCheck, UserSearch } from "lucide-react";
-import { Project } from "@/app/interfaces/project/IProject";
+import { UserSearch } from "lucide-react";
 import { User } from "@/app/interfaces/user/IUser";
-import { ProjectCard } from "../../project/ProjectCard";
-import GridView from "../../GridView";
-import PortfolioCard from "../../portfolio/PortfolioCard";
 import { InvestorData } from "@/app/interfaces/investor/IInvestorData";
 import { formatRupiah } from "@/app/lib/utils";
+import Tippy from "@tippyjs/react";
+import { useRouter } from "next/navigation";
 
 interface Props {
   profile: User | null;
-  projects: Project[];
   data: InvestorData | null;
 }
 
-const DashboardPemodal: React.FC<Props> = ({ profile, projects, data }) => {
+const DashboardPemodal: React.FC<Props> = ({ profile, data }) => {
+  const router = useRouter();
+
   return (
     <div className="space-y-4">
-      {/* panel container */}
       {!profile?.verify_investor && (
         <PanelContainer clasName="flex flex-col items-center text-center">
           <PanelContent
@@ -29,31 +27,73 @@ const DashboardPemodal: React.FC<Props> = ({ profile, projects, data }) => {
           />
         </PanelContainer>
       )}
-      {/* <PanelContent
-          icon={<UserRoundCheck className="w-16 h-16" />}
-          title="Akun Berhasil Diverifikasi"
-          message="Selamat! Akun Anda telah berhasil diverifikasi. Kini Anda sudah dapat mengakses seluruh fitur dan melakukan investasi pada proyek yang tersedia."
-        /> */}
 
-      <PanelContainer clasName="space-y-4">
-        <div>
-          <p className="font-semibold text-gray-500 text-lg">
-            Limit Investasi Saya
-          </p>
-          <p className="font-black text-black text-2xl">
-            {formatRupiah(data?.summary.remaining_quota_idr)}
-          </p>
-        </div>
+      {profile?.verify_investor && (
+        <PanelContainer>
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-100 text-left">
+                <th className="px-4 py-2 text-gray-600 font-semibold">
+                  Keterangan
+                </th>
+                <th className="px-4 py-2 text-gray-600 font-semibold">Nilai</th>
+              </tr>
+            </thead>
+            <tbody className="text-gray-800">
+              <tr className="border-b">
+                <td className="px-4 py-2">Pendapatan Tahunan</td>
+                <td className="px-4 py-2 font-medium">
+                  {formatRupiah(data?.summary.annual_income_idr)}
+                </td>
+              </tr>
+              <tr className="border-b">
+                <td className="px-4 py-2">Limit Investasi</td>
+                <td className="px-4 py-2 font-medium">
+                  {formatRupiah(data?.summary.annual_quota_idr)}
+                </td>
+              </tr>
+              <tr className="border-b">
+                <td className="px-4 py-2">Sisa Kuota Investasi</td>
+                <td className="px-4 py-2 font-bold text-green-600">
+                  {formatRupiah(data?.summary.remaining_quota_idr)}
+                </td>
+              </tr>
+              <tr className="border-b">
+                <td className="px-4 py-2">Terpakai Tahun Ini</td>
+                <td className="px-4 py-2 font-medium">
+                  {formatRupiah(data?.summary.used_this_year_idr)}
+                </td>
+              </tr>
+              <tr className="border-b">
+                <td className="px-4 py-2">Total Pengeluaran</td>
+                <td className="px-4 py-2 font-medium">
+                  {formatRupiah(data?.summary.paid_all_time_idr)}
+                </td>
+              </tr>
+              <tr className="border-b">
+                <td className="px-4 py-2">Pengeluaran Tahun Ini</td>
+                <td className="px-4 py-2 font-medium">
+                  {formatRupiah(data?.summary.paid_this_year_idr)}
+                </td>
+              </tr>
 
-        <div>
-          <p className="font-semibold text-gray-500 text-lg">
-            Total Pengeluaran
-          </p>
-          <p className="font-black text-black text-2xl">
-            {formatRupiah(data?.summary.paid_all_time_idr)}
-          </p>
-        </div>
-      </PanelContainer>
+              <Tippy
+                content={`Masih ada ${data?.summary.active_invoices} transaksi pembelian efek yang belum dibayar`}
+              >
+                <tr
+                  className="hover:bg-gray-100 cursor-pointer"
+                  onClick={() => {
+                    router.push("/dashboard/investor-transaction");
+                  }}
+                >
+                  <td className="px-4 py-2">Tagihan Aktif</td>
+                  <td className="px-4 py-2">{data?.summary.active_invoices}</td>
+                </tr>
+              </Tippy>
+            </tbody>
+          </table>
+        </PanelContainer>
+      )}
     </div>
   );
 };
