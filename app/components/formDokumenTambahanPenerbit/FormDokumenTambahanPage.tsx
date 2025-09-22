@@ -5,7 +5,6 @@ import React, { useEffect, useRef } from "react";
 import PhotoUploaderContainer from "../inputFormPenerbit/_component/PhotoUploaderContainer";
 import VideoUploaderContainer from "../inputFormPenerbit/_component/VideoUploadContainer";
 import Subtitle from "../inputFormPemodalPerusahaan/component/SectionSubtitle";
-import FileInput from "../inputFormPemodalPerusahaan/component/FileInput";
 import SectionPoint from "../inputFormPenerbit/_component/SectionPoint";
 import DocumentRow from "./DocumentRow";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,6 +20,7 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import { API_BACKEND } from "@/app/utils/constant";
 import { useRouter, useSearchParams } from "next/navigation";
+import FileInput from "../inputFormPenerbit/_component/FileInput";
 
 const getUserToken = (): string => {
   const userCookie = Cookies.get("user");

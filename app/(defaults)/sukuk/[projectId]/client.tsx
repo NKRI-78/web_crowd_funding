@@ -360,6 +360,63 @@ const SukukClient = ({ id }: Props) => {
         />
 
         <GeneralDialog
+          isOpen={showLocationDialog}
+          onClose={() => {
+            setShowLocationDialog(false);
+          }}
+        >
+          <div>
+            {/* header */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-700">Lokasi</h2>
+              <button
+                className="text-gray-600 hover:text-gray-800"
+                onClick={() => {
+                  setShowLocationDialog(false);
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* content */}
+            <div className="bg-gray-100 rounded-lg px-4 py-2 flex justify-between items-center text-sm mb-3">
+              <input
+                type="text"
+                value={project?.location.url}
+                readOnly
+                className="bg-transparent w-full outline-none text-black"
+              />
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(project?.location.url ?? "-");
+                  Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    title: "Link berhasil disalin.",
+                    allowEscapeKey: true,
+                    timer: 2000,
+                    showConfirmButton: false,
+                  });
+                }}
+                className="ml-2 px-2 py-1 text-sm bg-[#13733b] hover:bg-[#106332] text-white rounded"
+              >
+                Salin
+              </button>
+            </div>
+
+            <a
+              href={project?.location.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-center text-sm w-full bg-[#13733b] hover:bg-[#106332] text-white py-2 rounded-lg font-semibold"
+            >
+              Go To Maps
+            </a>
+          </div>
+        </GeneralDialog>
+
+        <GeneralDialog
           isOpen={showModal}
           onClose={() => {
             setShowModal(false);

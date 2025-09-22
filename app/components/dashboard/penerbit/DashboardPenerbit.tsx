@@ -65,7 +65,8 @@ export const DashboardPenerbit: React.FC<Props> = ({
           return (
             <PanelContent
               title="Pembayaran Administrasi Proyek"
-              message="Link pembayaran administrasi proyek telah dikirimkan oleh admin. 
+              message="Selamat Proyek Anda berhasil di verifikasi oleh Admin. 
+              Link pembayaran administrasi proyek telah dikirimkan oleh admin. 
               Harap baca dengan seksama informasi yang tertera pada invoice, 
               kemudian segera lakukan pembayaran agar proses penayangan proyek 
               dapat berlangsung lebih cepat. Terima kasih."
