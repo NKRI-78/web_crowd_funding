@@ -7,17 +7,18 @@ import { API_BACKEND } from "@/app/utils/constant";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import BroadcastCard from "./BroadcastCard";
-import { useRouter } from "next/navigation";
+import moment from "moment";
+import { useParams } from "next/navigation";
 
-const BroadcastView = () => {
-  const router = useRouter();
-
+const BroadcastDetailView = () => {
+  const params = useParams();
   const userCookie = getUser();
+
+  const { broadcastId } = params;
 
   const [loading, setLoading] = useState(true);
 
-  const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
+  const [broadcast, setBroadcast] = useState<Broadcast | null>(null);
 
   //* fetch data
   useEffect(() => {
@@ -27,21 +28,15 @@ const BroadcastView = () => {
       const fetchBroadcast = async () => {
         try {
           const res = await axios.get(
-            `${API_BACKEND}/api/v1/broadcast/list?user_id=${
-              userCookie?.id ?? ""
-            }`,
+            `${API_BACKEND}/api/v1/broadcast/detail/${broadcastId}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
             }
           );
-          const broadcastData = res.data.data as Broadcast[];
-          const mappedBroadcasts = broadcastData.map((broadcast) => ({
-            ...broadcast,
-            is_read: false,
-          }));
-          setBroadcasts(mappedBroadcasts);
+          const broadcastData = res.data.data;
+          setBroadcast(broadcastData);
           setLoading(false);
         } catch (error) {
           Swal.fire({
@@ -59,41 +54,42 @@ const BroadcastView = () => {
       };
       fetchBroadcast();
     }
-  }, []);
-
-  //* mark as read
-  const markAsRead = (id: number) => {
-    const updatedBroadcasts = broadcasts.map((broadcast) => {
-      if (id === broadcast.id) {
-        return { ...broadcast, is_read: true };
-      }
-      return broadcast;
-    });
-    setBroadcasts(updatedBroadcasts);
-  };
+  }, [broadcastId]);
 
   return (
-    <div className="py-28 px-6">
+    <div className="py-28 px-24 bg-white">
       {loading ? (
         <div className="w-full h-[70vh] flex flex-col items-center justify-center">
           <CircularProgressIndicator textDescription="Memuat Halaman" />
         </div>
       ) : (
-        <div className="space-y-3">
-          {broadcasts.map((broadcast, i) => (
-            <BroadcastCard
-              key={i}
-              broadcast={broadcast}
-              onClick={() => {
-                markAsRead(broadcast.id);
-                router.push(`/broadcast/${broadcast.id}`);
-              }}
-            />
-          ))}
+        <div className="w-full space-y-4 text-black">
+          <img
+            src={broadcast?.path}
+            alt={`Gambar ${broadcast?.title}`}
+            className="w-full h-[400px] object-cover border border-gray-300 rounded-lg"
+            onError={(e) => {
+              const target = e.currentTarget as HTMLImageElement;
+              if (target.src !== window.location.origin + "/images/img.jpg") {
+                target.src = "/images/img.jpg";
+              }
+            }}
+          />
+
+          <p className="text-3xl font-black">{broadcast?.title}</p>
+
+          <p className="text-xs text-gray-400 mt-1">
+            {moment(broadcast?.created_at)
+              .utc()
+              .locale("id")
+              .format("DD MMMM YYYY")}
+          </p>
+
+          <p className="text-sm text-gray-600">{broadcast?.content}</p>
         </div>
       )}
     </div>
   );
 };
 
-export default BroadcastView;
+export default BroadcastDetailView;

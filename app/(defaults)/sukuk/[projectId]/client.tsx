@@ -265,9 +265,7 @@ const SukukClient = ({ id }: Props) => {
                   </div>
                   <div className="flex flex-wrap my-2 justify-between">
                     <p className="text-xs text-[#677AB9]"> Jumlah Unit </p>
-                    <p className="text-xs">
-                      {formatRupiah(project?.jumlah_unit)}
-                    </p>
+                    <p className="text-xs">{`${project?.jumlah_unit} Unit`}</p>
                   </div>
                   <div className="flex flex-wrap my-2 justify-between">
                     <p className="text-xs text-[#677AB9]"> Total Unit (Rp) </p>
@@ -415,6 +413,64 @@ const SukukClient = ({ id }: Props) => {
             >
               Go To Maps
             </a>
+          </div>
+        </GeneralDialog>
+
+        <GeneralDialog
+          isOpen={showModal}
+          onClose={() => {
+            setShowModal(false);
+          }}
+        >
+          <div className="w-full max-w-md">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-800">
+                Pengembalian Dana
+              </h2>
+              <button
+                className="text-gray-600 hover:text-gray-800"
+                onClick={() => setShowModal(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="space-y-3 text-gray-700 text-sm leading-relaxed">
+              <p>Permintaan pengembalian dana Anda sedang diproses.</p>
+              <p>
+                Dana akan dikembalikan ke rekening tujuan dalam waktu maksimal
+                <span className="font-semibold text-gray-900">
+                  {" "}
+                  3 hari kerja
+                </span>
+                .
+              </p>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 text-yellow-700 text-xs">
+                <strong>Catatan:</strong> Hari kerja dihitung tanpa akhir pekan
+                dan hari libur nasional.
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300"
+              >
+                Tutup
+              </button>
+              <button
+                onClick={() => {
+                  // Aksi misalnya redirect ke halaman riwayat
+                  setShowModal(false);
+                }}
+                className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700"
+              >
+                Lihat Riwayat
+              </button>
+            </div>
           </div>
         </GeneralDialog>
       </section>

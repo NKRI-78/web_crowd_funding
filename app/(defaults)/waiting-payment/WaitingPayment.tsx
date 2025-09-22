@@ -277,6 +277,8 @@ const WaitingPayment = () => {
               />
             ) : waitingPayment.payment_status === "PAID" ? (
               <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto" />
+            ) : waitingPayment.payment_status === "REFUNDED" ? (
+              <CheckCircle2 className="w-16 h-16 text-blue-500 mx-auto" />
             ) : expired && waitingPayment.payment_status === "PENDING" ? (
               <XCircle className="w-16 h-16 text-red-500 mx-auto" />
             ) : (
@@ -300,6 +302,11 @@ const WaitingPayment = () => {
               {waitingPayment.payment_status === "PAID" && (
                 <span className="px-4 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium flex items-center gap-2">
                   <CheckCircle2 size={16} /> Pembayaran Berhasil
+                </span>
+              )}
+              {waitingPayment.payment_status === "REFUNDED" && (
+                <span className="px-4 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium flex items-center gap-2">
+                  <CheckCircle2 size={16} /> Dana Dikembalikan
                 </span>
               )}
               {expired && waitingPayment.payment_status === "PENDING" && (
@@ -459,7 +466,7 @@ const WaitingPayment = () => {
 
         <div className="text-center">
           <Link
-            href="/transaction"
+            href="/dashboard/investor-transaction"
             className="inline-block px-6 py-3 rounded-lg bg-[#10565C] text-white font-semibold shadow"
           >
             Lihat Pesanan

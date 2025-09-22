@@ -307,7 +307,7 @@ export default function PembayaranBCAWithDetail({
         timerProgressBar: true,
       });
 
-      router.push("/transaction");
+      router.push("/dashboard/emiten-transaction");
     } catch (e: any) {
       const msg =
         e?.response?.data?.message ||

@@ -20,6 +20,7 @@ export interface TransactionItem {
   amount: number;
   payment_status: string;
   created_at: string;
+  paid_at: string;
   contract_letter: ContractLetter;
   investor: Investor;
   company: Company;
@@ -27,8 +28,7 @@ export interface TransactionItem {
   provider: string;
   invoice_status: string;
   channel_code: string;
-  channel_ref?: string;
-  expires_at?: string;
+  expires_at: string;
 }
 
 export interface TransactionResponse {
