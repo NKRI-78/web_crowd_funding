@@ -92,6 +92,7 @@ const FormPenerbit: React.FC<Props> = ({
 }) => {
   const [isReady, setIsReady] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const methods = useForm<FormPenerbitValues>({
     resolver: zodResolver(FormPenerbitSchema),
@@ -189,6 +190,7 @@ const FormPenerbit: React.FC<Props> = ({
   const handleRegisterCompany = async (
     penerbitFormCache: FormPenerbitValues
   ) => {
+    setLoading(true);
     try {
       const draft = localStorage.getItem(FORM_PENERBIT_1_CACHE_KEY);
       console.log(draft);
@@ -304,10 +306,14 @@ const FormPenerbit: React.FC<Props> = ({
         timer: 3000,
         timerProgressBar: true,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleUpdateRegister = async (values: FormPenerbitValues) => {
+    setLoading(true);
+
     const isKTP = profile?.form_key?.endsWith("upload-ktp") ?? false;
     const isNPWP = profile?.form_key?.endsWith("upload-npwp") ?? false;
     const isSusunanManajemen = isKTP || isNPWP;
@@ -358,6 +364,8 @@ const FormPenerbit: React.FC<Props> = ({
           : [],
       });
     }
+
+    setLoading(false);
   };
 
   const onSubmit = handleSubmit(async (values, e) => {
@@ -703,10 +711,10 @@ const FormPenerbit: React.FC<Props> = ({
               )}
               <FormButton
                 onClick={onSubmit}
-                disabled={!agree}
+                disabled={!agree || loading}
                 className={!agree ? "cursor-not-allowed" : ""}
               >
-                {isUpdate ? "Update" : "Kirim"} Data
+                {loading ? "Memuat" : isUpdate ? "Update" : "Kirim"} Data
               </FormButton>
             </div>
           </section>
