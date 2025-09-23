@@ -32,6 +32,7 @@ export interface RecentTransaction {
   provider: string;
   invoice_status: string;
   channel_code: string;
+  expires_at: string;
   payment_url: string;
 }
 
@@ -39,11 +40,12 @@ export interface InvestorDataPortfolio {
   project_uid: string;
   project_title: string;
   funding_status: string;
-  target_amount_idr: number;
+  target_amount: number;
   user_paid_idr: number;
   user_pending_idr: number;
   project_paid_amount_idr: number;
   project_reserved_amount_idr: number;
+  recent_transactio: RecentTransaction[];
 }
 
 export interface InvestorDataMonthlyPaid {
