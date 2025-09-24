@@ -105,22 +105,27 @@ const Inbox = () => {
   };
 
   //* navigate to additional document
-  const navigateToAddAditionalDocument = (projectId: string | undefined) => {
+  const navigateToAddAditionalDocument = (
+    projectId: string | undefined,
+    inboxId: number
+  ) => {
     if (projectId) {
-      router.push(`/dokumen-pelengkap?projectId=${projectId}`);
+      router.push(
+        `/dokumen-pelengkap?projectId=${projectId}&inboxId=${inboxId}`
+      );
     }
   };
 
   const handleInboxOnClick = (inbox: InboxResponse) => {
     markAsRead(inbox.id);
 
+    setSelectedInbox(inbox);
+
     if (inbox.field_3 === "reupload-document") {
-      setSelectedInbox(inbox);
       setOpenDialog(true);
     } else if (inbox.field_3 === "additional-document") {
-      navigateToAddAditionalDocument(inbox.field_2);
+      navigateToAddAditionalDocument(inbox.field_2, inbox.id);
     } else if (inbox.field_3 === "uploaded-doc") {
-      setSelectedInbox(inbox);
       setOpenDialog(true);
     } else {
       navigateToBillingInfo(inbox);

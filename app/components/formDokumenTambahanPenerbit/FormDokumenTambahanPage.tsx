@@ -34,6 +34,7 @@ const FormDokumenTambahanPage: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const projectId = searchParams.get("projectId");
+  const inboxId = searchParams.get("inboxId");
 
   const skipCacheWrite = useRef(false);
 
@@ -89,6 +90,7 @@ const FormDokumenTambahanPage: React.FC = () => {
     if (projectId) {
       try {
         const payload = {
+          inbox_id: inboxId,
           project_id: projectId,
           skd: data.suratKeteranganDomisili,
           rab: data.rab,
