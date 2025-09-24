@@ -2,7 +2,6 @@
 
 import CircularProgressIndicator from "@/app/components/CircularProgressIndicator";
 import { Broadcast } from "@/app/interfaces/broadcast/IBroadcast";
-import { getUser } from "@/app/lib/auth";
 import { API_BACKEND } from "@/app/utils/constant";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
@@ -13,8 +12,6 @@ import { useRouter } from "next/navigation";
 const BroadcastView = () => {
   const router = useRouter();
 
-  const userCookie = getUser();
-
   const [loading, setLoading] = useState(true);
 
   const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
@@ -22,43 +19,31 @@ const BroadcastView = () => {
   //* fetch data
   useEffect(() => {
     setLoading(true);
-    const token = userCookie?.token;
-    if (token) {
-      const fetchBroadcast = async () => {
-        try {
-          const res = await axios.get(
-            `${API_BACKEND}/api/v1/broadcast/list?user_id=${
-              userCookie?.id ?? ""
-            }`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          const broadcastData = res.data.data as Broadcast[];
-          const mappedBroadcasts = broadcastData.map((broadcast) => ({
-            ...broadcast,
-            is_read: false,
-          }));
-          setBroadcasts(mappedBroadcasts);
-          setLoading(false);
-        } catch (error) {
-          Swal.fire({
-            icon: "error",
-            title: "Gagal Mendapatkan Broadcast",
-            text: "Terjadi kesalahan saat mengambil data broadcast. Silakan coba lagi.",
-            confirmButtonText: "Coba Lagi 🔄",
-            allowOutsideClick: false,
-          }).then((result) => {
-            if (result.isConfirmed) {
-              fetchBroadcast();
-            }
-          });
-        }
-      };
-      fetchBroadcast();
-    }
+    const fetchBroadcast = async () => {
+      try {
+        const res = await axios.get(`${API_BACKEND}/api/v1/broadcast/list`);
+        const broadcastData = res.data.data as Broadcast[];
+        const mappedBroadcasts = broadcastData.map((broadcast) => ({
+          ...broadcast,
+          is_read: false,
+        }));
+        setBroadcasts(mappedBroadcasts);
+        setLoading(false);
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Gagal Mendapatkan Broadcast",
+          text: "Terjadi kesalahan saat mengambil data broadcast. Silakan coba lagi.",
+          confirmButtonText: "Coba Lagi 🔄",
+          allowOutsideClick: false,
+        }).then((result) => {
+          if (result.isConfirmed) {
+            fetchBroadcast();
+          }
+        });
+      }
+    };
+    fetchBroadcast();
   }, []);
 
   //* mark as read
