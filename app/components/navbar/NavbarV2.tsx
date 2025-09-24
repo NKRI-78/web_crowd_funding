@@ -273,19 +273,6 @@ const NavbarV2: React.FC = () => {
 
                   <li onClick={toggleMenu}>
                     <Link
-                      href="/broadcast"
-                      className={
-                        pathname == "/broadcast"
-                          ? `text-[${ACTIVE_COLOR}]`
-                          : `text-[${ON_PRIMARY_COLOR}]`
-                      }
-                    >
-                      Broadcast
-                    </Link>
-                  </li>
-
-                  <li onClick={toggleMenu}>
-                    <Link
                       href="/dashboard"
                       className={
                         pathname == "/dashboard"
@@ -294,6 +281,19 @@ const NavbarV2: React.FC = () => {
                       }
                     >
                       Dashboard
+                    </Link>
+                  </li>
+
+                  <li onClick={toggleMenu}>
+                    <Link
+                      href="/broadcast"
+                      className={
+                        pathname == "/broadcast"
+                          ? `text-[${ACTIVE_COLOR}]`
+                          : `text-[${ON_PRIMARY_COLOR}]`
+                      }
+                    >
+                      Broadcast
                     </Link>
                   </li>
 
