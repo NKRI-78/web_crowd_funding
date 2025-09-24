@@ -356,6 +356,14 @@ const NavbarV2: React.FC = () => {
                 </li>
                 <li>
                   <Link
+                    href="/broadcast"
+                    className={pathname == "/broadcast" ? "font-semibold" : ""}
+                  >
+                    Broadcast
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     href="/business-list"
                     className={
                       pathname == "/business-list" ? "font-semibold" : ""
@@ -459,6 +467,18 @@ const NavbarV2: React.FC = () => {
                       }
                     >
                       Beranda
+                    </Link>
+                  </li>
+                  <li onClick={toggleMenu}>
+                    <Link
+                      href="/broadcast"
+                      className={
+                        pathname == "/broadcast"
+                          ? `text-[${ACTIVE_COLOR}]`
+                          : `text-[${ON_PRIMARY_COLOR}]`
+                      }
+                    >
+                      Broadcast
                     </Link>
                   </li>
                   <li onClick={toggleMenu}>

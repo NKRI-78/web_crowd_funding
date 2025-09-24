@@ -2,7 +2,6 @@
 
 import CircularProgressIndicator from "@/app/components/CircularProgressIndicator";
 import { Broadcast } from "@/app/interfaces/broadcast/IBroadcast";
-import { getUser } from "@/app/lib/auth";
 import { API_BACKEND } from "@/app/utils/constant";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
@@ -12,7 +11,6 @@ import { useParams } from "next/navigation";
 
 const BroadcastDetailView = () => {
   const params = useParams();
-  const userCookie = getUser();
 
   const { broadcastId } = params;
 
@@ -23,37 +21,29 @@ const BroadcastDetailView = () => {
   //* fetch data
   useEffect(() => {
     setLoading(true);
-    const token = userCookie?.token;
-    if (token) {
-      const fetchBroadcast = async () => {
-        try {
-          const res = await axios.get(
-            `${API_BACKEND}/api/v1/broadcast/detail/${broadcastId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          const broadcastData = res.data.data;
-          setBroadcast(broadcastData);
-          setLoading(false);
-        } catch (error) {
-          Swal.fire({
-            icon: "error",
-            title: "Gagal Mendapatkan Broadcast",
-            text: "Terjadi kesalahan saat mengambil data broadcast. Silakan coba lagi.",
-            confirmButtonText: "Coba Lagi 🔄",
-            allowOutsideClick: false,
-          }).then((result) => {
-            if (result.isConfirmed) {
-              fetchBroadcast();
-            }
-          });
-        }
-      };
-      fetchBroadcast();
-    }
+    const fetchBroadcast = async () => {
+      try {
+        const res = await axios.get(
+          `${API_BACKEND}/api/v1/broadcast/detail/${broadcastId}`
+        );
+        const broadcastData = res.data.data;
+        setBroadcast(broadcastData);
+        setLoading(false);
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Gagal Mendapatkan Broadcast",
+          text: "Terjadi kesalahan saat mengambil data broadcast. Silakan coba lagi.",
+          confirmButtonText: "Coba Lagi 🔄",
+          allowOutsideClick: false,
+        }).then((result) => {
+          if (result.isConfirmed) {
+            fetchBroadcast();
+          }
+        });
+      }
+    };
+    fetchBroadcast();
   }, [broadcastId]);
 
   return (
