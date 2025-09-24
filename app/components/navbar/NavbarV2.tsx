@@ -273,19 +273,6 @@ const NavbarV2: React.FC = () => {
 
                   <li onClick={toggleMenu}>
                     <Link
-                      href="/dashboard"
-                      className={
-                        pathname == "/dashboard"
-                          ? `text-[${ACTIVE_COLOR}]`
-                          : `text-[${ON_PRIMARY_COLOR}]`
-                      }
-                    >
-                      Dashboard
-                    </Link>
-                  </li>
-
-                  <li onClick={toggleMenu}>
-                    <Link
                       href="/broadcast"
                       className={
                         pathname == "/broadcast"
@@ -294,6 +281,19 @@ const NavbarV2: React.FC = () => {
                       }
                     >
                       Broadcast
+                    </Link>
+                  </li>
+
+                  <li onClick={toggleMenu}>
+                    <Link
+                      href="/dashboard"
+                      className={
+                        pathname == "/dashboard"
+                          ? `text-[${ACTIVE_COLOR}]`
+                          : `text-[${ON_PRIMARY_COLOR}]`
+                      }
+                    >
+                      Dashboard
                     </Link>
                   </li>
 
@@ -352,6 +352,14 @@ const NavbarV2: React.FC = () => {
                     className={pathname == "/" ? "font-semibold" : ""}
                   >
                     Beranda
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/broadcast"
+                    className={pathname == "/broadcast" ? "font-semibold" : ""}
+                  >
+                    Broadcast
                   </Link>
                 </li>
                 <li>
@@ -459,6 +467,18 @@ const NavbarV2: React.FC = () => {
                       }
                     >
                       Beranda
+                    </Link>
+                  </li>
+                  <li onClick={toggleMenu}>
+                    <Link
+                      href="/broadcast"
+                      className={
+                        pathname == "/broadcast"
+                          ? `text-[${ACTIVE_COLOR}]`
+                          : `text-[${ON_PRIMARY_COLOR}]`
+                      }
+                    >
+                      Broadcast
                     </Link>
                   </li>
                   <li onClick={toggleMenu}>
