@@ -9,8 +9,6 @@ import {
   XCircle,
   Clock,
   AlertTriangle,
-  BarChart3,
-  PieChart,
 } from "lucide-react";
 import moment from "moment";
 import { API_BACKEND } from "@/app/utils/constant";
@@ -21,7 +19,6 @@ import Link from "next/link";
 import SkeletonWaitingPayment from "./components/SkeletonWaitingPayment";
 import { motion } from "framer-motion";
 import CaraPembayaran from "./components/HowToPayment";
-import FundingProgressCard from "./components/FundingProgressCard";
 import { getUser } from "@/app/lib/auth";
 
 export interface PaymentMethod {
@@ -146,26 +143,16 @@ const WaitingPayment = () => {
     const userId = user?.id;
     const socket: ClientSocket = createSocket(userId ?? "-");
 
-    socket.on("connect", () => {
-      console.log("Socket connected: Waiting ", socket.id);
-      console.log("Socket connected Waiting user id : ", user?.id ?? "-");
-    });
-
-    socket.on("payment-update", (data: any) => {
-      console.log("payment-update:", data);
+    socket.on("payment-update", () => {
       if (hasPaidRef.current) return;
-
       hasPaidRef.current = true;
       setStatusLoading(true);
 
       setTimeout(() => {
         setStatusLoading(false);
-
         setWaitingPayment((prev) => ({ ...prev!, payment_status: "PAID" }));
-        setStatusLoading(false);
-
         setTimeout(() => {
-          router.push("/dashboard");
+          router.push("/dashboard/investor-transaction");
         }, 2000);
       }, 1500);
     });
@@ -237,44 +224,31 @@ const WaitingPayment = () => {
   }
 
   const formatTimer = (seconds: number) => {
-    const d = Math.floor(seconds / (3600 * 24));
     const h = Math.floor((seconds % (3600 * 24)) / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
-    if (d > 0) {
-      return `${d} hari ${h}:${m.toString().padStart(2, "0")}:${s
-        .toString()
-        .padStart(2, "0")}`;
-    } else {
-      return `${h}:${m.toString().padStart(2, "0")}:${s
-        .toString()
-        .padStart(2, "0")}`;
-    }
+    return `${h}:${m.toString().padStart(2, "0")}:${s
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   return (
     <div className="py-28 px-4 bg-gray-50 flex flex-col items-center p-6">
-      {/* Header Card */}
+      {/* Header Card (selalu tampil) */}
       <motion.div
         initial={{ opacity: 0, y: -40 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-3xl mt-8"
       >
         <div className="rounded-2xl border bg-white shadow-md p-6 sm:p-8 text-center space-y-5">
-          {/* Judul Proyek */}
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">
             {waitingPayment.project_title}
           </h1>
 
           {/* Status Section */}
           <div className="space-y-3">
-            {/* Ikon Status */}
             {statusLoading ? (
-              <motion.div
-                className="w-16 h-16 mx-auto rounded-full border-4 border-yellow-400 border-t-transparent animate-spin"
-                initial={{ scale: 0.8, opacity: 0.5 }}
-                animate={{ scale: 1, opacity: 1 }}
-              />
+              <motion.div className="w-16 h-16 mx-auto rounded-full border-4 border-yellow-400 border-t-transparent animate-spin" />
             ) : waitingPayment.payment_status === "PAID" ? (
               <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto" />
             ) : waitingPayment.payment_status === "REFUNDED" ? (
@@ -288,7 +262,7 @@ const WaitingPayment = () => {
             {/* Badge Status */}
             <div className="flex justify-center">
               {statusLoading ? (
-                <span className="px-4 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium flex items-center gap-2">
+                <span className="px-4 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
                   Harap Tunggu...
                 </span>
               ) : (
@@ -343,7 +317,6 @@ const WaitingPayment = () => {
               )}
           </div>
 
-          {/* Sub-info */}
           <p className="text-gray-500 text-sm">
             Transaksi #
             {waitingPayment.invoices[0].order_id.replaceAll("CAPBRIDGE-", "")} •{" "}
@@ -352,39 +325,99 @@ const WaitingPayment = () => {
         </div>
       </motion.div>
 
-      {/* Main Card */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.2 }}
-        className="mt-8 w-full max-w-3xl rounded-2xl shadow-xl border p-8 bg-white space-y-8"
-      >
-        {/* Payment Method */}
-        <div className="rounded-2xl border bg-white shadow-sm p-6 space-y-6">
-          <h3 className="text-lg font-bold text-gray-800 mb-2">
-            Metode Pembayaran
-          </h3>
+      {/* Detail PENDING */}
+      {waitingPayment.payment_status === "PENDING" && !expired && (
+        <DetailPembayaran
+          invoice={invoice}
+          waitingPayment={waitingPayment}
+          showQRVA={true}
+          handleCopy={handleCopy}
+          note={null}
+        />
+      )}
 
-          {/* Header Payment Method */}
-          {invoice?.payment_method && (
-            <div className="flex items-center gap-4 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 p-4 border">
-              <img
-                src={invoice.payment_method.logo}
-                alt={invoice.payment_method.name}
-                className="h-12 w-12 object-contain rounded-lg bg-white p-1 shadow"
-              />
-              <div className="flex-1">
-                <p className="font-semibold text-gray-900 text-lg">
-                  {invoice.payment_method.name}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {invoice.payment_method.platform}
-                </p>
-              </div>
-            </div>
-          )}
+      {/* Detail PAID */}
+      {waitingPayment.payment_status === "PAID" && (
+        <DetailPembayaran
+          invoice={invoice}
+          waitingPayment={waitingPayment}
+          showQRVA={false}
+          handleCopy={handleCopy}
+          note=""
+        />
+      )}
 
-          {/* QRIS / VA Section */}
+      {/* Detail REFUNDED */}
+      {waitingPayment.payment_status === "REFUNDED" && (
+        <DetailPembayaran
+          invoice={invoice}
+          waitingPayment={waitingPayment}
+          showQRVA={false}
+          handleCopy={handleCopy}
+          note=""
+        />
+      )}
+    </div>
+  );
+};
+
+export default WaitingPayment;
+
+const DetailPembayaran = ({
+  invoice,
+  waitingPayment,
+  showQRVA,
+  handleCopy,
+  note,
+}: {
+  invoice: InvoiceData | undefined;
+  waitingPayment: PaymentData;
+  showQRVA: boolean;
+  handleCopy: (text: string) => void;
+  note?: string | null;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ delay: 0.2 }}
+    className="mt-8 w-full max-w-3xl rounded-2xl shadow-xl border p-8 bg-white space-y-8"
+  >
+    <div className="rounded-2xl border bg-white shadow-sm p-6 space-y-6">
+      <h3 className="text-lg font-bold text-gray-800 mb-2">
+        {waitingPayment.payment_status === "REFUNDED"
+          ? "Detail Pembayaran (Refunded)"
+          : waitingPayment.payment_status === "PAID"
+          ? "Detail Pembayaran (Lunas)"
+          : "Metode Pembayaran"}
+      </h3>
+
+      {note && (
+        <p className="text-sm text-gray-600 bg-gray-50 border rounded-lg p-3">
+          {note}
+        </p>
+      )}
+
+      {invoice?.payment_method && (
+        <div className="flex items-center gap-4 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 p-4 border">
+          <img
+            src={invoice.payment_method.logo}
+            alt={invoice.payment_method.name}
+            className="h-12 w-12 object-contain rounded-lg bg-white p-1 shadow"
+          />
+          <div className="flex-1">
+            <p className="font-semibold text-gray-900 text-lg">
+              {invoice.payment_method.name}
+            </p>
+            <p className="text-xs text-gray-500">
+              {invoice.payment_method.platform}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* QRIS / VA hanya kalau showQRVA true */}
+      {showQRVA && (
+        <>
           {invoice?.qr_url ? (
             <div className="flex flex-col items-center">
               <img
@@ -414,70 +447,62 @@ const WaitingPayment = () => {
           ) : (
             <p className="text-gray-500">Metode tidak tersedia</p>
           )}
+        </>
+      )}
 
-          {/* Breakdown Harga */}
-          <div className="border-t pt-4 space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Nominal Investasi</span>
-              <span className="font-medium text-gray-800">
-                Rp{waitingPayment.amount.toLocaleString("id-ID")}
-              </span>
-            </div>
-            {invoice?.payment_method?.fee ? (
-              <div className="flex justify-between">
-                <span className="text-gray-600">Biaya Admin</span>
-                <span className="font-medium text-gray-800">
-                  Rp{invoice.payment_method.fee.toLocaleString("id-ID")}
-                </span>
-              </div>
-            ) : null}
-            <div className="flex justify-between font-semibold border-t pt-2">
-              <span className="text-gray-800">Total</span>
-              <span className="text-gray-900">
-                Rp
-                {(
-                  waitingPayment.amount + (invoice?.payment_method?.fee || 0)
-                ).toLocaleString("id-ID")}
-              </span>
-            </div>
+      {/* Breakdown Harga */}
+      <div className="border-t pt-4 space-y-2 text-sm">
+        <div className="flex justify-between">
+          <span className="text-gray-600">Nominal Investasi</span>
+          <span className="font-medium text-gray-800">
+            Rp{waitingPayment.amount.toLocaleString("id-ID")}
+          </span>
+        </div>
+        {invoice?.payment_method?.fee ? (
+          <div className="flex justify-between">
+            <span className="text-gray-600">Biaya Admin</span>
+            <span className="font-medium text-gray-800">
+              Rp{invoice.payment_method.fee.toLocaleString("id-ID")}
+            </span>
           </div>
+        ) : null}
+        <div className="flex justify-between font-semibold border-t pt-2">
+          <span className="text-gray-800">Total</span>
+          <span className="text-gray-900">
+            Rp
+            {(
+              waitingPayment.amount + (invoice?.payment_method?.fee || 0)
+            ).toLocaleString("id-ID")}
+          </span>
         </div>
-
-        {/* Card Cara Pembayaran */}
-        {waitingPayment?.invoices.map((inv) =>
-          inv.payment_method ? (
-            <CaraPembayaran
-              key={inv.invoice_id}
-              method={inv.payment_method}
-              vaNumber={inv.vaNumber}
-            />
-          ) : null
-        )}
-
-        {/* Project Funding Progress */}
-
-        {/* <FundingProgressCard
-          title="Pendanaan Crowdfunding"
-          icon={<PieChart className="w-5 h-5 text-pink-500" />}
-          target={200000000}
-          paid={150000000}
-          reserved={20000000}
-        /> */}
-
-        <div className="text-center">
-          <Link
-            href="/dashboard/investor-transaction"
-            className="inline-block px-6 py-3 rounded-lg bg-[#10565C] text-white font-semibold shadow"
-          >
-            Lihat Pesanan
-          </Link>
-        </div>
-      </motion.div>
+      </div>
     </div>
-  );
-};
 
-export default WaitingPayment;
+    {/* Cara Pembayaran hanya untuk PENDING */}
+    {showQRVA &&
+      waitingPayment?.invoices.map((inv) =>
+        inv.payment_method ? (
+          <CaraPembayaran
+            key={inv.invoice_id}
+            method={inv.payment_method}
+            vaNumber={inv.vaNumber}
+          />
+        ) : null
+      )}
+
+    {/* Tombol balik dashboard buat PAID / REFUNDED */}
+    {!showQRVA && (
+      <div className="text-center">
+        <Link
+          href="/dashboard/investor-transaction"
+          className="inline-block px-6 py-3 rounded-lg bg-[#10565C] text-white font-semibold shadow hover:bg-[#0d464a]"
+        >
+          Lihat Pesanan
+        </Link>
+      </div>
+    )}
+  </motion.div>
+);
 
 const EmptyState = ({
   icon,
