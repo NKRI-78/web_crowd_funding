@@ -10,7 +10,12 @@ import DocumentRow from "./DocumentRow";
 import { zodResolver } from "@hookform/resolvers/zod";
 import FormSection from "./FormSection";
 import FormButton from "../inputFormPemodalPerusahaan/component/FormButton";
-import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import {
+  Controller,
+  FieldErrors,
+  SubmitHandler,
+  useForm,
+} from "react-hook-form";
 import {
   defaultValues,
   formDokumenPelengkapPenerbitSchema,
@@ -40,11 +45,8 @@ const FormDokumenTambahanPage: React.FC = () => {
 
   //* form state
   const {
-    register,
-    setValue,
     handleSubmit,
     watch,
-    getValues,
     control,
     formState: { errors },
     reset,
@@ -150,6 +152,61 @@ const FormDokumenTambahanPage: React.FC = () => {
         });
       }
     }
+  };
+
+  //* on invalid
+  const onInvalid = async (
+    errors: FieldErrors<FormDokumenPelengkapPenerbitSchema>
+  ): Promise<void> => {
+    const fieldNames = Object.keys(errors);
+
+    const errorList = fieldNames
+      .map((field) => `<li>- <span class="font-semibold">${field}</span></li>`)
+      .join("");
+
+    Swal.fire({
+      icon: "info",
+      title: "Ups masih ada field yang error",
+      html: `
+        <style>
+        .swal2-title{font-size:20px !important; font-weight:700; margin:4px 0 10px !important;}
+        .swal2-icon{transform:scale(.9); margin:10px auto 0 !important;}
+            .swal-error{ text-align:left; font-size:14px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+            .swal-error .desc{ margin:0 0 10px; color:#4A5568; }
+            .swal-error .alert-list{
+              list-style:none; padding:0; margin:6px 0 0;
+              display:grid; grid-template-columns:1fr; gap:8px;
+              max-height:260px; overflow:auto;
+            }
+            @media (min-width:520px){
+              .swal-error .alert-list{ grid-template-columns:1fr 1fr; }
+            }
+            .swal-error .alert-item{
+              display:flex; align-items:center; gap:10px;
+              padding:8px 10px; border:1px solid #FED7D7; background:#FFF5F5; border-radius:8px;
+            }
+            .swal-error .badge{
+              width:24px; height:24px; border-radius:50%;
+              display:inline-flex; align-items:center; justify-content:center;
+              background:#F56565; color:#fff; font-weight:700; font-size:12px;
+              flex:0 0 24px;
+            }
+            .swal-error .field{ color:#C53030; font-weight:600; word-break:break-word; }
+            .swal-error .tip{ margin-top:12px; font-size:12px; color:#718096; }
+            /* scrollbar halus */
+            .swal-error .alert-list::-webkit-scrollbar{ height:8px; width:8px; }
+            .swal-error .alert-list::-webkit-scrollbar-thumb{ background:#E53E3E33; border-radius:8px; }
+          </style>
+
+          <div class="swal-error">
+            <p class="desc">Beberapa field belum lengkap, periksa dan lengkapi daftar di bawah ini:</p>
+            <ol class="alert-list">
+              ${errorList}
+            </ol>
+          </div>
+        `,
+      confirmButtonText: "Dimengerti",
+    });
   };
 
   return (
@@ -514,11 +571,7 @@ const FormDokumenTambahanPage: React.FC = () => {
           </DocumentRow>
 
           <div className="w-full flex justify-end pr-16 pt-4">
-            <FormButton
-              onClick={handleSubmit(onSubmit, (errors) => {
-                console.error("VALIDATION ERRORS:", errors);
-              })}
-            >
+            <FormButton onClick={handleSubmit(onSubmit, onInvalid)}>
               Submit
             </FormButton>
           </div>
