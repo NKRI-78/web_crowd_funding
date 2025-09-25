@@ -73,7 +73,10 @@ export default function RegisterSelectRole({
 
               {/* Pemodal */}
               <div
-                onClick={() => setShowInvestorModal(true)}
+                onClick={() => {
+                  // setShowInvestorModal(true);
+                  handleSelectRole(1, "investor");
+                }}
                 className="border border-green-600 rounded-xl p-4 hover:bg-green-50 cursor-pointer"
               >
                 <h3 className="text-green-700 font-bold text-lg">Pemodal</h3>
@@ -129,17 +132,27 @@ export default function RegisterSelectRole({
               </div>
 
               {/* Pemodal Perusahaan */}
-              <div
-                onClick={() => handleSelectRole(9, "investor company")}
-                className="border border-green-600 rounded-xl p-4 hover:bg-green-50 cursor-pointer"
-              >
-                <h3 className="text-green-700 font-bold text-lg">
-                  Pemodal Perusahaan
-                </h3>
-                <p className="text-sm text-gray-600 mt-2">
-                  Cocok untuk badan usaha yang ingin berinvestasi pada skala
-                  lebih besar.
-                </p>
+              <div className="relative">
+                <div
+                  onClick={() => {
+                    // handleSelectRole(9, "investor company")
+                  }}
+                  className="border border-green-600 rounded-xl p-4 hover:bg-green-50 cursor-pointer"
+                >
+                  <h3 className="text-green-700 font-bold text-lg">
+                    Pemodal Perusahaan
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Cocok untuk badan usaha yang ingin berinvestasi pada skala
+                    lebih besar.
+                  </p>
+                </div>
+
+                <div className="absolute inset-0 bg-white/60 flex items-center justify-center rounded-xl cursor-not-allowed">
+                  <span className="text-white text-xs bg-black/70 rounded-md px-2 py-1">
+                    Sedang dalam pembangunan
+                  </span>
+                </div>
               </div>
             </div>
 

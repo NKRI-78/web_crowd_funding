@@ -154,75 +154,10 @@ const ContainerSelfie: React.FC<Props> = ({
       className={
         isCameraActive
           ? "flex flex-col h-full bg-slate-50 px-4 pb-4 pt-2 rounded-md"
-          : "flex flex-col h-[240px] md:h-full bg-slate-50 px-4 pb-4 pt-2 rounded-md"
+          : "flex flex-col h-[240px] md:h-[350px] bg-slate-50 px-4 pb-4 pt-2 rounded-md"
       }
     >
       <SectionPoint text="Foto Selfie" className="mb-2" />
-
-      {/* <div
-        onClick={() => {
-          if (isCameraActive) return;
-          startCamera();
-        }}
-        className="flex-1 flex flex-col items-center justify-center gap-3 rounded-md border border-dashed border-black cursor-pointer overflow-hidden"
-      >
-        {isCameraActive ? (
-          <div className="flex flex-col items-center w-full mb-2">
-            {!photo ? (
-              <video
-                ref={videoRef}
-                style={{ transform: "scaleX(-1)" }}
-                autoPlay
-                playsInline
-                muted
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full relative">
-                <img
-                  alt="Foto Selfie"
-                  src={photo}
-                  className="block w-full h-full object-cover"
-                />
-                {photo && (
-                  <button
-                    type="button"
-                    onClick={resetPhoto}
-                    className="absolute top-2 right-2 bg-white rounded-full p-1 shadow hover:bg-gray-100"
-                  >
-                    <X className="w-4 h-4 text-gray-600" />
-                  </button>
-                )}
-              </div>
-            )}
-            {!photo ? (
-              <FormButton type="filled" className="mt-2" onClick={takePhoto}>
-                Ambil Foto
-              </FormButton>
-            ) : (
-              <FormButton
-                type="outlined"
-                className="mt-2"
-                onClick={retakePhoto}
-              >
-                Ambil Ulang
-              </FormButton>
-            )}
-          </div>
-        ) : errorMessage ? (
-          <>
-            <CameraOff className="w-12 h-12 text-red-400" />
-            <p className="text-red-500 text-xs text-center">{errorMessage}</p>
-          </>
-        ) : (
-          <>
-            <Camera className="w-12 h-12 text-gray-400" />
-            <p className="text-gray-500 text-xs text-center">
-              Klik area ini untuk mengunggah foto selfie
-            </p>
-          </>
-        )}
-      </div> */}
 
       <div
         onClick={() => {
