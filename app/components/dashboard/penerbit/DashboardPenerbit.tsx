@@ -53,7 +53,7 @@ export const DashboardPenerbit: React.FC<Props> = ({
           <PanelContent
             title="Bukti Pembayaran Sudah Diterima"
             message="Mohon tunggu informasi dari admin yang akan memberikan 
-            akses lanjutan terkait pengisian dokumen pelengkap max 2x24 jam. 
+            akses lanjutan terkait pengisian dokumen pelengkap maksimal kerja 2x24 jam. 
             Informasi tersebut akan dikirimkan melalui inbox, 
             silakan cek inbox Anda secara berkala. Terima kasih."
             buttonTitle="Inbox"

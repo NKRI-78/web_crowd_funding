@@ -153,6 +153,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
     {}
   );
 
+  const [syncNamaToPemilik, setSyncNamaToPemilik] = useState(true);
   const [province, setProvince] = useState<any>([]);
   const [selectedProvincePribadi, setSelectedProvincePribadi] =
     useState<OptionType | null>(null);
@@ -621,17 +622,17 @@ const ComponentDataPribadi: React.FC<Props> = ({
 
           <h3 className="font-semibold text-black">1. Informasi Pribadi</h3>
 
-          <div>
-            <ContainerSelfie
-              defaultPhoto={formData.fotoPemodalUrlPribadi}
-              photoResult={(file) => {
-                if (file) {
-                  handleFotoChange(file, "fotoPemodalUrl");
-                }
-              }}
-              errorText={errors?.fotoPemodalUrlPribadi?.[0]}
-            />
-          </div>
+          {/* <div className="h-80">
+          </div> */}
+          <ContainerSelfie
+            defaultPhoto={formData.fotoPemodalUrlPribadi}
+            photoResult={(file) => {
+              if (file) {
+                handleFotoChange(file, "fotoPemodalUrl");
+              }
+            }}
+            errorText={errors?.fotoPemodalUrlPribadi?.[0]}
+          />
 
           <div>
             <label className="text-sm font-medium mb-2">
@@ -641,10 +642,22 @@ const ComponentDataPribadi: React.FC<Props> = ({
               type="text"
               name="nama"
               value={formData.nama}
-              onChange={onChange}
+              onChange={(e) => {
+                onChange(e);
+
+                if (syncNamaToPemilik) {
+                  onChange({
+                    target: {
+                      name: "namaPemilik",
+                      value: e.target.value,
+                    },
+                  } as React.ChangeEvent<HTMLInputElement>);
+                }
+              }}
               placeholder="Nama"
               className="border p-2 w-full rounded mb-0 placeholder:text-sm"
             />
+
             {errors?.nama && (
               <p className="text-red-500 text-sm mt-1">{errors.nama[0]}</p>
             )}
@@ -1189,7 +1202,8 @@ const ComponentDataPribadi: React.FC<Props> = ({
             placeholder="Masukkan Nama Pemilik Rekening"
             value={formData.namaPemilik}
             onChange={onChange}
-            className="border rounded p-2 w-full mb-0 placeholder:text-sm"
+            disabled={syncNamaToPemilik}
+            className="border rounded p-2 w-full mb-0 placeholder:text-sm disabled:bg-gray-100"
           />
           {errors?.namaPemilik && (
             <p className="text-red-500 text-sm mt-1">{errors.namaPemilik[0]}</p>
