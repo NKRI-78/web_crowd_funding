@@ -621,17 +621,17 @@ const ComponentDataPribadi: React.FC<Props> = ({
 
           <h3 className="font-semibold text-black">1. Informasi Pribadi</h3>
 
-          <div>
-            <ContainerSelfie
-              defaultPhoto={formData.fotoPemodalUrlPribadi}
-              photoResult={(file) => {
-                if (file) {
-                  handleFotoChange(file, "fotoPemodalUrl");
-                }
-              }}
-              errorText={errors?.fotoPemodalUrlPribadi?.[0]}
-            />
-          </div>
+          {/* <div className="h-80">
+          </div> */}
+          <ContainerSelfie
+            defaultPhoto={formData.fotoPemodalUrlPribadi}
+            photoResult={(file) => {
+              if (file) {
+                handleFotoChange(file, "fotoPemodalUrl");
+              }
+            }}
+            errorText={errors?.fotoPemodalUrlPribadi?.[0]}
+          />
 
           <div>
             <label className="text-sm font-medium mb-2">

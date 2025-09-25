@@ -14,7 +14,6 @@ import RegisterSelectRole from "../auth/register/RegisterSelectRole";
 import Cookies from "js-cookie";
 import axios from "axios";
 import Tippy from "@tippyjs/react";
-import "tippy.js/dist/tippy.css";
 import { User } from "@/app/interfaces/user/IUser";
 import {
   FORM_INDEX_CACHE_KEY,
@@ -24,12 +23,19 @@ import {
 } from "@/app/(defaults)/form-penerbit/form-cache-key";
 import { getUser } from "@/app/lib/auth";
 import { createSocket } from "@/app/utils/sockets";
-import { fetchInboxAction } from "@/actions/fetchInbox";
-import { fetchInboxClient } from "@/app/lib/fetchInbox";
-import { fetchInboxThunk, updateInboxes } from "@/redux/slices/inboxSlice";
+import { fetchInboxThunk } from "@/redux/slices/inboxSlice";
 import { API_BACKEND } from "@/app/utils/constant";
 import { setBadge } from "@/redux/slices/badgeSlice";
 
+// penerbit
+// ubah tampilan broadcast, nama broadcast diubah jadi informasi ✅
+// perbaiki tampilan dashboard pemodal pribadi 🔃
+// ketika sudah bayar administrasi barcode hilang 🔃
+
+// pemodal
+// register pemodal pribadi bagian container selfienya gepeng ✅
+// akses register pemodal perusahaan sedang dalam pembangunan ✅
+// input pemodal pribadi nama lengkap dan nama pemilik rekening dijadi default ✅
 const PRIMARY_COLOR = "#10565C";
 const ON_PRIMARY_COLOR = "#FFFFFF";
 const ACTIVE_COLOR = "#16EDFF";
@@ -293,7 +299,7 @@ const NavbarV2: React.FC = () => {
                           : `text-[${ON_PRIMARY_COLOR}]`
                       }
                     >
-                      Broadcast
+                      Informasi
                     </Link>
                   </li>
 
@@ -359,7 +365,7 @@ const NavbarV2: React.FC = () => {
                     href="/broadcast"
                     className={pathname == "/broadcast" ? "font-semibold" : ""}
                   >
-                    Broadcast
+                    Informasi
                   </Link>
                 </li>
                 <li>
@@ -409,7 +415,10 @@ const NavbarV2: React.FC = () => {
                         ? `border-2 border-[${PRIMARY_COLOR}] text-[${PRIMARY_COLOR}]`
                         : `border-2 border-[${ON_PRIMARY_COLOR}] text-[${ON_PRIMARY_COLOR}]`
                     } cursor-pointer`}
-                    onClick={() => setStep("register")}
+                    onClick={() => {
+                      setStep("register");
+                      // setStep("role");
+                    }}
                   >
                     Daftar
                   </div>
@@ -478,7 +487,7 @@ const NavbarV2: React.FC = () => {
                           : `text-[${ON_PRIMARY_COLOR}]`
                       }
                     >
-                      Broadcast
+                      Informasi
                     </Link>
                   </li>
                   <li onClick={toggleMenu}>
