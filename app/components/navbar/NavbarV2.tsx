@@ -27,15 +27,6 @@ import { fetchInboxThunk } from "@/redux/slices/inboxSlice";
 import { API_BACKEND } from "@/app/utils/constant";
 import { setBadge } from "@/redux/slices/badgeSlice";
 
-// penerbit
-// ubah tampilan broadcast, nama broadcast diubah jadi informasi ✅
-// perbaiki tampilan dashboard pemodal pribadi 🔃
-// ketika sudah bayar administrasi barcode hilang 🔃
-
-// pemodal
-// register pemodal pribadi bagian container selfienya gepeng ✅
-// akses register pemodal perusahaan sedang dalam pembangunan ✅
-// input pemodal pribadi nama lengkap dan nama pemilik rekening dijadi default ✅
 const PRIMARY_COLOR = "#10565C";
 const ON_PRIMARY_COLOR = "#FFFFFF";
 const ACTIVE_COLOR = "#16EDFF";

@@ -114,7 +114,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({ value, onChange }) => {
         {/* Input nomor telp */}
         <input
           type="tel"
-          placeholder="Nomor telepon"
+          placeholder="812 **** ****"
           value={phone}
           onChange={handlePhoneChange}
           className="flex-1 px-3 py-2 focus:outline-none"
