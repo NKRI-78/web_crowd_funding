@@ -174,8 +174,6 @@ const ComponentDataPribadi: React.FC<Props> = ({
 
   const [isClient, setIsClient] = useState(false);
 
-  console.log(selectedProvincePribadi, "province");
-
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -406,9 +404,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
   useEffect(() => {
     const fetchProvince = async () => {
       try {
-        const response = await axios.get(
-          `https://api-capbridge.langitdigital78.com/api/v1/administration/province`
-        );
+        const response = await axios.get(`${urlWilayah}/wilayah/province`);
         setProvince(response.data.data);
       } catch (error) {
         console.error("Gagal ambil province:", error);
@@ -551,9 +547,9 @@ const ComponentDataPribadi: React.FC<Props> = ({
   }, [formData]);
 
   const customOptions: OptionValue[] = province.map(
-    (province: { id: any; name: any }) => ({
-      value: province.id,
-      label: province.name,
+    (province: { code: any; nama: any }) => ({
+      value: province.code,
+      label: province.nama,
     })
   );
 
