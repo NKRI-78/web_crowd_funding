@@ -1203,7 +1203,7 @@ const ComponentDataPribadi: React.FC<Props> = ({
             value={formData.namaPemilik}
             onChange={onChange}
             disabled={syncNamaToPemilik}
-            className="border rounded p-2 w-full mb-0 placeholder:text-sm disabled:bg-gray-100 placeholder:text-sm"
+            className="border rounded p-2 w-full mb-0 placeholder:text-sm disabled:bg-gray-100"
           />
           {errors?.namaPemilik && (
             <p className="text-red-500 text-sm mt-1">{errors.namaPemilik[0]}</p>
