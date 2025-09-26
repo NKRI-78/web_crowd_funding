@@ -169,7 +169,7 @@ const CreateProjectPenerbit: React.FC = () => {
         company_id: companyId,
         title: data.namaProyek,
         deskripsi: data.deskripsiProyek,
-        dana_yang_dibutuhkan: String(data.danaYangDibutuhkan),
+        dana_yang_dibutuhkan: data.danaYangDibutuhkan,
         modal: String(data.modalProyek),
         persentase_keuntungan: String(data.persentaseKeuntungan),
         spk: data.fileSPK,
