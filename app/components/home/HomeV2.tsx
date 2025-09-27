@@ -186,7 +186,7 @@ const HomeV2: React.FC = () => {
             <img
               src="/images/IPHONEMOCKUP.png"
               alt="mockup"
-              className="w-72 md:w-[85%] absolute -top-0 left-1/2 -translate-x-1/2 z-20"
+              className="w-56 md:w-[72%] absolute -top-0 md:-top-10 left-1/2 -translate-x-1/2 z-20"
             />
 
             {/* Gambar investment di bawah */}
@@ -623,7 +623,7 @@ const HomeV2: React.FC = () => {
 
       <div className="fixed bottom-4 right-4 z-50">
         <a
-          href="https://wa.me/6282138820134"
+          href="https://wa.me/6283814333442"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center bg-[#29a71a] text-white px-4 py-2 font-bold rounded-full shadow-lg"
