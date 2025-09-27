@@ -8,12 +8,12 @@ import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import BroadcastCard from "./BroadcastCard";
 import { useRouter } from "next/navigation";
+import { Inbox } from "lucide-react";
 
 const BroadcastView = () => {
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
-
   const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
 
   //* fetch data
@@ -62,6 +62,14 @@ const BroadcastView = () => {
       {loading ? (
         <div className="w-full h-[70vh] flex flex-col items-center justify-center">
           <CircularProgressIndicator textDescription="Memuat Halaman" />
+        </div>
+      ) : broadcasts.length === 0 ? (
+        <div className="w-full h-[70vh] flex flex-col items-center justify-center text-center text-gray-500">
+          <Inbox className="w-16 h-16 mb-4 text-gray-400" />
+          <h2 className="text-lg font-semibold">Belum Ada Informasi</h2>
+          <p className="text-sm">
+            Belum ada informasi atau pengumuman terbaru.
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
