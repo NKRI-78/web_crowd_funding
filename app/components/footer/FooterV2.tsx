@@ -68,12 +68,41 @@ const Footer: React.FC = () => {
 
         <div className="space-y-2 text-sm">
           <h4 className="font-semibold">HUBUNGI KAMI</h4>
-          <p className="text-white">Nomor Telepon</p>
-          <p className="text-white font-semibold">+62 xx xxx xx</p>
-          <p className="text-white">WhatsApp</p>
-          <p className="text-white font-semibold">+62 xx xxx xx</p>
-          <p className="text-white">Email</p>
-          <p className="text-white font-semibold">info@FuLusme</p>
+
+          <div className="space-y-1">
+            <p className="text-white">Nomor Telepon</p>
+            <a
+              href="tel:02138820134"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white font-semibold cursor-pointer hover:underline hover:text-blue-300 transition-colors"
+            >
+              02138820134
+            </a>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-white">WhatsApp</p>
+            <a
+              href="https://wa.me/6283814333442"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white font-semibold cursor-pointer hover:underline hover:text-green-300 transition-colors"
+            >
+              083814333442
+            </a>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-white">Email</p>
+            <a
+              href="mailto:info@FuLusme"
+              className="text-white font-semibold cursor-pointer hover:underline hover:text-yellow-300 transition-colors"
+            >
+              info@fuLusme
+            </a>
+          </div>
+
           <div className="flex space-x-3 pt-2">
             <a href="#">
               <i className="fab fa-facebook-f"></i>
