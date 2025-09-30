@@ -17,14 +17,13 @@ const BroadcastCard: React.FC<Props> = ({ broadcast, onClick }) => {
       <div className="flex gap-4">
         {/* Foto Broadcast */}
         {broadcast.path && (
-          <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden">
-            <Image
-              src={broadcast.path}
-              alt={broadcast.title}
-              fill
-              className="object-cover"
-            />
-          </div>
+          <Image
+            src={broadcast.path}
+            alt={broadcast.title}
+            width={64}
+            height={64}
+            className="rounded-md"
+          />
         )}
 
         {/* Konten */}
