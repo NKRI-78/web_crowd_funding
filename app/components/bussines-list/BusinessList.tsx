@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { Building, X } from "lucide-react";
 import { ProjectCard } from "../project/ProjectCard";
 import { getAllProject } from "@/actions/GetAllProject";
 import { Project } from "@/app/interfaces/project/IProject";
+import GeneralDialog from "../GeneralDialog";
 
 const BussinesList: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,43 +29,6 @@ const BussinesList: React.FC = () => {
 
   return (
     <div>
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <div className="bg-white w-full max-w-md p-6 rounded-lg shadow-lg relative">
-            <button
-              onClick={closeModal}
-              className="absolute top-4 left-4 text-gray-500 hover:text-black"
-            >
-              <X size={20} />
-            </button>
-            <div className="text-center text-black font-bold text-lg mb-4">
-              Urutkan
-            </div>
-            <div className="flex flex-col gap-3">
-              <button className="bg-gray-100 text-black py-2 rounded-md">
-                Nama A - Z
-              </button>
-              <button className="bg-gray-100 text-black py-2 rounded-md">
-                Nama Z - A
-              </button>
-              <button className="bg-gray-100 text-black py-2 rounded-md">
-                Nilai Rendah ke Tinggi
-              </button>
-              <button className="bg-gray-100 text-black py-2 rounded-md">
-                Nilai Tinggi ke Rendah
-              </button>
-              <button
-                onClick={closeModal}
-                className="text-sm text-gray-500 mt-2 underline"
-              >
-                Reset
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <section className="bg-white relative text-black py-12 px-6 text-center md:px-16 pt-32 scroll-mt-32">
         {/* Search & Filter */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4 text-left">
@@ -102,12 +66,62 @@ const BussinesList: React.FC = () => {
         </div>
 
         {/* Project Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-14">
-          {project.map((project: Project, index) => (
-            <ProjectCard key={index} project={project} />
-          ))}
-        </div>
+        {project.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-14">
+            {project.map((project: Project, index) => (
+              <ProjectCard key={index} project={project} />
+            ))}
+          </div>
+        ) : (
+          <div className="w-full py-32 flex flex-col items-center justify-center text-gray-600">
+            <Building size={64} className="mb-4 text-gray-400" />
+            <h3 className="text-xl font-semibold mb-2">Belum Ada Proyek</h3>
+            <p className="text-center max-w-md text-sm text-gray-500">
+              Saat ini belum ada proyek yang tersedia di platform. Silakan
+              kunjungi kembali nanti untuk melihat update terbaru.
+            </p>
+          </div>
+        )}
       </section>
+
+      <GeneralDialog
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+        }}
+      >
+        <div className="w-full">
+          <button
+            onClick={closeModal}
+            className="absolute top-4 left-4 text-gray-500 hover:text-black"
+          >
+            <X size={20} />
+          </button>
+          <div className="text-center text-black font-bold text-lg mb-4">
+            Urutkan
+          </div>
+          <div className="flex flex-col gap-3">
+            <button className="bg-gray-100 text-black py-2 rounded-md">
+              Nama A - Z
+            </button>
+            <button className="bg-gray-100 text-black py-2 rounded-md">
+              Nama Z - A
+            </button>
+            <button className="bg-gray-100 text-black py-2 rounded-md">
+              Nilai Rendah ke Tinggi
+            </button>
+            <button className="bg-gray-100 text-black py-2 rounded-md">
+              Nilai Tinggi ke Rendah
+            </button>
+            <button
+              onClick={closeModal}
+              className="text-sm text-gray-500 mt-2 underline"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      </GeneralDialog>
     </div>
   );
 };

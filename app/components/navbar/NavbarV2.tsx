@@ -536,7 +536,7 @@ const NavbarV2: React.FC = () => {
                     }}
                   >
                     <div
-                      className={`px-8 py-2 rounded-md bg-white text-[${PRIMARY_COLOR}] bor`}
+                      className={`px-8 py-2 rounded-md bg-transparent text-white border border-gray-200`}
                     >
                       Daftar
                     </div>
