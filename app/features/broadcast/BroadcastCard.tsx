@@ -18,11 +18,14 @@ const BroadcastCard: React.FC<Props> = ({ broadcast, onClick }) => {
         {/* Foto Broadcast */}
         {broadcast.path && (
           <div className="relative w-16 h-16 flex-shrink-0 rounded-md overflow-hidden">
-            <Image
+            <img
               src={broadcast.path}
               alt={broadcast.title}
-              fill
-              className="object-cover"
+              loading="lazy"
+              onError={(e) => {
+                e.currentTarget.src = "/images/default-image.png";
+              }}
+              className="absolute inset-0 w-full h-full object-cover"
             />
           </div>
         )}
