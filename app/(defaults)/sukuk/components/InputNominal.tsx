@@ -42,6 +42,7 @@ export default function InputNominal({
 
   // ✅ Cek apakah user sudah punya Rekening Efek
   const rekEfek = dashboardData?.rek_efek === true;
+  const isInstitusi = dashboardData?.is_institusi === true;
 
   // format angka ke Rupiah style (1.000.000)
   const formatRupiah = (num: string) => {
@@ -58,7 +59,7 @@ export default function InputNominal({
 
     if (minValue > 0 && numeric < minValue) {
       setError(`Minimal investasi Rp${minValue.toLocaleString("id-ID")}`);
-    } else if (!rekEfek && quota && numeric > quota) {
+    } else if (!rekEfek && !isInstitusi && quota && numeric > quota) {
       // ✅ hanya validasi quota kalau rek_efek = false
       setError(`Maksimal investasi Rp${quota.toLocaleString("id-ID")} (kuota)`);
     } else {
@@ -82,7 +83,9 @@ export default function InputNominal({
 
   // progress bar calculation
   const percent =
-    !rekEfek && quota ? Math.min((numericValue / quota) * 100, 100) : 0;
+    !rekEfek && !isInstitusi && quota
+      ? Math.min((numericValue / quota) * 100, 100)
+      : 0;
 
   return (
     <div className="w-full p-5 space-y-4">
@@ -112,7 +115,7 @@ export default function InputNominal({
       {error && <p className="text-sm text-red-500">{error}</p>}
 
       {/* Kuota Info */}
-      {!rekEfek && quota && (
+      {!rekEfek && !isInstitusi && quota && (
         <div className="space-y-2">
           <span className="block text-sm font-semibold text-gray-800">
             Kuota Investasi
@@ -137,7 +140,13 @@ export default function InputNominal({
 
       {rekEfek && (
         <p className="text-sm text-green-600 font-medium">
-          Rekening Efek terverifikasi — investasi tanpa batas kuota.
+          Rekening Efek Terverifikasi — investasi tanpa batas kuota.
+        </p>
+      )}
+
+      {isInstitusi && (
+        <p className="text-sm text-green-600 font-medium">
+          Pemodal Perusahaan Terverifikasi — investasi tanpa batas kuota.
         </p>
       )}
 

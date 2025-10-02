@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
-import { API_BACKEND } from "@/app/utils/constant";
+import { API_BACKEND, API_PG } from "@/app/utils/constant";
 import { getUser } from "@/app/lib/auth";
 import { PaymentMethodType } from "./components/types";
 import TransactionSummary from "./components/TransactionSummary";
@@ -41,7 +41,7 @@ const PaymentMethod = ({ id }: { id: string }) => {
     if (userData) {
       setLoading(true);
       axios
-        .get(`https://api.pg.capbridge.langitdigital78.com/api/v1/channel`, {
+        .get(`${API_PG}/api/v1/channel`, {
           headers: {
             Authorization: `Bearer ${userData.token}`,
           },
