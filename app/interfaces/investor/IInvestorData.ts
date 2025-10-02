@@ -1,6 +1,7 @@
 export interface InvestorData {
   verified_investor: boolean;
   rek_efek: boolean;
+  is_institusi: boolean;
   summary: InvestorDataSummary;
   recent_transactions: RecentTransaction[];
   active_invoices: any[];
@@ -18,6 +19,7 @@ export interface InvestorDataSummary {
   remaining_quota_idr: number;
   projects_count: number;
   active_invoices: number;
+  quota_enforced: boolean;
 }
 
 export interface RecentTransaction {
