@@ -111,7 +111,10 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
           <SidebarMenuItem
             expand={expand}
             pathName="/dashboard/investor-transaction"
-            showWhen={userData?.role === "investor"}
+            showWhen={
+              userData?.role === "investor" ||
+              userData?.role === "investor institusi"
+            }
             title="Transaction"
             icon={ArrowLeftRight}
             setActive={(p) => p === pathname}
@@ -120,7 +123,10 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
           <SidebarMenuItem
             expand={expand}
             pathName="/dashboard/portfolio"
-            showWhen={userData?.role === "investor"}
+            showWhen={
+              userData?.role === "investor" ||
+              userData?.role === "investor institusi"
+            }
             title="Portfolio"
             icon={PieChart}
             setActive={(p) => p === pathname}
@@ -128,7 +134,10 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
           <SidebarMenuItem
             expand={expand}
             pathName="/business-list"
-            showWhen={userData?.role === "investor"}
+            showWhen={
+              userData?.role === "investor" ||
+              userData?.role === "investor institusi"
+            }
             title="Explore Proyek"
             icon={Briefcase}
             setActive={(p) => p === pathname}

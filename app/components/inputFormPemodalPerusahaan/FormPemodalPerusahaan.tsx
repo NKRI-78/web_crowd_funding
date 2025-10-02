@@ -11,6 +11,8 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { useRouter } from "next/navigation";
+import { setCookie } from "@/app/helper/cookie";
+import { getUser } from "@/app/lib/auth";
 
 interface FormSchema {
   photo: File | null;
@@ -47,36 +49,37 @@ const FormPemodalPerusahaan: React.FC = () => {
   });
 
   const [errors, setErrors] = useState<ErrorSchema>({});
+  const [user, setUser] = useState<AuthDataResponse | null>(null);
   const router = useRouter();
 
   //* load profile
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const userData = localStorage.getItem("user");
-        if (!userData) return;
+    const userCookie = getUser();
+    if (userCookie) {
+      setUser(userCookie);
 
-        const userParsed = JSON.parse(userData);
+      const fetchProfile = async () => {
+        try {
+          const res = await axios.get(`${API_BACKEND}/api/v1/profile`, {
+            headers: {
+              Authorization: `Bearer ${userCookie.token}`,
+            },
+          });
 
-        const res = await axios.get(`${API_BACKEND}/api/v1/profile`, {
-          headers: {
-            Authorization: `Bearer ${userParsed.token}`,
-          },
-        });
-
-        const profile = res.data?.data;
-        if (profile?.fullname) {
-          setFormFields((prev) => ({
-            ...prev,
-            fullname: profile.fullname,
-          }));
+          const profile = res.data?.data;
+          if (profile?.fullname) {
+            setFormFields((prev) => ({
+              ...prev,
+              fullname: profile.fullname,
+            }));
+          }
+        } catch (error: any) {
+          console.error("Gagal fetch profile:", error.response?.data || error);
         }
-      } catch (error: any) {
-        console.error("Gagal fetch profile:", error.response?.data || error);
-      }
-    };
+      };
 
-    fetchProfile();
+      fetchProfile();
+    }
   }, []);
 
   //* handle submit
@@ -111,6 +114,14 @@ const FormPemodalPerusahaan: React.FC = () => {
                 Authorization: `Bearer ${userParsed.token}`,
               },
             }
+          );
+
+          setCookie(
+            "user",
+            JSON.stringify({
+              ...user,
+              role: "investor institusi",
+            } as AuthDataResponse)
           );
 
           await Swal.fire({
