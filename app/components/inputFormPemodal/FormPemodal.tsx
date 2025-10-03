@@ -94,10 +94,6 @@ const FormPemodal: React.FC = () => {
     const userCookie = getUser();
     if (!userCookie) return;
 
-    // const user = JSON.parse(userCookie);
-    // const token = user?.token;
-
-    // if (!token) return;
     setUser(userCookie);
 
     const fetchProfile = async () => {
@@ -398,22 +394,56 @@ const FormPemodal: React.FC = () => {
         }),
 
       posCodePekerjaan: z.string().min(1, "Kode pos wajib dipilih"),
+
+      namaBank_efek: z
+        .object({ value: z.string(), label: z.string() })
+        .nullable()
+        .optional(),
+      nomorRekening_efek: z.string().optional(),
+      namaPemilik_efek: z.string().optional(),
     })
-    .refine(
-      (data) => {
-        if (data.tujuanInvestasi === "Lainnya") {
-          return (
-            data.tujuanInvestasiLainnya &&
-            data.tujuanInvestasiLainnya.trim() !== ""
-          );
-        }
-        return true;
-      },
-      {
-        message: "Tujuan inventasi lainnya wajib diisi",
-        path: ["tujuanInvestasiLainnya"],
+    .superRefine((data, ctx) => {
+      if (
+        data.tujuanInvestasi === "Lainnya" &&
+        !data.tujuanInvestasiLainnya?.trim()
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["tujuanInvestasiLainnya"],
+          message: "Tujuan investasi lainnya wajib diisi",
+        });
       }
-    );
+
+      const adaIsi =
+        data.namaBank_efek || data.nomorRekening_efek || data.namaPemilik_efek;
+
+      if (adaIsi) {
+        if (!data.namaBank_efek) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["namaBank_efek"],
+            message:
+              "Harap pilih nama bank efek jika mengisi data rekening efek",
+          });
+        }
+        if (!data.nomorRekening_efek?.trim()) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["nomorRekening_efek"],
+            message:
+              "Harap lengkapi nomor rekening efek jika mengisi data rekening efek",
+          });
+        }
+        if (!data.namaPemilik_efek?.trim()) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["namaPemilik_efek"],
+            message:
+              "Harap lengkapi nama pemilik rekening efek jika mengisi data rekening efek",
+          });
+        }
+      }
+    });
 
   const [dataPribadi, setDataPribadi] = useState(() => {
     if (typeof window !== "undefined") {
