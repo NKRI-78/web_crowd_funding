@@ -152,11 +152,13 @@ export default function MultiStepFormWrapper() {
 
         router.back();
       }
-    } catch (error) {
+    } catch (err: any) {
+      const message =
+        err.response?.data?.message || err.message || "Terjadi kesalahan";
       Swal.fire({
         icon: "error",
         title: "Update Gagal",
-        text: `${error}`,
+        text: `${message}`,
         timer: 3000,
         timerProgressBar: true,
       });
