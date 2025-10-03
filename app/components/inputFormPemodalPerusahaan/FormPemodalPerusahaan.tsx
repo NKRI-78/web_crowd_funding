@@ -13,9 +13,11 @@ import { API_BACKEND, API_BACKEND_MEDIA } from "@/app/utils/constant";
 import { useRouter } from "next/navigation";
 import { setCookie } from "@/app/helper/cookie";
 import { getUser } from "@/app/lib/auth";
+import { useSearchParams } from "next/navigation";
+import UpdateRing from "@/app/components/inputFormPemodal/component/UpdateRing";
 
 interface FormSchema {
-  photo: File | null;
+  photo: string;
   fullname: string;
   jabatan: string;
   fileKtp: string;
@@ -38,7 +40,7 @@ interface ErrorSchema {
 
 const FormPemodalPerusahaan: React.FC = () => {
   const [formFields, setFormFields] = useState<FormSchema>({
-    photo: null,
+    photo: "",
     fullname: "",
     jabatan: "",
     fileKtp: "",
@@ -48,51 +50,115 @@ const FormPemodalPerusahaan: React.FC = () => {
     suratKuasa: "",
   });
 
+  const getFormCache = (): FormSchema | null => {
+    const cache = localStorage.getItem("pemodalPerusahaanCache");
+    return cache ? (JSON.parse(cache) as FormSchema) : null;
+  };
+
   const [errors, setErrors] = useState<ErrorSchema>({});
   const [user, setUser] = useState<AuthDataResponse | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isUpdate = searchParams.get("update") === "true";
+  const formType = searchParams.get("form");
+  const formatNpwp = (rawValue: string): string => {
+    if (!rawValue) return "";
+
+    const digits = rawValue.replace(/\D/g, "");
+    let formattedValue = digits;
+
+    if (digits.length > 2) {
+      formattedValue = digits.slice(0, 2) + "." + digits.slice(2);
+    }
+    if (digits.length > 5) {
+      formattedValue =
+        formattedValue.slice(0, 6) + "." + formattedValue.slice(6);
+    }
+    if (digits.length > 8) {
+      formattedValue =
+        formattedValue.slice(0, 10) + "." + formattedValue.slice(10);
+    }
+    if (digits.length > 9) {
+      formattedValue =
+        formattedValue.slice(0, 12) + "-" + formattedValue.slice(12);
+    }
+    if (digits.length > 12) {
+      formattedValue =
+        formattedValue.slice(0, 16) + "." + formattedValue.slice(16);
+    }
+
+    return formattedValue;
+  };
 
   //* load profile
   useEffect(() => {
     const userCookie = getUser();
-    if (userCookie) {
-      setUser(userCookie);
+    if (!userCookie) return;
 
-      const fetchProfile = async () => {
-        try {
-          const res = await axios.get(`${API_BACKEND}/api/v1/profile`, {
-            headers: {
-              Authorization: `Bearer ${userCookie.token}`,
-            },
+    setUser(userCookie);
+
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get(`${API_BACKEND}/api/v1/profile`, {
+          headers: {
+            Authorization: `Bearer ${userCookie.token}`,
+          },
+        });
+
+        const remoteProfile = res.data?.data;
+
+        if (
+          (isUpdate && formType === "ktp-pic") ||
+          formType === "surat-kuasa"
+        ) {
+          setFormFields({
+            fullname: remoteProfile?.fullname || "",
+            noKtp: remoteProfile?.no_ktp || "",
+            fileKtp: remoteProfile?.photo_ktp || "",
+            jabatan: remoteProfile?.position || "",
+            noNpwp: remoteProfile?.npwp || "",
+            noNpwpFormatted: formatNpwp(remoteProfile?.npwp || ""),
+            suratKuasa:
+              remoteProfile?.doc?.type === "surat-kuasa"
+                ? remoteProfile?.doc?.path
+                : "",
+            photo: remoteProfile?.selfie || null,
           });
-
-          const profile = res.data?.data;
-          if (profile?.fullname) {
+        } else {
+          const formCache = getFormCache();
+          if (!formCache?.fullname && remoteProfile?.fullname) {
             setFormFields((prev) => ({
               ...prev,
-              fullname: profile.fullname,
+              fullname: remoteProfile.fullname,
             }));
           }
-        } catch (error: any) {
-          console.error("Gagal fetch profile:", error.response?.data || error);
         }
-      };
+      } catch (error: any) {
+        console.error("Gagal fetch profile:", error.response?.data || error);
+      }
+    };
 
-      fetchProfile();
-    }
-  }, []);
+    fetchProfile();
+  }, [isUpdate, formType]);
 
-  //* handle submit
   const handleSubmit = async () => {
-    console.log("Form data saat klik Lanjutkan:", formFields);
+    if (isUpdate) {
+      onUpdateEvent();
+    } else {
+      onSubmitEvent();
+    }
+  };
 
+  // Submit Create Pemodal Perusahaan
+  const onSubmitEvent = async () => {
     const isValid = validateForm();
+
     if (isValid) {
       try {
-        const userData = localStorage.getItem("user");
+        const userData = getUser();
+
         if (userData) {
-          const userParsed = JSON.parse(userData);
-          const urlPhotoSelfie = await uploadFotoSelfie(formFields.photo!);
+          const urlPhotoSelfie = await uploadFotoSelfie(formFields.photo);
 
           const payload = {
             fullname: formFields.fullname,
@@ -104,14 +170,12 @@ const FormPemodalPerusahaan: React.FC = () => {
             surat_kuasa: formFields.suratKuasa,
           };
 
-          console.log("Role user:", userParsed?.role);
-
           await axios.post(
             `${API_BACKEND}/api/v1/auth/register-as-emiten`,
             payload,
             {
               headers: {
-                Authorization: `Bearer ${userParsed.token}`,
+                Authorization: `Bearer ${userData.token}`,
               },
             }
           );
@@ -119,7 +183,7 @@ const FormPemodalPerusahaan: React.FC = () => {
           setCookie(
             "user",
             JSON.stringify({
-              ...user,
+              ...userData,
               role: "investor institusi",
             } as AuthDataResponse)
           );
@@ -145,6 +209,86 @@ const FormPemodalPerusahaan: React.FC = () => {
           timer: 3000,
           timerProgressBar: true,
         });
+      }
+    }
+  };
+
+  // Submit Update PIC
+  const onUpdateEvent = async () => {
+    console.log("UpdateEvent jalan", formFields);
+    const isValid = validateForm();
+    console.log("Validasi:", isValid);
+
+    if (isValid) {
+      const swalResult = await Swal.fire({
+        icon: "question",
+        title: "Konfirmasi Perubahan Data",
+        text: "Apakah Anda yakin dengan data yang Anda inputkan sudah benar? mohon cek kembali jika masih ragu.",
+        confirmButtonText: "Sudah Benar",
+        cancelButtonText: "Cek Kembali",
+        confirmButtonColor: "#13733b",
+        cancelButtonColor: "#eaeaea",
+      });
+
+      if (swalResult.isConfirmed) {
+        try {
+          const userData = getUser();
+          console.log("User Data:", userData);
+          if (!userData) return;
+
+          const urlPhotoSelfie = formFields.photo?.startsWith("data:image")
+            ? await uploadFotoSelfie(formFields.photo)
+            : formFields.photo;
+
+          const payload = {
+            fullname: formFields.fullname,
+            jabatan: formFields.jabatan,
+            no_ktp: formFields.noKtp,
+            photo_ktp: formFields.fileKtp,
+            no_npwp: formFields.noNpwp,
+            surat_kuasa: formFields.suratKuasa,
+            photo_selfie: urlPhotoSelfie,
+          };
+
+          const res = await axios.post(
+            `${API_BACKEND}/api/v1/auth/register-as-emiten`,
+            payload,
+            {
+              headers: {
+                Authorization: `Bearer ${userData.token}`,
+              },
+            }
+          );
+          console.log("Response:", res.data);
+
+          setCookie(
+            "user",
+            JSON.stringify({
+              ...userData,
+              role: "investor institusi",
+            } as AuthDataResponse)
+          );
+
+          await Swal.fire({
+            icon: "success",
+            title: "Data berhasil diperbarui",
+            text: "Perubahan data Anda sudah tersimpan.",
+            timer: 3000,
+            timerProgressBar: true,
+          });
+
+          localStorage.removeItem("pemodalPerusahaanCache");
+          router.push("/dashboard");
+        } catch (error: any) {
+          console.error("Update error detail:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Update gagal",
+            text:
+              error.response?.data?.message ||
+              "Terjadi kesalahan saat update data.",
+          });
+        }
       }
     }
   };
@@ -233,12 +377,22 @@ const FormPemodalPerusahaan: React.FC = () => {
     return isValid;
   };
 
-  //* upload foto selfie
-  const uploadFotoSelfie = async (photo: File): Promise<string> => {
+  const uploadFotoSelfie = async (photoPath: string): Promise<string> => {
+    const arr = photoPath.split(",");
+    const mime = arr[0].match(/:(.*?);/)?.[1] || "image/png";
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+
+    const photoFile = new File([u8arr], "Foto Selfie", { type: mime });
+
     const formData = new FormData();
     formData.append("folder", "web");
-    formData.append("subfolder", "Foto-Selfie");
-    formData.append("media", photo!);
+    formData.append("subfolder", "Foto Selfie");
+    formData.append("media", photoFile);
 
     try {
       const res = await axios.post(
@@ -267,17 +421,16 @@ const FormPemodalPerusahaan: React.FC = () => {
       <div className="my-5"></div>
 
       <div className="w-full grid grid-cols-1 md:grid-cols-[1fr_1.3fr] gap-6">
-        {/* conteiner foto selfie */}
         <ContainerSelfie
+          photoUrl={formFields.photo}
           photoResult={(photoSelfie) => {
-            setFormFields({ ...formFields, photo: photoSelfie });
             if (photoSelfie) {
-              setErrors({ ...errors, photo: "" });
+              setFormFields({ ...formFields, photo: photoSelfie });
+              setErrors((prev) => ({ ...prev, photo: "" }));
             }
           }}
           errorText={errors.photo}
         />
-
         {/* input data */}
         <div className="w-full text-black">
           <SectionPoint text="Nama Lengkap" className="my-1" />
@@ -334,32 +487,11 @@ const FormPemodalPerusahaan: React.FC = () => {
             value={formFields.noNpwpFormatted || ""}
             onChange={(val) => {
               const rawValue = val.target.value.replace(/\D/g, "");
-              let formattedValue = rawValue;
-
-              if (rawValue.length > 2) {
-                formattedValue = rawValue.slice(0, 2) + "." + rawValue.slice(2);
-              }
-              if (rawValue.length > 5) {
-                formattedValue =
-                  formattedValue.slice(0, 6) + "." + formattedValue.slice(6);
-              }
-              if (rawValue.length > 8) {
-                formattedValue =
-                  formattedValue.slice(0, 10) + "." + formattedValue.slice(10);
-              }
-              if (rawValue.length > 9) {
-                formattedValue =
-                  formattedValue.slice(0, 12) + "-" + formattedValue.slice(12);
-              }
-              if (rawValue.length > 12) {
-                formattedValue =
-                  formattedValue.slice(0, 16) + "." + formattedValue.slice(16);
-              }
 
               setFormFields({
                 ...formFields,
-                noNpwp: rawValue, // simpan tanpa format
-                noNpwpFormatted: formattedValue,
+                noNpwp: rawValue,
+                noNpwpFormatted: formatNpwp(rawValue),
               });
 
               if (rawValue.length === 15) {
@@ -378,47 +510,58 @@ const FormPemodalPerusahaan: React.FC = () => {
           <div className="my-6"></div>
 
           <div className="w-full flex gap-6 ">
-            <div>
-              <SectionPoint text="Surat Kuasa" />
-              <Subtitle text="File maksimal berukuran 10mb" className="mb-1" />
-              <Subtitle text="Bermaterai dan di cap basah" className="mb-1" />
-              <FileInput
-                fileName="Surat-Kuasa"
-                accept=".pdf,.word"
-                fileUrl={formFields.suratKuasa}
-                onChange={(fileUrl) => {
-                  setFormFields({ ...formFields, suratKuasa: fileUrl });
-                  if (fileUrl) {
-                    setErrors({ ...errors, suratKuasa: "" });
-                  }
-                }}
-                errorText={errors.suratKuasa}
-              />
-            </div>
+            <UpdateRing formKey={formType} identity="surat-kuasa">
+              <div>
+                <SectionPoint text="Surat Kuasa" />
+                <Subtitle
+                  text="File maksimal berukuran 10mb"
+                  className="mb-1"
+                />
+                <Subtitle text="Bermaterai dan di cap basah" className="mb-1" />
+                <FileInput
+                  fileName="Surat-Kuasa"
+                  accept=".pdf,.word"
+                  fileUrl={formFields.suratKuasa}
+                  onChange={(fileUrl) => {
+                    setFormFields({ ...formFields, suratKuasa: fileUrl });
+                    if (fileUrl) {
+                      setErrors({ ...errors, suratKuasa: "" });
+                    }
+                  }}
+                  errorText={errors.suratKuasa}
+                />
+              </div>
+            </UpdateRing>
+            <UpdateRing formKey={formType} identity="ktp-pic">
+              <div>
+                <SectionPoint text="File KTP" />
+                <Subtitle
+                  text="File maksimal berukuran 10mb"
+                  className="mb-7"
+                />
 
-            <div>
-              <SectionPoint text="File KTP" />
-              <Subtitle text="File maksimal berukuran 10mb" className="mb-7" />
-
-              <FileInput
-                fileName="File-KTP"
-                accept=".pdf,.jpg,.jpeg,.png"
-                fileUrl={formFields.fileKtp}
-                onChange={(fileUrl) => {
-                  setFormFields({ ...formFields, fileKtp: fileUrl });
-                  if (fileUrl) {
-                    setErrors({ ...errors, fileKtp: "" });
-                  }
-                }}
-                errorText={errors.fileKtp}
-              />
-            </div>
+                <FileInput
+                  fileName="File-KTP"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  fileUrl={formFields.fileKtp}
+                  onChange={(fileUrl) => {
+                    setFormFields({ ...formFields, fileKtp: fileUrl });
+                    if (fileUrl) {
+                      setErrors({ ...errors, fileKtp: "" });
+                    }
+                  }}
+                  errorText={errors.fileKtp}
+                />
+              </div>
+            </UpdateRing>
           </div>
 
           <div className="my-10"></div>
 
           <div className="w-full flex justify-end gap-4 mt-6">
-            <FormButton onClick={handleSubmit}>Lanjutkan</FormButton>
+            <FormButton onClick={handleSubmit}>
+              {isUpdate ? "Update" : "Lanjutkan"}
+            </FormButton>
           </div>
         </div>
       </div>
