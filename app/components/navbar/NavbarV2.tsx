@@ -617,7 +617,10 @@ const NotifIcon: React.FC<{ className?: string; badgeCount: number }> = ({
   badgeCount = 0,
 }) => {
   return (
-    <Tippy content="Inbox">
+    <Tippy
+      content="Inbox"
+      className="bg-black/50 text-sm font-medium backdrop-blur-md px-4 py-1 rounded-md"
+    >
       <Link href="/inbox" className="relative inline-block">
         <BellRing size={18} className={className} />
         {badgeCount > 0 && (

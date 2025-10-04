@@ -47,7 +47,10 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       ></div>
 
       {/* Label Hijau */}
-      <Tippy content={tippyContent ?? `${percentage.toFixed(3)}%`}>
+      <Tippy
+        content={tippyContent ?? `${percentage.toFixed(3)}%`}
+        className="bg-black/50 text-sm font-medium backdrop-blur-md px-4 py-1 rounded-md"
+      >
         <div
           className="absolute top-1/2 -translate-y-1/2 transform bg-gradient-to-r from-[#039BA9] to-[#2abc9f] text-white text-xs border border-white font-bold px-2 py-[1px] rounded-full shadow transition-all duration-300 whitespace-nowrap cursor-pointer"
           style={{

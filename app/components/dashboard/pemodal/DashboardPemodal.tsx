@@ -5,16 +5,20 @@ import { Infinity, UserSearch } from "lucide-react";
 import { User } from "@/app/interfaces/user/IUser";
 import { InvestorData } from "@/app/interfaces/investor/IInvestorData";
 import { formatRupiah } from "@/app/lib/utils";
+import { Project } from "@/app/interfaces/project/IProject";
+import GridView from "../../GridView";
+import { ProjectCard } from "../../project/ProjectCard";
 
 interface Props {
   profile: User | null;
   data: InvestorData | null;
+  projects: Project[];
 }
 
-const DashboardPemodal: React.FC<Props> = ({ profile, data }) => {
+const DashboardPemodal: React.FC<Props> = ({ profile, data, projects }) => {
   return (
-    <div className="space-y-4">
-      <div className="space-y-1">
+    <div className="mb-16">
+      <div className="space-y-1 mb-4">
         <p className="text-xl font-bold">
           Pemodal Pribadi{" "}
           {data?.rek_efek ? (
@@ -150,6 +154,21 @@ const DashboardPemodal: React.FC<Props> = ({ profile, data }) => {
             </PanelContainer>
           </div>
         </>
+      )}
+
+      {projects.length > 0 && (
+        <div className="space-y-4 mt-8">
+          <p className="text-xl font-bold">Proyek yang sedang berjalan</p>
+          <GridView
+            items={projects}
+            gapClass="gap-4"
+            breakpointCols={{ sm: 2, md: 3, lg: 4 }}
+            itemKey={(p) => p.id}
+            renderItem={(p, i) => {
+              return <ProjectCard project={p} />;
+            }}
+          />
+        </div>
       )}
     </div>
   );
