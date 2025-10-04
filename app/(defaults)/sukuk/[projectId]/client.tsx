@@ -22,7 +22,6 @@ import { Project } from "@/app/interfaces/project/IProject";
 import GeneralDialog from "@/app/components/GeneralDialog";
 import ShareDialog from "@/app/components/ShareDialog";
 import CircularProgressIndicator from "@/app/components/CircularProgressIndicator";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Modal from "@/app/helper/Modal";
 import InputNominal from "../components/InputNominal";
@@ -75,6 +74,7 @@ const SukukClient = ({ id }: Props) => {
         setRole(userCookie.role);
       } catch (err) {
         console.error("Failed to parse user cookie", err);
+        f;
       }
     }
   }, []);
@@ -258,7 +258,7 @@ const SukukClient = ({ id }: Props) => {
                     </p>
                   </div>
                   <div className="flex flex-wrap my-2 justify-between">
-                    <p className="text-xs text-[#677AB9]">Harga Unit:</p>
+                    <p className="text-xs text-[#677AB9]">Harga Unit (LOT):</p>
                     <p className="text-xs">
                       {formatRupiah(project?.unit_price)}
                     </p>

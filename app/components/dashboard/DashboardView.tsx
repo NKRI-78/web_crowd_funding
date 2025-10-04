@@ -139,9 +139,17 @@ export const DashboardView: React.FC = () => {
               isUploadDokumenPelengkap={isUploadDokumenPelengkap}
             />
           ) : user?.role === "investor" ? (
-            <DashboardPemodal profile={profile} data={investorData} />
+            <DashboardPemodal
+              profile={profile}
+              data={investorData}
+              projects={projects}
+            />
           ) : user?.role === "investor institusi" ? (
-            <DashboardPemodalPerusahaan profile={profile} data={investorData} />
+            <DashboardPemodalPerusahaan
+              profile={profile}
+              data={investorData}
+              projects={projects}
+            />
           ) : user?.role === "user" ? (
             <DashboardUser user={user} />
           ) : (
