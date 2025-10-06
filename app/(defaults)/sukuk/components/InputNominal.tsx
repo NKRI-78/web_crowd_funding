@@ -242,6 +242,7 @@ export default function InputNominalLot({
       {/* PROGRESS KUOTA */}
       {!rekEfek && !isInstitusi && quota && (
         <div className="space-y-2 mt-3">
+          <p className="text-sm font-semibold text-gray-800">Kuota Investasi</p>
           <div className="flex justify-between text-xs text-gray-600">
             <span>
               Rp{numericValue.toLocaleString("id-ID")} / Rp

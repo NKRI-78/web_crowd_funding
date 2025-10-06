@@ -30,18 +30,39 @@ export interface UpdateFieldValue {
   val_array: UpdateFieldValueManajemen[];
 }
 
-const getFormIndexBasedFormKey = (form: string | null): number => {
-  console.log("get form index, form= " + form);
-  if (!form) return 0;
+const loadFormIndex = (isUpdate: boolean, form: string | null): number => {
+  if (isUpdate) {
+    console.log("get form index, form= " + form);
+    if (!form) return 0;
 
-  // jika formKey memuat form update penerbit maka navigate to index form penerbit yaitu index-2
-  // jika tidak itu artinya update berada di form PIC/Form utusan penerbit yaitu index-0
-  if (penerbitUpdateKeys.includes(form)) {
-    return 2;
-  } else {
-    return 0;
+    // jika formKey memuat form update penerbit maka navigate to index form penerbit yaitu index-2
+    // jika tidak itu artinya update berada di form PIC/Form utusan penerbit yaitu index-0
+    if (penerbitUpdateKeys.includes(form)) return 2;
   }
+
+  // if form == complete-company maka index adalah 1 dimulai dari register perusahaan
+  // melewati register pic karena konteksnya user udah register pic yang belum register perusahaan
+  if (form === "complete-company") return 1;
+
+  // fallback
+  return 0;
 };
+
+// const getFormIndexBasedFormKey = (form: string | null): number => {
+//   console.log("get form index, form= " + form);
+//   if (!form) return 0;
+
+//   // if form == complete-company maka index adalah 1 dimulai dari register perusahaan
+//   // melewati register pic karena konteksnya user udah register pic yang belum register perusahaan
+//   if (form == "complete-company") return 1;
+
+//   // jika formKey memuat form update penerbit maka navigate to index form penerbit yaitu index-2
+//   // jika tidak itu artinya update berada di form PIC/Form utusan penerbit yaitu index-0
+//   if (penerbitUpdateKeys.includes(form)) return 2;
+
+//   // fallback
+//   return 0;
+// };
 
 export default function MultiStepFormWrapper() {
   const router = useRouter();
@@ -54,7 +75,8 @@ export default function MultiStepFormWrapper() {
 
   const [loadingGetFormIndex, setLoadingGetFormIndex] = useState<boolean>(true);
   const [formIndex, setFormIndex] = useState<number>(
-    isUpdate ? getFormIndexBasedFormKey(formKey) : 0
+    // isUpdate ? getFormIndexBasedFormKey(formKey) : 0
+    loadFormIndex(isUpdate !== null, formKey)
   );
 
   const userCookie = getUser();

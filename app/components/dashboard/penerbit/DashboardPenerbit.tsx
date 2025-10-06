@@ -127,7 +127,7 @@ export const DashboardPenerbit: React.FC<Props> = ({
             title="Lengkapi Data Perusahaan Anda"
             message="Untuk menayangkan proyek, Anda perlu menyelesaikan proses registrasi data perusahaan terlebih dahulu. Silakan lengkapi segera untuk melanjutkan."
             buttonTitle="Registrasi Perusahaan"
-            navigateToPath={"/form-penerbit"}
+            navigateToPath={"/form-penerbit?form=complete-company"}
           />
         );
       }
