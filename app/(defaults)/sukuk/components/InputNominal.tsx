@@ -137,7 +137,7 @@ export default function InputNominalLot({
       {/* 🔹 Flex Kiri-Kanan */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5">
         {/* KIRI: JUMLAH LOT */}
-        <div className="flex-1">
+        <div className="">
           <p className="text-sm font-medium text-gray-700 mb-2">Jumlah Unit</p>
           <div className="flex items-center gap-2">
             <button
@@ -147,13 +147,55 @@ export default function InputNominalLot({
             >
               −
             </button>
+
             <input
-              type="number"
-              min={isInstitusi ? 10 : 1}
-              value={lot}
-              onChange={(e) => handleLotChange(Number(e.target.value))}
-              className="w-24 text-center border border-gray-300 rounded-lg py-2 font-semibold text-gray-900"
+              type="text"
+              inputMode="numeric"
+              value={lot === 0 ? "" : lot}
+              onChange={(e) => {
+                const val = e.target.value;
+
+                if (val === "") {
+                  // ✅ kalau dikosongkan, biarkan kosong
+                  setLot(0);
+                  setError(null);
+                  return;
+                }
+
+                const num = Number(val);
+                if (isNaN(num)) return;
+
+                const minLot = isInstitusi ? 10 : 1;
+
+                if (num < minLot) {
+                  setError(`Minimal ${minLot} unit untuk investasi ini`);
+                  setLot(num);
+                  return;
+                }
+
+                // ✅ validasi kuota & batas maksimal
+                if (num > totalUnit) {
+                  setError(`Maksimal ${totalUnit} unit tersedia`);
+                  setLot(totalUnit);
+                  return;
+                }
+
+                setError(null);
+                setLot(num);
+              }}
+              onBlur={() => {
+                const minLot = isInstitusi ? 10 : 1;
+                // kalau dikosongkan, auto reset ke minimal
+                if (lot === 0 || lot < minLot) {
+                  setLot(minLot);
+                  setError(null);
+                }
+              }}
+              className={`w-24 text-center border rounded-lg py-2 font-semibold text-gray-900 ${
+                error ? "border-red-500" : "border-gray-300"
+              }`}
             />
+
             <button
               onClick={() => handleLotChange(lot + 1)}
               className="w-10 h-10 bg-gray-200 rounded-lg hover:bg-gray-300"
@@ -161,8 +203,14 @@ export default function InputNominalLot({
               +
             </button>
           </div>
+
+          {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
           <p className="text-xs text-gray-500 mt-2">
             Total tersedia: {totalUnit.toLocaleString("id-ID")} Unit
+          </p>
+          <p className="text-xs text-gray-500">
+            Harga per unit{" :"}
+            <span className=""> Rp{formatRupiah(unitPrice)}</span>
           </p>
         </div>
 
@@ -181,28 +229,13 @@ export default function InputNominalLot({
               value={value}
               disabled
               onChange={handleNominalChange}
-              className={`w-full rounded-xl border pl-12 pr-4 py-3 text-lg font-semibold text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#10565C] focus:border-[#10565C] ${
+              className={`w-full h-10 rounded-xl border pl-12 pr-4 py-5 font-semibold text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#10565C] focus:border-[#10565C] ${
                 error ? "border-red-500" : "border-gray-300"
               }`}
               placeholder="Masukkan nominal"
             />
           </div>
-        </div>
-      </div>
-
-      {/* INFO HARGA & MIN INVEST */}
-      <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mt-2">
-        <div className="flex justify-between">
-          <span>Harga per Unit</span>
-          <span className="font-medium text-gray-800">
-            Rp{formatRupiah(unitPrice)}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span>Minimal Investasi</span>
-          <span className="font-medium text-gray-800">
-            Rp{formatRupiah(minInvest)}
-          </span>
+          {error && <p className="text-sm text-red-500">{error}</p>}
         </div>
       </div>
 
@@ -322,8 +355,6 @@ export default function InputNominalLot({
           "Konfirmasi Investasi"
         )}
       </button>
-
-      {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   );
 }

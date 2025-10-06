@@ -75,7 +75,6 @@ const SukukClient = ({ id }: Props) => {
         setRole(userCookie.role);
       } catch (err) {
         console.error("Failed to parse user cookie", err);
-        f;
       }
     }
   }, []);
