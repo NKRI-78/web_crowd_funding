@@ -29,6 +29,7 @@ import InputNominal from "../components/InputNominal";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { fetchDashboardClient } from "@/redux/slices/dashboardSlice";
+import InputNominalLot from "../components/InputNominal";
 
 type Props = {
   id: string;
@@ -479,9 +480,12 @@ const SukukClient = ({ id }: Props) => {
         onClose={() => setShowModal(false)}
         title={"Beli Efek"}
       >
-        <InputNominal
-          minValue={Number(project?.min_invest)}
-          quota={Number(quotaData?.summary.remaining_quota_idr) ?? 0}
+        <InputNominalLot
+          unitPrice={Number(project?.unit_price)}
+          totalUnit={Number(project?.jumlah_unit)}
+          quota={Number(quotaData?.summary.remaining_quota_idr) ?? 0} // ✅ otomatis dari API
+          roi={Number(project?.roi) ?? 0}
+          minInvest={Number(project?.min_invest)}
           onConfirm={handleConfirm}
         />
       </Modal>
