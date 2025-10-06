@@ -252,7 +252,9 @@ const SukukClient = ({ id }: Props) => {
                     <p className="text-xs">{project?.company?.jenis_usaha}</p>
                   </div>
                   <div className="flex flex-wrap my-2 justify-between">
-                    <p className="text-xs text-[#677AB9]">Minimal Investasi:</p>
+                    <p className="text-xs text-[#677AB9]">
+                      Harga Perlembar Efek:
+                    </p>
                     <p className="text-xs">
                       {formatRupiah(project?.min_invest)}
                     </p>
