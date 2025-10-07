@@ -7,10 +7,18 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
-import FileViewerModal from "@/app/(defaults)/viewer/components/FilePriviewModal";
+import FileViewer from "@/app/(defaults)/viewer/components/FilePreviewModalV2";
+import { API_BACKEND } from "@/app/utils/constant";
+import { useSearchParams } from "next/navigation";
+import { setCookie } from "@/app/helper/cookie";
+import { getUser } from "@/app/lib/auth";
 
 const FormDataPemodalPerusahaan: React.FC = () => {
   type OptionType = { value: string; label: string } | null;
+
+  const searchParams = useSearchParams();
+  const isUpdate = searchParams.get("update") === "true";
+  const formType = searchParams.get("form");
 
   const [formData, setFormData] = useState<any>(() => {
     if (typeof window !== "undefined") {
@@ -28,6 +36,7 @@ const FormDataPemodalPerusahaan: React.FC = () => {
       nomorRekening: "",
       namaPemilik: "",
 
+      aktaPerubahanTerakhirUrl: "",
       aktaPendirianPerusahaanUrl: "",
       skPendirianUrl: "",
       skKumhamPerusahaanUrl: "",
@@ -40,6 +49,10 @@ const FormDataPemodalPerusahaan: React.FC = () => {
 
       posCode: "",
       addres: "",
+
+      namaBank_efek: null,
+      nomorRekening_efek: "",
+      namaPemilik_efek: "",
 
       setujuKebenaranData: false,
       setujuRisikoInvestasi: false,
@@ -73,6 +86,13 @@ const FormDataPemodalPerusahaan: React.FC = () => {
     }));
   };
 
+  const handleBankEfek = (namaBank_efek: OptionType) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      namaBank_efek: namaBank_efek,
+    }));
+  };
+
   const handleAlamatChange = (alamat: {
     provincePemodalPerusahaan: OptionType;
     cityPemodalPerusahaan: OptionType;
@@ -96,6 +116,104 @@ const FormDataPemodalPerusahaan: React.FC = () => {
       return { ...prev, [name]: checked };
     });
   };
+
+  useEffect(() => {
+    if (!isUpdate) return;
+
+    const userCookie = Cookies.get("user");
+    if (!userCookie) return;
+
+    const user = JSON.parse(userCookie);
+    const token = user?.token;
+    if (!token) return;
+
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get(`${API_BACKEND}/api/v1/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const profile = res.data?.data;
+
+        setFormData((prev: any) => ({
+          ...prev,
+
+          jenisPerusahaan: profile?.company?.jenis_perusahaan || "",
+          nomorAktaPerubahanTerakhir:
+            profile?.company?.akta_perubahan_terahkir || "",
+          nomorNpwpPerusahaan: profile?.company?.npwp || "",
+          noTeleponPerusahaan: profile?.company?.phone || "",
+          situsPerusahaan: profile?.company?.site || "",
+          emailPerusahaan: profile?.company?.email || "",
+          aktaPerubahanTerakhirUrl:
+            profile?.company?.akta_perubahan_terahkir_path || "",
+
+          aktaPendirianPerusahaanUrl: profile?.company?.akta_pendirian || "",
+          skPendirianUrl: profile?.company?.sk_pendirian_perusahaan || "",
+          skKumhamPerusahaanUrl: profile?.company?.sk_kumham_path || "",
+          npwpPerusahaanUrl: profile?.company?.npwp_path || "",
+
+          namaBank: profile?.company?.bank?.name
+            ? {
+                value: profile.company.bank.name,
+                label: profile.company.bank.name,
+              }
+            : null,
+          nomorRekening: profile?.company?.bank?.no || "",
+          namaPemilik: profile?.company?.bank?.owner || "",
+
+          namaBank_efek: profile?.profile_security_account?.account_bank
+            ? {
+                value: profile.profile_security_account.account_bank,
+                label: profile.profile_security_account.account_bank,
+              }
+            : null,
+          nomorRekening_efek: profile?.profile_security_account?.account || "",
+          namaPemilik_efek:
+            profile?.profile_security_account?.account_name || "",
+
+          provincePemodalPerusahaan: profile?.company?.address?.[0]
+            ?.province_name
+            ? {
+                value: profile.company.address[0].province_name,
+                label: profile.company.address[0].province_name,
+              }
+            : null,
+          cityPemodalPerusahaan: profile?.company?.address?.[0]?.city_name
+            ? {
+                value: profile.company.address[0].city_name,
+                label: profile.company.address[0].city_name,
+              }
+            : null,
+          districtPemodalPerusahaan: profile?.company?.address?.[0]
+            ?.district_name
+            ? {
+                value: profile.company.address[0].district_name,
+                label: profile.company.address[0].district_name,
+              }
+            : null,
+          subDistrictPemodalPerusahaan: profile?.company?.address?.[0]
+            ?.subdistrict_name
+            ? {
+                value: profile.company.address[0].subdistrict_name,
+                label: profile.company.address[0].subdistrict_name,
+              }
+            : null,
+
+          posCode: profile?.company?.address?.[0]?.postal_code || "",
+          addres: profile?.company?.address?.[0]?.detail || "",
+
+          setujuKebenaranData: false,
+          setujuRisikoInvestasi: false,
+        }));
+
+        console.log(profile?.company?.jenis_perusahaan, "CEK Jenis Perusahaan");
+      } catch (err) {
+        console.error("Gagal fetch profile:", err);
+      }
+    };
+
+    fetchProfile();
+  }, [isUpdate]);
 
   const schemaDataPemodalPerusahaan = z.object({
     jenisPerusahaan: z.string().min(1, "Jenis perusahaan harus diisi"),
@@ -214,6 +332,7 @@ const FormDataPemodalPerusahaan: React.FC = () => {
         company_nib_path: "-",
         akta_pendirian: data.aktaPendirianPerusahaanUrl,
         akta_perubahan_terahkir: data.nomorAktaPerubahanTerakhir,
+        akta_perubahan_terahkir_path: data.aktaPerubahanTerakhirUrl,
         sk_kumham: "-",
         sk_kumham_terahkir: "-",
         sk_kumham_path: data.skKumhamPerusahaanUrl,
@@ -224,7 +343,7 @@ const FormDataPemodalPerusahaan: React.FC = () => {
         site: data.situsPerusahaan,
         email: data.emailPerusahaan,
         phone: data.noTeleponPerusahaan,
-        bank_name: data.namaBank?.value || "-",
+        bank_name: data.namaBank?.label || "-",
         bank_account: data.nomorRekening,
         bank_owner: data.namaPemilik,
         siup: "-",
@@ -234,6 +353,10 @@ const FormDataPemodalPerusahaan: React.FC = () => {
         status_kantor: "99",
         total_employees: "-",
         laporan_keuangan_path: "-",
+
+        nama_rekening_efek: data.namaPemilik_efek,
+        nomor_rekening_efek: data.nomorRekening_efek,
+        bank_rekening_efek: data.namaBank_efek?.label || "-",
 
         address: [
           {
@@ -310,6 +433,18 @@ const FormDataPemodalPerusahaan: React.FC = () => {
       localStorage.removeItem("formPemodalPerusahaan");
       Cookies.remove("formPemodalPerusahaan");
 
+      const userData = getUser();
+
+      setCookie(
+        "user",
+        JSON.stringify({
+          ...userData,
+          role: "investor institusi",
+        })
+      );
+
+      console.log("CEK ROLE", userData?.role);
+
       router.push("/dashboard");
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -352,6 +487,7 @@ const FormDataPemodalPerusahaan: React.FC = () => {
           setFormData((prev: any) => ({ ...prev, [key]: url }))
         }
         onBankChange={handleBank}
+        onBankEfekChange={handleBankEfek}
         onAlamatChange={handleAlamatChange}
         onCheckboxChange={handleCheckboxChange}
         errors={errorsPemodalPerusahaan}
@@ -371,8 +507,13 @@ const FormDataPemodalPerusahaan: React.FC = () => {
           setPreviewFileUrl(formData.skPendirianUrl);
           setPreviewOpen(true);
         }}
+        onLihatAktaPerubahanTerakhir={() => {
+          setPreviewFileUrl(formData.aktaPerubahanTerakhirUrl);
+          setPreviewOpen(true);
+        }}
       />
-      <FileViewerModal
+
+      <FileViewer
         src={previewFileUrl ?? ""}
         open={previewOpen}
         onClose={() => {
@@ -385,7 +526,9 @@ const FormDataPemodalPerusahaan: React.FC = () => {
         <button
           className={`px-6 py-2 rounded-lg text-white ${
             formData.setujuKebenaranData && formData.setujuRisikoInvestasi
-              ? "bg-green-600 hover:bg-green-700"
+              ? isUpdate
+                ? "bg-blue-600 hover:bg-blue-700"
+                : "bg-green-600 hover:bg-green-700"
               : "bg-gray-400 cursor-not-allowed"
           }`}
           onClick={handleSubmit}
@@ -393,7 +536,7 @@ const FormDataPemodalPerusahaan: React.FC = () => {
             !formData.setujuKebenaranData || !formData.setujuRisikoInvestasi
           }
         >
-          Kirim Data
+          {isUpdate ? "Update Data" : "Kirim Data"}
         </button>
       </div>
     </div>
