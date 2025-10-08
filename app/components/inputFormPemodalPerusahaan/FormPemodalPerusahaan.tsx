@@ -56,6 +56,7 @@ const FormPemodalPerusahaan: React.FC = () => {
   };
 
   const [errors, setErrors] = useState<ErrorSchema>({});
+  const [profile, setProfile] = useState<any>(null);
   const [user, setUser] = useState<AuthDataResponse | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -91,6 +92,7 @@ const FormPemodalPerusahaan: React.FC = () => {
   };
 
   //* load profile
+
   useEffect(() => {
     const userCookie = getUser();
     if (!userCookie) return;
@@ -106,9 +108,10 @@ const FormPemodalPerusahaan: React.FC = () => {
         });
 
         const remoteProfile = res.data?.data;
+        setProfile(remoteProfile);
 
         if (
-          (isUpdate && formType === "ktp-pic") ||
+          (isUpdate && formType === "photo_ktp") ||
           formType === "surat-kuasa"
         ) {
           setFormFields({
@@ -215,9 +218,28 @@ const FormPemodalPerusahaan: React.FC = () => {
     }
   };
 
-  // Submit Update PIC
+  function mapFormToDataType(
+    form: string | null,
+    data: any
+  ): {
+    dataType: string;
+    val: string;
+  } {
+    if (!form) return { dataType: "", val: "" };
+
+    switch (form.toLowerCase()) {
+      case "photo_ktp":
+        return { dataType: "photo_ktp", val: formFields.fileKtp };
+      case "surat-kuasa":
+        return { dataType: "surat_kuasa", val: formFields.suratKuasa };
+      default:
+        return { dataType: "", val: "" };
+    }
+  }
+  console.log("CEK", formFields.fileKtp, formFields.suratKuasa);
+
   const onUpdateEvent = async () => {
-    console.log("UpdateEvent jalan", formFields);
+    console.log("UpdateEvent jalan");
     const isValid = validateForm();
     console.log("Validasi:", isValid);
 
@@ -238,22 +260,27 @@ const FormPemodalPerusahaan: React.FC = () => {
           console.log("User Data:", userData);
           if (!userData) return;
 
-          const urlPhotoSelfie = formFields.photo?.startsWith("data:image")
-            ? await uploadFotoSelfie(formFields.photo)
-            : formFields.photo;
+          const userId = profile?.id || userData?.id;
+          const companyId = profile?.company?.id;
+
+          console.log("User ID:", userId);
+          console.log("Company ID:", companyId);
+          console.log("Form Type:", formType);
+
+          const { dataType, val } = mapFormToDataType(formType, formFields);
 
           const payload = {
-            fullname: formFields.fullname,
-            jabatan: formFields.jabatan,
-            no_ktp: formFields.noKtp,
-            photo_ktp: formFields.fileKtp,
-            no_npwp: formFields.noNpwp,
-            surat_kuasa: formFields.suratKuasa,
-            photo_selfie: urlPhotoSelfie,
+            val,
+            user_id: userId,
+            company_id: companyId,
           };
 
-          const res = await axios.post(
-            `${API_BACKEND}/api/v1/auth/register-as-emiten`,
+          console.log("Payload update:", {
+            payload,
+          });
+
+          const res = await axios.put(
+            `${API_BACKEND}/api/v1/document/update/${formType}`,
             payload,
             {
               headers: {
@@ -534,7 +561,7 @@ const FormPemodalPerusahaan: React.FC = () => {
                 />
               </div>
             </UpdateRing>
-            <UpdateRing formKey={formType} identity="ktp-pic">
+            <UpdateRing formKey={formType} identity="photo_ktp">
               <div>
                 <SectionPoint text="File KTP" />
                 <Subtitle

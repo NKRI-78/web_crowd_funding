@@ -171,7 +171,7 @@ const Inbox = () => {
             if (selectedInbox.field_3 === "reupload-document") {
               if (updateKey) {
                 if (roleUser === "investor institusi") {
-                  if (["ktp-pic", "surat-kuasa"].includes(updateKey)) {
+                  if (["photo_ktp", "surat-kuasa"].includes(updateKey)) {
                     router.push(
                       `/form-pemodal-perusahaan?update=true&form=${updateKey}`
                     );

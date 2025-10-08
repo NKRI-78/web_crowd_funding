@@ -310,6 +310,14 @@ const FormDataPemodalPerusahaan: React.FC = () => {
   });
 
   const handleSubmit = async () => {
+    if (isUpdate) {
+      onUpdateEvent();
+    } else {
+      onSubmitEvent();
+    }
+  };
+
+  const onSubmitEvent = async () => {
     const savedData = localStorage.getItem("formPemodalPerusahaan");
 
     if (!savedData) {
@@ -465,6 +473,62 @@ const FormDataPemodalPerusahaan: React.FC = () => {
           icon: "warning",
           timer: 3000,
         });
+      }
+    }
+  };
+
+  const onUpdateEvent = async () => {
+    console.log("Update Event Jalan ");
+    const isValid = validateStep();
+
+    if (isValid) {
+      const swalResult = await Swal.fire({
+        icon: "question",
+        title: "Konfirmasi Perubahan Data",
+        text: "Apakah Anda yakin dengan data yang Anda inputkan sudah benar? mohon cek kembali jika masih ragu.",
+        confirmButtonText: "Sudah Benar",
+        cancelButtonText: "Cek Kembali",
+        confirmButtonColor: "#13733b",
+        cancelButtonColor: "#eaeaea",
+      });
+
+      if (swalResult.isConfirmed) {
+        try {
+          const userData = getUser();
+          console.log("User Data:", userData);
+          if (!userData) return;
+
+          const payload = {};
+          const res = await axios.put;
+
+          setCookie(
+            "user",
+            JSON.stringify({
+              ...userData,
+              role: "investor institusi",
+            })
+          );
+
+          await Swal.fire({
+            icon: "success",
+            title: "Data berhasil diperbarui",
+            text: "Perubahan data Anda sudah tersimpan.",
+            timer: 3000,
+            timerProgressBar: true,
+          });
+
+          localStorage.removeItem("pemodalPerusahaanCache");
+          router.push("/dashboard");
+        } catch (error: any) {
+          console.error("Update error detail:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Update gagal",
+            text:
+              error.response?.data?.message ||
+              "Terjadi kesalahan saat update data.",
+          });
+        }
       }
     }
   };
