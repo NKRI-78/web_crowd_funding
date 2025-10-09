@@ -52,17 +52,17 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
         };
         getTransactionCount();
       }
-      if (user.role === "investor") {
-        const getTransactionCount = async () => {
-          try {
-            const data = await getTransactions(user?.token ?? "", 1, 10);
-            setTransactionCount(data.items.length);
-          } catch (error) {
-            setTransactionCount(0);
-          }
-        };
-        getTransactionCount();
-      }
+      // if (user.role === "investor") {
+      // }
+      const getTransactionCount = async () => {
+        try {
+          const data = await getTransactions(user?.token ?? "", 1, 10);
+          setTransactionCount(data.items.length);
+        } catch (error) {
+          setTransactionCount(0);
+        }
+      };
+      getTransactionCount();
     }
   }, []);
 

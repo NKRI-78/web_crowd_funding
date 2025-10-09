@@ -7,6 +7,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import moment from "moment";
+import "moment/locale/id";
 import { useParams } from "next/navigation";
 
 const BroadcastDetailView = () => {
@@ -71,10 +72,7 @@ const BroadcastDetailView = () => {
           </p>
 
           <p className="text-xs text-gray-400 mt-1">
-            {moment(broadcast?.created_at)
-              .utc()
-              .locale("id")
-              .format("DD MMMM YYYY")}
+            {moment(broadcast?.created_at).locale("id").format("LLLL")}
           </p>
 
           <p className="text-sm text-gray-600">{broadcast?.content}</p>

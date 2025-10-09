@@ -26,6 +26,7 @@ import { createSocket } from "@/app/utils/sockets";
 import { fetchInboxThunk } from "@/redux/slices/inboxSlice";
 import { API_BACKEND } from "@/app/utils/constant";
 import { setBadge } from "@/redux/slices/badgeSlice";
+import Image from "next/image";
 
 const PRIMARY_COLOR = "#10565C";
 const ON_PRIMARY_COLOR = "#FFFFFF";
@@ -171,6 +172,14 @@ const NavbarV2: React.FC = () => {
     return () => document.removeEventListener("keydown", handleEsc);
   }, [setMenuOpen]);
 
+  const getAvatar = (): string => {
+    if (profile) {
+      if (profile.avatar !== "-") return profile.avatar;
+      if (profile.selfie !== "-") return profile.selfie;
+    }
+    return "/images/default-image.png";
+  };
+
   return (
     <>
       <Nav sticky={isSticky}>
@@ -185,13 +194,18 @@ const NavbarV2: React.FC = () => {
               {/* MUNCUL KETIKA MD KEATAS (TAMPILAN DEKSTOP & TABLET) */}
               {/* NAMA & BUTTON NOTIFIKASI & BUTTON DRAWER */}
               <div className="flex items-center gap-4">
-                <p
-                  className={`hidden md:block
-                      ${isSticky ? `text-[${PRIMARY_COLOR}]` : `text-white`}
-                    `}
-                >
-                  Halo, {profile?.fullname}
-                </p>
+                <Link href={"/profile"}>
+                  <div className="flex items-center gap-x-3 px-4 py-2 bg-[#0c484d] rounded-full hover:bg-[#0b363a] transition-colors duration-500">
+                    <p className="text-white text-sm">{profile?.fullname}</p>
+                    <Image
+                      src={getAvatar()}
+                      alt="Foto Profile"
+                      width={28}
+                      height={28}
+                      className="rounded-full object-cover w-[30px] h-[30px]"
+                    />
+                  </div>
+                </Link>
                 {/* hanya muncul ketika ia suah register tapi belum memilih role */}
                 {/* {userData && userData.role === "user" && step !== "role" && (
                   <div className="hidden md:block">
@@ -283,9 +297,9 @@ const NavbarV2: React.FC = () => {
 
                   <li onClick={toggleMenu}>
                     <Link
-                      href="/broadcast"
+                      href="/informasi"
                       className={
-                        pathname == "/broadcast"
+                        pathname == "/informasi"
                           ? `text-[${ACTIVE_COLOR}]`
                           : `text-[${ON_PRIMARY_COLOR}]`
                       }
@@ -308,7 +322,9 @@ const NavbarV2: React.FC = () => {
                   </li>
 
                   <li className="md:hidden">
-                    <p className="text-white">Halo, {profile?.fullname}</p>
+                    <Link href={"/profile"}>
+                      <p className="text-white">Halo, {profile?.fullname}</p>
+                    </Link>
                   </li>
 
                   <li
@@ -353,8 +369,8 @@ const NavbarV2: React.FC = () => {
                 </li>
                 <li>
                   <Link
-                    href="/broadcast"
-                    className={pathname == "/broadcast" ? "font-semibold" : ""}
+                    href="/informasi"
+                    className={pathname == "/informasi" ? "font-semibold" : ""}
                   >
                     Informasi
                   </Link>
@@ -471,9 +487,9 @@ const NavbarV2: React.FC = () => {
                   </li>
                   <li onClick={toggleMenu}>
                     <Link
-                      href="/broadcast"
+                      href="/informasi"
                       className={
-                        pathname == "/broadcast"
+                        pathname == "/informasi"
                           ? `text-[${ACTIVE_COLOR}]`
                           : `text-[${ON_PRIMARY_COLOR}]`
                       }
@@ -619,7 +635,7 @@ const NotifIcon: React.FC<{ className?: string; badgeCount: number }> = ({
   return (
     <Tippy
       content="Inbox"
-      className="bg-black/50 text-sm font-medium backdrop-blur-md px-4 py-1 rounded-md"
+      className="bg-black/50 text-sm font-medium backdrop-blur-md px-4 py-1 rounded-md text-white"
     >
       <Link href="/inbox" className="relative inline-block">
         <BellRing size={18} className={className} />
@@ -647,6 +663,3 @@ const DrawerButton: React.FC<{
 };
 
 export default NavbarV2;
-function getUserToken() {
-  throw new Error("Function not implemented.");
-}
