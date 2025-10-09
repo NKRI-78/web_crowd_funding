@@ -688,11 +688,7 @@ const ComponentDataPekerjaan: React.FC<Props> = ({
           <p className="text-sm text-gray-400 mb-2">
             File maksimal berukuran 10mb
           </p>
-          <UpdateRing
-            identity={`${dataProfile?.form}`}
-            // formKey={dataProfile?.form}
-            formKey="slipGaji"
-          >
+          <UpdateRing identity={`${dataProfile?.form}`} formKey="slip-gaji">
             {/* Input File yang disembunyikan */}
             <input
               type="file"
