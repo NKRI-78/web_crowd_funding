@@ -18,7 +18,9 @@ const FormDataPemodalPerusahaan: React.FC = () => {
 
   const searchParams = useSearchParams();
   const isUpdate = searchParams.get("update") === "true";
-  const formType = searchParams.get("form");
+  const formType = searchParams.get("form") ?? "";
+
+  const [profile, setProfile] = useState<any>(null);
 
   const [formData, setFormData] = useState<any>(() => {
     if (typeof window !== "undefined") {
@@ -133,79 +135,91 @@ const FormDataPemodalPerusahaan: React.FC = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         const profile = res.data?.data;
+        setProfile(profile);
 
-        setFormData((prev: any) => ({
-          ...prev,
+        if (
+          isUpdate &&
+          [
+            "akta-pendirian-perusahaan",
+            "sk-pendirian-perusahaan",
+            "sk-kumham-path",
+            "npwp-perusahaan",
+            "akta-perubahan-terakhir",
+          ].includes(formType)
+        ) {
+          setFormData((prev: any) => ({
+            ...prev,
 
-          jenisPerusahaan: profile?.company?.jenis_perusahaan || "",
-          nomorAktaPerubahanTerakhir:
-            profile?.company?.akta_perubahan_terahkir || "",
-          nomorNpwpPerusahaan: profile?.company?.npwp || "",
-          noTeleponPerusahaan: profile?.company?.phone || "",
-          situsPerusahaan: profile?.company?.site || "",
-          emailPerusahaan: profile?.company?.email || "",
-          aktaPerubahanTerakhirUrl:
-            profile?.company?.akta_perubahan_terahkir_path || "",
+            jenisPerusahaan: profile?.company?.jenis_perusahaan || "",
+            nomorAktaPerubahanTerakhir:
+              profile?.company?.akta_perubahan_terahkir || "",
+            nomorNpwpPerusahaan: profile?.company?.npwp || "",
+            noTeleponPerusahaan: profile?.company?.phone || "",
+            situsPerusahaan: profile?.company?.site || "",
+            emailPerusahaan: profile?.company?.email || "",
+            aktaPerubahanTerakhirUrl:
+              profile?.company?.akta_perubahan_terahkir_path || "",
 
-          aktaPendirianPerusahaanUrl: profile?.company?.akta_pendirian || "",
-          skPendirianUrl: profile?.company?.sk_pendirian_perusahaan || "",
-          skKumhamPerusahaanUrl: profile?.company?.sk_kumham_path || "",
-          npwpPerusahaanUrl: profile?.company?.npwp_path || "",
+            aktaPendirianPerusahaanUrl: profile?.company?.akta_pendirian || "",
+            skPendirianUrl: profile?.company?.sk_pendirian_perusahaan || "",
+            skKumhamPerusahaanUrl: profile?.company?.sk_kumham_path || "",
+            npwpPerusahaanUrl: profile?.company?.npwp_path || "",
 
-          namaBank: profile?.company?.bank?.name
-            ? {
-                value: profile.company.bank.name,
-                label: profile.company.bank.name,
-              }
-            : null,
-          nomorRekening: profile?.company?.bank?.no || "",
-          namaPemilik: profile?.company?.bank?.owner || "",
+            namaBank: profile?.company?.bank?.name
+              ? {
+                  value: profile.company.bank.name,
+                  label: profile.company.bank.name,
+                }
+              : null,
+            nomorRekening: profile?.company?.bank?.no || "",
+            namaPemilik: profile?.company?.bank?.owner || "",
 
-          namaBank_efek: profile?.profile_security_account?.account_bank
-            ? {
-                value: profile.profile_security_account.account_bank,
-                label: profile.profile_security_account.account_bank,
-              }
-            : null,
-          nomorRekening_efek: profile?.profile_security_account?.account || "",
-          namaPemilik_efek:
-            profile?.profile_security_account?.account_name || "",
+            namaBank_efek: profile?.profile_security_account?.account_bank
+              ? {
+                  value: profile.profile_security_account.account_bank,
+                  label: profile.profile_security_account.account_bank,
+                }
+              : null,
+            nomorRekening_efek:
+              profile?.profile_security_account?.account || "",
+            namaPemilik_efek:
+              profile?.profile_security_account?.account_name || "",
 
-          provincePemodalPerusahaan: profile?.company?.address?.[0]
-            ?.province_name
-            ? {
-                value: profile.company.address[0].province_name,
-                label: profile.company.address[0].province_name,
-              }
-            : null,
-          cityPemodalPerusahaan: profile?.company?.address?.[0]?.city_name
-            ? {
-                value: profile.company.address[0].city_name,
-                label: profile.company.address[0].city_name,
-              }
-            : null,
-          districtPemodalPerusahaan: profile?.company?.address?.[0]
-            ?.district_name
-            ? {
-                value: profile.company.address[0].district_name,
-                label: profile.company.address[0].district_name,
-              }
-            : null,
-          subDistrictPemodalPerusahaan: profile?.company?.address?.[0]
-            ?.subdistrict_name
-            ? {
-                value: profile.company.address[0].subdistrict_name,
-                label: profile.company.address[0].subdistrict_name,
-              }
-            : null,
+            provincePemodalPerusahaan: profile?.company?.address?.[0]
+              ?.province_name
+              ? {
+                  value: profile.company.address[0].province_name,
+                  label: profile.company.address[0].province_name,
+                }
+              : null,
+            cityPemodalPerusahaan: profile?.company?.address?.[0]?.city_name
+              ? {
+                  value: profile.company.address[0].city_name,
+                  label: profile.company.address[0].city_name,
+                }
+              : null,
+            districtPemodalPerusahaan: profile?.company?.address?.[0]
+              ?.district_name
+              ? {
+                  value: profile.company.address[0].district_name,
+                  label: profile.company.address[0].district_name,
+                }
+              : null,
+            subDistrictPemodalPerusahaan: profile?.company?.address?.[0]
+              ?.subdistrict_name
+              ? {
+                  value: profile.company.address[0].subdistrict_name,
+                  label: profile.company.address[0].subdistrict_name,
+                }
+              : null,
 
-          posCode: profile?.company?.address?.[0]?.postal_code || "",
-          addres: profile?.company?.address?.[0]?.detail || "",
+            posCode: profile?.company?.address?.[0]?.postal_code || "",
+            addres: profile?.company?.address?.[0]?.detail || "",
 
-          setujuKebenaranData: false,
-          setujuRisikoInvestasi: false,
-        }));
-
+            setujuKebenaranData: false,
+            setujuRisikoInvestasi: false,
+          }));
+        }
         console.log(profile?.company?.jenis_perusahaan, "CEK Jenis Perusahaan");
       } catch (err) {
         console.error("Gagal fetch profile:", err);
@@ -477,6 +491,46 @@ const FormDataPemodalPerusahaan: React.FC = () => {
     }
   };
 
+  function mapFormToDataType(
+    form: string | null,
+    data: any
+  ): {
+    dataType: string;
+    val: string;
+  } {
+    if (!form) return { dataType: "", val: "" };
+
+    switch (form.toLowerCase()) {
+      case "akta-perubahan-terakhir":
+        return {
+          dataType: "akta_perubahan_terahkir_path",
+          val: formData.aktaPerubahanTerakhirUrl,
+        };
+      case "akta-pendirian-perusahaan":
+        return {
+          dataType: "akta_pendirian",
+          val: formData.aktaPendirianPerusahaanUrl,
+        };
+      case "sk-pendirian-perusahaan":
+        return {
+          dataType: "sk_pendirian_perusahaan",
+          val: formData.skPendirianUrl,
+        };
+      case "sk-kumham-path":
+        return {
+          dataType: "sk_kumham_path",
+          val: formData.skKumhamPerusahaanUrl,
+        };
+      case "npwp-perusahaan":
+        return {
+          dataType: "npwp_path",
+          val: formData.npwpPerusahaanUrl,
+        };
+      default:
+        return { dataType: "", val: "" };
+    }
+  }
+
   const onUpdateEvent = async () => {
     console.log("Update Event Jalan ");
     const isValid = validateStep();
@@ -498,8 +552,36 @@ const FormDataPemodalPerusahaan: React.FC = () => {
           console.log("User Data:", userData);
           if (!userData) return;
 
-          const payload = {};
-          const res = await axios.put;
+          const userId = profile?.id || userData?.id;
+          const companyId = profile?.company?.id;
+
+          console.log("User ID:", userId);
+          console.log("Company ID:", companyId);
+          console.log("Form Type:", formType);
+
+          const { dataType, val } = mapFormToDataType(formType, formData);
+
+          const payload = {
+            val,
+            user_id: userId,
+            company_id: companyId,
+          };
+
+          console.log("Payload update:", {
+            payload,
+          });
+          console.log("SK Pendirian:", formData.skPendirianUrl);
+
+          const res = await axios.put(
+            `${API_BACKEND}/api/v1/document/update/${dataType}`,
+            payload,
+            {
+              headers: {
+                Authorization: `Bearer ${userData.token}`,
+              },
+            }
+          );
+          console.log("Response:", res.data);
 
           setCookie(
             "user",

@@ -280,7 +280,7 @@ const FormPemodalPerusahaan: React.FC = () => {
           });
 
           const res = await axios.put(
-            `${API_BACKEND}/api/v1/document/update/${formType}`,
+            `${API_BACKEND}/api/v1/document/update/${dataType}`,
             payload,
             {
               headers: {

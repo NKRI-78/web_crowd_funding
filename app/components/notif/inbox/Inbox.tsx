@@ -177,6 +177,7 @@ const Inbox = () => {
                     );
                   } else if (
                     [
+                      "akta-perubahan-terakhir",
                       "akta-pendirian-perusahaan",
                       "sk-pendirian-perusahaan",
                       "sk-kumham-path",

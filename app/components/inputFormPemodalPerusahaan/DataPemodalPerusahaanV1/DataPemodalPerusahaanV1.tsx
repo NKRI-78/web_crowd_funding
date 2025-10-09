@@ -680,7 +680,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
                 onClick={onLihatSkKumhamPerusahaan}
                 className="text-blue-600 underline text-sm block mt-2"
               >
-                Lihat Dokumen SK Pendirian Perusahaan
+                Lihat Dokumen SK Kumham Perusahaan
               </button>
             )}
             {errors?.skKumhamPerusahaanUrl && (
@@ -722,7 +722,7 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
                 onClick={onLihatNpwpPerusahaan}
                 className="text-blue-600 underline text-sm block mt-2"
               >
-                Lihat Dokumen SK Pendirian Perusahaan
+                Lihat Dokumen Npwp Perusahaan
               </button>
             )}
             {errors?.npwpPerusahaanUrl && (
