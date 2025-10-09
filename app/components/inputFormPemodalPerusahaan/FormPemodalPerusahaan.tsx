@@ -185,7 +185,7 @@ const FormPemodalPerusahaan: React.FC = () => {
             JSON.stringify({
               ...userData,
               role: "investor institusi",
-            } as AuthDataResponse)
+            })
           );
 
           await Swal.fire({
@@ -195,6 +195,8 @@ const FormPemodalPerusahaan: React.FC = () => {
             timer: 3000,
             timerProgressBar: true,
           });
+
+          console.log("CEK ROLE", userData?.role);
 
           localStorage.removeItem("pemodalPerusahaanCache");
           router.push("/form-data-pemodal-perusahaan");
@@ -266,7 +268,7 @@ const FormPemodalPerusahaan: React.FC = () => {
             JSON.stringify({
               ...userData,
               role: "investor institusi",
-            } as AuthDataResponse)
+            })
           );
 
           await Swal.fire({
@@ -520,7 +522,7 @@ const FormPemodalPerusahaan: React.FC = () => {
                 <Subtitle text="Bermaterai dan di cap basah" className="mb-1" />
                 <FileInput
                   fileName="Surat-Kuasa"
-                  accept=".pdf,.word"
+                  accept=".pdf,.doc,.docx"
                   fileUrl={formFields.suratKuasa}
                   onChange={(fileUrl) => {
                     setFormFields({ ...formFields, suratKuasa: fileUrl });
