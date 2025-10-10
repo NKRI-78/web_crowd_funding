@@ -11,7 +11,7 @@ import { useSearchParams } from "next/navigation";
 import ComponentDataPribadi from "./informasiPribadi/DataPribadi";
 import ComponentDataPekerjaan from "./informasiPekerjaan/DataPekerjaan";
 import { API_BACKEND } from "@/app/utils/constant";
-import FileViewerModal from "@/app/(defaults)/viewer/components/FilePriviewModal";
+import FileViewerModal from "@/app/(defaults)/viewer/components/FilePreviewModalV2";
 import { setCookie } from "@/app/helper/cookie";
 import { getUser } from "@/app/lib/auth";
 
@@ -1224,7 +1224,7 @@ const FormPemodal: React.FC = () => {
               (!dataPekerjaan.setujuKebenaranData ||
                 !dataPekerjaan.setujuRisikoInvestasi)
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-purple-600 hover:bg-purple-700"
+                : "bg-[#3C2B90] hover:bg-[#2e2176]"
             }`}
           >
             Selanjutnya
@@ -1240,7 +1240,7 @@ const FormPemodal: React.FC = () => {
               !dataPekerjaan.setujuKebenaranData ||
               !dataPekerjaan.setujuRisikoInvestasi
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-purple-600 hover:bg-purple-700"
+                : "bg-[#3C2B90] hover:bg-[#2e2176]"
             }`}
           >
             {isUpdate ? "Update Data" : "Kirim Data"}
