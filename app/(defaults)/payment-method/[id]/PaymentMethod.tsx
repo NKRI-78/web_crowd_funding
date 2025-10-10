@@ -114,7 +114,14 @@ const PaymentMethod = ({ id }: { id: string }) => {
           errorMessage = err.message;
         }
       }
-      Swal.fire({ icon: "error", title: "Oops...", text: errorMessage });
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: errorMessage,
+        confirmButtonText: "Selesaikan Transaksi Sebelumnya",
+      }).then((result) => {
+        if (result.isConfirmed) router.push("/dashboard/investor-transaction");
+      });
     }
     setLoading(false);
   };

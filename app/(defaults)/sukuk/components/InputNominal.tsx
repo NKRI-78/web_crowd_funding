@@ -205,7 +205,14 @@ export default function InputNominalLot({
           </div>
 
           {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
-          <p className="text-xs text-gray-500 mt-2">
+
+          {isInstitusi && (
+            <p className="text-xs text-red-500 mt-3">
+              Sebagai Pemodal Perusahaan minimum investasi 10 Unit
+            </p>
+          )}
+
+          <p className="text-xs text-gray-500 mt-3">
             Total tersedia: {totalUnit.toLocaleString("id-ID")} Unit
           </p>
           <p className="text-xs text-gray-500">

@@ -134,7 +134,7 @@ const Inbox = () => {
 
   return (
     <>
-      <div className="py-28 px-6 text-black">
+      <div className="py-28 px-14 text-black">
         {loading ? (
           <InboxSkeleton />
         ) : inboxes.length ? (
