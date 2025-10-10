@@ -136,7 +136,7 @@ export default function ProfilePemodalPerusahaan({
                     },
                     {
                       name: "Akta Perubahan Terakhir",
-                      url: company.akta_perubahan_terahkir,
+                      url: company.akta_perubahan_terahkir_path,
                     },
                     {
                       name: "SK Pendirian Perusahaan",
@@ -241,7 +241,7 @@ export default function ProfilePemodalPerusahaan({
           </p>
           <FormButton
             onClick={() => {
-              // router.push("/form-penerbit?form=complete-company");
+              router.push("/form-data-pemodal-perusahaan");
             }}
           >
             Selesaikan Registrasi

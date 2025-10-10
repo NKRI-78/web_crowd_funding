@@ -537,7 +537,9 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
             >
               <>
                 <FaFileAlt />
-                Upload Dokumen
+                {isClient && formData.aktaPerubahanTerakhirUrl
+                  ? "Update Dokumen"
+                  : "Upload Dokumen"}
               </>
             </label>
 
@@ -582,7 +584,9 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
             >
               <>
                 <FaFileAlt />
-                Upload Dokumen
+                {isClient && formData.aktaPendirianPerusahaanUrl
+                  ? "Update Dokumen"
+                  : "Upload Dokumen"}
               </>
             </label>
 
@@ -626,7 +630,9 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
             >
               <>
                 <FaFileAlt />
-                Upload Dokumen
+                {isClient && formData.skPendirianUrl
+                  ? "Update Dokumen"
+                  : "Upload Dokumen"}
               </>
             </label>
 
@@ -670,7 +676,9 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
             >
               <>
                 <FaFileAlt />
-                Upload Dokumen
+                {isClient && formData.skKumhamPerusahaanUrl
+                  ? "Update Dokumen"
+                  : "Upload Dokumen"}
               </>
             </label>
 
@@ -712,7 +720,9 @@ const ComponentDataPemodalPerusahaanV1: React.FC<Props> = ({
             >
               <>
                 <FaFileAlt />
-                Upload Dokumen
+                {isClient && formData.npwpPerusahaanUrl
+                  ? "Update Dokumen"
+                  : "Upload Dokumen"}
               </>
             </label>
 
