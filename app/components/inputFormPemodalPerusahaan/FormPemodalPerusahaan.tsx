@@ -164,6 +164,7 @@ const FormPemodalPerusahaan: React.FC = () => {
           const urlPhotoSelfie = await uploadFotoSelfie(formFields.photo);
 
           const payload = {
+            role: "9",
             fullname: formFields.fullname,
             photo_selfie: urlPhotoSelfie,
             jabatan: formFields.jabatan,

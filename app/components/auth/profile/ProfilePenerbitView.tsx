@@ -1,6 +1,8 @@
 import { User } from "@/app/interfaces/user/IUser";
-import { FileText } from "lucide-react";
+import { FileText, UserRoundMinus } from "lucide-react";
 import Image from "next/image";
+import FormButton from "../../inputFormPenerbit/_component/FormButton";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePenerbitView({
   avatar,
@@ -9,6 +11,7 @@ export default function ProfilePenerbitView({
   avatar: string;
   profile: User;
 }) {
+  const router = useRouter();
   const company = profile.company;
 
   return (
@@ -38,94 +41,90 @@ export default function ProfilePenerbitView({
       </div>
 
       {/* KONTEN */}
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-        {profile.company && (
-          <>
-            {/* Informasi Perusahaan */}
-            <section className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-              <h2 className="text-lg font-semibold mb-4 border-b border-gray-200 pb-2">
-                Informasi Perusahaan
-              </h2>
-              <table className="w-full border border-gray-200 rounded-lg overflow-hidden text-sm">
-                <tbody>
-                  <tr className="border-b border-gray-200">
-                    <td className="bg-gray-50 font-medium w-1/3 px-4 py-2 text-gray-700">
-                      Nama Perushaan
-                    </td>
-                    <td className="px-4 py-2 text-gray-600">
-                      {company.name ?? "-"}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="bg-gray-50 font-medium w-1/3 px-4 py-2 text-gray-700">
-                      Jenis Perushaan
-                    </td>
-                    <td className="px-4 py-2 text-gray-600">
-                      {company.jenis_perusahaan ?? "-"}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="bg-gray-50 font-medium w-1/3 px-4 py-2 text-gray-700">
-                      Email
-                    </td>
-                    <td className="px-4 py-2 text-gray-600">
-                      {company.email ?? "-"}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="bg-gray-50 font-medium w-1/3 px-4 py-2 text-gray-700">
-                      No Telepon
-                    </td>
-                    <td className="px-4 py-2 text-gray-600">
-                      {company.phone ?? "-"}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="bg-gray-50 font-medium w-1/3 px-4 py-2 text-gray-700">
-                      Website
-                    </td>
-                    <td className="px-4 py-2 text-gray-600">
-                      <a
-                        href={company.site}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        {company.site}
-                      </a>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-
-              {/* Alamat */}
-              <div className="mt-5">
-                <p className="font-semibold text-sm mb-2">Alamat Perusahaan:</p>
-                <div className="space-y-3">
-                  {profile.company.address?.map((addr, i) => (
-                    <div
-                      key={i}
-                      className="bg-gray-50 border border-gray-200 rounded-lg p-3 hover:bg-gray-100 transition"
-                    >
-                      <p className="text-sm font-medium">{addr.name}</p>
-                      <p className="text-xs text-gray-500 leading-relaxed">
-                        {addr.detail}
-                        <br />
-                        {addr.subdistrict_name}, {addr.district_name},{" "}
-                        {addr.city_name}, {addr.province_name} (
-                        {addr.postal_code})
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          </>
-        )}
-
-        {profile.company && (
+      {profile.company.id ? (
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Informasi Perusahaan */}
           <section className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-            {/* Daftar Dokumen Perusahaan */}
+            <h2 className="text-lg font-semibold mb-4 border-b border-gray-200 pb-2">
+              Informasi Perusahaan
+            </h2>
+            <table className="w-full border border-gray-200 rounded-lg overflow-hidden text-sm">
+              <tbody>
+                <tr className="border-b border-gray-200">
+                  <td className="bg-gray-50 font-medium w-1/3 px-4 py-2 text-gray-700">
+                    Nama Perushaan
+                  </td>
+                  <td className="px-4 py-2 text-gray-600">
+                    {company.name ?? "-"}
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <td className="bg-gray-50 font-medium w-1/3 px-4 py-2 text-gray-700">
+                    Jenis Perushaan
+                  </td>
+                  <td className="px-4 py-2 text-gray-600">
+                    {company.jenis_perusahaan ?? "-"}
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <td className="bg-gray-50 font-medium w-1/3 px-4 py-2 text-gray-700">
+                    Email
+                  </td>
+                  <td className="px-4 py-2 text-gray-600">
+                    {company.email ?? "-"}
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <td className="bg-gray-50 font-medium w-1/3 px-4 py-2 text-gray-700">
+                    No Telepon
+                  </td>
+                  <td className="px-4 py-2 text-gray-600">
+                    {company.phone ?? "-"}
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <td className="bg-gray-50 font-medium w-1/3 px-4 py-2 text-gray-700">
+                    Website
+                  </td>
+                  <td className="px-4 py-2 text-gray-600">
+                    <a
+                      href={company.site}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {company.site}
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            {/* Alamat */}
+            <div className="mt-5">
+              <p className="font-semibold text-sm mb-2">Alamat Perusahaan:</p>
+              <div className="space-y-3">
+                {profile.company.address?.map((addr, i) => (
+                  <div
+                    key={i}
+                    className="bg-gray-50 border border-gray-200 rounded-lg p-3 hover:bg-gray-100 transition"
+                  >
+                    <p className="text-sm font-medium">{addr.name}</p>
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                      {addr.detail}
+                      <br />
+                      {addr.subdistrict_name}, {addr.district_name},{" "}
+                      {addr.city_name}, {addr.province_name} ({addr.postal_code}
+                      )
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Daftar Dokumen Perusahaan */}
+          <section className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
             <h2 className="text-lg font-semibold mb-4 border-b border-gray-200 pb-2">
               Dokumen Perusahaan
             </h2>
@@ -203,97 +202,117 @@ export default function ProfilePenerbitView({
               </table>
             </div>
           </section>
-        )}
 
-        {/* Susunan Manajemen */}
-        <section className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-          <h2 className="text-lg font-semibold mb-4 border-b border-gray-200 pb-2">
-            Susunan Manajemen
+          {/* Susunan Manajemen */}
+          <section className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+            <h2 className="text-lg font-semibold mb-4 border-b border-gray-200 pb-2">
+              Susunan Manajemen
+            </h2>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Direktur */}
+              <div>
+                <h3 className="font-medium text-gray-700 mb-2">Direktur</h3>
+                {profile.company.directors?.map((d) => (
+                  <div
+                    key={d.id}
+                    className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-3 space-y-1"
+                  >
+                    <p className="text-sm">
+                      <strong>Nama:</strong> {d.name}
+                    </p>
+                    <p className="text-sm">
+                      <strong>KTP:</strong> {d.ktp}
+                    </p>
+                    <div className="flex gap-x-4">
+                      <a
+                        href={d.ktp_path}
+                        target="_blank"
+                        className="px-3 py-1 bg-blue-100 rounded-md border border-blue-200 text-xs text-blue-500 cursor-pointer hover:shadow transition-shadow duration-300"
+                      >
+                        <div className="flex gap-x-1 items-center">
+                          <FileText size={12} />
+                          <p className="text-blue-500">KTP</p>
+                        </div>
+                      </a>
+                      <a
+                        href={d.npwp_path}
+                        target="_blank"
+                        className="px-3 py-1 bg-blue-100 rounded-md border border-blue-200 text-xs text-blue-500 cursor-pointer hover:shadow transition-shadow duration-300"
+                      >
+                        <div className="flex gap-x-1 items-center">
+                          <FileText size={12} />
+                          <p className="text-blue-500">NPWP</p>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Komisaris */}
+              <div>
+                <h3 className="font-medium text-gray-700 mb-2">Komisaris</h3>
+                {profile.company.komisaris?.map((k) => (
+                  <div
+                    key={k.id}
+                    className="bg-green-50 border border-green-100 rounded-xl p-4 mb-3 transition space-y-1"
+                  >
+                    <p className="text-sm">
+                      <strong>Nama:</strong> {k.name}
+                    </p>
+                    <p className="text-sm">
+                      <strong>KTP:</strong> {k.ktp}
+                    </p>
+                    <div className="flex gap-x-4">
+                      <a
+                        href={k.ktp_path}
+                        target="_blank"
+                        className="px-3 py-1 bg-green-100 rounded-md border border-green-200 text-xs text-green-500 cursor-pointer hover:shadow transition-shadow duration-300"
+                      >
+                        <div className="flex gap-x-1 items-center">
+                          <FileText size={12} />
+                          <p className="text-green-500">KTP</p>
+                        </div>
+                      </a>
+                      <a
+                        href={k.npwp_path}
+                        target="_blank"
+                        className="px-3 py-1 bg-green-100 rounded-md border border-green-200 text-xs text-green-500 cursor-pointer hover:shadow transition-shadow duration-300"
+                      >
+                        <div className="flex gap-x-1 items-center">
+                          <FileText size={12} />
+                          <p className="text-green-500">NPWP</p>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </div>
+      ) : (
+        <div className="w-full flex flex-col items-center justify-center text-center p-16 mt-6">
+          <UserRoundMinus className="w-16 h-16 mb-4 text-gray-500" />
+          <h2 className="font-bold text-xl md:text-2xl text-black mb-2">
+            Data Belum Lengkap
           </h2>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* Direktur */}
-            <div>
-              <h3 className="font-medium text-gray-700 mb-2">Direktur</h3>
-              {profile.company.directors?.map((d) => (
-                <div
-                  key={d.id}
-                  className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-3 space-y-1"
-                >
-                  <p className="text-sm">
-                    <strong>Nama:</strong> {d.name}
-                  </p>
-                  <p className="text-sm">
-                    <strong>KTP:</strong> {d.ktp}
-                  </p>
-                  <div className="flex gap-x-4">
-                    <a
-                      href={d.ktp_path}
-                      target="_blank"
-                      className="px-3 py-1 bg-blue-100 rounded-md border border-blue-200 text-xs text-blue-500 cursor-pointer hover:shadow transition-shadow duration-300"
-                    >
-                      <div className="flex gap-x-1 items-center">
-                        <FileText size={12} />
-                        <p className="text-blue-500">KTP</p>
-                      </div>
-                    </a>
-                    <a
-                      href={d.npwp_path}
-                      target="_blank"
-                      className="px-3 py-1 bg-blue-100 rounded-md border border-blue-200 text-xs text-blue-500 cursor-pointer hover:shadow transition-shadow duration-300"
-                    >
-                      <div className="flex gap-x-1 items-center">
-                        <FileText size={12} />
-                        <p className="text-blue-500">NPWP</p>
-                      </div>
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Komisaris */}
-            <div>
-              <h3 className="font-medium text-gray-700 mb-2">Komisaris</h3>
-              {profile.company.komisaris?.map((k) => (
-                <div
-                  key={k.id}
-                  className="bg-green-50 border border-green-100 rounded-xl p-4 mb-3 transition space-y-1"
-                >
-                  <p className="text-sm">
-                    <strong>Nama:</strong> {k.name}
-                  </p>
-                  <p className="text-sm">
-                    <strong>KTP:</strong> {k.ktp}
-                  </p>
-                  <div className="flex gap-x-4">
-                    <a
-                      href={k.ktp_path}
-                      target="_blank"
-                      className="px-3 py-1 bg-green-100 rounded-md border border-green-200 text-xs text-green-500 cursor-pointer hover:shadow transition-shadow duration-300"
-                    >
-                      <div className="flex gap-x-1 items-center">
-                        <FileText size={12} />
-                        <p className="text-green-500">KTP</p>
-                      </div>
-                    </a>
-                    <a
-                      href={k.npwp_path}
-                      target="_blank"
-                      className="px-3 py-1 bg-green-100 rounded-md border border-green-200 text-xs text-green-500 cursor-pointer hover:shadow transition-shadow duration-300"
-                    >
-                      <div className="flex gap-x-1 items-center">
-                        <FileText size={12} />
-                        <p className="text-green-500">NPWP</p>
-                      </div>
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </div>
+          <p className="text-gray-500 text-sm md:text-base leading-relaxed mb-4">
+            Silakan lengkapi profil perusahaan Anda dengan menyelesaikan proses
+            registrasi perusahaan. Pastikan semua informasi dan dokumen yang
+            diperlukan telah diisi dengan benar agar perusahaan Anda dapat
+            terverifikasi.
+          </p>
+          <FormButton
+            onClick={() => {
+              router.push("/form-penerbit?form=complete-company");
+            }}
+          >
+            Selesaikan Registrasi
+          </FormButton>
+        </div>
+      )}
     </>
   );
 }

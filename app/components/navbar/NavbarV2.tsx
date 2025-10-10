@@ -194,18 +194,26 @@ const NavbarV2: React.FC = () => {
               {/* MUNCUL KETIKA MD KEATAS (TAMPILAN DEKSTOP & TABLET) */}
               {/* NAMA & BUTTON NOTIFIKASI & BUTTON DRAWER */}
               <div className="flex items-center gap-4">
-                <Link href={"/profile"}>
-                  <div className="flex items-center gap-x-3 px-4 py-2 bg-[#0c484d] rounded-full hover:bg-[#0b363a] transition-colors duration-500">
-                    <p className="text-white text-sm">{profile?.fullname}</p>
-                    <Image
-                      src={getAvatar()}
-                      alt="Foto Profile"
-                      width={28}
-                      height={28}
-                      className="rounded-full object-cover w-[30px] h-[30px]"
-                    />
-                  </div>
-                </Link>
+                {userData.role !== "user" ? (
+                  <Link href={"/profile"}>
+                    <div className="flex items-center gap-x-3 px-4 py-2 bg-[#0c484d] rounded-full hover:bg-[#0b363a] transition-colors duration-500">
+                      <p className="text-white text-sm">{profile?.fullname}</p>
+                      <Image
+                        src={getAvatar()}
+                        alt="Foto Profile"
+                        width={28}
+                        height={28}
+                        className="rounded-full object-cover w-[30px] h-[30px]"
+                      />
+                    </div>
+                  </Link>
+                ) : (
+                  <Link href={"/dashboard/main"}>
+                    <div className="flex items-center gap-x-3 px-4 py-2 bg-[#0c484d] rounded-full hover:bg-[#0b363a] transition-colors duration-500 cursor-pointer">
+                      <p className="text-white text-sm">{profile?.fullname}</p>
+                    </div>
+                  </Link>
+                )}
                 {/* hanya muncul ketika ia suah register tapi belum memilih role */}
                 {/* {userData && userData.role === "user" && step !== "role" && (
                   <div className="hidden md:block">
@@ -604,7 +612,7 @@ const Nav: React.FC<{ children?: React.ReactNode; sticky: boolean }> = ({
 //* navbar layout
 const NavLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="flex justify-between items-center px-10 py-6">
+    <div className="flex justify-between items-center px-10 py-4">
       {children}
     </div>
   );

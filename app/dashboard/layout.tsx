@@ -42,9 +42,10 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
                 Authorization: `Bearer ${user.token}`,
               },
             });
-            const filteredTransactions = res.data["data"]
-              .filter((inbox: InboxResponse) => inbox.type === "transaction")
-              .reverse() as InboxResponse[];
+            const list = res.data["data"] as InboxResponse[];
+            const filteredTransactions = list.filter(
+              (inbox: InboxResponse) => inbox.type === "transaction"
+            );
             setTransactionCount(filteredTransactions.length);
           } catch (error) {
             setTransactionCount(0);
