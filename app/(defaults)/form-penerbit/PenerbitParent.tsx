@@ -31,6 +31,10 @@ export interface UpdateFieldValue {
 }
 
 const loadFormIndex = (isUpdate: boolean, form: string | null): number => {
+  // if form == complete-company maka index adalah 1 dimulai dari register perusahaan
+  // melewati register pic karena konteksnya user udah register pic yang belum register perusahaan
+  if (form === "complete-company") return 1;
+
   if (isUpdate) {
     console.log("get form index, form= " + form);
     if (!form) return 0;
@@ -38,31 +42,14 @@ const loadFormIndex = (isUpdate: boolean, form: string | null): number => {
     // jika formKey memuat form update penerbit maka navigate to index form penerbit yaitu index-2
     // jika tidak itu artinya update berada di form PIC/Form utusan penerbit yaitu index-0
     if (penerbitUpdateKeys.includes(form)) return 2;
+  } else {
+    const formIndexCache = localStorage.getItem(FORM_INDEX_CACHE_KEY);
+    return formIndexCache ? Number(formIndexCache) : 0;
   }
-
-  // if form == complete-company maka index adalah 1 dimulai dari register perusahaan
-  // melewati register pic karena konteksnya user udah register pic yang belum register perusahaan
-  if (form === "complete-company") return 1;
 
   // fallback
   return 0;
 };
-
-// const getFormIndexBasedFormKey = (form: string | null): number => {
-//   console.log("get form index, form= " + form);
-//   if (!form) return 0;
-
-//   // if form == complete-company maka index adalah 1 dimulai dari register perusahaan
-//   // melewati register pic karena konteksnya user udah register pic yang belum register perusahaan
-//   if (form == "complete-company") return 1;
-
-//   // jika formKey memuat form update penerbit maka navigate to index form penerbit yaitu index-2
-//   // jika tidak itu artinya update berada di form PIC/Form utusan penerbit yaitu index-0
-//   if (penerbitUpdateKeys.includes(form)) return 2;
-
-//   // fallback
-//   return 0;
-// };
 
 export default function MultiStepFormWrapper() {
   const router = useRouter();
@@ -74,10 +61,7 @@ export default function MultiStepFormWrapper() {
   const [userProfile, setUserProfile] = useState<ProfileUpdate | null>(null);
 
   const [loadingGetFormIndex, setLoadingGetFormIndex] = useState<boolean>(true);
-  const [formIndex, setFormIndex] = useState<number>(
-    // isUpdate ? getFormIndexBasedFormKey(formKey) : 0
-    loadFormIndex(isUpdate !== null, formKey)
-  );
+  const [formIndex, setFormIndex] = useState<number>(0);
 
   const userCookie = getUser();
 
@@ -89,10 +73,9 @@ export default function MultiStepFormWrapper() {
     // hanya load cache form index ketika ia tidak sedang dalam mode update
     setLoadingGetFormIndex(true);
 
-    if (!isUpdate) {
-      const formIndexCache = localStorage.getItem(FORM_INDEX_CACHE_KEY);
-      setFormIndex(formIndexCache ? Number(formIndexCache) : 0);
-    }
+    const formIndexResult = loadFormIndex(isUpdate !== null, formKey);
+    console.log("formundexresult", formIndexResult);
+    setFormIndex(formIndexResult);
 
     setLoadingGetFormIndex(false);
   }, [isUpdate]);

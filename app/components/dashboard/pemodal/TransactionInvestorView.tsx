@@ -176,44 +176,6 @@ export default function TransactionInvestorView() {
                       </td>
                       <td className="p-3 text-center">
                         <div className="flex items-center justify-center gap-x-3">
-                          {/* <a
-                            href={`/waiting-payment?orderId=${trx.payment_id}`}
-                            className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition duration-200"
-                          >
-                            <Eye className="w-4 h-4" />
-                            Lihat Detail
-                          </a>
-
-                          {trx.payment_status == "PAID" && (
-                            <>
-                              <button
-                                className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md bg-green-600 text-white hover:bg-green-700 shadow-sm transition duration-200"
-                                onClick={() => {
-                                  setSelectedPaymentId(
-                                    trx.payment_id.toString() ?? ""
-                                  );
-                                  setShowRefundStatement(true);
-                                }}
-                              >
-                                <RotateCcw className="w-4 h-4" />
-                                Kembalikan Dana
-                              </button>
-                            </>
-                          )}
-
-                          {trx.payment_status === "REFUNDED" && (
-                            <>
-                              <button
-                                onClick={() => {
-                                  setShowRefundExplanation(true);
-                                }}
-                                className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition duration-200"
-                              >
-                                <Eye className="w-4 h-4" />
-                                Information
-                              </button>
-                            </>
-                          )} */}
                           <Tippy
                             content="Lihat Detail"
                             className="bg-black text-xs rounded-md text-white"
@@ -233,19 +195,15 @@ export default function TransactionInvestorView() {
                               <Eye size={18} className="text-blue-500" />
                             </div>
                           </Tippy>
-                          <Tippy
-                            content={
-                              trx.payment_status === "PAID"
-                                ? "Kembalikan Dana"
-                                : "Informasi Refund"
-                            }
-                            className="bg-black text-xs rounded-md text-white"
-                            placement="top" // posisi tooltip
-                            arrow={true} // aktifkan panah
-                            animation="shift-away" // animasi smooth
-                            duration={[400, 250]} // [masuk, keluar]
-                          >
-                            {trx.payment_status === "PAID" ? (
+                          {trx.payment_status === "PAID" ? (
+                            <Tippy
+                              content="Kembalikan Dana"
+                              className="bg-black text-xs rounded-md text-white"
+                              placement="top" // posisi tooltip
+                              arrow={true} // aktifkan panah
+                              animation="shift-away" // animasi smooth
+                              duration={[400, 250]} // [masuk, keluar]
+                            >
                               <div
                                 className="bg-red-50 p-1 rounded-md border border-red-500 cursor-pointer transition-all duration-400 active:scale-[0.98] hover:shadow-sm active:hover:shadow-md"
                                 onClick={() => {
@@ -257,7 +215,16 @@ export default function TransactionInvestorView() {
                               >
                                 <RotateCcw size={18} className="text-red-500" />
                               </div>
-                            ) : trx.payment_status === "REFUNDED" ? (
+                            </Tippy>
+                          ) : trx.payment_status === "REFUNDED" ? (
+                            <Tippy
+                              content="Informasi Refund"
+                              className="bg-black text-xs rounded-md text-white"
+                              placement="top" // posisi tooltip
+                              arrow={true} // aktifkan panah
+                              animation="shift-away" // animasi smooth
+                              duration={[400, 250]} // [masuk, keluar]
+                            >
                               <div
                                 className="bg-green-50 p-1 rounded-md border border-green-500 cursor-pointer transition-all duration-400 active:scale-[0.98] hover:shadow-sm active:hover:shadow-md"
                                 onClick={() => {
@@ -266,12 +233,12 @@ export default function TransactionInvestorView() {
                               >
                                 <Info size={18} className="text-green-500" />
                               </div>
-                            ) : (
-                              <div className="bg-transparent p-1 rounded-md border border-transparent">
-                                <Info size={18} className="text-transparent" />
-                              </div>
-                            )}
-                          </Tippy>
+                            </Tippy>
+                          ) : (
+                            <div className="bg-transparent p-1 rounded-md border border-transparent">
+                              <Info size={18} className="text-transparent" />
+                            </div>
+                          )}
                         </div>
                       </td>
                     </tr>
