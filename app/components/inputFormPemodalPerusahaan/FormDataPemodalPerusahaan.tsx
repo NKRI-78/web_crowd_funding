@@ -220,7 +220,6 @@ const FormDataPemodalPerusahaan: React.FC = () => {
             setujuRisikoInvestasi: false,
           }));
         }
-        console.log(profile?.company?.jenis_perusahaan, "CEK Jenis Perusahaan");
       } catch (err) {
         console.error("Gagal fetch profile:", err);
       }
@@ -434,7 +433,6 @@ const FormDataPemodalPerusahaan: React.FC = () => {
           is_apbn: null,
         },
       };
-      console.log(payload, "CEK PAYLOAD");
 
       const response = await axios.post(
         `https://api-capbridge.langitdigital78.com/api/v1/auth/assign/role`,
@@ -464,8 +462,6 @@ const FormDataPemodalPerusahaan: React.FC = () => {
           role: "investor institusi",
         })
       );
-
-      console.log("CEK ROLE", userData?.role);
 
       router.push("/dashboard");
     } catch (error) {
@@ -532,7 +528,6 @@ const FormDataPemodalPerusahaan: React.FC = () => {
   }
 
   const onUpdateEvent = async () => {
-    console.log("Update Event Jalan ");
     const isValid = validateStep();
 
     if (isValid) {
@@ -549,15 +544,11 @@ const FormDataPemodalPerusahaan: React.FC = () => {
       if (swalResult.isConfirmed) {
         try {
           const userData = getUser();
-          console.log("User Data:", userData);
+
           if (!userData) return;
 
           const userId = profile?.id || userData?.id;
           const companyId = profile?.company?.id;
-
-          console.log("User ID:", userId);
-          console.log("Company ID:", companyId);
-          console.log("Form Type:", formType);
 
           const { dataType, val } = mapFormToDataType(formType, formData);
 
@@ -566,11 +557,6 @@ const FormDataPemodalPerusahaan: React.FC = () => {
             user_id: userId,
             company_id: companyId,
           };
-
-          console.log("Payload update:", {
-            payload,
-          });
-          console.log("SK Pendirian:", formData.skPendirianUrl);
 
           const res = await axios.put(
             `${API_BACKEND}/api/v1/document/update/${dataType}`,
@@ -581,7 +567,6 @@ const FormDataPemodalPerusahaan: React.FC = () => {
               },
             }
           );
-          console.log("Response:", res.data);
 
           setCookie(
             "user",
@@ -600,6 +585,8 @@ const FormDataPemodalPerusahaan: React.FC = () => {
           });
 
           localStorage.removeItem("pemodalPerusahaanCache");
+          localStorage.removeItem("formPemodalPerusahaan");
+          Cookies.remove("formPemodalPerusahaan");
           router.push("/dashboard");
         } catch (error: any) {
           console.error("Update error detail:", error);
@@ -673,7 +660,7 @@ const FormDataPemodalPerusahaan: React.FC = () => {
           className={`px-6 py-2 rounded-lg text-white ${
             formData.setujuKebenaranData && formData.setujuRisikoInvestasi
               ? isUpdate
-                ? "bg-blue-600 hover:bg-blue-700"
+                ? "bg-[#3C2B90] hover:bg-[#2e2176]"
                 : "bg-green-600 hover:bg-green-700"
               : "bg-gray-400 cursor-not-allowed"
           }`}

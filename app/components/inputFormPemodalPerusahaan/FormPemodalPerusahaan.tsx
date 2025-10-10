@@ -200,8 +200,6 @@ const FormPemodalPerusahaan: React.FC = () => {
             timerProgressBar: true,
           });
 
-          console.log("CEK ROLE", userData?.role);
-
           localStorage.removeItem("pemodalPerusahaanCache");
           router.push("/form-data-pemodal-perusahaan");
         }
@@ -237,12 +235,9 @@ const FormPemodalPerusahaan: React.FC = () => {
         return { dataType: "", val: "" };
     }
   }
-  console.log("CEK", formFields.fileKtp, formFields.suratKuasa);
 
   const onUpdateEvent = async () => {
-    console.log("UpdateEvent jalan");
     const isValid = validateForm();
-    console.log("Validasi:", isValid);
 
     if (isValid) {
       const swalResult = await Swal.fire({
@@ -258,15 +253,11 @@ const FormPemodalPerusahaan: React.FC = () => {
       if (swalResult.isConfirmed) {
         try {
           const userData = getUser();
-          console.log("User Data:", userData);
+
           if (!userData) return;
 
           const userId = profile?.id || userData?.id;
           const companyId = profile?.company?.id;
-
-          console.log("User ID:", userId);
-          console.log("Company ID:", companyId);
-          console.log("Form Type:", formType);
 
           const { dataType, val } = mapFormToDataType(formType, formFields);
 
@@ -275,10 +266,6 @@ const FormPemodalPerusahaan: React.FC = () => {
             user_id: userId,
             company_id: companyId,
           };
-
-          console.log("Payload update:", {
-            payload,
-          });
 
           const res = await axios.put(
             `${API_BACKEND}/api/v1/document/update/${dataType}`,
@@ -289,7 +276,6 @@ const FormPemodalPerusahaan: React.FC = () => {
               },
             }
           );
-          console.log("Response:", res.data);
 
           setCookie(
             "user",
@@ -390,8 +376,6 @@ const FormPemodalPerusahaan: React.FC = () => {
 
     setErrors(newErrors);
 
-    console.log(newErrors);
-
     const isValid = Object.keys(newErrors).length === 0;
 
     if (!isValid) {
@@ -453,6 +437,9 @@ const FormPemodalPerusahaan: React.FC = () => {
       <div className="w-full grid grid-cols-1 md:grid-cols-[1fr_1.3fr] gap-6">
         <ContainerSelfie
           photoUrl={formFields.photo}
+          resetPhotoResult={() => {
+            setFormFields({ ...formFields, photo: "" });
+          }}
           photoResult={(photoSelfie) => {
             if (photoSelfie) {
               setFormFields({ ...formFields, photo: photoSelfie });

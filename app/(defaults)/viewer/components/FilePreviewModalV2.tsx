@@ -1,5 +1,7 @@
 "use client";
 
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import { inferFileName } from "@/app/lib/fileType";
 import Modal from "@/app/helper/Modal";
@@ -29,14 +31,18 @@ export default function FilePreviewModalV2({
         )}
       </div>
 
-      <div className="bg-white rounded-lg shadow-lg p-4 max-h-[80vh] overflow-auto">
+      <div className="bg-white rounded-lg shadow-lg p-0">
         <DocViewer
           documents={documents}
           pluginRenderers={DocViewerRenderers}
           config={{
             header: { disableHeader: true },
           }}
-          style={{ height: "70vh", background: "white" }}
+          style={{
+            height: "80vh",
+            background: "white",
+            overflow: "auto",
+          }}
         />
       </div>
     </Modal>
