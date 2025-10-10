@@ -33,10 +33,7 @@ export interface UpdateFieldValue {
 const loadFormIndex = (isUpdate: boolean, form: string | null): number => {
   // if form == complete-company maka index adalah 1 dimulai dari register perusahaan
   // melewati register pic karena konteksnya user udah register pic yang belum register perusahaan
-  if (form === "complete-company") {
-    const formIndexCache = localStorage.getItem(FORM_INDEX_CACHE_KEY);
-    return formIndexCache ? Number(formIndexCache) : 1;
-  }
+  if (form === "complete-company") return 1;
 
   if (isUpdate) {
     console.log("get form index, form= " + form);
